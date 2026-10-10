@@ -3,6 +3,7 @@ import { DocumentLayout } from "../../document/DocumentLayout";
 import { EditableField } from "../../document/EditableField";
 import { DateEditableField } from "../../document/ApprovalSignature";
 import { MuayeneKabulKomisyonuData } from "./MuayeneKabulKomisyonu.schema";
+import { formatUnvan } from "../../utils/textHelpers";
 
 interface Props {
   data?: Partial<MuayeneKabulKomisyonuData> & Record<string, any>;
@@ -90,15 +91,6 @@ export const MuayeneKabulKomisyonu: React.FC<Props> = ({
     }
     return [];
   })();
-
-  const formatUnvan = (unvan?: string) => {
-    if (!unvan || !unvan.trim()) return "";
-    const trimmed = unvan.trim();
-    if (trimmed.startsWith("(") && trimmed.endsWith(")")) {
-      return trimmed;
-    }
-    return `(${trimmed})`;
-  };
 
   // Evrak sayısı oluşturma (EBYS Standart Formatı: E-DETSİS-SDP-NO)
   const evrakNo =

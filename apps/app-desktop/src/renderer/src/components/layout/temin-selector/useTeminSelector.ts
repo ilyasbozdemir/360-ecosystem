@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { useShallow } from 'zustand/react/shallow'
 import { useWorkspaceStore } from '../../../store/workspaceStore'
 import { useTabStore } from '../../../store/tabStore'
+import { useClickOutside } from '../../../hooks/useClickOutside'
 import { useDosyalarHooks } from '../../../screens/dosyalar/dosyalar.hooks'
 import { isIhaleOrYapim } from './teminSelector.utils'
 import {
@@ -99,15 +100,7 @@ export function useTeminSelector(): UseTeminSelectorReturn {
     window.dispatchEvent(new CustomEvent('procurement-mode-change', { detail: { mode } }))
   }, [])
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent): void {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  useClickOutside(containerRef, () => setIsOpen(false), isOpen)
 
   const selectedDosya = useMemo(
     () => dosyalar.find((d) => d.id === activeDosyaId),

@@ -8,6 +8,7 @@ import {
   MinIOSyncForm,
   GDriveSyncForm
 } from './SyncProviderForms'
+import { useClickOutside } from '../../../hooks/useClickOutside'
 
 type SyncProviderId = 'server' | 'pocketbase' | 'minio' | 'gdrive'
 
@@ -33,15 +34,7 @@ export function SyncPopover(): React.JSX.Element {
     }
   }, [loadSettings])
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent): void {
-      if (syncRef.current && !syncRef.current.contains(event.target as Node)) {
-        setShowSyncPopover(false)
-      }
-    }
-    if (showSyncPopover) document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [showSyncPopover])
+  useClickOutside(syncRef, () => setShowSyncPopover(false), showSyncPopover)
 
   return (
     <div className="relative" ref={syncRef}>

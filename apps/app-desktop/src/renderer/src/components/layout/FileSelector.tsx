@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { FolderOpen, Search, Check, ChevronDown, Sparkles } from 'lucide-react'
 import { cn } from '../../utils/cn'
+import { useClickOutside } from '../../hooks/useClickOutside'
 import { useWorkspaceStore } from '../../store/workspaceStore'
 import { useQueryClient } from '@tanstack/react-query'
 
@@ -32,19 +33,7 @@ export function FileSelector(): React.JSX.Element {
   } = useWorkspaceStore()
   const queryClient = useQueryClient()
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent): void {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [])
+  useClickOutside(containerRef, () => setIsOpen(false), isOpen)
 
   useEffect(() => {
     if (isOpen) {

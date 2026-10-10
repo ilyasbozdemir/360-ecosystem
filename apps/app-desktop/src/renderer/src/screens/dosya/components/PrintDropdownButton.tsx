@@ -5,6 +5,7 @@ import { BelgeAksiyonlari } from '../../../components/ui/BelgeAksiyonlari'
 import { normalizeForMatch } from '../sub-screens/DosyaAsamalari/useDosyaAsamasiSablons'
 import { useWorkspaceStore } from '../../../store/workspaceStore'
 import { documentPreloadService } from '../../../services/documentPreloadService'
+import { useClickOutside } from '../../../hooks/useClickOutside'
 
 export interface PrintDropdownButtonProps {
   kategori: string // e.g. '4-kabul-ve-odeme-islemleri'
@@ -78,15 +79,7 @@ export function PrintDropdownButton({
     return () => window.removeEventListener('dta_presets_changed', handlePresetsChange)
   }, [])
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setBelgeMenuOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  useClickOutside(dropdownRef, () => setBelgeMenuOpen(false))
 
   const stageSablons = useMemo(() => {
     if (overrideSablons) return overrideSablons

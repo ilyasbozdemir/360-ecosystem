@@ -3,6 +3,7 @@ import { Outlet } from '@tanstack/react-router'
 import { ArrowLeftToLine, Minus, Square, X } from 'lucide-react'
 import { FindInPage } from '../FindInPage'
 import { getTabLabel } from '../../../store/tabStore'
+import { useWindowControls } from '../../../hooks/useWindowControls'
 
 interface DetachedWindowLayoutProps {
   isDosyaWindowMode: boolean
@@ -25,9 +26,7 @@ export function DetachedWindowLayout({
     })
   }
 
-  const handleMinimize = () => window.electron?.ipcRenderer.send('window-minimize')
-  const handleMaximize = () => window.electron?.ipcRenderer.send('window-maximize')
-  const handleClose = () => window.electron?.ipcRenderer.send('window-close')
+  const { minimize, maximize, close } = useWindowControls()
 
   return (
     <div className="h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden font-sans text-slate-900 dark:text-slate-100 transition-colors duration-300 flex flex-col">
@@ -61,21 +60,21 @@ export function DetachedWindowLayout({
           style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
         >
           <button
-            onClick={handleMinimize}
+            onClick={minimize}
             className="h-8 w-10 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/80 dark:hover:bg-slate-700 transition-none"
             title="Simge Durumuna Küçült"
           >
             <Minus className="w-3.5 h-3.5" />
           </button>
           <button
-            onClick={handleMaximize}
+            onClick={maximize}
             className="h-8 w-10 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/80 dark:hover:bg-slate-700 transition-none"
             title="Ekranı Kapla"
           >
             <Square className="w-3 h-3" />
           </button>
           <button
-            onClick={handleClose}
+            onClick={close}
             className="h-8 w-10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-[#e81123] transition-none"
             title="Kapat"
           >

@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useRef } from 'react'
 import { Check, ChevronDown, Search, UserPlus, X } from 'lucide-react'
+import { useClickOutside } from '../../../../hooks/useClickOutside'
 import { PersonelItem } from './types'
 
 interface HizliKadroPersonelSelectProps {
@@ -26,16 +27,7 @@ export const HizliKadroPersonelSelect: React.FC<HizliKadroPersonelSelectProps> =
 }) => {
   const containerRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    if (!isOpen) return
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        onToggleOpen()
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [isOpen, onToggleOpen])
+  useClickOutside(containerRef, onToggleOpen, isOpen)
 
   const filteredPersoneller = personeller.filter(
     (p) =>

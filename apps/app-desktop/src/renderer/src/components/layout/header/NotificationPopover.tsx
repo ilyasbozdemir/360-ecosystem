@@ -1,24 +1,15 @@
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { Bell, X, Info, CheckCircle, AlertTriangle, AlertCircle } from 'lucide-react'
 import { useAnnouncements } from '../../../screens/dashboard/dashboard.hooks'
 import { formatDate } from '@renderer/utils/formatters'
+import { useClickOutside } from '@renderer/hooks/useClickOutside'
 
 export const NotificationPopover = React.memo(function NotificationPopover(): React.JSX.Element {
   const [isOpen, setIsOpen] = useState(false)
   const { announcements } = useAnnouncements()
   const popoverRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent): void {
-      if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
-      }
-    }
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-    }
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [isOpen])
+  useClickOutside(popoverRef, () => setIsOpen(false), isOpen)
 
   const getIcon = (type: string): React.JSX.Element => {
     switch (type) {

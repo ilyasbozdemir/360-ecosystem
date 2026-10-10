@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import { formatDosyaNo } from '../../../../utils/formatDosyaNo'
+import { useClickOutside } from '../../../../hooks/useClickOutside'
 
 export interface DosyaManageHeaderProps {
   isEdit: boolean
@@ -51,24 +52,13 @@ export const DosyaManageHeader: React.FC<DosyaManageHeaderProps> = ({
   const moreMenuBtnRef = useRef<HTMLButtonElement>(null)
   const menuContainerRef = useRef<HTMLDivElement>(null)
 
+  useClickOutside([moreMenuBtnRef, menuContainerRef], () => setShowMoreMenu(false), showMoreMenu)
+
   React.useEffect(() => {
     if (!showMoreMenu) return
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as Node
-      if (
-        moreMenuBtnRef.current &&
-        !moreMenuBtnRef.current.contains(target) &&
-        menuContainerRef.current &&
-        !menuContainerRef.current.contains(target)
-      ) {
-        setShowMoreMenu(false)
-      }
-    }
     const handleClear = () => setShowMoreMenu(false)
-    document.addEventListener('mousedown', handleClickOutside)
     window.addEventListener('app:clear-overlays', handleClear)
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
       window.removeEventListener('app:clear-overlays', handleClear)
     }
   }, [showMoreMenu])

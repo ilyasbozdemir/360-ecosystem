@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { OlcuBirimi, BIRIM_KATEGORILERI } from '../olcubirimleri.hooks'
 import { cn } from '../../../utils/cn'
+import { useClickOutside } from '../../../hooks/useClickOutside'
 
 interface BirimSelectProps {
   value?: number | null
@@ -93,19 +94,7 @@ export function BirimSelect({
     setIsOpen(nextState)
   }
 
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent): void {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setIsOpen(false)
-      }
-    }
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [isOpen])
+  useClickOutside(dropdownRef, () => setIsOpen(false), isOpen)
 
   useEffect(() => {
     if (isOpen) {

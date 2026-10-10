@@ -1,17 +1,11 @@
 import React from 'react'
 import { Lock, Minus, Moon, Square, Sun, X } from 'lucide-react'
 import { useTheme } from '../../providers/ThemeProvider'
+import { useWindowControls } from '../../../hooks/useWindowControls'
 
 export function LockScreenHeader(): React.JSX.Element {
   const { theme, setTheme } = useTheme()
-
-  const handleMinimize = (): void => window.electron?.ipcRenderer.send('window-minimize')
-  const handleMaximize = (): void => window.electron?.ipcRenderer.send('window-maximize')
-  const handleClose = (): void => {
-    window.electron?.ipcRenderer.invoke('app:force-quit').catch(() => {
-      window.electron?.ipcRenderer.send('window-close')
-    })
-  }
+  const { minimize, maximize, forceQuit } = useWindowControls()
 
   return (
     <div
@@ -35,21 +29,21 @@ export function LockScreenHeader(): React.JSX.Element {
           {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
         </button>
         <button
-          onClick={handleMinimize}
+          onClick={minimize}
           className="p-1.5 text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-350 transition-all rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800/50 cursor-pointer"
           title="Simge Durumuna Küçült"
         >
           <Minus className="w-4 h-4" />
         </button>
         <button
-          onClick={handleMaximize}
+          onClick={maximize}
           className="p-1.5 text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-350 transition-all rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800/50 cursor-pointer"
           title="Ekranı Kapla"
         >
           <Square className="w-3.5 h-3.5" />
         </button>
         <button
-          onClick={handleClose}
+          onClick={forceQuit}
           className="p-1.5 text-slate-400 hover:text-white hover:bg-red-650 rounded-lg transition-all cursor-pointer"
           title="Kapat"
         >

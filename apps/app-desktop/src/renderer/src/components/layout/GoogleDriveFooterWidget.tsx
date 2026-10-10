@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { Modal } from '../ui/Modal'
 import { useWorkspaceStore } from '../../store/workspaceStore'
+import { useClickOutside } from '../../hooks/useClickOutside'
 
 interface GDriveFile {
   id: string
@@ -169,19 +170,13 @@ export function GoogleDriveFooterWidget(): React.JSX.Element | null {
 
     window.addEventListener('workspace-saved', handleSaved)
 
-    const handleClickOutside = (e: MouseEvent) => {
-      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
-        setShowPopover(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-
     return () => {
       clearInterval(interval)
       window.removeEventListener('workspace-saved', handleSaved)
-      document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [fileName, activeMeta?.updated_at])
+
+  useClickOutside(popoverRef, () => setShowPopover(false), showPopover)
 
   const handleApplyCloudUpdate = async (): Promise<void> => {
     if (!newerFile || !window.electron?.ipcRenderer) return
