@@ -1,0 +1,688 @@
+================================================================================
+📊 TEMİN 360 - KOD TABANI VE MODÜLARİTE ANALİZ RAPORU
+================================================================================
+🔍 Taranan Toplam Dosya : 1059
+📄 Toplam Satır Sayısı  : 202.334
+================================================================================
+
+📌 1. EN BÜYÜK DOSYALAR (> 500 Satır - Modülerleştirme Adayları)
+--------------------------------------------------------------------------------
+ 1. 🔴 KRİTİK |  1686 satır  ->  apps/app-desktop/src/renderer/src/screens/malzemeler/yeni.screen.tsx
+ 2. 🔴 KRİTİK |  1559 satır  ->  apps/app-desktop/src/renderer/src/services/excelExportService.ts
+ 3. 🔴 KRİTİK |  1504 satır  ->  apps/app-desktop/src/renderer/src/screens/ayarlar/TemaScreen.tsx
+ 4. 🔴 KRİTİK |  1497 satır  ->  apps/app-desktop/src/renderer/src/screens/devlet-ihale-2886/components/BelgeVeSablonStudyoTab.tsx
+ 5. 🔴 KRİTİK |  1491 satır  ->  apps/app-desktop/src/renderer/src/components/modals/HesapAraclariModal.tsx
+ 6. 🔴 KRİTİK |  1333 satır  ->  apps/app-desktop/src/main/ipc/workspace.ipc.ts
+ 7. 🔴 KRİTİK |  1261 satır  ->  apps/app-desktop/src/renderer/src/screens/dosya/components/DocumentPreviewModalV2/hooks/helpers/previewDataLoader.ts
+ 8. 🔴 KRİTİK |  1209 satır  ->  apps/app-desktop/src/renderer/src/screens/playground/index.screen.tsx
+ 9. 🔴 KRİTİK |  1200 satır  ->  apps/app-desktop/src/renderer/src/screens/projeler/index.screen.tsx
+10. 🔴 KRİTİK |  1189 satır  ->  apps/app-desktop/src/renderer/src/screens/pozlar/yeni.screen.tsx
+11. 🔴 KRİTİK |  1177 satır  ->  apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/components/MalzemeListesi/HizliTopluKalemGrid.tsx
+12. 🔴 KRİTİK |  1139 satır  ->  apps/app-desktop/src/renderer/src/screens/araclar/components/BelgeDonusturucuTab.tsx
+13. 🔴 KRİTİK |  1128 satır  ->  apps/app-desktop/src/renderer/src/constants/mappings/all-templates.mapping.ts
+14. 🔴 KRİTİK |  1125 satır  ->  apps/app-desktop/src/main/index.ts
+15. 🔴 KRİTİK |  1097 satır  ->  apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DatabaseBrowserScreen.tsx
+16. 🔴 KRİTİK |  1088 satır  ->  apps/app-desktop/src/renderer/src/services/seed/seedDefinitions.ts
+17. 🔴 KRİTİK |  1066 satır  ->  apps/app-desktop/src/main/ipc/db/dbExcelHandlers.ts
+18. 🔴 KRİTİK |  1058 satır  ->  apps/app-desktop/src/renderer/src/screens/pozlar/toplu.screen.tsx
+19. 🔴 KRİTİK |  1041 satır  ->  apps/app-desktop/src/renderer/src/screens/ayarlar/components/DocumentThemeTab.tsx
+20. 🔴 KRİTİK |  1041 satır  ->  apps/app-desktop/src/renderer/src/screens/ayarlar/components/SyncTab.tsx
+21. 🟡 BÜYÜK |   981 satır  ->  apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/components/MalzemeListesi/MalzemeTablosu.tsx
+22. 🟡 BÜYÜK |   965 satır  ->  apps/app-desktop/src/renderer/src/screens/personel/index.screen.tsx
+23. 🟡 BÜYÜK |   959 satır  ->  apps/app-desktop/src/renderer/src/screens/profil/index.screen.tsx
+24. 🟡 BÜYÜK |   953 satır  ->  apps/app-desktop/src/renderer/src/screens/devlet-ihale-2886/components/DosyaYonetimi2886Tab.tsx
+25. 🟡 BÜYÜK |   931 satır  ->  apps/app-desktop/src/renderer/src/screens/ambar/index.screen.tsx
+26. 🟡 BÜYÜK |   928 satır  ->  apps/app-desktop/src/renderer/src/screens/dashboard/HarcamaMerkeziScreen.tsx
+27. 🟡 BÜYÜK |   904 satır  ->  apps/app-desktop/src/renderer/src/screens/devlet-ihale-2886/components/MuhammenBedelVeTakdirTab.tsx
+28. 🟡 BÜYÜK |   893 satır  ->  apps/app-desktop/src/renderer/src/screens/dosya/index.screen.tsx
+29. 🟡 BÜYÜK |   888 satır  ->  packages/document-templates/src/resolver/mappingResolver.ts
+30. 🟡 BÜYÜK |   876 satır  ->  apps/app-desktop/src/renderer/src/screens/dashboard/dashboard.hooks.ts
+31. 🟡 BÜYÜK |   858 satır  ->  packages/document-templates/src/templates/piyasa-fiyat-arastirma-tutanagi/PiyasaFiyatArastirmaTutanagi.template.tsx
+32. 🟡 BÜYÜK |   840 satır  ->  apps/app-desktop/src/renderer/src/screens/dosyalar/yeni.hooks.ts
+33. 🟡 BÜYÜK |   838 satır  ->  apps/app-desktop/src/renderer/src/components/layout/Sidebar.tsx
+34. 🟡 BÜYÜK |   807 satır  ->  apps/app-desktop/src/renderer/src/screens/system/HizliDosyaEkle.screen.tsx
+35. 🟡 BÜYÜK |   801 satır  ->  packages/document-templates/src/templates/fiyat-arastirma-mektubu/FiyatArastirmaMektubu.template.tsx
+36. 🟡 BÜYÜK |   772 satır  ->  apps/app-desktop/src/renderer/src/screens/dosyalar/tabs/components/genel-bilgiler/GenelBilgilerVeIdariAntetSection.tsx
+37. 🟡 BÜYÜK |   770 satır  ->  apps/app-desktop/src/renderer/src/screens/ayarlar/components/DeveloperTab.tsx
+38. 🟡 BÜYÜK |   756 satır  ->  apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/components/MalzemeListesi/components/komisyon-atama/useKomisyonAtama.ts
+39. 🟡 BÜYÜK |   752 satır  ->  apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/components/MalzemeListesi/useMalzemeListesi.ts
+40. ⚪ İNCELE |   733 satır  ->  apps/app-desktop/src/renderer/src/screens/dosya/components/DocumentPreviewModalV2/templateResolver.ts
+41. ⚪ İNCELE |   731 satır  ->  apps/app-desktop/src/renderer/src/screens/system/tabs/YiUfeEndeksTab.tsx
+42. ⚪ İNCELE |   720 satır  ->  apps/app-desktop/src/renderer/src/screens/system/data/mevzuat.data.ts
+43. ⚪ İNCELE |   717 satır  ->  apps/app-desktop/src/main/ipc/document/documentContextResolver.ts
+44. ⚪ İNCELE |   703 satır  ->  packages/document-templates/src/templates/yaklasik-maliyet-cetveli/YaklasikMaliyetCetveli.template.tsx
+45. ⚪ İNCELE |   698 satır  ->  apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/components/KabulVeOdeme/useKabulVeOdemeData.ts
+46. ⚪ İNCELE |   697 satır  ->  packages/document-templates/src/document/ApprovalSignature.tsx
+47. ⚪ İNCELE |   693 satır  ->  apps/app-desktop/src/renderer/src/screens/kurum/components/KurumViewCard.tsx
+48. ⚪ İNCELE |   691 satır  ->  apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/components/MalzemeListesi/MalzemeEkleModal.tsx
+49. ⚪ İNCELE |   682 satır  ->  apps/app-desktop/src/renderer/src/screens/butcekod/index.screen.tsx
+50. ⚪ İNCELE |   681 satır  ->  apps/app-desktop/src/renderer/src/screens/sablonlar/components/builder/FormBuilderCanvas.tsx
+51. ⚪ İNCELE |   679 satır  ->  apps/app-desktop/src/main/ipc/document/documentExportHandlers.ts
+52. ⚪ İNCELE |   673 satır  ->  apps/app-desktop/src/renderer/src/screens/dosya/components/TekTikYazdirModal.tsx
+53. ⚪ İNCELE |   667 satır  ->  apps/app-desktop/src/renderer/src/screens/dashboard/index2.screen.tsx
+54. ⚪ İNCELE |   665 satır  ->  apps/app-desktop/src/renderer/src/screens/malzemeler/components/PozSecimModal.tsx
+55. ⚪ İNCELE |   654 satır  ->  apps/app-desktop/src/renderer/src/screens/dosyalar/index.screen.tsx
+56. ⚪ İNCELE |   649 satır  ->  apps/app-desktop/src/main/ipc/detsis.ipc.ts
+57. ⚪ İNCELE |   649 satır  ->  apps/app-desktop/src/renderer/src/components/ui/AIFormFillModal.tsx
+58. ⚪ İNCELE |   648 satır  ->  apps/app-desktop/src/renderer/src/screens/komisyonlar/index.screen.tsx
+59. ⚪ İNCELE |   648 satır  ->  apps/app-desktop/src/renderer/src/screens/system/ImportScreen.tsx
+60. ⚪ İNCELE |   643 satır  ->  packages/document-templates/src/templates/harcama-pusulasi/HarcamaPusulasi.template.tsx
+61. ⚪ İNCELE |   638 satır  ->  packages/document-templates/src/templates/harcama-talimati/HarcamaTalimati.template.tsx
+62. ⚪ İNCELE |   635 satır  ->  apps/app-desktop/src/renderer/src/screens/system/TaslakYoneticisi.tsx
+63. ⚪ İNCELE |   635 satır  ->  packages/document-templates/src/templates/birim-fiyat-teklif-mektubu/BirimFiyatTeklifMektubu.template.tsx
+64. ⚪ İNCELE |   632 satır  ->  apps/app-desktop/src/renderer/src/screens/dosyalar/tabs/components/genel-bilgiler/IhaleVeTeklifFinansalSection.tsx
+65. ⚪ İNCELE |   632 satır  ->  apps/app-desktop/src/renderer/src/screens/launcher/index.screen.tsx
+66. ⚪ İNCELE |   632 satır  ->  apps/app-desktop/src/renderer/src/screens/notlar/index.screen.tsx
+67. ⚪ İNCELE |   622 satır  ->  apps/app-desktop/src/renderer/src/screens/system/tabs/FiyatFarkiTab.tsx
+68. ⚪ İNCELE |   619 satır  ->  apps/app-desktop/src/renderer/src/screens/malzemeler/index.screen.tsx
+69. ⚪ İNCELE |   610 satır  ->  apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/components/BelgeListesi.tsx
+70. ⚪ İNCELE |   605 satır  ->  apps/app-desktop/src/renderer/src/screens/dosya/IstekliFirmalar.screen.tsx
+71. ⚪ İNCELE |   603 satır  ->  apps/app-desktop/src/renderer/src/components/layout/WorkspaceCloseModal.tsx
+72. ⚪ İNCELE |   603 satır  ->  apps/app-desktop/src/renderer/src/screens/dosya/hooks/useCiktiMerkeziScreen.ts
+73. ⚪ İNCELE |   602 satır  ->  apps/app-desktop/src/renderer/src/screens/butcekod/butcekod.hooks.ts
+74. ⚪ İNCELE |   591 satır  ->  apps/app-desktop/src/renderer/src/services/seed/seedDosyalar.ts
+75. ⚪ İNCELE |   581 satır  ->  packages/document-templates/src/templates/dogrudan-temin-onay-belgesi/DogrudanTeminOnayBelgesi.template.tsx
+76. ⚪ İNCELE |   577 satır  ->  apps/app-desktop/src/renderer/src/components/editor/HesapCetveliGrid.tsx
+77. ⚪ İNCELE |   573 satır  ->  apps/app-desktop/src/renderer/src/screens/dosyalar/components/DosyaHizliIcerikPopover.tsx
+78. ⚪ İNCELE |   562 satır  ->  apps/app-desktop/src/renderer/src/components/ui/AITextGeneratorModal.tsx
+79. ⚪ İNCELE |   562 satır  ->  apps/app-desktop/src/renderer/src/screens/ambar/ambar.hooks.ts
+80. ⚪ İNCELE |   562 satır  ->  apps/app-desktop/src/renderer/src/screens/kurum/components/IdariBilgilerTab.tsx
+81. ⚪ İNCELE |   551 satır  ->  apps/app-desktop/src/renderer/src/screens/dosyalar/components/EskiDosyaKopyalaModal.tsx
+82. ⚪ İNCELE |   549 satır  ->  packages/document-templates/src/templates/yaklasik-maliyet-cetveli/YaklasikMaliyetCetveli.hook.ts
+83. ⚪ İNCELE |   548 satır  ->  apps/app-desktop/src/renderer/src/screens/komisyonlar/components/hizli-kadro/useHizliKadro.ts
+84. ⚪ İNCELE |   547 satır  ->  apps/app-desktop/src/renderer/src/store/syncStore.ts
+85. ⚪ İNCELE |   543 satır  ->  apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/components/SiparisVeSozlesme/ButceVeOdenekCard.tsx
+86. ⚪ İNCELE |   538 satır  ->  apps/app-desktop/src/renderer/src/screens/komisyonlar/detay.screen.tsx
+87. ⚪ İNCELE |   535 satır  ->  packages/document-templates/src/templates/ihtiyac-talep-formu/IhtiyacTalepFormu.template.tsx
+88. ⚪ İNCELE |   532 satır  ->  apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/useDosyaAsamasiSablons.ts
+89. ⚪ İNCELE |   529 satır  ->  apps/app-desktop/src/renderer/src/screens/firmalar/components/FirmaGecmisTeminler.tsx
+90. ⚪ İNCELE |   528 satır  ->  apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/FaturaVeIrsaliye.tsx
+91. ⚪ İNCELE |   524 satır  ->  apps/app-desktop/src/renderer/src/components/ui/TifOlusturModal.tsx
+92. ⚪ İNCELE |   523 satır  ->  packages/document-templates/src/templates/muayene-kabul-tutanagi/MuayeneKabulTutanagi.template.tsx
+93. ⚪ İNCELE |   521 satır  ->  packages/document-templates/src/templates/arastirma-mektubu/ArastirmaMektubu.template.tsx
+94. ⚪ İNCELE |   520 satır  ->  apps/app-desktop/src/main/ipc/document/documentCiktiResolver.ts
+95. ⚪ İNCELE |   519 satır  ->  apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/hooks/usePiyasaFiyatArastirmasi/usePiyasaFiyatData.ts
+96. ⚪ İNCELE |   519 satır  ->  apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/hooks/usePiyasaFiyatArastirmasi/usePiyasaFiyatDocuments.ts
+97. ⚪ İNCELE |   519 satır  ->  apps/app-desktop/src/renderer/src/screens/pozlar/detay.screen.tsx
+98. ⚪ İNCELE |   519 satır  ->  apps/app-desktop/src/renderer/src/screens/sablonlar/components/SablonEditor.tsx
+99. ⚪ İNCELE |   518 satır  ->  apps/app-desktop/src/renderer/src/screens/firmalar/components/FirmaDetail.tsx
+100. ⚪ İNCELE |   516 satır  ->  apps/app-desktop/src/renderer/src/screens/dosyalar/tabs/IhtiyacListesiTab.tsx
+101. ⚪ İNCELE |   515 satır  ->  apps/app-desktop/src/renderer/src/routes.tsx
+102. ⚪ İNCELE |   514 satır  ->  apps/app-desktop/src/renderer/src/components/modals/SayiyiYaziyaCevirModal.tsx
+103. ⚪ İNCELE |   509 satır  ->  apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/components/KabulVeOdeme/KabulFaturaHakedisCard.tsx
+104. ⚪ İNCELE |   509 satır  ->  apps/app-desktop/src/renderer/src/utils/engine/formulaParser.ts
+105. ⚪ İNCELE |   506 satır  ->  apps/app-desktop/src/renderer/src/screens/sablonlar/components/FormBuilderV2Playground.tsx
+106. ⚪ İNCELE |   503 satır  ->  apps/app-desktop/src/renderer/src/screens/pozlar/index.screen.tsx
+
+================================================================================
+📌 2. BİRDEN FAZLA DOSYADA TANIMLANMIŞ FONKSİYONLAR (Tekrar Edenler)
+================================================================================
+
+🔹 [handleDelete] (16 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/butcekod/index.screen.tsx:264
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/FaturaVeIrsaliye.tsx:102
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/ImzaliBelgeler.tsx:73
+   - apps/app-desktop/src/renderer/src/screens/dosyalar/index.screen.tsx:117
+   - apps/app-desktop/src/renderer/src/screens/firmalar/index.screen.tsx:99
+   - apps/app-desktop/src/renderer/src/screens/kurum/components/ButceOdenekTanimTab.tsx:40
+   - apps/app-desktop/src/renderer/src/screens/kurum/components/KurumMetadataManager.tsx:66
+   - apps/app-desktop/src/renderer/src/screens/malzemeler/index.screen.tsx:111
+   - apps/app-desktop/src/renderer/src/screens/personel/components/PersonelUnvanGecmisiCard.tsx:112
+   - apps/app-desktop/src/renderer/src/screens/personel/index.screen.tsx:167
+   - apps/app-desktop/src/renderer/src/screens/pozlar/detay.screen.tsx:83
+   - apps/app-desktop/src/renderer/src/screens/pozlar/index.screen.tsx:81
+   - apps/app-desktop/src/renderer/src/screens/profil/index.screen.tsx:220
+   - apps/app-desktop/src/renderer/src/screens/raporlar/components/DokumanlarView.tsx:57
+   - apps/app-desktop/src/renderer/src/screens/system/components/takip/useTakip.ts:99
+   - apps/app-desktop/src/renderer/src/screens/tasinirkod/index.screen.tsx:58
+
+🔹 [handleSave] (13 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/ayarlar/TemaScreen.tsx:399
+   - apps/app-desktop/src/renderer/src/screens/butcekod/index.screen.tsx:217
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/components/MalzemeListesi/components/komisyon-atama/useKomisyonAtama.ts:283
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/components/MalzemeListesi/HizliTopluKalemGrid.tsx:628
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/components/SiparisVeSozlesme/ButceVeOdenekCard.tsx:207
+   - apps/app-desktop/src/renderer/src/screens/dosyalar/yeni.hooks.ts:572
+   - apps/app-desktop/src/renderer/src/screens/kurum/index.screen.tsx:184
+   - apps/app-desktop/src/renderer/src/screens/malzemeler/yeni.screen.tsx:272
+   - apps/app-desktop/src/renderer/src/screens/projeler/index.screen.tsx:175
+   - apps/app-desktop/src/renderer/src/screens/raporlar/components/ButceOdenekModal.tsx:81
+   - apps/app-desktop/src/renderer/src/screens/sablonlar/components/SablonEditor.tsx:243
+   - apps/app-desktop/src/renderer/src/screens/system/HizliDosyaEkle.screen.tsx:207
+   - apps/app-desktop/src/renderer/src/screens/system/tabs/OranlarTab.tsx:109
+
+🔹 [handleSubmit] (12 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/components/layout/LockScreen.tsx:105
+   - apps/app-desktop/src/renderer/src/components/ui/TifOlusturModal.tsx:166
+   - apps/app-desktop/src/renderer/src/screens/ambar/components/StokHareketModal.tsx:81
+   - apps/app-desktop/src/renderer/src/screens/birimler/index.screen.tsx:157
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/components/FiyatIstenenFirmalari/YeniFirmaModali.tsx:15
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/components/KabulVeOdeme/KabulTutanakModal.tsx:234
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/components/KabulVeOdeme/tutanaklar/KabulHizliEkleModal.tsx:73
+   - apps/app-desktop/src/renderer/src/screens/firmalar/index.screen.tsx:80
+   - apps/app-desktop/src/renderer/src/screens/notlar/components/NotModal.tsx:91
+   - apps/app-desktop/src/renderer/src/screens/personel/components/PersonelUnvanGecmisiCard.tsx:71
+   - apps/app-desktop/src/renderer/src/screens/personel/index.screen.tsx:152
+   - apps/app-desktop/src/renderer/src/screens/pozlar/yeni.screen.tsx:423
+
+🔹 [formatMoney] (11 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/components/layout/temin-selector/teminSelector.utils.ts:3
+   - apps/app-desktop/src/renderer/src/components/ui/YiUfePriceBadge.tsx:44
+   - apps/app-desktop/src/renderer/src/screens/devlet-ihale-2886/components/DosyaYonetimi2886Tab.tsx:288
+   - apps/app-desktop/src/renderer/src/screens/devlet-ihale-2886/components/IhaleGunuVeTekliflerTab.tsx:9
+   - apps/app-desktop/src/renderer/src/screens/devlet-ihale-2886/components/KiraVeTahsilatTakipTab.tsx:22
+   - apps/app-desktop/src/renderer/src/screens/devlet-ihale-2886/components/MuhammenBedelVeTakdirTab.tsx:203
+   - apps/app-desktop/src/renderer/src/screens/dosya/index.screen.tsx:389
+   - apps/app-desktop/src/renderer/src/screens/dosyalar/components/DosyaHizliIcerikPopover.tsx:195
+   - apps/app-desktop/src/renderer/src/screens/dosyalar/components/inspector/types.ts:25
+   - apps/app-desktop/src/renderer/src/screens/dosyalar/index.screen.tsx:342
+   - packages/document-templates/src/utils/textHelpers.ts:113
+
+🔹 [fmt] (8 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/components/KabulVeOdeme/useKabulVeOdemeData.ts:340
+   - apps/app-desktop/src/renderer/src/screens/kurum/components/ButceOdenekTanimTab.tsx:56
+   - apps/app-desktop/src/renderer/src/screens/raporlar/components/AylikOzetView.tsx:20
+   - apps/app-desktop/src/renderer/src/screens/raporlar/components/ButceOdenekView.tsx:5
+   - apps/app-desktop/src/renderer/src/screens/raporlar/components/ButceView.tsx:6
+   - apps/app-desktop/src/renderer/src/screens/raporlar/components/KayitFormuView.tsx:5
+   - apps/app-desktop/src/renderer/src/screens/raporlar/components/MalzemeHarcamaView.tsx:4
+   - apps/app-desktop/src/renderer/src/screens/raporlar/components/YillikOzetView.tsx:5
+
+🔹 [handleCopy] (7 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/components/modals/SayiyiYaziyaCevirModal.tsx:79
+   - apps/app-desktop/src/renderer/src/screens/araclar/components/SayiyiYaziyaCevirTab.tsx:45
+   - apps/app-desktop/src/renderer/src/screens/butcekod/index.screen.tsx:186
+   - apps/app-desktop/src/renderer/src/screens/kurum/components/KurumViewCard.tsx:68
+   - apps/app-desktop/src/renderer/src/screens/playground/index.screen.tsx:32
+   - apps/app-desktop/src/renderer/src/screens/profil/index.screen.tsx:685
+   - apps/app-desktop/src/renderer/src/screens/system/tabs/ButceKodlariTab.tsx:14
+
+🔹 [formatCurrency] (7 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dashboard/HarcamaMerkeziScreen.tsx:48
+   - apps/app-desktop/src/renderer/src/screens/dashboard/index2.screen.tsx:171
+   - apps/app-desktop/src/renderer/src/screens/system/KikLimitleriSection.tsx:123
+   - apps/app-desktop/src/renderer/src/utils/turkishCalculationUtils.ts:435
+   - packages/document-templates/src/templates/dogrudan-temin-onay-belgesi/DogrudanTeminOnayBelgesi.template.tsx:62
+   - packages/document-templates/src/templates/harcama-pusulasi/HarcamaPusulasi.template.tsx:27
+   - packages/document-templates/src/templates/luzum-muzekkeresi-teslim-tesellum/LuzumMuzekkeresiTeslimTesellum.template.tsx:22
+
+🔹 [loadData] (7 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/components/MalzemeListesi/components/komisyon-atama/useKomisyonAtama.ts:69
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/components/MalzemeListesi/useMalzemeListesi.ts:130
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/components/SiparisVeSozlesme/useSiparisVeSozlesmeData.ts:59
+   - apps/app-desktop/src/renderer/src/screens/dosyalar/yeni.hooks.ts:196
+   - apps/app-desktop/src/renderer/src/screens/kurum/components/ButceOdenekTanimTab.tsx:14
+   - apps/app-desktop/src/renderer/src/screens/profil/index.screen.tsx:107
+   - apps/app-desktop/src/renderer/src/screens/raporlar/components/ButceOdenekView.tsx:17
+
+🔹 [handleKeyDown] (6 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/components/layout/FindInPage.tsx:91
+   - apps/app-desktop/src/renderer/src/components/layout/header/useHeader.ts:94
+   - apps/app-desktop/src/renderer/src/components/splash/SplashScreen.tsx:141
+   - apps/app-desktop/src/renderer/src/components/ui/PersonelCombobox.tsx:75
+   - apps/app-desktop/src/renderer/src/components/ui/TagInput.tsx:60
+   - apps/app-desktop/src/renderer/src/screens/sablonlar/components/tabs/PdfTab.tsx:42
+
+🔹 [handleToggleSelectAll] (6 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/components/ui/DetsisSubUnitsModal.tsx:116
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/components/MalzemeListesi/components/KatalogSenkronizasyonModal.tsx:63
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/components/MalzemeListesi/MalzemeTablosu.tsx:123
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/components/KabulVeOdeme/KabulTutanaklariListCard.tsx:67
+   - apps/app-desktop/src/renderer/src/screens/dosyalar/tabs/IhtiyacListesiTab.tsx:110
+   - apps/app-desktop/src/renderer/src/screens/malzemeler/index.screen.tsx:50
+
+🔹 [handleAdd] (6 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/components/ui/TagInput.tsx:39
+   - apps/app-desktop/src/renderer/src/screens/komisyon-gorevleri/index.screen.tsx:95
+   - apps/app-desktop/src/renderer/src/screens/kurum/components/KurumMetadataManager.tsx:38
+   - apps/app-desktop/src/renderer/src/screens/system/KikLimitleriSection.tsx:38
+   - apps/app-desktop/src/renderer/src/screens/system/tabs/components/CodeListEditor.tsx:42
+   - apps/app-desktop/src/renderer/src/screens/tasinirkod/index.screen.tsx:24
+
+🔹 [showToast] (6 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/components/MalzemeListesi/HizliTopluKalemGrid.tsx:298
+   - apps/app-desktop/src/renderer/src/screens/kurum/components/LogolarTab.tsx:199
+   - apps/app-desktop/src/renderer/src/screens/pozlar/toplu.screen.tsx:164
+   - apps/app-desktop/src/renderer/src/screens/pozlar/yeni.screen.tsx:347
+   - apps/app-desktop/src/renderer/src/screens/profil/index.screen.tsx:128
+   - apps/app-desktop/src/renderer/src/screens/sablonlar/components/FormBuilderV2Playground.tsx:81
+
+🔹 [handleClear] (6 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/components/FiyatIstenenFirmalari/FirmaMektupMenu.tsx:57
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/components/FiyatIstenenFirmalari/RowMenu.tsx:69
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/components/KabulVeOdeme/tutanaklar/HeaderDigerActionsMenu.tsx:59
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/components/KabulVeOdeme/tutanaklar/TutanakRowActionsMenu.tsx:81
+   - apps/app-desktop/src/renderer/src/screens/dosyalar/components/manage/DosyaManageHeader.tsx:59
+   - apps/app-desktop/src/renderer/src/screens/dosyalar/index.screen.tsx:60
+
+🔹 [handlePresetsChange] (5 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/components/layout/ActiveFileSidebar.tsx:88
+   - apps/app-desktop/src/renderer/src/components/ui/BelgeAksiyonlari.tsx:85
+   - apps/app-desktop/src/renderer/src/screens/dosya/components/PrintDropdownButton.tsx:70
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/hooks/usePiyasaFiyatArastirmasi/usePiyasaFiyatPresets.ts:23
+   - apps/app-desktop/src/renderer/src/screens/system/TaslakYoneticisi.tsx:90
+
+🔹 [handleClearAll] (5 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/components/layout/WorkspaceCloseModal.tsx:167
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/components/MalzemeListesi/HizliTopluKalemGrid.tsx:364
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/components/SiparisVeSozlesme/Step2SonucOnay.tsx:91
+   - apps/app-desktop/src/renderer/src/screens/komisyonlar/components/hizli-kadro/HizliKadroBelgeSecimModal.tsx:76
+   - apps/app-desktop/src/renderer/src/screens/pozlar/toplu.screen.tsx:191
+
+🔹 [handler] (5 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/components/FiyatIstenenFirmalari/FirmaMektupMenu.tsx:46
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/components/FiyatIstenenFirmalari/RowMenu.tsx:58
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/components/KabulVeOdeme/tutanaklar/HeaderDigerActionsMenu.tsx:48
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/components/KabulVeOdeme/tutanaklar/TutanakRowActionsMenu.tsx:70
+   - apps/app-desktop/src/renderer/src/utils/appEvents.ts:194
+
+🔹 [handleEdit] (5 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosyalar/components/inspector/InspectorHeader.tsx:31
+   - apps/app-desktop/src/renderer/src/screens/komisyon-gorevleri/index.screen.tsx:89
+   - apps/app-desktop/src/renderer/src/screens/malzemeler/index.screen.tsx:39
+   - apps/app-desktop/src/renderer/src/screens/sablonlar/index.screen.tsx:12
+   - apps/app-desktop/src/renderer/src/screens/system/KikLimitleriSection.tsx:115
+
+🔹 [handleClose] (4 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/components/layout/FindInPage.tsx:11
+   - apps/app-desktop/src/renderer/src/screens/dosyalar/components/inspector/InspectorFooter.tsx:41
+   - apps/app-desktop/src/renderer/src/screens/komisyonlar/components/komisyon-olustur/useKomisyonOlustur.ts:228
+   - apps/app-desktop/src/renderer/src/screens/launcher/index.screen.tsx:268
+
+🔹 [handleSelectAll] (4 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/components/layout/WorkspaceCloseModal.tsx:158
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/components/SiparisVeSozlesme/Step2SonucOnay.tsx:85
+   - apps/app-desktop/src/renderer/src/screens/komisyonlar/components/hizli-kadro/HizliKadroBelgeSecimModal.tsx:72
+   - apps/app-desktop/src/renderer/src/screens/raporlar/components/DokumanlarView.tsx:28
+
+🔹 [handleConfirm] (4 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/components/layout/WorkspaceCloseModal.tsx:171
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/components/FiyatIstenenFirmalari/FirmaEkleModali.tsx:51
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/components/FiyatIstenenFirmalarınSecilmesi.tsx:59
+   - apps/app-desktop/src/renderer/src/screens/komisyonlar/components/hizli-kadro/HizliKadroBelgeSecimModal.tsx:84
+
+🔹 [handleImport] (4 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/components/ui/DetsisSubUnitsModal.tsx:134
+   - apps/app-desktop/src/renderer/src/components/ui/ExcelActions.tsx:73
+   - apps/app-desktop/src/renderer/src/screens/ayarlar/TemaScreen.tsx:518
+   - apps/app-desktop/src/renderer/src/screens/system/ImportScreen.tsx:344
+
+🔹 [queryExecutor] (4 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/hooks/useTemplateData.ts:42
+   - apps/app-desktop/src/renderer/src/screens/dosya/components/DocumentPreviewModalV2/hooks/helpers/previewDataLoader.ts:37
+   - apps/app-desktop/src/renderer/src/services/documentPreloadService.ts:104
+   - packages/document-templates/src/resolver/mappingResolver.ts:274
+
+🔹 [handleChange] (4 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/ambar/index.screen.tsx:116
+   - apps/app-desktop/src/renderer/src/screens/birimler/index.screen.tsx:153
+   - apps/app-desktop/src/renderer/src/screens/firmalar/index.screen.tsx:76
+   - apps/app-desktop/src/renderer/src/screens/kurum/index.screen.tsx:180
+
+🔹 [handleExportCSV] (4 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/raporlar/components/ButceOdenekView.tsx:66
+   - apps/app-desktop/src/renderer/src/screens/raporlar/components/DokumanlarView.tsx:63
+   - apps/app-desktop/src/renderer/src/screens/raporlar/components/KayitFormuView.tsx:19
+   - apps/app-desktop/src/renderer/src/screens/raporlar/components/MalzemeHarcamaView.tsx:127
+
+🔹 [getSetting] (3 farklı dosyada tanımlı):
+   - apps/app-desktop/src/main/ai/index.ts:19
+   - apps/app-desktop/src/main/ipc/db/dbAuthHandlers.ts:287
+   - apps/app-desktop/src/main/ipc/db/dbSettingsHandlers.ts:137
+
+🔹 [handleUpgradeAndOpen] (3 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/components/layout/FileSelector.tsx:53
+   - apps/app-desktop/src/renderer/src/components/layout/hooks/useWorkspaceLifecycle.ts:26
+   - apps/app-desktop/src/renderer/src/screens/launcher/index.screen.tsx:134
+
+🔹 [handleModeEvent] (3 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/components/layout/header/hooks/useProcurementMode.ts:41
+   - apps/app-desktop/src/renderer/src/components/layout/Sidebar.tsx:114
+   - apps/app-desktop/src/renderer/src/components/layout/temin-selector/useTeminSelector.ts:83
+
+🔹 [generateDefaultProjectCode] (3 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/components/ui/ProjectInlineSection.tsx:22
+   - apps/app-desktop/src/renderer/src/components/ui/ProjectSelectModal.tsx:26
+   - apps/app-desktop/src/renderer/src/screens/projeler/index.screen.tsx:60
+
+🔹 [handleCreate] (3 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/components/ui/ProjectInlineSection.tsx:42
+   - apps/app-desktop/src/renderer/src/components/ui/ProjectSelectModal.tsx:58
+   - apps/app-desktop/src/renderer/src/screens/sablonlar/index.screen.tsx:18
+
+🔹 [handleViewClick] (3 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/birimler/index.screen.tsx:231
+   - apps/app-desktop/src/renderer/src/screens/firmalar/index.screen.tsx:72
+   - apps/app-desktop/src/renderer/src/screens/personel/index.screen.tsx:142
+
+🔹 [handlePrint] (3 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/devlet-ihale-2886/components/BelgeVeSablonStudyoTab.tsx:718
+   - apps/app-desktop/src/renderer/src/screens/dosya/components/DocumentPreviewModalV2/hooks/useDocumentPreviewData.ts:285
+   - apps/app-desktop/src/renderer/src/screens/raporlar/components/KayitFormuView.tsx:66
+
+🔹 [openEditModal] (3 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/devlet-ihale-2886/components/DosyaYonetimi2886Tab.tsx:114
+   - apps/app-desktop/src/renderer/src/screens/firmalar/index.screen.tsx:63
+   - apps/app-desktop/src/renderer/src/screens/personel/components/PersonelUnvanGecmisiCard.tsx:56
+
+🔹 [formatTR] (3 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/CiktiMerkezi.contextBuilder.ts:34
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/hooks/usePiyasaFiyatArastirmasi/usePiyasaFiyatDocuments.ts:130
+   - packages/document-templates/src/resolver/mappingResolver.ts:368
+
+🔹 [handleClickOutside] (3 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/components/DocumentPreviewModalV2/components/DocumentPreviewTabBar.tsx:43
+   - apps/app-desktop/src/renderer/src/screens/dosya/components/DocumentPreviewModalV2/hooks/useDocumentPreviewData.ts:224
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/hooks/usePiyasaFiyatArastirmasi/index.ts:32
+
+🔹 [toggleSelect] (3 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/components/TekTikYazdirModal.tsx:137
+   - apps/app-desktop/src/renderer/src/screens/dosya/hooks/useCiktiMerkeziScreen.ts:297
+   - apps/app-desktop/src/renderer/src/screens/raporlar/components/DokumanlarView.tsx:36
+
+🔹 [handleDeletePreset] (3 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/hooks/useCiktiMerkeziScreen.ts:130
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/components/SiparisVeSozlesme/ButceVeOdenekCard.tsx:155
+   - apps/app-desktop/src/renderer/src/screens/system/TaslakYoneticisi.tsx:182
+
+🔹 [handleAddRow] (3 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/components/MalzemeListesi/components/komisyon-atama/useKomisyonAtama.ts:589
+   - apps/app-desktop/src/renderer/src/screens/komisyonlar/components/hizli-kadro/useHizliKadro.ts:279
+   - apps/app-desktop/src/renderer/src/screens/pozlar/toplu.screen.tsx:170
+
+🔹 [handleDeleteSelected] (3 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/components/MalzemeListesi/MalzemeTablosu.tsx:131
+   - apps/app-desktop/src/renderer/src/screens/dosyalar/tabs/IhtiyacListesiTab.tsx:118
+   - apps/app-desktop/src/renderer/src/screens/malzemeler/index.screen.tsx:58
+
+🔹 [handleOpenModal] (3 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/components/FiyatIstenenFirmalarınSecilmesi.tsx:78
+   - apps/app-desktop/src/renderer/src/screens/okaskod/index.screen.tsx:103
+   - apps/app-desktop/src/renderer/src/screens/tasinirkod/index.screen.tsx:18
+
+🔹 [handleBulkDelete] (3 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/components/KabulVeOdeme/KabulTutanaklariListCard.tsx:84
+   - apps/app-desktop/src/renderer/src/screens/dosyalar/index.screen.tsx:158
+   - apps/app-desktop/src/renderer/src/screens/system/HizliDosyaEkle.screen.tsx:358
+
+🔹 [handleQuickAdd] (3 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/komisyonlar/detay.screen.tsx:50
+   - apps/app-desktop/src/renderer/src/screens/notlar/components/DosyaNotlariWidget.tsx:31
+   - apps/app-desktop/src/renderer/src/screens/notlar/index.screen.tsx:150
+
+🔹 [findFile] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/main/ipc/document/documentUtils.ts:17
+   - apps/app-desktop/src/main/ipc/template.ipc.ts:42
+
+🔹 [getDeviceInfo] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/main/ipc/workspace.ipc.ts:17
+   - apps/app-desktop/src/main/utils/deviceInfo.ts:4
+
+🔹 [pad] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/main/ipc/workspace.ipc.ts:566
+   - apps/app-desktop/src/renderer/src/constants/madde-22d-donemler.ts:33
+
+🔹 [getSmtpSetting] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/main/ipc/workspace.ipc.ts:1194
+   - apps/app-desktop/src/main/network/autoCloudSync.ts:54
+
+🔹 [formatTL] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/components/editor/HesapCetveliGrid.tsx:173
+   - packages/document-templates/src/templates/son-alim-fiyat-cetveli/sonAlimFiyat.helpers.ts:76
+
+🔹 [getStatusBadgeClass] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/components/layout/ActiveFileSidebar.tsx:27
+   - apps/app-desktop/src/renderer/src/screens/system/utils/statusUtils.ts:22
+
+🔹 [isSablonDisabled] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/components/layout/ActiveFileSidebar.tsx:171
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/useDosyaAsamasiSablons.ts:496
+
+🔹 [handleCreateNewFile] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/components/layout/FileSelector.tsx:62
+   - apps/app-desktop/src/renderer/src/screens/launcher/index.screen.tsx:69
+
+🔹 [handleOpenFile] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/components/layout/FileSelector.tsx:82
+   - apps/app-desktop/src/renderer/src/screens/launcher/index.screen.tsx:143
+
+🔹 [formatFileSize] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/components/layout/GoogleDriveFooterWidget.tsx:212
+   - apps/app-desktop/src/renderer/src/components/ui/google-drive/gdriveUtils.ts:59
+
+🔹 [handleInputChange] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/components/modals/HesapAraclariModal.tsx:1172
+   - apps/app-desktop/src/renderer/src/components/ui/DetsisSearchModal.tsx:104
+
+🔹 [handleCurrencyChange] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/components/modals/SayiyiYaziyaCevirModal.tsx:116
+   - apps/app-desktop/src/renderer/src/screens/araclar/components/SayiyiYaziyaCevirTab.tsx:56
+
+🔹 [handleGenerate] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/components/ui/AITextGeneratorModal.tsx:98
+   - apps/app-desktop/src/renderer/src/screens/sablonlar/components/AiTemplateGeneratorModal.tsx:22
+
+🔹 [handleApply] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/components/ui/AITextGeneratorModal.tsx:189
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/components/MalzemeListesi/components/KatalogSenkronizasyonModal.tsx:82
+
+🔹 [handleGlobalChange] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/components/ui/BelgeAksiyonlari.tsx:91
+   - apps/app-desktop/src/renderer/src/screens/system/TaslakYoneticisi.tsx:98
+
+🔹 [handleDownloadTemplate] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/components/ui/ExcelActions.tsx:53
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/components/MalzemeListesi/MalzemeTablosu.tsx:225
+
+🔹 [handleRemove] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/components/ui/TagInput.tsx:69
+   - apps/app-desktop/src/renderer/src/screens/system/tabs/components/CodeListEditor.tsx:66
+
+🔹 [formatNumber] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/components/ui/YiUfePriceBadge.tsx:52
+   - apps/app-desktop/src/renderer/src/screens/system/tabs/YiUfeEndeksTab.tsx:187
+
+🔹 [FiyatFarkiTab] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/araclar/components/FiyatFarkiTab.tsx:6
+   - apps/app-desktop/src/renderer/src/screens/system/tabs/FiyatFarkiTab.tsx:12
+
+🔹 [handleSaveToDb] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/ayarlar/components/DocumentThemeTab.tsx:71
+   - apps/app-desktop/src/renderer/src/screens/dosya/components/DocumentPreviewModalV2/hooks/useDocumentPreviewData.ts:236
+
+🔹 [handleDeleteBirim] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/birimler/index.screen.tsx:235
+   - apps/app-desktop/src/renderer/src/screens/olcubirimleri/index.screen.tsx:112
+
+🔹 [handleOpenEdit] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/butcekod/index.screen.tsx:205
+   - apps/app-desktop/src/renderer/src/screens/projeler/index.screen.tsx:146
+
+🔹 [fetchAsamalar] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dashboard/index2.screen.tsx:194
+   - apps/app-desktop/src/renderer/src/screens/system/tabs/AsamalarTab.tsx:47
+
+🔹 [handleReload] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/devlet-ihale-2886/components/BelgeVeSablonStudyoTab.tsx:436
+   - apps/app-desktop/src/renderer/src/screens/devlet-ihale-2886/components/DosyaYonetimi2886Tab.tsx:44
+
+🔹 [handleDeleteConfirm] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/devlet-ihale-2886/components/DosyaYonetimi2886Tab.tsx:222
+   - apps/app-desktop/src/renderer/src/screens/projeler/index.screen.tsx:206
+
+🔹 [handleExportDocx] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/devlet-ihale-2886/components/SurecEvraklariTab.tsx:144
+   - apps/app-desktop/src/renderer/src/screens/sablonlar/components/SablonEditor.tsx:196
+
+🔹 [handleMouseMove] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/components/DocumentPreviewModalV2/components/FloatingDocumentBubble.tsx:50
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/components/MalzemeListesi/HizliTopluKalemGrid.tsx:520
+
+🔹 [handleMouseUp] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/components/DocumentPreviewModalV2/components/FloatingDocumentBubble.tsx:61
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/components/MalzemeListesi/HizliTopluKalemGrid.tsx:532
+
+🔹 [normalizeTemplateKey] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/components/DocumentPreviewModalV2/templateResolver.ts:501
+   - packages/document-templates/src/constants/template-constants.ts:203
+
+🔹 [getCleanName] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/components/PrintDropdownButton.tsx:120
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/hooks/usePiyasaFiyatArastirmasi/usePiyasaFiyatPresets.ts:42
+
+🔹 [handleAction] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/components/TekTikYazdirModal.tsx:185
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/components/FiyatIstenenFirmalari/FirmaMektupMenu.tsx:66
+
+🔹 [normalizeForMatch] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/hooks/useCiktiMerkeziScreen.ts:16
+   - apps/app-desktop/src/renderer/src/utils/formatters.ts:155
+
+🔹 [handleSelectPreset] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/hooks/useCiktiMerkeziScreen.ts:90
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/components/SiparisVeSozlesme/ButceVeOdenekCard.tsx:243
+
+🔹 [toggleGroup] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/hooks/useCiktiMerkeziScreen.ts:280
+   - apps/app-desktop/src/renderer/src/screens/dosyalar/index.screen.tsx:45
+
+🔹 [handleRemoveFirm] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/IstekliFirmalar.screen.tsx:85
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/hooks/usePiyasaFiyatArastirmasi/usePiyasaFiyatData.ts:340
+
+🔹 [handleToggleSelect] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/components/MalzemeListesi/components/KatalogSenkronizasyonModal.tsx:54
+   - apps/app-desktop/src/renderer/src/screens/malzemeler/index.screen.tsx:35
+
+🔹 [handleToggleExpand] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/components/MalzemeListesi/components/KatalogSenkronizasyonModal.tsx:73
+   - apps/app-desktop/src/renderer/src/screens/firmalar/components/FirmaGecmisTeminler.tsx:125
+
+🔹 [handleOpenDoc] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/components/MalzemeListesi/components/komisyon-atama/useKomisyonAtama.ts:503
+   - apps/app-desktop/src/renderer/src/screens/system/surec-akisi/components/IlgiliBelgeCubugu.tsx:26
+
+🔹 [handleToggleBelgedeGoster] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/components/MalzemeListesi/components/komisyon-atama/useKomisyonAtama.ts:569
+   - apps/app-desktop/src/renderer/src/screens/komisyonlar/components/hizli-kadro/useHizliKadro.ts:344
+
+🔹 [handleRemoveRow] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/components/MalzemeListesi/components/komisyon-atama/useKomisyonAtama.ts:621
+   - apps/app-desktop/src/renderer/src/screens/komisyonlar/components/hizli-kadro/useHizliKadro.ts:297
+
+🔹 [handleUpdateRow] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/components/MalzemeListesi/HizliTopluKalemGrid.tsx:324
+   - apps/app-desktop/src/renderer/src/screens/pozlar/toplu.screen.tsx:179
+
+🔹 [handleDeleteRow] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/components/MalzemeListesi/HizliTopluKalemGrid.tsx:329
+   - apps/app-desktop/src/renderer/src/screens/pozlar/toplu.screen.tsx:183
+
+🔹 [handleToggleSelectRow] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/components/MalzemeListesi/MalzemeTablosu.tsx:111
+   - apps/app-desktop/src/renderer/src/screens/dosyalar/tabs/IhtiyacListesiTab.tsx:98
+
+🔹 [handleOpenSablonByDosyaAdi] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/components/MalzemeListesi/MalzemeTablosu.tsx:479
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/components/PiyasaFiyatArastirmasi/usePiyasaFiyatArastirmasiDashboard.ts:31
+
+🔹 [handleDeleteItem] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/components/MalzemeListesi/useMalzemeListesi.ts:275
+   - apps/app-desktop/src/renderer/src/screens/system/surec-akisi/components/tabs/MalzemeTab.tsx:34
+
+🔹 [handleAddPreset] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/components/SiparisVeSozlesme/ButceVeOdenekCard.tsx:108
+   - apps/app-desktop/src/renderer/src/screens/system/TaslakYoneticisi.tsx:162
+
+🔹 [handleMoveUp] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/KlasorVeKapaklar.tsx:111
+   - apps/app-desktop/src/renderer/src/screens/sablonlar/components/FormBuilderV2Playground.tsx:251
+
+🔹 [handleMoveDown] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/KlasorVeKapaklar.tsx:120
+   - apps/app-desktop/src/renderer/src/screens/sablonlar/components/FormBuilderV2Playground.tsx:256
+
+🔹 [toggleStar] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaAsamalari/useDosyaAsamasiSablons.ts:472
+   - apps/app-desktop/src/renderer/src/screens/system/TaslakYoneticisi.tsx:243
+
+🔹 [handleCopyJson] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosyalar/components/inspector/InspectorTabBar.tsx:34
+   - apps/app-desktop/src/renderer/src/screens/sablonlar/components/FormBuilderV2Playground.tsx:274
+
+🔹 [fetchDosyalar] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosyalar/dosyalar.hooks.ts:88
+   - apps/app-desktop/src/renderer/src/screens/notlar/notlar.hooks.ts:30
+
+🔹 [handleOpenInNewWindow] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/dosyalar/index.screen.tsx:107
+   - apps/app-desktop/src/renderer/src/screens/system/components/takip/useTakip.ts:89
+
+🔹 [openAddModal] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/firmalar/index.screen.tsx:56
+   - apps/app-desktop/src/renderer/src/screens/personel/components/PersonelUnvanGecmisiCard.tsx:41
+
+🔹 [handleMode] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/firmalar/index.screen.tsx:118
+   - apps/app-desktop/src/renderer/src/screens/komisyonlar/index.screen.tsx:352
+
+🔹 [handleInstitutionTypeChange] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/kurum/components/IdariBilgilerTab.tsx:30
+   - apps/app-desktop/src/renderer/src/screens/system/tabs/MaliTab.tsx:131
+
+🔹 [handleApplyDetsisData] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/kurum/components/IdariBilgilerTab.tsx:45
+   - apps/app-desktop/src/renderer/src/screens/kurum/components/MaliBirimTab.tsx:12
+
+🔹 [handleUpdate] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/kurum/components/KurumMetadataManager.tsx:62
+   - apps/app-desktop/src/renderer/src/screens/system/tabs/YiUfeEndeksTab.tsx:87
+
+🔹 [handleTabChange] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/kurum/index.screen.tsx:215
+   - apps/app-desktop/src/renderer/src/screens/system/MevzuatScreen.tsx:76
+
+🔹 [fetchKalemler] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/malzemeler/malzemeler.hooks.ts:35
+   - apps/app-desktop/src/renderer/src/screens/raporlar/components/MalzemeHarcamaView.tsx:43
+
+🔹 [generateBarcode] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/malzemeler/yeni.screen.tsx:74
+   - apps/app-desktop/src/renderer/src/screens/pozlar/pozlar.hooks.ts:37
+
+🔹 [handleKaydet] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/okaskod/index.screen.tsx:109
+   - apps/app-desktop/src/renderer/src/screens/raporlar/components/DokumanEkleModal.tsx:48
+
+🔹 [handleFileUpload] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/pozlar/toplu.screen.tsx:242
+   - apps/app-desktop/src/renderer/src/screens/system/ImportScreen.tsx:304
+
+🔹 [fetchData] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/raporlar/raporlar.hooks.ts:48
+   - apps/app-desktop/src/renderer/src/screens/raporlar/useDokumanlarRaporu.ts:24
+
+🔹 [calculateTableTotal] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/sablonlar/components/builder/inspector/InspectorTableManager.tsx:18
+   - apps/app-desktop/src/renderer/src/screens/sablonlar/components/builder/utils.ts:29
+
+🔹 [handleMappingChange] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/sablonlar/components/InlineSablonBaglayici.tsx:111
+   - apps/app-desktop/src/renderer/src/screens/system/ImportScreen.tsx:332
+
+🔹 [handleBack] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/screens/sablonlar/formBuilder.screen.tsx:8
+   - apps/app-desktop/src/renderer/src/screens/sablonlar/index.screen.tsx:24
+
+🔹 [toPossessiveSuffix] (2 farklı dosyada tanımlı):
+   - apps/app-desktop/src/renderer/src/utils/kurumHelper.ts:147
+   - packages/document-templates/src/utils/textHelpers.ts:43
+
+🔹 [parseTargets] (2 farklı dosyada tanımlı):
+   - packages/document-templates/src/constants/visibility.config.ts:108
+   - packages/document-templates/src/services/memberVisibilityResolver.ts:182
+
+================================================================================
+✅ Analiz tamamlandı. Toplam 109 adet mükerrer fonksiyon ve 106 adet 500+ satırlık dosya listelendi.
+================================================================================
+
