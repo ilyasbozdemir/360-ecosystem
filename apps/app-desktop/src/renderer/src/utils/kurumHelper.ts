@@ -1,3 +1,5 @@
+import { toPossessiveSuffix as toPossessiveSuffixBase } from '@temin360/document-templates'
+
 export interface SubInstOption {
   value: string
   label: string
@@ -145,31 +147,7 @@ export function getKurumumuzText(
 }
 
 export function toPossessiveSuffix(str: string): string {
-  if (!str) return 'İdaremizin'
-  const trimmed = str.trim()
-  const lower = trimmed.toLowerCase()
-  if (
-    lower.endsWith('n') ||
-    lower.endsWith('in') ||
-    lower.endsWith('ın') ||
-    lower.endsWith('un') ||
-    lower.endsWith('ün')
-  ) {
-    return trimmed
-  }
-  if (lower.endsWith('miz') || lower.endsWith('müz')) return `${trimmed}in`
-  if (lower.endsWith('mız') || lower.endsWith('muz')) return `${trimmed}ın`
-  if (
-    lower.endsWith('si') ||
-    lower.endsWith('su') ||
-    lower.endsWith('sü') ||
-    lower.endsWith('sı')
-  ) {
-    return `${trimmed}nin`
-  }
-  if (lower.endsWith('i') || lower.endsWith('ü')) return `${trimmed}nin`
-  if (lower.endsWith('ı') || lower.endsWith('u')) return `${trimmed}nun`
-  return `${trimmed}in`
+  return toPossessiveSuffixBase(str, 'İdaremizin')
 }
 
 export function getKurumIhtiyacYeriDefault(

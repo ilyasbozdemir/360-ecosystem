@@ -40,8 +40,8 @@ export function getDativeSuffix(name?: string): string {
  * Kurum / Birim adının tamlayan (ilgi/iyelik) ekini (-in / -ın / -un / -ün / -nin / -nın vb.) türetir.
  * Örnek: "Müdürlüğü" -> "Müdürlüğünün", "Başkanlığı" -> "Başkanlığının"
  */
-export function toPossessiveSuffix(str: string): string {
-  if (!str) return "Kurumumuzun";
+export function toPossessiveSuffix(str: string, fallback: string = "Kurumumuzun"): string {
+  if (!str) return fallback;
   const trimmed = str.trim();
   const lower = trimmed.toLowerCase();
   if (
