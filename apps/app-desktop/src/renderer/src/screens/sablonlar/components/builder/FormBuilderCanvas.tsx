@@ -1,36 +1,13 @@
 import React, { useState } from 'react'
 import {
-  FolderOpen,
-  Tag,
-  Check,
-  X,
-  Plus,
-  GripVertical,
-  CopyPlus,
-  ChevronUp,
-  ChevronDown,
-  Trash2,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-  AlignJustify,
-  Lock,
-  Printer,
-  Scissors
-} from 'lucide-react'
-import {
   FormFieldV2,
   FormFieldType,
   PresetController,
   DocumentSettings
 } from '../../types/formBuilder.types'
-import {
-  getPageDimensions,
-  getPagePadding,
-  calculateTableTotal,
-  getTextAlignClass,
-  getWidthClass
-} from './utils'
+import { getPageDimensions, getPagePadding } from './utils'
+import { CanvasTabStrip } from './canvas/CanvasTabStrip'
+import { CanvasFieldItem } from './canvas/CanvasFieldItem'
 
 interface FormBuilderCanvasProps {
   fields: FormFieldV2[]
@@ -87,104 +64,21 @@ export const FormBuilderCanvas: React.FC<FormBuilderCanvasProps> = ({
       ? fields
       : fields.filter((f) => (f.tabName || 'Genel Bilgiler') === selectedTab)
 
-
-
   return (
     <div className="flex-1 bg-slate-100 dark:bg-slate-950 flex flex-col overflow-hidden relative transition-colors">
       {/* Sekmeler Şeridi */}
-      <div className="flex items-center justify-between px-4 py-1.5 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 text-xs overflow-x-auto select-none transition-colors">
-        <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mr-1 flex items-center gap-1">
-            <FolderOpen className="w-3 h-3 text-blue-600 dark:text-blue-400" />
-            Sekmeler:
-          </span>
-
-          {/* 'Tümü' Sekmesi */}
-          <button
-            type="button"
-            onClick={() => onSelectTab('Tümü')}
-            className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
-              selectedTab === 'Tümü'
-                ? 'bg-blue-600 text-white shadow-xs'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
-            }`}
-          >
-            <span>Tümü</span>
-            <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-black/20 dark:bg-black/40 text-white">
-              {fields.length}
-            </span>
-          </button>
-
-          {/* Kullanıcı / Şablon Sekmeleri */}
-          {availableTabs.map((tab) => {
-            const count = fields.filter((f) => (f.tabName || 'Genel Bilgiler') === tab).length
-            const isTabActive = selectedTab === tab
-
-            return (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => onSelectTab(tab)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  isTabActive
-                    ? 'bg-blue-600 text-white shadow-xs'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
-                }`}
-              >
-                <Tag className="w-2.5 h-2.5 opacity-70" />
-                <span>{tab}</span>
-                <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-black/20 dark:bg-black/40 text-white">
-                  {count}
-                </span>
-              </button>
-            )
-          })}
-
-          {/* Yeni Sekme Ekleme Girişi */}
-          {isAddingNewTab ? (
-            <div className="flex items-center gap-1 bg-white dark:bg-slate-800 p-0.5 rounded-lg border border-blue-500 shadow-xs animate-in fade-in">
-              <input
-                type="text"
-                placeholder="Sekme Adı..."
-                value={newTabNameInput}
-                onChange={(e) => onNewTabNameInputChange(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') onCreateNewTab()
-                  if (e.key === 'Escape') onSetIsAddingNewTab(false)
-                }}
-                autoFocus
-                className="px-1.5 py-0.5 text-xs text-slate-800 dark:text-white bg-transparent focus:outline-none w-28 font-medium"
-              />
-              <button
-                type="button"
-                onClick={onCreateNewTab}
-                className="p-1 bg-blue-600 hover:bg-blue-500 text-white rounded cursor-pointer transition-colors"
-                title="Kaydet"
-              >
-                <Check className="w-3 h-3" />
-              </button>
-              <button
-                type="button"
-                onClick={() => onSetIsAddingNewTab(false)}
-                className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer transition-colors"
-                title="İptal"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => onSetIsAddingNewTab(true)}
-              className="p-1 px-2 text-xs text-blue-600 dark:text-blue-400 hover:text-white hover:bg-blue-600 rounded-lg border border-dashed border-blue-300 dark:border-slate-700 flex items-center gap-1 cursor-pointer transition-colors"
-              title="Yeni Sekme Ekle"
-            >
-              <Plus className="w-3 h-3" />
-              <span className="text-[11px] font-medium">Yeni Sekme</span>
-            </button>
-          )}
-        </div>
-      </div>
+      <CanvasTabStrip
+        selectedTab={selectedTab}
+        onSelectTab={onSelectTab}
+        totalFieldCount={fields.length}
+        availableTabs={availableTabs}
+        fields={fields}
+        isAddingNewTab={isAddingNewTab}
+        onSetIsAddingNewTab={onSetIsAddingNewTab}
+        newTabNameInput={newTabNameInput}
+        onNewTabNameInputChange={onNewTabNameInputChange}
+        onCreateNewTab={onCreateNewTab}
+      />
 
       {/* GERÇEK BELGE KAĞIDI TUVALİ */}
       <div
@@ -248,428 +142,29 @@ export const FormBuilderCanvas: React.FC<FormBuilderCanvasProps> = ({
               const globalIdx = fields.findIndex((f) => f.id === field.id)
 
               return (
-                <div
+                <CanvasFieldItem
                   key={field.id}
-                  draggable
-                  onDragStart={(e) => {
-                    setDraggedIndex(globalIdx)
-                    e.dataTransfer.setData(
-                      'application/json',
-                      JSON.stringify({ isPaletteItem: false, index: globalIdx })
-                    )
-                  }}
-                  onDragOver={(e) => {
-                    e.preventDefault()
-                    if (dragOverIndex !== idx) setDragOverIndex(idx)
-                  }}
-                  onDragLeave={() => {
-                    if (dragOverIndex === idx) setDragOverIndex(null)
-                  }}
-                  onDragEnd={() => {
-                    setDraggedIndex(null)
-                    setDragOverIndex(null)
-                  }}
-                  onDrop={(e) => {
-                    e.preventDefault()
-                    setDragOverIndex(null)
-                    const rawData = e.dataTransfer.getData('application/json')
-                    if (!rawData) return
-                    try {
-                      const parsed = JSON.parse(rawData)
-                      if (parsed.kind === 'preset' || parsed.isPreset) {
-                        const presetId = parsed.presetId
-                        const preset = allPresets.find((p) => p.id === presetId)
-                        if (preset) onAddPreset(preset, globalIdx + 1)
-                      } else if (parsed.kind === 'field' || (parsed.isPaletteItem && parsed.fieldType)) {
-                        const fieldType = parsed.fieldType
-                        if (fieldType) onAddField(fieldType, globalIdx + 1)
-                      } else if (typeof parsed.index === 'number') {
-                        onMoveField(parsed.index, globalIdx)
-                      }
-                    } catch {
-                      if (draggedIndex !== null && draggedIndex !== globalIdx) {
-                        onMoveField(draggedIndex, globalIdx)
-                      }
-                    }
-                    setDraggedIndex(null)
-                  }}
-                  onClick={() => onSelectField(field.id)}
-                  className={`group relative p-3 rounded-lg border transition-all cursor-pointer select-none ${getWidthClass(
-                    field.width
-                  )} ${
-                    isDragTarget
-                      ? 'border-emerald-500 bg-emerald-50/60 shadow-lg ring-2 ring-emerald-400'
-                      : isSelected
-                        ? 'border-blue-600 bg-blue-50/50 ring-2 ring-blue-500/40 shadow-lg'
-                        : 'border-slate-200 hover:border-slate-400 bg-slate-50/30'
-                  }`}
-                >
-                  {/* Seçim Köşe Noktaları */}
-                  {isSelected && (
-                    <>
-                      <span className="absolute -top-1 -left-1 w-2 h-2 bg-blue-600 border border-white rounded-xs shadow-xs" />
-                      <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-600 border border-white rounded-xs shadow-xs" />
-                      <span className="absolute -bottom-1 -left-1 w-2 h-2 bg-blue-600 border border-white rounded-xs shadow-xs" />
-                      <span className="absolute -bottom-1 -right-1 w-2 h-2 bg-blue-600 border border-white rounded-xs shadow-xs" />
-                    </>
-                  )}
-
-                  {/* Kontrol Çubuğu */}
-                  <div className="flex items-center justify-between mb-2 font-sans opacity-75 group-hover:opacity-100 transition-opacity">
-                    <div className="flex items-center gap-1.5 overflow-hidden flex-wrap">
-                      <GripVertical className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 cursor-grab active:cursor-grabbing shrink-0" />
-                      <span className="text-[11px] font-bold text-slate-800 truncate">
-                        {field.label}
-                      </span>
-                      {field.required && <span className="text-red-500 font-bold">*</span>}
-                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-mono font-semibold shrink-0">
-                        {field.tabName || 'Genel Bilgiler'}
-                      </span>
-                      {field.visibilityMode === 'print-only' && (
-                        <span
-                          className="text-[9px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-semibold flex items-center gap-0.5 shrink-0"
-                          title="Sadece Yazdırma / PDF Çıktısında Gösterilir"
-                        >
-                          <Printer className="w-2.5 h-2.5" /> Baskı
-                        </span>
-                      )}
-                      {field.visibilityMode === 'edit-only' && (
-                        <span
-                          className="text-[9px] px-1.5 py-0.5 rounded bg-purple-100 text-purple-800 font-semibold shrink-0"
-                          title="Sadece Form Düzenleme Modunda Gösterilir (Baskıda Gizlenir)"
-                        >
-                          💻 Form
-                        </span>
-                      )}
-                      {field.readOnly && (
-                        <span
-                          className="text-[9px] px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 font-semibold flex items-center gap-0.5 shrink-0"
-                          title="Salt Okunur / Kilitli Alan"
-                        >
-                          <Lock className="w-2.5 h-2.5" /> Kilitli
-                        </span>
-                      )}
-                      {field.pageBreak && field.pageBreak !== 'none' && (
-                        <span
-                          className="text-[9px] px-1.5 py-0.5 rounded bg-orange-100 text-orange-800 font-semibold flex items-center gap-0.5 shrink-0"
-                          title={`Sayfa Kesme Davranışı: ${field.pageBreak}`}
-                        >
-                          <Scissors className="w-2.5 h-2.5" /> Sayfa Kesme
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-1 shrink-0">
-                      {/* Hizalama ikonu */}
-                      {field.textAlign && field.textAlign !== 'left' && (
-                        <span
-                          className="text-slate-400 p-0.5"
-                          title={`Hizalama: ${field.textAlign}`}
-                        >
-                          {field.textAlign === 'center' && <AlignCenter className="w-3 h-3" />}
-                          {field.textAlign === 'right' && <AlignRight className="w-3 h-3" />}
-                          {field.textAlign === 'justify' && <AlignJustify className="w-3 h-3" />}
-                        </span>
-                      )}
-                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-200 text-blue-800 font-semibold">
-                        {`{${field.variableName}}`}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={(e) => onDuplicateField(field.id, e)}
-                        className="p-1 text-slate-500 hover:text-blue-600 hover:bg-slate-200 rounded cursor-pointer"
-                        title="Bileşeni Çoğalt"
-                      >
-                        <CopyPlus className="w-3 h-3" />
-                      </button>
-                      <button
-                        type="button"
-                        disabled={globalIdx === 0}
-                        onClick={(e) => onMoveUp(globalIdx, e)}
-                        className="p-1 text-slate-500 hover:text-slate-900 disabled:opacity-20 hover:bg-slate-200 rounded cursor-pointer"
-                        title="Yukarı Taşı"
-                      >
-                        <ChevronUp className="w-3 h-3" />
-                      </button>
-                      <button
-                        type="button"
-                        disabled={globalIdx === fields.length - 1}
-                        onClick={(e) => onMoveDown(globalIdx, e)}
-                        className="p-1 text-slate-500 hover:text-slate-900 disabled:opacity-20 hover:bg-slate-200 rounded cursor-pointer"
-                        title="Aşağı Taşı"
-                      >
-                        <ChevronDown className="w-3 h-3" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={(e) => onDeleteField(field.id, e)}
-                        className="p-1 text-slate-500 hover:text-red-600 hover:bg-slate-200 rounded cursor-pointer"
-                        title="Alanı Sil"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Gerçek Belge Görseli Render */}
-                  <div
-                    className={`pointer-events-none ${getTextAlignClass(field.textAlign)} ${
-                      field.fontWeight === 'bold' ? 'font-bold' : ''
-                    } ${field.fontStyle === 'italic' ? 'italic' : ''}`}
-                  >
-                    {field.type === 'header' ? (
-                      <div className="flex items-center justify-between border-b-2 border-slate-800 pb-2 text-center">
-                        {field.headerLeftLogo && (
-                          <div className="w-16 h-14 border border-dashed border-slate-300 rounded flex items-center justify-center text-[8pt] text-slate-400 shrink-0">
-                            [Sol Logo]
-                          </div>
-                        )}
-                        <div className="font-bold text-center px-4 leading-tight flex-1">
-                          <div className="text-[11pt]">
-                            {field.headerInstitution || 'T.C. İÇİŞLERİ BAKANLIĞI'}
-                          </div>
-                          <div className="text-[10pt]">
-                            {field.headerDepartment || 'Destek Hizmetleri Dairesi Başkanlığı'}
-                          </div>
-                        </div>
-                        {field.headerRightLogo && (
-                          <div className="w-16 h-14 border border-dashed border-slate-300 rounded flex items-center justify-center text-[8pt] text-slate-400 shrink-0">
-                            [Sağ Logo]
-                          </div>
-                        )}
-                      </div>
-                    ) : field.type === 'paragraph' ? (
-                      <div
-                        className={`text-[9.5pt] leading-relaxed text-slate-800 bg-slate-50/50 p-2 border border-slate-200 rounded ${
-                          field.indent ? 'indent-6' : ''
-                        } ${getTextAlignClass(field.textAlign)}`}
-                      >
-                        {field.staticContent || 'Resmi gerekçe veya yasal dayanak metni...'}
-                      </div>
-                    ) : field.type === 'divider' ? (
-                      <div className="py-2">
-                        <hr
-                          className={`w-full ${
-                            field.borderStyle === 'dashed'
-                              ? 'border-dashed'
-                              : field.borderStyle === 'dotted'
-                                ? 'border-dotted'
-                                : 'border-solid'
-                          } border-slate-400`}
-                        />
-                      </div>
-                    ) : field.type === 'page_break' ? (
-                      <div className="py-2 text-center">
-                        <div className="border border-dashed border-amber-400 bg-amber-50/70 text-amber-800 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center justify-center gap-2">
-                          <span>
-                            ✂️ ---------------- SAYFA SONU KESMESİ (Page Break) ---------------- ✂️
-                          </span>
-                        </div>
-                      </div>
-                    ) : field.type === 'grid' ? (
-                      <div className="p-2.5 border border-dashed border-blue-300 rounded-lg bg-blue-50/20">
-                        <div className="text-[10px] font-bold text-blue-600 uppercase mb-1.5">
-                          Grid Kolon Taşıyıcı ({field.gridCols || 2} Sütun)
-                        </div>
-                        <div className={`grid grid-cols-${field.gridCols || 2} gap-2`}>
-                          {Array.from({ length: field.gridCols || 2 }).map((_, i) => (
-                            <div
-                              key={i}
-                              className="p-2 border border-slate-200 bg-white rounded text-center text-slate-400 text-[10px] font-mono"
-                            >
-                              Kolon {i + 1}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ) : field.type === 'select' ? (
-                      <div className="space-y-1">
-                        <label className="block text-[9pt] font-bold text-slate-700">
-                          {field.label}:
-                        </label>
-                        <div className="px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded text-xs text-slate-800 flex justify-between items-center">
-                          <span className="font-medium">
-                            {formData[field.variableName] ||
-                              field.defaultValue ||
-                              field.placeholder ||
-                              (field.options?.[0]
-                                ? `Seçili: ${field.options[0]}`
-                                : 'Seçim Yapınız')}
-                          </span>
-                          <span className="text-slate-400 text-[9px]">▼</span>
-                        </div>
-                      </div>
-                    ) : field.type === 'radio' ? (
-                      <div className="space-y-1.5">
-                        <label className="block text-[9pt] font-bold text-slate-700">
-                          {field.label}:
-                        </label>
-                        <div className="flex flex-wrap gap-3">
-                          {field.options && field.options.length > 0 ? (
-                            field.options.map((opt, i) => (
-                              <div
-                                key={i}
-                                className="flex items-center gap-1.5 text-xs text-slate-800"
-                              >
-                                <span
-                                  className={`w-3 h-3 rounded-full border flex items-center justify-center ${
-                                    i === 0
-                                      ? 'border-blue-600 bg-blue-600'
-                                      : 'border-slate-300 bg-white'
-                                  }`}
-                                >
-                                  {i === 0 && <span className="w-1 h-1 rounded-full bg-white" />}
-                                </span>
-                                <span>{opt}</span>
-                              </div>
-                            ))
-                          ) : (
-                            <span className="text-slate-400 italic text-xs">
-                              Seçenek tanımlanmadı
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    ) : field.type === 'checkbox' ? (
-                      <div className="space-y-1.5">
-                        <label className="block text-[9pt] font-bold text-slate-700">
-                          {field.label}:
-                        </label>
-                        <div className="flex flex-wrap gap-3">
-                          {field.options && field.options.length > 0 ? (
-                            field.options.map((opt, i) => (
-                              <div
-                                key={i}
-                                className="flex items-center gap-1.5 text-xs text-slate-800"
-                              >
-                                <span className="w-3.5 h-3.5 rounded border border-blue-600 bg-blue-600 text-white flex items-center justify-center text-[8px] font-bold">
-                                  ✓
-                                </span>
-                                <span>{opt}</span>
-                              </div>
-                            ))
-                          ) : (
-                            <div className="flex items-center gap-1.5 text-xs text-slate-800">
-                              <span className="w-3.5 h-3.5 rounded border border-blue-600 bg-blue-600 text-white flex items-center justify-center text-[8px] font-bold">
-                                ✓
-                              </span>
-                              <span>{field.placeholder || field.label}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ) : field.type === 'textarea' ? (
-                      <div className="space-y-1">
-                        <label className="block text-[9pt] font-bold text-slate-700">
-                          {field.label}:
-                        </label>
-                        <div className="text-[9.5pt] leading-relaxed text-slate-800 bg-slate-50/70 p-2.5 border border-slate-200 rounded min-h-12 whitespace-pre-wrap">
-                          {formData[field.variableName] ||
-                            field.defaultValue ||
-                            field.placeholder ||
-                            `[${field.label} açıklaması buraya gelecek...]`}
-                        </div>
-                      </div>
-                    ) : field.type === 'table' ? (
-                      <div className="border border-slate-800 text-[8.5pt]">
-                        <div className="grid grid-cols-7 bg-slate-100 font-bold border-b border-slate-800 text-center py-1">
-                          <div>Sıra</div>
-                          <div className="col-span-3 text-left px-2">Mal/Hizmet Adı</div>
-                          <div>Miktar</div>
-                          <div>Birim</div>
-                          <div>Birim Fiyat</div>
-                        </div>
-                        {field.tableRows && field.tableRows.length > 0 ? (
-                          field.tableRows.map((row) => (
-                            <div
-                              key={row.id}
-                              className="grid grid-cols-7 text-center py-1 border-b border-slate-200"
-                            >
-                              <div>{row.sira}</div>
-                              <div className="col-span-3 text-left px-2 font-medium">{row.ad}</div>
-                              <div>{row.miktar}</div>
-                              <div>{row.birim}</div>
-                              <div className="text-right px-2 font-mono">
-                                {Number(row.birimFiyat).toLocaleString('tr-TR', {
-                                  minimumFractionDigits: 2
-                                })}{' '}
-                                ₺
-                              </div>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="p-2 text-center text-slate-400 italic text-[8pt]">
-                            Henüz satır eklenmedi. Sağ panelden satır ekleyin.
-                          </div>
-                        )}
-                        <div className="bg-slate-50 text-right font-bold py-1 px-3 border-t border-slate-800 flex justify-between">
-                          <span>Toplam Kalem Sayısı: {field.tableRows?.length || 0}</span>
-                          <span>
-                            Toplam Tutar:{' '}
-                            {calculateTableTotal(field.tableRows).toLocaleString('tr-TR', {
-                              minimumFractionDigits: 2
-                            })}{' '}
-                            ₺
-                          </span>
-                        </div>
-                      </div>
-                    ) : field.type === 'signature' ? (
-                      <div className="pt-2">
-                        {field.signatureType === 'olur' ? (
-                          <div className="w-48 ml-auto text-center space-y-1 p-2 border border-dashed border-slate-300 rounded">
-                            <div className="font-bold text-slate-800 text-[9pt]">O L U R</div>
-                            <div className="text-[8pt] text-slate-500">24.09.2026</div>
-                            <div className="font-bold text-slate-900 pt-2">
-                              {field.signatureMembers?.[0]?.adSoyad || 'Mustafa ÖZTÜRK'}
-                            </div>
-                            <div className="text-slate-600 text-[8pt]">
-                              {field.signatureMembers?.[0]?.unvan || 'Daire Başkanı'}
-                            </div>
-                            <div className="text-slate-400 text-[8pt] italic">[ İmza / Mühür ]</div>
-                          </div>
-                        ) : (
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-center pt-2 text-[9pt]">
-                            {field.signatureMembers && field.signatureMembers.length > 0 ? (
-                              field.signatureMembers.map((member) => (
-                                <div
-                                  key={member.id}
-                                  className="space-y-0.5 p-2 bg-slate-50/50 border border-slate-200 rounded"
-                                >
-                                  <div className="font-bold text-slate-900">{member.adSoyad}</div>
-                                  <div className="text-slate-600 text-[8pt]">{member.unvan}</div>
-                                  <div className="text-slate-400 text-[7.5pt] uppercase font-semibold">
-                                    {member.gorev}
-                                  </div>
-                                  <div className="text-slate-300 text-[7.5pt] italic pt-1">
-                                    [ İmza ]
-                                  </div>
-                                </div>
-                              ))
-                            ) : (
-                              <div className="col-span-3 text-center text-slate-400 italic text-[8pt]">
-                                İmza üyesi eklenmedi. Sağ panelden üye ekleyin.
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div
-                        className={`flex items-center gap-2 text-[9.5pt] bg-slate-50 p-2 border border-slate-200 rounded ${getTextAlignClass(
-                          field.textAlign
-                        )}`}
-                      >
-                        <span className="font-bold text-slate-700">{field.label}:</span>
-                        <span className="text-slate-900 font-medium text-[9pt]">
-                          {formData[field.variableName] ||
-                            field.defaultValue ||
-                            field.placeholder ||
-                            `[${field.variableName} verisi]`}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                  field={field}
+                  idx={idx}
+                  globalIdx={globalIdx}
+                  isSelected={isSelected}
+                  isDragTarget={isDragTarget}
+                  totalFieldsCount={fields.length}
+                  formData={formData}
+                  allPresets={allPresets}
+                  onSelectField={onSelectField}
+                  onDuplicateField={onDuplicateField}
+                  onMoveUp={onMoveUp}
+                  onMoveDown={onMoveDown}
+                  onDeleteField={onDeleteField}
+                  onMoveField={onMoveField}
+                  onAddField={onAddField}
+                  onAddPreset={onAddPreset}
+                  draggedIndex={draggedIndex}
+                  setDraggedIndex={setDraggedIndex}
+                  dragOverIndex={dragOverIndex}
+                  setDragOverIndex={setDragOverIndex}
+                />
               )
             })}
           </div>
