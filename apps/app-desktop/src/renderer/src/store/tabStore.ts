@@ -115,6 +115,7 @@ export function getTabLabel(fullPath: string): string {
   if (path.startsWith(APP_ROUTES.HIZLI_DOSYA_EKLE)) return 'Hızlı Dosya Ekle'
   if (path.startsWith(APP_ROUTES.CIKTI_MERKEZI_DASHBOARD)) return 'Çıktı & Üretim Merkezi'
   if (path.startsWith(APP_ROUTES.DT_SUREC_AKISI)) return 'Doğrudan Temin'
+  if (path.startsWith(APP_ROUTES.EBYS)) return 'EBYS Resmî Yazı Şablonları'
   return 'Yeni Sekme'
 }
 

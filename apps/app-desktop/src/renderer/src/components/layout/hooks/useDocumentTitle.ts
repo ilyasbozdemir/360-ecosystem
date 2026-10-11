@@ -23,6 +23,8 @@ export function useDocumentTitle(pathname: string): void {
       title += ' — Hakediş & Süreç Yönetimi (Beta)'
     } else if (pathname.startsWith('/notlar')) {
       title += ' — Notlar & Yapılacaklar (To-Do)'
+    } else if (pathname.startsWith('/ebys')) {
+      title += ' — EBYS Resmî Yazı Şablonları'
     }
 
     document.title = title
