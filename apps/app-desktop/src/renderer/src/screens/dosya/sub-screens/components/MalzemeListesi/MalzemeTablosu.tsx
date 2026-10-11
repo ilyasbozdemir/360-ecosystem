@@ -1,35 +1,10 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import {
-  Check,
-  Edit2,
-  FileCheck,
-  FileSpreadsheet,
-  FileText,
-  History as HistoryIcon,
-  Info,
-  Package,
-  Plus,
-  RefreshCw,
-  Trash2,
-  UserCheck,
-  Users,
-  X,
-} from "lucide-react";
-import { cn } from "../../../../../utils/cn";
-import { MalzemeTabloPopover } from "./components/MalzemeTabloPopover";
-
-import {
-  KalemDiffItem,
-  KatalogSenkronizasyonModal,
-} from "./components/KatalogSenkronizasyonModal";
-import { useSettingsStore } from "../../../../../store/settingsStore";
-import { PrintDropdownButton } from "@renderer/screens/dosya/components/PrintDropdownButton";
-import { findSablonByAlias } from "../../DosyaAsamalari/constants/sablonAliases";
-import { exportDogrudanTeminMasterExcel } from "../../../../../services/excelExportService";
-import { useGlobalDocumentPreviewStore } from "../../../../../store/globalDocumentPreviewStore";
-import { seedDossierCommission } from "../../../../../services/commission/commissionSeedService";
-import { useSetSelection } from "../../../../../hooks/useSetSelection";
+import React from 'react'
+import { useSettingsStore } from '../../../../../store/settingsStore'
+import { KatalogSenkronizasyonModal } from './components/KatalogSenkronizasyonModal'
+import { useMalzemeTablosuActions } from './components/malzeme-tablosu/useMalzemeTablosuActions'
+import { MalzemeTablosuToolbar } from './components/malzeme-tablosu/MalzemeTablosuToolbar'
+import { MalzemeTablosuRehber } from './components/malzeme-tablosu/MalzemeTablosuRehber'
+import { MalzemeTablosuBody } from './components/malzeme-tablosu/MalzemeTablosuBody'
 
 export function MalzemeTablosu({
   state,
@@ -44,21 +19,21 @@ export function MalzemeTablosu({
   onOpenExternal,
   isSablonDisabled,
   activeDosya,
-  activeDosyaId,
+  activeDosyaId
 }: {
-  state: any;
-  stageSablons?: any[];
-  dagitimSablons?: any[];
-  sablons?: any[];
-  onSablonClick?: (sablon: any, title: string) => void;
-  ciktiLoading?: boolean;
-  activeStarredDocs?: string[] | null;
-  onQuickPrint?: (sablon: any) => void;
-  onExport?: (sablon: any, format: "pdf" | "docx" | "udf") => void;
-  onOpenExternal?: (sablon: any) => void;
-  isSablonDisabled?: (cleanName: string) => boolean;
-  activeDosya?: any;
-  activeDosyaId?: number | null;
+  state: any
+  stageSablons?: any[]
+  dagitimSablons?: any[]
+  sablons?: any[]
+  onSablonClick?: (sablon: any, title: string) => void
+  ciktiLoading?: boolean
+  activeStarredDocs?: string[] | null
+  onQuickPrint?: (sablon: any) => void
+  onExport?: (sablon: any, format: 'pdf' | 'docx' | 'udf') => void
+  onOpenExternal?: (sablon: any) => void
+  isSablonDisabled?: (cleanName: string) => boolean
+  activeDosya?: any
+  activeDosyaId?: number | null
 }): React.JSX.Element {
   const {
     items,
@@ -76,895 +51,112 @@ export function MalzemeTablosu({
     handleStartEdit,
     handleSaveEdit,
     handleDeleteItem,
-    handleCheckKatalogDiffs,
-    handleApplyKatalogUpdates,
-    loadData,
-  } = state;
+    handleApplyKatalogUpdates
+  } = state
 
-  const { disableDocumentGuidance } = useSettingsStore();
+  const { disableDocumentGuidance } = useSettingsStore()
 
-  // Çoklu komisyon seçimi — değerler DB'den gelen id (number)
-  const [selectedKomisyonlar, setSelectedKomisyonlar] = useState<number[]>([]);
-
-  // Katalog Senkronizasyon & Diff Modal State'leri
-  const [katalogModalOpen, setKatalogModalOpen] = useState(false);
-  const [diffItems, setDiffItems] = useState<KalemDiffItem[]>([]);
-  const [isCheckingDiff, setIsCheckingDiff] = useState(false);
-
-  // Tüm dosya veya tekil kalem için diff kontrolü tetikleme
-  const handleTriggerKatalogSync = async (targetItem?: any) => {
-    if (!handleCheckKatalogDiffs) return;
-    setIsCheckingDiff(true);
-    setKatalogModalOpen(true);
-    try {
-      const diffs = await handleCheckKatalogDiffs(targetItem);
-      setDiffItems(diffs);
-    } catch (err: any) {
-      console.error(err);
-    } finally {
-      setIsCheckingDiff(false);
-    }
-  };
-
-  // Checkbox ve toplu işlem state'leri
   const {
     selectedIds,
-    setSelectedIds,
     handleToggleSelectRow,
-    handleToggleSelectAll: handleToggleSelectAllBase
-  } = useSetSelection<number>();
+    handleToggleSelectAll,
+    handleDeleteSelected,
+    handleExcelImport,
+    handleDownloadTemplate,
+    handleExportToLibrary,
+    handleTriggerKatalogSync,
+    katalogModalOpen,
+    setKatalogModalOpen,
+    diffItems,
+    isCheckingDiff,
+    combinedSablons,
+    handleOpenSablonByDosyaAdi,
+    isExportingMasterExcel,
+    handleExportMasterExcel
+  } = useMalzemeTablosuActions({
+    state,
+    activeDosya,
+    activeDosyaId,
+    stageSablons,
+    sablons,
+    onSablonClick
+  })
 
-  const handleToggleSelectAll = () => {
-    handleToggleSelectAllBase(items.map((item: any) => item.id));
-  };
-
-  const handleDeleteSelected = async () => {
-    const ids = Array.from(selectedIds);
-    if (ids.length === 0) {
-      alert("Lütfen silinecek ihtiyaç kalemlerini seçin.");
-      return;
-    }
-    if (
-      !confirm(`Seçilen ${ids.length} kalemi silmek istediğinize emin misiniz?`)
-    ) return;
-
-    try {
-      for (const id of ids) {
-        await (window as any).electron.ipcRenderer.invoke(
-          "db:run",
-          "DELETE FROM DATA_TeminKalem WHERE id = ?",
-          [id],
-        );
-      }
-      setSelectedIds(new Set());
-      if (loadData) loadData();
-    } catch (err: any) {
-      alert("Silme işleminde hata oluştu: " + err.message);
-    }
-  };
-
-  const handleExcelImport = async () => {
-    if (!activeDosyaId) return;
-    try {
-      const res = await (window as any).electron.ipcRenderer.invoke(
-        "open-excel",
-      );
-      if (!res) return;
-
-      const XLSX = await import("xlsx");
-      const workbook = XLSX.read(res.buffer, { type: "array" });
-      const sheetName = workbook.SheetNames[0];
-      const rows = XLSX.utils.sheet_to_json<any[]>(workbook.Sheets[sheetName], {
-        header: 1,
-      });
-
-      if (rows.length <= 1) {
-        alert("Seçilen Excel dosyasında veri bulunamadı veya boş.");
-        return;
-      }
-
-      let count = 0;
-      for (let i = 1; i < rows.length; i++) {
-        const row = rows[i];
-        if (!row || row.length === 0) continue;
-
-        const kalemAdi = row[2] ? String(row[2]).trim() : null;
-        if (!kalemAdi) continue;
-
-        const tasinirKodu = row[0] ? String(row[0]).trim() : null;
-        const okasKodu = row[1] ? String(row[1]).trim() : null;
-        const tipi = row[3] ? String(row[3]).trim() : "Mal";
-        const birim = row[4] ? String(row[4]).trim() : "Adet";
-        const miktar = row[5] !== undefined ? Number(row[5]) : 1;
-        const kdvOrani = row[6] !== undefined ? Number(row[6]) : 20;
-        const aciklama = row[7] ? String(row[7]).trim() : null;
-
-        await (window as any).electron.ipcRenderer.invoke(
-          "db:run",
-          `INSERT INTO DATA_TeminKalem 
-           (temin_dosya_id, tasinir_kodu, okas_kodu, kalem_adi, tipi, birim, miktar, kdv_orani, aciklama) 
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [
-            activeDosyaId,
-            tasinirKodu,
-            okasKodu,
-            kalemAdi,
-            tipi,
-            birim,
-            miktar,
-            kdvOrani,
-            aciklama,
-          ],
-        );
-        count++;
-      }
-
-      if (count > 0) {
-        alert(`${count} adet ihtiyaç kalemi başarıyla içe aktarıldı.`);
-        if (loadData) loadData();
-      } else {
-        alert(
-          "İçe aktarıldı: İçe aktarılacak geçerli satır bulunamadı. Lütfen Kalem Adı kolonunun (C sütunu) dolu olduğundan emin olun.",
-        );
-      }
-    } catch (err: any) {
-      alert("Excel aktarımında hata: " + err.message);
-    }
-  };
-
-  const handleDownloadTemplate = async () => {
-    try {
-      const res = await (window as any).electron.ipcRenderer.invoke(
-        "db:export-temin-kalem-template",
-      );
-      if (res && res.success) {
-        alert(`Excel şablonu başarıyla indirildi:\n${res.filePath}`);
-      } else if (res && res.error) {
-        if (res.error !== "İptal edildi") {
-          alert("Şablon indirilemedi: " + res.error);
-        }
-      }
-    } catch (err: any) {
-      alert("Hata oluştu: " + err.message);
-    }
-  };
-
-  const handleExportToLibrary = async () => {
-    if (items.length === 0) {
-      alert("Aktarılacak ihtiyaç kalemi bulunmuyor.");
-      return;
-    }
-    if (
-      !confirm(
-        `Tablodaki ${items.length} ihtiyaç kalemini genel malzeme kütüphanesine aktarmak istediğinize emin misiniz?`,
-      )
-    ) {
-      return;
-    }
-
-    try {
-      let addedCount = 0;
-      let skippedCount = 0;
-
-      // Get all existing library items
-      const libRes = await (window as any).electron.ipcRenderer.invoke(
-        "db:query",
-        "SELECT tasinir_kodu, okas_kodu, kalem_adi FROM TANIM_Kalem",
-      );
-      const libItems = libRes.success ? libRes.data : [];
-
-      const cleanString = (str: string) => {
-        if (!str) return "";
-        return str
-          .toLowerCase()
-          .replace(/[\s\-_.,\/\\()]/g, "") // spaces, dots, dashes, slashes, parens
-          .replace(/ı/g, "i")
-          .replace(/ğ/g, "g")
-          .replace(/ü/g, "u")
-          .replace(/ş/g, "s")
-          .replace(/ö/g, "o")
-          .replace(/ç/g, "c");
-      };
-
-      for (const item of items) {
-        const cleanName = cleanString(item.kalem_adi);
-        if (!cleanName) {
-          skippedCount++;
-          continue;
-        }
-
-        // Check if there is an almost matching item
-        let isDup = false;
-        for (const lib of libItems) {
-          const cleanLibName = cleanString(lib.kalem_adi);
-
-          // 1. Exact cleaned name match (case and spacing variations)
-          if (cleanName === cleanLibName) {
-            isDup = true;
-            break;
-          }
-
-          // 2. Same code and one name is a substring of the other (almost matching)
-          const sameTasinir = item.tasinir_kodu &&
-            lib.tasinir_kodu &&
-            item.tasinir_kodu.trim() === lib.tasinir_kodu.trim();
-          const sameOkas = item.okas_kodu && lib.okas_kodu &&
-            item.okas_kodu.trim() === lib.okas_kodu.trim();
-
-          if (sameTasinir || sameOkas) {
-            if (
-              cleanName.includes(cleanLibName) ||
-              cleanLibName.includes(cleanName)
-            ) {
-              isDup = true;
-              break;
-            }
-          }
-        }
-
-        if (isDup) {
-          skippedCount++;
-          continue;
-        }
-
-        // Generate a unique barkod_id/ID
-        const barkodId = `LIB-${Date.now()}-${
-          Math.random().toString(36).substr(2, 5)
-        }`;
-
-        // Insert into global library
-        const insertRes = await (window as any).electron.ipcRenderer.invoke(
-          "db:run",
-          `INSERT INTO TANIM_Kalem (barkod_id, tasinir_kodu, okas_kodu, kalem_adi, tipi, birim, kdv_orani, aktif_mi)
-           VALUES (?, ?, ?, ?, ?, ?, ?, 1)`,
-          [
-            barkodId,
-            item.tasinir_kodu || null,
-            item.okas_kodu || null,
-            item.kalem_adi,
-            item.tipi || "Mal",
-            item.birim || "Adet",
-            item.kdv_orani ?? 20,
-          ],
-        );
-        if (insertRes.success) {
-          addedCount++;
-          // Push to temporary list so we don't duplicate within the same batch!
-          libItems.push({
-            tasinir_kodu: item.tasinir_kodu || "",
-            okas_kodu: item.okas_kodu || "",
-            kalem_adi: item.kalem_adi,
-          });
-        }
-      }
-
-      alert(
-        `Aktarım tamamlandı.\nKütüphaneye eklenen yeni kalem: ${addedCount}\nMevcut/Benzer olduğu için atlanan kalem: ${skippedCount}`,
-      );
-    } catch (err: any) {
-      alert("Kütüphaneye aktarılırken hata oluştu: " + err.message);
-    }
-  };
-
-  // DB'deki aktif komisyonları dinamik çek
-  const { data: dbKomisyonlar = [] } = useQuery<
-    { id: number; ad: string; sablonlar: any[] }[]
-  >({
-    queryKey: ["tanim_komisyonlar_with_sablons"],
-    queryFn: async () => {
-      const res = await (window as any).electron.ipcRenderer.invoke(
-        "db:query",
-        "SELECT id, ad FROM TANIM_Komisyon WHERE aktif_mi = 1 ORDER BY id ASC",
-      );
-      if (!res.success) throw new Error(res.error);
-
-      const sablonlarRes = await (window as any).electron.ipcRenderer.invoke(
-        "db:query",
-        `SELECT ks.komisyon_id, s.id, s.ad, s.aciklama, s.icerik, s.dosya_adi, s.route_path, s.test_verisi, s.kategori 
-         FROM TANIM_Komisyon_Sablon ks
-         JOIN TANIM_Sablon s ON ks.sablon_id = s.id
-         WHERE s.aktif_mi = 1`,
-      );
-
-      const allCommissions = res.data.map((k: any) => ({
-        ...k,
-        sablonlar: sablonlarRes.success
-          ? sablonlarRes.data.filter((s: any) => s.komisyon_id === k.id)
-          : [],
-      }));
-
-      return allCommissions;
-    },
-    staleTime: 30_000,
-  });
-
-  useEffect(() => {
-    if (activeDosyaId && dbKomisyonlar.length > 0) {
-      // Tüm komisyonlar varsayılan olarak aktif (true)
-      const allKomisyonIds = dbKomisyonlar.map((k) => k.id);
-      setSelectedKomisyonlar(allKomisyonIds);
-      localStorage.setItem(
-        `dta_selected_komisyonlar_${activeDosyaId}`,
-        JSON.stringify(allKomisyonIds),
-      ); // Veritabanında DATA_TeminKomisyon kayıtlarını otomatik doldur (tüm komisyonlar varsayılan aktif)
-      (async () => {
-        try {
-          await seedDossierCommission(activeDosyaId, { mode: 'initial' });
-        } catch (e) {
-          console.error("Komisyon ilk tohumlama kontrolü hatası:", e);
-        }
-      })();
-    }
-  }, [activeDosyaId, dbKomisyonlar]);
-
-  const validSelectedKomisyonlar = useMemo(() => {
-    return selectedKomisyonlar.filter((id) =>
-      dbKomisyonlar.some((k) => k.id === id)
-    );
-  }, [selectedKomisyonlar, dbKomisyonlar]);
-
-  const komisyonSablons = useMemo(() => {
-    const sablonsToAdd: any[] = [];
-    const seenIds = new Set<any>();
-    const seenFiles = new Set<string>();
-
-    for (const komisyonId of validSelectedKomisyonlar) {
-      const k = dbKomisyonlar.find((k) => k.id === komisyonId);
-      if (k && k.sablonlar) {
-        for (const s of k.sablonlar) {
-          const fileKey = (s.dosya_adi || "").toLowerCase().trim();
-          if (
-            (s.id && seenIds.has(s.id)) || (fileKey && seenFiles.has(fileKey))
-          ) {
-            continue;
-          }
-          const fullSablon = sablons?.find(
-            (fullS: any) =>
-              (fileKey &&
-                (fullS.dosya_adi || "").toLowerCase().trim() === fileKey) ||
-              (s.id && fullS.id === s.id),
-          ) || s;
-
-          const finalId = fullSablon.id || s.id;
-          const finalFile = (fullSablon.dosya_adi || s.dosya_adi || "")
-            .toLowerCase().trim();
-
-          if (
-            (finalId && seenIds.has(finalId)) ||
-            (finalFile && seenFiles.has(finalFile))
-          ) {
-            continue;
-          }
-
-          if (finalId) {
-            seenIds.add(finalId);
-          }
-          if (finalFile) seenFiles.add(finalFile);
-          sablonsToAdd.push(fullSablon);
-        }
-      }
-    }
-    return sablonsToAdd;
-  }, [validSelectedKomisyonlar, dbKomisyonlar, sablons]);
-
-  const combinedSablons = useMemo(() => {
-    const result: any[] = [];
-    const seenIds = new Set<any>();
-    const seenFiles = new Set<string>();
-
-    for (const s of [...stageSablons, ...komisyonSablons]) {
-      const id = s.id;
-      const fileKey = (s.dosya_adi || "").toLowerCase().trim();
-
-      if (id && seenIds.has(id)) continue;
-      if (fileKey && seenFiles.has(fileKey)) continue;
-
-      if (id) seenIds.add(id);
-      if (fileKey) seenFiles.add(fileKey);
-      result.push(s);
-    }
-    return result;
-  }, [stageSablons, komisyonSablons]);
-
-  const handleOpenSablonByDosyaAdi = (targetKey: string) => {
-    const cleanTarget = targetKey
-      .replace(/\.html$/, "")
-      .toLowerCase()
-      .trim();
-    const foundSablon = findSablonByAlias(sablons, cleanTarget);
-
-    if (foundSablon && onSablonClick) {
-      onSablonClick(foundSablon, foundSablon.ad);
-    } else {
-      useGlobalDocumentPreviewStore.getState().openDocument({
-        documentId: cleanTarget,
-        dosyaId: activeDosyaId || undefined,
-        documentTitle: targetKey
-          .replace(/-/g, " ")
-          .replace(/\.html$/, "")
-          .toLocaleUpperCase("tr-TR"),
-      });
-    }
-  };
-
-  const isYapim = activeDosya?.tur === "yapim_isi" ||
-    activeDosya?.tur === "yapim" ||
-    activeDosya?.ihale_tipi === "Hakediş";
-  const isHizmet = activeDosya?.tur === "hizmet";
-
-  const [isExportingMasterExcel, setIsExportingMasterExcel] = useState(false);
-
-  const handleExportMasterExcel = async (): Promise<void> => {
-    if (!activeDosyaId) return;
-    try {
-      setIsExportingMasterExcel(true);
-      const firmalarRes = await (window as any).electron.ipcRenderer.invoke(
-        "db:query",
-        `SELECT f.*, tf.id as temin_firma_id, tf.kazandi_mi, tf.teklif_toplami 
-         FROM DATA_TeminFirma tf 
-         JOIN TANIM_Firma f ON tf.firma_id = f.id 
-         WHERE tf.temin_dosya_id = ?`,
-        [activeDosyaId],
-      );
-
-      const tekliflerRes = await (window as any).electron.ipcRenderer.invoke(
-        "db:query",
-        "SELECT * FROM DATA_TeminKalemTeklif WHERE temin_dosya_id = ?",
-        [activeDosyaId],
-      );
-
-      const komisyonRes = await (window as any).electron.ipcRenderer.invoke(
-        "db:query",
-        "SELECT * FROM DATA_TeminKomisyon WHERE temin_dosya_id = ?",
-        [activeDosyaId],
-      );
-
-      const kurumRes = await (window as any).electron.ipcRenderer.invoke(
-        "db:query",
-        "SELECT * FROM TANIM_Kurum LIMIT 1",
-      );
-
-      await exportDogrudanTeminMasterExcel({
-        dosya: activeDosya,
-        kalemler: items,
-        firmalar: firmalarRes.success ? firmalarRes.data : [],
-        teklifler: tekliflerRes.success ? tekliflerRes.data : [],
-        komisyon: komisyonRes.success ? komisyonRes.data : [],
-        kurum: kurumRes.success ? kurumRes.data?.[0] : null,
-        sablons: sablons,
-      });
-    } catch (err: any) {
-      alert("Dosya Excel raporu hazırlanırken hata oluştu: " + err.message);
-    } finally {
-      setIsExportingMasterExcel(false);
-    }
-  };
+  const isYapim =
+    activeDosya?.tur === 'yapim_isi' ||
+    activeDosya?.tur === 'yapim' ||
+    activeDosya?.ihale_tipi === 'Hakediş'
+  const isHizmet = activeDosya?.tur === 'hizmet'
 
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm flex flex-col min-h-[400px]">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-          <Package className="w-4 h-4 text-blue-600" />
-          {isYapim
-            ? "Dosyadaki İmalat / İş Kalemleri (Pozlar)"
-            : isHizmet
-            ? "Dosyadaki Hizmet Kalemleri"
-            : "Dosyadaki İhtiyaç Kalemleri"}
-          <span className="text-[10px] px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-full font-bold">
-            {items.length}
-          </span>
-        </h3>
-        <div className="flex items-center gap-2 relative">
-          <button
-            onClick={handleExportMasterExcel}
-            disabled={isExportingMasterExcel}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 h-8.5 rounded-xl text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/60 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/60 transition-all shadow-2xs hover:shadow-xs cursor-pointer disabled:opacity-50 active:scale-98"
-            title="Doğrudan Temin Dosya Excel Raporunu (.xlsx) İndir"
-          >
-            <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-            <span>
-              {isExportingMasterExcel ? "Hazırlanıyor..." : "Excel Raporu"}
-            </span>
-          </button>
-
-          <button
-            onClick={() => handleOpenSablonByDosyaAdi("son-alim-fiyat-cetveli")}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 h-8.5 rounded-xl text-xs font-semibold bg-amber-50 hover:bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:hover:bg-amber-900/60 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/60 transition-all shadow-2xs hover:shadow-xs cursor-pointer active:scale-98"
-            title="Son Alım Fiyat Cetveli & Geçmiş Alım Fiyatları"
-          >
-            <HistoryIcon className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-            <span>Son Alım Fiyatları</span>
-          </button>
-
-          <button
-            onClick={() => setIsAddModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 h-8.5 rounded-xl text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 shadow-xs hover:shadow-sm transition-all cursor-pointer active:scale-98"
-          >
-            <Plus className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
-            <span>
-              {isYapim
-                ? "Poz / İmalat Ekle"
-                : isHizmet
-                ? "Hizmet Kalemi Ekle"
-                : "İhtiyaç Kalemi Ekle"}
-            </span>
-          </button>
-
-          {!disableDocumentGuidance && combinedSablons.length > 0 &&
-            onSablonClick && (
-            <>
-              <PrintDropdownButton
-                kategori="1-ihtiyac-tespiti-ve-baslangic"
-                sablons={sablons}
-                overrideSablons={combinedSablons}
-                activeStarredDocs={activeStarredDocs || []}
-                ciktiLoading={ciktiLoading || false}
-                handleOpenPreviewForSablon={onSablonClick}
-                quickPrint={async (sablon) =>
-                  onQuickPrint && onQuickPrint(sablon)}
-                quickExport={async (sablon, format) =>
-                  onExport && onExport(sablon, format)}
-                quickOpenExternal={async (sablon) =>
-                  onOpenExternal && onOpenExternal(sablon)}
-                isSablonDisabled={isSablonDisabled}
-                buttonHeightClass="py-1.5"
-              />
-            </>
-          )}
-
-          <MalzemeTabloPopover
-            step={1}
-            selectedCount={selectedIds.size}
-            totalCount={items.length}
-            onSelectAll={handleToggleSelectAll}
-            onDeleteSelected={handleDeleteSelected}
-            onExportMasterExcel={handleExportMasterExcel}
-            onExcelImport={handleExcelImport}
-            onDownloadTemplate={handleDownloadTemplate}
-            onExportToLibrary={handleExportToLibrary}
-            onKatalogSync={() => handleTriggerKatalogSync()}
-            disableDocumentGuidance={disableDocumentGuidance}
-            onIhtiyacListesi={() =>
-              handleOpenSablonByDosyaAdi("ihtiyac-listesi")}
-            onIhtiyacTalepFormu={() =>
-              handleOpenSablonByDosyaAdi("ihtiyac-talep-formu")}
-            onLuzumMuzekkeresi={() =>
-              handleOpenSablonByDosyaAdi("luzum-muzekkeresi")}
-            onLuzumMuzekkeresiOnayEki={() =>
-              handleOpenSablonByDosyaAdi("luzum-muzekkeresi-onay-eki")}
-            onLuzumMuzekkeresiTeslimTesellum={() =>
-              handleOpenSablonByDosyaAdi("luzum-muzekkeresi-teslim-tesellum")}
-            onHarcamaTalimati={() =>
-              handleOpenSablonByDosyaAdi("harcama-talimati")}
-            onHarcamaPusulasi={() =>
-              handleOpenSablonByDosyaAdi("harcama-pusulasi")}
-            onGorevlendirmeOnayi={() =>
-              handleOpenSablonByDosyaAdi("komisyon-gorevlendirme-onayi")}
-            onGorevlendirmeOnayEki={() =>
-              handleOpenSablonByDosyaAdi("komisyon-gorevlendirme-onayi-eki")}
-            onFiyatArastirmaKomisyonu={() =>
-              handleOpenSablonByDosyaAdi("fiyat-arastirma-tutanagi")}
-            onPiyasaArastirmaGorevlendirmesi={() =>
-              handleOpenSablonByDosyaAdi("piyasa-arastirma-gorevlendirmesi")}
-            onMuayeneKabulBelgesi={() =>
-              handleOpenSablonByDosyaAdi("muayene-kabul-komisyonu")}
-            onYaklasikMaliyetKomisyonu={() =>
-              handleOpenSablonByDosyaAdi("yaklasik-maliyet-komisyonu")}
-            onMuayeneKabulKomisyonu={() =>
-              handleOpenSablonByDosyaAdi("muayene-kabul-komisyonu")}
-            onSonAlimCetveli={() =>
-              handleOpenSablonByDosyaAdi("son-alim-fiyat-cetveli")}
-            onOnayBelgesi={() =>
-              handleOpenSablonByDosyaAdi("dogrudan-temin-onay-belgesi")}
-          />
-        </div>
-      </div>
+      <MalzemeTablosuToolbar
+        items={items}
+        isYapim={isYapim}
+        isHizmet={isHizmet}
+        isExportingMasterExcel={isExportingMasterExcel}
+        handleExportMasterExcel={handleExportMasterExcel}
+        handleOpenSablonByDosyaAdi={handleOpenSablonByDosyaAdi}
+        setIsAddModalOpen={setIsAddModalOpen}
+        disableDocumentGuidance={disableDocumentGuidance}
+        combinedSablons={combinedSablons}
+        sablons={sablons}
+        activeStarredDocs={activeStarredDocs}
+        ciktiLoading={ciktiLoading}
+        onSablonClick={onSablonClick}
+        onQuickPrint={onQuickPrint}
+        onExport={onExport}
+        onOpenExternal={onOpenExternal}
+        isSablonDisabled={isSablonDisabled}
+        selectedIdsCount={selectedIds.size}
+        handleToggleSelectAll={handleToggleSelectAll}
+        handleDeleteSelected={handleDeleteSelected}
+        handleExcelImport={handleExcelImport}
+        handleDownloadTemplate={handleDownloadTemplate}
+        handleExportToLibrary={handleExportToLibrary}
+        handleTriggerKatalogSync={() => handleTriggerKatalogSync()}
+      />
 
       {/* 1. Aşama Süreç & Ekler Rehberi (Mevzuat & Deneyim Notu) */}
       {!disableDocumentGuidance && (
-        <div className="mb-4 p-3.5 bg-linear-to-r from-blue-50/80 via-indigo-50/50 to-slate-50 dark:from-blue-950/20 dark:via-indigo-950/20 dark:to-slate-900/40 border border-blue-100 dark:border-blue-900/30 rounded-2xl text-xs text-slate-700 dark:text-slate-300 shadow-xs">
-          <div className="flex items-start gap-2.5">
-            <div className="p-1.5 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-lg shrink-0 mt-0.5">
-              <Info className="w-4 h-4" />
-            </div>
-            <div className="space-y-1.5 flex-1">
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-slate-900 dark:text-slate-100 text-xs tracking-tight">
-                  1. Aşama: İhtiyaç Tespiti, Onay & Ekler Rehberi
-                </span>
-                <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold bg-blue-100/60 dark:bg-blue-900/40 px-2 py-0.5 rounded-full">
-                  Mevzuat & Deneyim Notu
-                </span>
-              </div>
-              <p className="text-[11.5px] leading-relaxed text-slate-600 dark:text-slate-300">
-                • <strong>Lüzum Müzekkeresi Onay Eki (Ek-1):</strong>{" "}
-                Talep edilen malzeme/ihtiyaç listesi ve onay tablosu <u>Ek-1</u>
-                {" "}
-                olarak düzenlenir, Lüzum Müzekkeresi ile harcama yetkilisine
-                sunulur.
-                <br />•{" "}
-                <strong>Komisyon Görevlendirme Onayı Eki (Ek-2):</strong>{" "}
-                Fiyat araştırması ve muayene-kabul işlemlerini yürütecek görevli
-                personellerin unvan ve görev listesi <u>Ek-2</u>{" "}
-                olarak görevlendirme onayına bağlanır.
-                <br />• <strong>Harcama Talimatı / Onay Belgesi:</strong>{" "}
-                İhtiyaçlar ve görevliler netleştikten sonra 4734 Sayılı Kanun
-                (Md. 22) kapsamında doğrudan temin alım sürecini resmi olarak
-                başlatan temel idari belgedir.
-              </p>
-              <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-blue-100/70 dark:border-blue-900/30">
-                <span className="text-[10.5px] font-bold text-slate-500 dark:text-slate-400">
-                  Hızlı Belge Erişimi:
-                </span>
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleOpenSablonByDosyaAdi("luzum-muzekkeresi-onay-eki")}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer shadow-xs"
-                >
-                  <FileText className="w-3 h-3 text-blue-500" />
-                  Lüzum Müzekkeresi Onay Eki (Ek-1)
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleOpenSablonByDosyaAdi(
-                      "komisyon-gorevlendirme-onayi-eki",
-                    )}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer shadow-xs"
-                >
-                  <Users className="w-3 h-3 text-blue-500" />
-                  Komisyon Görevlendirme Eki (Ek-2)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleOpenSablonByDosyaAdi("harcama-talimati")}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-white dark:bg-slate-800 hover:bg-teal-50 dark:hover:bg-teal-950/40 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer shadow-xs"
-                >
-                  <FileCheck className="w-3 h-3 text-teal-500" />
-                  Harcama Talimatı
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <MalzemeTablosuRehber handleOpenSablonByDosyaAdi={handleOpenSablonByDosyaAdi} />
       )}
 
-      {loading
-        ? (
-          <div className="flex-1 flex items-center justify-center text-xs text-slate-400 italic">
-            Yükleniyor...
-          </div>
-        )
-        : items.length === 0
-        ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-6 text-slate-400">
-            <Package className="w-10 h-10 text-slate-300 dark:text-slate-700 mb-2" />
-            <p className="text-xs">
-              {isYapim
-                ? "Bu dosyada henüz herhangi bir imalat veya poz kalemi eklenmemiş."
-                : isHizmet
-                ? "Bu dosyada henüz herhangi bir hizmet kalemi eklenmemiş."
-                : "Bu dosyada henüz herhangi bir ihtiyaç kalemi eklenmemiş."}
-            </p>
-            <p className="text-[10px] text-slate-500 mt-1">
-              {isYapim
-                ? "Yukarıdaki butonu kullanarak ilk imalat/poz kalemini ekleyebilirsiniz."
-                : isHizmet
-                ? "Yukarıdaki butonu kullanarak ilk hizmet kalemini ekleyebilirsiniz."
-                : "Yukarıdaki butonu kullanarak ilk ihtiyaç kalemini ekleyebilirsiniz."}
-            </p>
-          </div>
-        )
-        : (
-          <div className="overflow-x-auto custom-scrollbar flex-1">
-            <table className="w-full border-collapse text-left text-xs">
-              <thead className="sticky top-0 bg-slate-50 dark:bg-slate-950 text-slate-500 font-bold border-b border-slate-100 dark:border-slate-800">
-                <tr>
-                  <th className="p-3 pl-4 w-10">
-                    <input
-                      type="checkbox"
-                      checked={items.length > 0 &&
-                        selectedIds.size === items.length}
-                      onChange={handleToggleSelectAll}
-                      className="rounded border-slate-350 text-blue-600 focus:ring-blue-500/20 cursor-pointer"
-                    />
-                  </th>
-                  <th className="p-3 pl-4">Sıra No</th>
-                  <th className="p-3 pl-4">
-                    {isYapim
-                      ? "Poz No"
-                      : isHizmet
-                      ? "Hizmet Kodu"
-                      : "Taşınır Kodu"}
-                  </th>
-                  <th className="p-3 pl-4">
-                    {isYapim
-                      ? "İmalat / Poz Adı (İş Kalemi)"
-                      : isHizmet
-                      ? "Hizmet Kalemi Adı"
-                      : "İhtiyaç Kalemi Adı"}
-                  </th>
-                  <th className="p-3">Tür</th>
-                  <th className="p-3 text-center">Miktar</th>
-                  <th className="p-3">Birim</th>
-                  <th className="p-3 text-center">KDV (%)</th>
-                  <th className="p-3 text-right pr-4">İşlemler</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium">
-                {items.map((item: any, index: number) => {
-                  const isEditing = editingId === item.id;
-                  return (
-                    <tr
-                      key={item.id}
-                      className={cn(
-                        "hover:bg-slate-50/50 dark:hover:bg-slate-800/10",
-                        selectedIds.has(item.id) &&
-                          "bg-blue-50/30 dark:bg-blue-955/15",
-                      )}
-                    >
-                      <td className="p-3 pl-4 w-10">
-                        <input
-                          type="checkbox"
-                          checked={selectedIds.has(item.id)}
-                          onChange={() => handleToggleSelectRow(item.id)}
-                          className="rounded border-slate-350 text-blue-600 focus:ring-blue-500/20 cursor-pointer"
-                        />
-                      </td>
-                      <td className="p-3 pl-4 font-mono text-[10px] text-slate-500 dark:text-slate-400">
-                        {index + 1}
-                      </td>
+      {/* Malzeme Tablosu Gövdesi */}
+      <MalzemeTablosuBody
+        loading={loading}
+        items={items}
+        isYapim={isYapim}
+        isHizmet={isHizmet}
+        selectedIds={selectedIds}
+        handleToggleSelectAll={handleToggleSelectAll}
+        handleToggleSelectRow={handleToggleSelectRow}
+        editingId={editingId}
+        setEditingId={setEditingId}
+        editMiktar={editMiktar}
+        setEditMiktar={setEditMiktar}
+        editBirim={editBirim}
+        setEditBirim={setEditBirim}
+        editKdv={editKdv}
+        setEditKdv={setEditKdv}
+        units={units}
+        handleSaveEdit={handleSaveEdit}
+        handleStartEdit={handleStartEdit}
+        handleDeleteItem={handleDeleteItem}
+        handleTriggerKatalogSync={handleTriggerKatalogSync}
+      />
 
-                      <td className="p-3 pl-4 font-mono text-[10px] text-slate-500 dark:text-slate-400 font-bold">
-                        {item.tasinir_kodu || "-"}
-                      </td>
-
-                      <td className="p-3 pl-4">
-                        <div className="font-bold text-slate-800 dark:text-slate-200">
-                          {item.kalem_adi}
-                        </div>
-                        {item.okas_kodu && (
-                          <div className="text-[9px] text-slate-400 dark:text-slate-500 font-mono mt-0.5">
-                            OKAS: {item.okas_kodu}
-                          </div>
-                        )}
-                      </td>
-                      <td className="p-3">
-                        <span
-                          className={cn(
-                            "px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase",
-                            item.tipi === "Mal" &&
-                              "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400",
-                            item.tipi === "Hizmet" &&
-                              "bg-violet-50 text-violet-600 dark:bg-violet-900/20 dark:text-violet-400",
-                            item.tipi === "Yapım" &&
-                              "bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400",
-                            item.tipi === "Danışmanlık" &&
-                              "bg-pink-50 text-pink-600 dark:bg-pink-900/20 dark:text-pink-400",
-                          )}
-                        >
-                          {item.tipi}
-                        </span>
-                      </td>
-                      <td className="p-3 text-center">
-                        {isEditing
-                          ? (
-                            <input
-                              type="number"
-                              step="0.01"
-                              value={editMiktar}
-                              onChange={(e) =>
-                                setEditMiktar(parseFloat(e.target.value) || 1)}
-                              className="w-16 p-1 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-955 rounded text-center text-xs font-bold"
-                            />
-                          )
-                          : (
-                            <span className="font-black text-slate-750 dark:text-slate-300">
-                              {item.miktar}
-                            </span>
-                          )}
-                      </td>
-                      <td className="p-3">
-                        {isEditing
-                          ? (
-                            <select
-                              value={editBirim}
-                              onChange={(e) => setEditBirim(e.target.value)}
-                              className="p-1 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-955 rounded text-xs"
-                            >
-                              {units.map((u: any, idx: number) => (
-                                <option key={idx} value={u.ad}>
-                                  {u.ad}
-                                </option>
-                              ))}
-                            </select>
-                          )
-                          : <span>{item.birim}</span>}
-                      </td>
-                      <td className="p-3 text-center">
-                        {isEditing
-                          ? (
-                            <select
-                              value={editKdv}
-                              onChange={(e) =>
-                                setEditKdv(parseInt(e.target.value, 10))}
-                              className="p-1 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-955 rounded text-xs"
-                            >
-                              <option value="0">%0</option>
-                              <option value="1">%1</option>
-                              <option value="10">%10</option>
-                              <option value="20">%20</option>
-                            </select>
-                          )
-                          : <span>%{item.kdv_orani}</span>}
-                      </td>
-                      <td className="p-3 text-right pr-4">
-                        <div className="flex justify-end gap-2">
-                          {isEditing
-                            ? (
-                              <>
-                                <button
-                                  onClick={() => handleSaveEdit(item.id)}
-                                  className="p-1.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/20 dark:hover:bg-emerald-900/30 border border-emerald-250 dark:border-emerald-900/40 hover:border-emerald-300 dark:hover:border-emerald-800 text-emerald-600 dark:text-emerald-450 rounded-lg transition-all cursor-pointer shadow-2xs hover:scale-105 active:scale-95 flex items-center justify-center"
-                                  title="Değişiklikleri Kaydet"
-                                >
-                                  <Check className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                  onClick={() => setEditingId(null)}
-                                  className="p-1.5 bg-red-50 hover:bg-red-100 dark:bg-red-955/20 dark:hover:bg-red-950/30 border border-red-250 dark:border-red-900/40 hover:border-red-300 dark:hover:border-red-800 text-red-500 dark:text-red-400 rounded-lg transition-all cursor-pointer shadow-2xs hover:scale-105 active:scale-95 flex items-center justify-center"
-                                  title="İptal"
-                                >
-                                  <X className="w-3.5 h-3.5" />
-                                </button>
-                              </>
-                            )
-                            : (
-                              <>
-                                <button
-                                  onClick={() => handleTriggerKatalogSync(item)}
-                                  className="p-1.5 bg-slate-50 hover:bg-sky-50 dark:bg-slate-950 dark:hover:bg-sky-955/30 border border-slate-200 dark:border-slate-800 hover:border-sky-300 dark:hover:border-sky-900/50 text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 rounded-lg transition-all cursor-pointer shadow-2xs hover:scale-105 active:scale-95 flex items-center justify-center"
-                                  title="Kütüphane / Katalog ile Karşılaştır & Eşitle"
-                                >
-                                  <RefreshCw className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                  onClick={() => handleStartEdit(item)}
-                                  className="p-1.5 bg-slate-50 hover:bg-blue-50 dark:bg-slate-950 dark:hover:bg-blue-955/30 border border-slate-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-900/50 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 rounded-lg transition-all cursor-pointer shadow-2xs hover:scale-105 active:scale-95 flex items-center justify-center"
-                                  title="İhtiyaç Kalemi Düzenle"
-                                >
-                                  <Edit2 className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                  onClick={() => handleDeleteItem(item.id)}
-                                  className="p-1.5 bg-slate-50 hover:bg-red-50 dark:bg-slate-950 dark:hover:bg-red-955/20 border border-slate-200 dark:border-slate-800 hover:border-red-300 dark:hover:border-red-900/50 text-slate-500 hover:text-red-500 dark:text-slate-400 dark:hover:text-red-400 rounded-lg transition-all cursor-pointer shadow-2xs hover:scale-105 active:scale-95 flex items-center justify-center"
-                                  title="İhtiyaç Kalemi Sil"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              </>
-                            )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-
+      {/* Katalog Senkronizasyon Modalı */}
       <KatalogSenkronizasyonModal
         isOpen={katalogModalOpen}
         onClose={() => setKatalogModalOpen(false)}
         diffItems={diffItems}
         isLoading={isCheckingDiff}
         onApplyUpdates={async (selected) => {
-          await handleApplyKatalogUpdates(selected);
-          setKatalogModalOpen(false);
+          await handleApplyKatalogUpdates(selected)
+          setKatalogModalOpen(false)
         }}
       />
     </div>
-  );
+  )
 }
