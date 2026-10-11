@@ -58,6 +58,7 @@ const DevletIhale2886Screen = lazyRoute(() => import('./screens/devlet-ihale-288
 const HesaplamaAraclariScreen = lazyRoute(() => import('./screens/araclar/HesaplamaAraclariScreen'))
 const DTSurecAkisiScreen = lazyRoute(() => import('./screens/system/DTSurecAkisiScreen'))
 const TakipScreen = lazyRoute(() => import('./screens/system/TakipScreen'), 'TakipScreen')
+const EbysScreen = lazyRoute(() => import('./screens/ebys/index.screen'))
 const TaslakYoneticisi = lazyRoute(() => import('./screens/system/TaslakYoneticisi'))
 const CiktiMerkeziScreen = lazyRoute(
   () => import('./screens/dosya/CiktiMerkezi.screen'),
@@ -441,6 +442,12 @@ const playgroundRoute = createRoute({
   component: PlaygroundScreen
 })
 
+const ebysRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: APP_ROUTES.EBYS,
+  component: EbysScreen
+})
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   harcamaMerkeziRoute,
@@ -497,7 +504,8 @@ const routeTree = rootRoute.addChildren([
   playgroundRoute,
   surecAkisiRoute,
   yardimRoute,
-  hesaplamaAraclariRoute
+  hesaplamaAraclariRoute,
+  ebysRoute
 ])
 
 const hashHistory = createHashHistory()

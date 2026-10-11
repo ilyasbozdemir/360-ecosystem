@@ -250,6 +250,7 @@ export function Sidebar(): React.JSX.Element {
           title: 'Sistem',
           items: [
             { name: 'Raporlar & Gelir Cetvelleri', path: '/raporlar', icon: BarChart3 },
+            { name: 'EBYS Resmî Yazı Şablonları', path: '/ebys', icon: FileText, badge: 'YENİ' },
             { name: '2886 Mevzuat ve Parametreler', path: '/mevzuat', icon: Scale },
             { name: 'Şablon Listesi ve Süreçler', path: '/taslakyonetim', icon: Star },
             { name: 'Sürüm Notları', path: '/changelog', icon: Megaphone },
@@ -377,6 +378,7 @@ export function Sidebar(): React.JSX.Element {
           title: 'Sistem',
           items: [
             { name: 'Raporlar & Harcama Analizleri', path: '/raporlar', icon: BarChart3 },
+            { name: 'EBYS Resmî Yazı Şablonları', path: '/ebys', icon: FileText, badge: 'YENİ' },
             { name: 'İhale Mevzuatı ve Parametreler', path: '/mevzuat', icon: Scale },
             { name: 'Sürüm Notları', path: '/changelog', icon: Megaphone },
             { name: 'Yardım & Kılavuzlar', path: '/yardim', icon: HelpCircle },
@@ -520,6 +522,7 @@ export function Sidebar(): React.JSX.Element {
         title: 'Sistem',
         items: [
           { name: 'Raporlar', path: '/raporlar', icon: BarChart3 },
+          { name: 'EBYS Resmî Yazı Şablonları', path: '/ebys', icon: FileText, badge: 'YENİ' },
           {
             name: 'Şablon Listesi ve Süreçler',
             path: '/taslakyonetim',

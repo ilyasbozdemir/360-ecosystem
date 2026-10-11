@@ -48,6 +48,7 @@ export const APP_ROUTES = {
   NOTLAR: '/notlar',
   PLAYGROUND: '/playground',
   HESAPLAMA_ARACLARI: '/hesaplama-araclari',
+  EBYS: '/ebys',
 
   // Dosya Alt Süreçleri (SubScreens)
   // Aşamalar
