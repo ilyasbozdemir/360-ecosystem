@@ -2,7 +2,6 @@ import { ipcMain, BrowserWindow, dialog } from 'electron'
 import { basename } from 'path'
 import fs from 'fs'
 import nodemailer from 'nodemailer'
-import os from 'os'
 import { workspaceManager } from '../database/workspace'
 import {
   allExtensions,
@@ -13,19 +12,8 @@ import {
 import { recentFilesStore } from '../store/recentFiles'
 import { pocketBaseSyncService, PocketBaseConfig } from '../services/pocketbaseSyncService'
 import { minioSyncService, MinIOConfig } from '../services/minioSyncService'
-
-export function getDeviceInfo() {
-  const hostname = os.hostname() || process.env.COMPUTERNAME || process.env.HOSTNAME || 'Bilinmeyen PC'
-  const username = os.userInfo?.()?.username || process.env.USERNAME || process.env.USER || 'Kullanıcı'
-  let userFullName = ''
-  try {
-    const db = workspaceManager.getDb()
-    const row = db.prepare("SELECT value FROM settings WHERE key = 'adminName'").get() as { value?: string }
-    if (row?.value) userFullName = row.value
-  } catch {}
-  const deviceLabel = `${username}@${hostname}`
-  return { hostname, username, userFullName, deviceLabel }
-}
+import { getDeviceInfo } from '../utils/deviceInfo'
+export { getDeviceInfo }
 
 export function registerWorkspaceIpcHandlers(closeAllSecondaryWindows: () => void): void {
   ipcMain.handle('workspace:get-device-info', () => getDeviceInfo())
