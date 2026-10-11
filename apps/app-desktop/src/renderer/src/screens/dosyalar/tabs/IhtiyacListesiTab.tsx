@@ -6,6 +6,7 @@ import { useDosyalarHooks } from '../dosyalar.hooks'
 import { useMalzemeListesi } from '../../dosya/sub-screens/components/MalzemeListesi/useMalzemeListesi'
 import { MalzemeEkleModal } from '../../dosya/sub-screens/components/MalzemeListesi/MalzemeEkleModal'
 import { cn } from '../../../utils/cn'
+import { useSetSelection } from '../../../hooks/useSetSelection'
 
 interface LastPurchaseItem {
   kalem_adi: string
@@ -26,7 +27,12 @@ export function IhtiyacListesiTab(props: YeniDosyaTabProps): React.JSX.Element {
 
   const [lastPurchases, setLastPurchases] = useState<LastPurchaseItem[]>([])
   const [loadingHistory, setLoadingHistory] = useState(true)
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
+  const {
+    selectedIds,
+    setSelectedIds,
+    handleToggleSelectRow,
+    handleToggleSelectAll: handleToggleSelectAllBase
+  } = useSetSelection<number>()
 
   // Ensure dossier exists in DB so items can be safely attached
   const ensureDosyaId = async (): Promise<number | null> => {
@@ -95,24 +101,8 @@ export function IhtiyacListesiTab(props: YeniDosyaTabProps): React.JSX.Element {
   }
 
   // Selection handlers
-  const handleToggleSelectRow = (id: number) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) {
-        next.delete(id)
-      } else {
-        next.add(id)
-      }
-      return next
-    })
-  }
-
   const handleToggleSelectAll = () => {
-    if (selectedIds.size === state.items.length) {
-      setSelectedIds(new Set())
-    } else {
-      setSelectedIds(new Set(state.items.map((item: any) => item.id)))
-    }
+    handleToggleSelectAllBase(state.items.map((item: any) => item.id))
   }
 
   const handleDeleteSelected = async () => {

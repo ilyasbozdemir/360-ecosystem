@@ -1,6 +1,7 @@
-import { useState, useCallback, useRef, useEffect, RefObject } from 'react'
+import { useState, useCallback, useRef, RefObject } from 'react'
 import { DirtySummaryData } from '../header.types'
 import { FALLBACK_DIRTY_SUMMARY } from '../header.constants'
+import { useClickOutside } from '../../../../hooks/useClickOutside'
 
 export interface UseDirtySummaryReturn {
   isDirtySummaryOpen: boolean
@@ -44,15 +45,7 @@ export function useDirtySummary(): UseDirtySummaryReturn {
     setIsDirtySummaryOpen((prev) => !prev)
   }, [isDirtySummaryOpen, loadDirtySummary])
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent): void => {
-      if (dirtySummaryRef.current && !dirtySummaryRef.current.contains(event.target as Node)) {
-        setIsDirtySummaryOpen(false)
-      }
-    }
-    if (isDirtySummaryOpen) document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [isDirtySummaryOpen])
+  useClickOutside(dirtySummaryRef, () => setIsDirtySummaryOpen(false), isDirtySummaryOpen)
 
   return {
     isDirtySummaryOpen,

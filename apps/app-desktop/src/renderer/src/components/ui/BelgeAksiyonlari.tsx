@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { useClickOutside } from '../../hooks/useClickOutside'
 import {
   ChevronDown,
   Download,
@@ -78,17 +79,7 @@ export function BelgeAksiyonlari({
     }
   })
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent): void {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setMenuOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [])
+  useClickOutside(dropdownRef, () => setMenuOpen(false))
 
   useEffect(() => {
     const handlePresetsChange = () => {

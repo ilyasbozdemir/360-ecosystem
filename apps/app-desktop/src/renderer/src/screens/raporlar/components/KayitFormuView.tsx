@@ -1,6 +1,7 @@
 import React from 'react'
 import { Printer, Download, Building2, Tag, Calendar, FileText, CheckCircle2, Clock } from 'lucide-react'
 import { useRaporlarData } from '../raporlar.hooks'
+import { exportCsv } from '../../../utils/csvExport'
 
 const fmt = (n: number) =>
   n.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ₺'
@@ -33,34 +34,22 @@ export const KayitFormuView: React.FC<KayitFormuViewProps> = ({ ay, yil }) => {
       'Durum'
     ]
 
-    const csvContent = [
-      headers.join(';'),
-      ...rows.map((r, i) =>
-        [
-          i + 1,
-          `"${r.dosya_no}"`,
-          `"${r.dosya_acilis_tarihi || '-'}"`,
-          `"${r.temin_tarihi || r.tarih || '-'}"`,
-          `"${r.is_adi.replace(/"/g, '""')}"`,
-          `"${r.alim_turu}"`,
-          `"${r.madde}"`,
-          `"${(r.kazanan_firma || '-').replace(/"/g, '""')}"`,
-          `"${r.kazanan_vkn || '-'}"`,
-          r.toplam_tutar.toFixed(2),
-          r.kdv_dahil_tutar.toFixed(2),
-          `"${r.durum || 'Tamamlandı'}"`
-        ].join(';')
-      )
-    ].join('\n')
+    const csvRows = rows.map((r, i) => [
+      i + 1,
+      `"${r.dosya_no}"`,
+      `"${r.dosya_acilis_tarihi || '-'}"`,
+      `"${r.temin_tarihi || r.tarih || '-'}"`,
+      `"${r.is_adi.replace(/"/g, '""')}"`,
+      `"${r.alim_turu}"`,
+      `"${r.madde}"`,
+      `"${(r.kazanan_firma || '-').replace(/"/g, '""')}"`,
+      `"${r.kazanan_vkn || '-'}"`,
+      r.toplam_tutar.toFixed(2),
+      r.kdv_dahil_tutar.toFixed(2),
+      `"${r.durum || 'Tamamlandı'}"`
+    ])
 
-    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.setAttribute('download', `Dogrudan_Temin_Kayit_Formu_${yil}.csv`)
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    exportCsv(`Dogrudan_Temin_Kayit_Formu_${yil}.csv`, headers, csvRows)
   }
 
   const handlePrint = (): void => {

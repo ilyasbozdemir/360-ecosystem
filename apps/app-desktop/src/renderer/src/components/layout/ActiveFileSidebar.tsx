@@ -8,6 +8,7 @@ import { subPagesMapping } from '../../constants/surecler'
 import { APP_ROUTES } from '../../constants/routeConstants'
 import { checkIsSablonDisabled } from '../../screens/dosya/sub-screens/DosyaAsamalari/useDosyaAsamasiSablons'
 import { cn } from '../../utils/cn'
+import { useClickOutside } from '../../hooks/useClickOutside'
 
 const parseStatusAndName = (name?: string | null): { status: string | null; cleanName: string } => {
   if (!name) return { status: null, cleanName: '' }
@@ -113,17 +114,7 @@ export function ActiveFileSidebar(): React.JSX.Element | null {
     localStorage.setItem('dta_active_sidebar_collapsed', String(isCollapsed))
   }, [isCollapsed])
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent): void {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setOpenDropdown(null)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [])
+  useClickOutside(dropdownRef, () => setOpenDropdown(null), openDropdown !== null)
 
   const { data: dbAsamalar = [] } = useQuery<any[]>({
     queryKey: ['sidebar_asamalar'],

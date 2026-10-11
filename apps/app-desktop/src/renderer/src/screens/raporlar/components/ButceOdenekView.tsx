@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Wallet, Download, Printer, ShieldAlert, CheckCircle2, ArrowRight } from 'lucide-react'
 import { ButceOdenekKayit } from './ButceOdenekModal'
+import { exportCsv } from '../../../utils/csvExport'
 
 const fmt = (n: number) =>
   n.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ₺'
@@ -96,13 +97,7 @@ export const ButceOdenekView: React.FC<ButceOdenekViewProps> = ({ yil }) => {
         kalan.toFixed(2)
       ]
     })
-    const csv = '\uFEFF' + [headers.join(';'), ...rows.map((r) => r.join(';'))].join('\n')
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `Butce_Odenek_ve_10_Limit_Tablosu_${yil}.csv`
-    a.click()
+    exportCsv(`Butce_Odenek_ve_10_Limit_Tablosu_${yil}.csv`, headers, rows)
   }
 
   const handleNavigateToKurum = () => {

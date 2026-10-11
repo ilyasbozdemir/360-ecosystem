@@ -1,6 +1,7 @@
 import { ipcMain } from 'electron'
 import os from 'os'
 import { workspaceManager } from '../../database/workspace'
+import { getSetting } from '../../utils/settingsHelper'
 
 // Recovery code cache in memory (valid for 15 minutes)
 let activeRecovery: { code: string; expiresAt: number; email: string } | null = null
@@ -283,18 +284,6 @@ export function registerDbAuthHandlers(): void {
    */
   ipcMain.handle('db:send-recovery-email', async () => {
     try {
-      const db = workspaceManager.getDb()
-      const getSetting = (key: string): string => {
-        try {
-          const row = db.prepare('SELECT value FROM settings WHERE key = ?').get(key) as
-            | { value?: string }
-            | undefined
-          return row?.value || ''
-        } catch {
-          return ''
-        }
-      }
-
       const smtpHost = getSetting('smtpHost') || getSetting('smtp_host')
       const smtpPort = parseInt(getSetting('smtpPort') || getSetting('smtp_port') || '587', 10)
       const smtpUser = getSetting('smtpUser') || getSetting('smtp_user')

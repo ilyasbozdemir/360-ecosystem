@@ -5,6 +5,7 @@ import { BelgeAksiyonlari } from '../../../components/ui/BelgeAksiyonlari'
 import { normalizeForMatch } from '../sub-screens/DosyaAsamalari/useDosyaAsamasiSablons'
 import { useWorkspaceStore } from '../../../store/workspaceStore'
 import { documentPreloadService } from '../../../services/documentPreloadService'
+import { useClickOutside } from '../../../hooks/useClickOutside'
 
 export interface PrintDropdownButtonProps {
   kategori: string // e.g. '4-kabul-ve-odeme-islemleri'
@@ -78,15 +79,7 @@ export function PrintDropdownButton({
     return () => window.removeEventListener('dta_presets_changed', handlePresetsChange)
   }, [])
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setBelgeMenuOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  useClickOutside(dropdownRef, () => setBelgeMenuOpen(false))
 
   const stageSablons = useMemo(() => {
     if (overrideSablons) return overrideSablons
@@ -123,13 +116,6 @@ export function PrintDropdownButton({
       return cat === categoryLower
     })
   }, [sablons, kategori])
-
-  function getCleanName(ad: string): string {
-    let clean = ad
-    const matchStatus = clean.match(/^\[(.*?)\]\s*(.*)$/)
-    if (matchStatus) clean = matchStatus[2].trim()
-    return clean
-  }
 
   function isSablonMatch(docStr: string, sablon: any): boolean {
     if (!docStr || !sablon) return false
@@ -359,3 +345,6 @@ export function PrintDropdownButton({
     </div>
   )
 }
+
+export { PrintDropdownButton as PrintDropdownButtonV2 }
+export type { PrintDropdownButtonProps as PrintDropdownButtonV2Props }

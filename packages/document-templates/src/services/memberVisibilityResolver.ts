@@ -2,7 +2,7 @@ import {
   normalizeTemplateKey,
   toCanonicalDocId,
 } from "../constants/template-constants";
-import { defaultScopeForRole, DOC_GROUPS, DocGroup } from "../constants/visibility.config";
+import { defaultScopeForRole, DOC_GROUPS, DocGroup, parseTargets } from "../constants/visibility.config";
 import { TemplateRegistryService } from "./templateRegistryService";
 
 export type OverrideState = "inherit" | "show" | "hide";
@@ -179,16 +179,6 @@ export function resolveMemberVisibility(
       };
     }
     if (scopeStr === "ozel") {
-      const parseTargets = (raw?: any): string[] => {
-        if (Array.isArray(raw)) return raw.map(String);
-        if (!raw) return [];
-        try {
-          const v = JSON.parse(raw);
-          return Array.isArray(v) ? v.map(String) : [String(v)];
-        } catch {
-          return [String(raw)];
-        }
-      };
       const rawTargets = parseTargets(member.hedef_belgeler ?? member.hedefBelgeler);
       const cleanTargets = rawTargets.flatMap((t) => {
         if (t === "*" || t === "all") return [t];

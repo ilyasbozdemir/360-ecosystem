@@ -8,6 +8,7 @@ import {
   PersonelCard,
 } from "../../document/ApprovalSignature";
 import { PiyasaFiyatArastirmaGorevlendirmesiData } from "./PiyasaFiyatArastirmaGorevlendirmesi.schema";
+import { formatUnvan } from "../../utils/textHelpers";
 
 interface Props {
   data?: Partial<PiyasaFiyatArastirmaGorevlendirmesiData> & Record<string, any>;
@@ -47,15 +48,6 @@ export const PiyasaFiyatArastirmaGorevlendirmesi: React.FC<Props> = ({
     }
 
     return false;
-  };
-
-  const formatUnvan = (unvan?: string) => {
-    if (!unvan || !unvan.trim()) return "";
-    const trimmed = unvan.trim();
-    if (trimmed.startsWith("(") && trimmed.endsWith(")")) {
-      return trimmed;
-    }
-    return `(${trimmed})`;
   };
 
   // Ham görevli listesini topla (gorevlendirilenler, fiyatKomisyonu, gorevliler, dagitimListesi)

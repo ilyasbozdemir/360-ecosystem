@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react'
+import { useClickOutside } from '../../hooks/useClickOutside'
 import { Search, ChevronDown, Check, X, UserPlus, User } from 'lucide-react'
 
 export interface PersonelOption {
@@ -52,22 +53,20 @@ export function PersonelCombobox({
     })
   }, [personeller, searchTerm])
 
-  // Click outside listener
+  useClickOutside(
+    containerRef,
+    () => {
+      setIsOpen(false)
+      setSearchTerm('')
+    },
+    isOpen
+  )
+
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
-        setSearchTerm('')
-      }
-    }
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
       setTimeout(() => {
         searchInputRef.current?.focus()
       }, 50)
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [isOpen])
 

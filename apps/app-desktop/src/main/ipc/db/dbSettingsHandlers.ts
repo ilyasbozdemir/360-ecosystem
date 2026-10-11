@@ -2,6 +2,7 @@ import { ipcMain, dialog } from 'electron'
 import fs from 'fs'
 import os from 'os'
 import { workspaceManager } from '../../database/workspace'
+import { getSetting } from '../../utils/settingsHelper'
 import { savePasswordToHistory } from './dbAuthHandlers'
 
 /**
@@ -133,18 +134,6 @@ export function registerDbSettingsHandlers(): void {
    */
   ipcMain.handle('db:export-smtp', async () => {
     try {
-      const db = workspaceManager.getDb()
-      const getSetting = (key: string): string => {
-        try {
-          const row = db.prepare('SELECT value FROM settings WHERE key = ?').get(key) as
-            | { value?: string }
-            | undefined
-          return row?.value || ''
-        } catch {
-          return ''
-        }
-      }
-
       const smtpHost = getSetting('smtpHost') || getSetting('smtp_host')
       const smtpPort = getSetting('smtpPort') || getSetting('smtp_port') || '587'
       const smtpUser = getSetting('smtpUser') || getSetting('smtp_user')

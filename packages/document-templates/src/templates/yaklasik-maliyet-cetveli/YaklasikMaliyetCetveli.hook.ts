@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { YaklasikMaliyetCetveliData } from "./YaklasikMaliyetCetveli.schema";
+import { formatMoney } from "../../utils/textHelpers";
 
 export interface ProcessedKalem {
   siraNo: number;
@@ -50,51 +51,7 @@ export interface UseYaklasikMaliyetCetveliResult {
   getFirmTitle: (f: any, idx: number) => string;
 }
 
-const formatMoney = (val: any): string => {
-  if (val === undefined || val === null || val === "") return "0,00";
-  if (typeof val === "number") {
-    return isNaN(val)
-      ? "0,00"
-      : val.toLocaleString("tr-TR", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        });
-  }
-  const str = String(val).trim();
-  if (!str || str === "-") return str;
 
-  // If already formatted like 1.234,56
-  if (/^\d{1,3}(\.\d{3})*,\d{2}$/.test(str)) {
-    return str;
-  }
-  // If formatted like 1234,56 without thousand separator dots
-  if (/^\d+,\d{2}$/.test(str)) {
-    const [intPart, decPart] = str.split(",");
-    return Number(intPart).toLocaleString("tr-TR") + "," + decPart;
-  }
-
-  // Raw numeric strings like "1234.56" or "1234"
-  const cleanStr = str.replace(/[^0-9.,-]/g, "");
-  if (!cleanStr) return str;
-
-  let num: number;
-  if (cleanStr.includes(",") && !cleanStr.includes(".")) {
-    num = parseFloat(cleanStr.replace(",", "."));
-  } else if (cleanStr.includes(".") && cleanStr.includes(",")) {
-    num = parseFloat(cleanStr.replace(/\./g, "").replace(",", "."));
-  } else {
-    num = parseFloat(cleanStr);
-  }
-
-  if (!isNaN(num)) {
-    return num.toLocaleString("tr-TR", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-  }
-
-  return str;
-};
 
 const getFirmTitle = (f: any, idx: number): string => {
   if (!f) return `Firma ${idx + 1}`;

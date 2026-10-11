@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useRef } from 'react'
 import { ChevronRight, MoreHorizontal } from 'lucide-react'
 import { HeaderMenu } from './header.types'
+import { useClickOutside } from '../../../hooks/useClickOutside'
 import appIcon from '../../../assets/icon.png'
 
 interface NativeMenuBarProps {
@@ -20,16 +21,14 @@ export const NativeMenuBar = React.memo(function NativeMenuBar({
   const [hoveredSubMenu, setHoveredSubMenu] = useState<string | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent): void {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setActiveMenu(null)
-        setHoveredSubMenu(null)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  useClickOutside(
+    containerRef,
+    () => {
+      setActiveMenu(null)
+      setHoveredSubMenu(null)
+    },
+    Boolean(activeMenu || hoveredSubMenu)
+  )
 
   const handleMenuHover = (menuName: string): void => {
     if (activeMenu) {

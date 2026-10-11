@@ -1,6 +1,7 @@
 import React from 'react'
 import { Plus, X } from 'lucide-react'
 import { FormFieldV2, TableRowItem } from '../../../types/formBuilder.types'
+import { calculateTableTotal } from '../utils'
 
 interface InspectorTableManagerProps {
   activeField: FormFieldV2
@@ -15,15 +16,6 @@ export const InspectorTableManager: React.FC<InspectorTableManagerProps> = ({
   onUpdateTableRow,
   onDeleteTableRow
 }) => {
-  const calculateTableTotal = (rows?: TableRowItem[]): number => {
-    if (!rows || rows.length === 0) return 0
-    return rows.reduce((acc, r) => {
-      const top =
-        typeof r.toplamFiyat === 'number' ? r.toplamFiyat : parseFloat(String(r.toplamFiyat)) || 0
-      return acc + top
-    }, 0)
-  }
-
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">

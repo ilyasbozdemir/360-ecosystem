@@ -40,8 +40,8 @@ export function getDativeSuffix(name?: string): string {
  * Kurum / Birim adının tamlayan (ilgi/iyelik) ekini (-in / -ın / -un / -ün / -nin / -nın vb.) türetir.
  * Örnek: "Müdürlüğü" -> "Müdürlüğünün", "Başkanlığı" -> "Başkanlığının"
  */
-export function toPossessiveSuffix(str: string): string {
-  if (!str) return "Kurumumuzun";
+export function toPossessiveSuffix(str: string, fallback: string = "Kurumumuzun"): string {
+  if (!str) return fallback;
   const trimmed = str.trim();
   const lower = trimmed.toLowerCase();
   if (
@@ -108,6 +108,55 @@ export function formatCurrency(
 }
 
 /**
+ * Tutarı Türkçe para formatına (1.234,56 veya 0,00) dönüştürür.
+ */
+export function formatMoney(val: any): string {
+  if (val === undefined || val === null || val === "") return "0,00";
+  if (typeof val === "number") {
+    return isNaN(val)
+      ? "0,00"
+      : val.toLocaleString("tr-TR", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
+  }
+  const str = String(val).trim();
+  if (!str || str === "-") return str;
+
+  // If already formatted like 1.234,56
+  if (/^\d{1,3}(\.\d{3})*,\d{2}$/.test(str)) {
+    return str;
+  }
+  // If formatted like 1234,56 without thousand separator dots
+  if (/^\d+,\d{2}$/.test(str)) {
+    const [intPart, decPart] = str.split(",");
+    return Number(intPart).toLocaleString("tr-TR") + "," + decPart;
+  }
+
+  // Raw numeric strings like "1234.56" or "1234"
+  const cleanStr = str.replace(/[^0-9.,-]/g, "");
+  if (!cleanStr) return str;
+
+  let num: number;
+  if (cleanStr.includes(",") && !cleanStr.includes(".")) {
+    num = parseFloat(cleanStr.replace(",", "."));
+  } else if (cleanStr.includes(".") && cleanStr.includes(",")) {
+    num = parseFloat(cleanStr.replace(/\./g, "").replace(",", "."));
+  } else {
+    num = parseFloat(cleanStr);
+  }
+
+  if (!isNaN(num)) {
+    return num.toLocaleString("tr-TR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  }
+
+  return str;
+}
+
+/**
  * GG.AA.YYYY formatındaki Türkçe tarihi ISO YYYY-MM-DD formatına dönüştürür.
  */
 export function toIsoDate(trDateStr?: string | null): string {
@@ -162,3 +211,16 @@ export function toTrDate(isoOrStr?: any): string {
 }
 
 export const formatDateTR = toTrDate;
+
+/**
+ * Unvan metnini parantez içine alır (örneğin: "Mühendis" -> "(Mühendis)").
+ * Zaten parantez içindeyse tekrar eklemez.
+ */
+export function formatUnvan(unvan?: string): string {
+  if (!unvan || !unvan.trim()) return "";
+  const trimmed = unvan.trim();
+  if (trimmed.startsWith("(") && trimmed.endsWith(")")) {
+    return trimmed;
+  }
+  return `(${trimmed})`;
+}

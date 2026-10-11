@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Package, Download, Printer, Search, Building2, Tag } from 'lucide-react'
+import { exportCsv } from '../../../utils/csvExport'
 
 const fmt = (n: number) =>
   n.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ₺'
@@ -138,13 +139,7 @@ export const MalzemeHarcamaView: React.FC<MalzemeHarcamaViewProps> = ({
       `"${it.tarih}"`,
       `"${(it.kazanan_firma || '').replace(/"/g, '""')}"`
     ])
-    const csv = '\uFEFF' + [headers.join(';'), ...rows.map((r) => r.join(';'))].join('\n')
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `Malzeme_Harcama_Raporu_${yil}.csv`
-    a.click()
+    exportCsv(`Malzeme_Harcama_Raporu_${yil}.csv`, headers, rows)
   }
 
   return (

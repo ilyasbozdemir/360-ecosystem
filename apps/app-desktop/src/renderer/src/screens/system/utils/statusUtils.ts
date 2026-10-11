@@ -19,6 +19,13 @@ export const parseStatusAndName = (
   return { status, cleanName }
 }
 
+export const getCleanName = (ad: string): string => {
+  let clean = ad
+  const matchStatus = clean.match(/^\[(.*?)\]\s*(.*)$/)
+  if (matchStatus) clean = matchStatus[2].trim()
+  return clean
+}
+
 export const getStatusBadgeClass = (status: string): string => {
   const lower = status.toLowerCase()
   if (

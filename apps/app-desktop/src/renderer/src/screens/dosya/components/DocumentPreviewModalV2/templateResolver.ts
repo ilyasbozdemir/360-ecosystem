@@ -498,30 +498,8 @@ export const TEMPLATE_ALIASES: Record<string, string> = {
   'kapak-ici-indeks-sablonu': 'ihtiyac-listesi'
 }
 
-export function normalizeTemplateKey(str: string | null | undefined): string {
-  if (!str) return ''
-  let cleaned = str.trim()
-  // Strip common category folder prefixes
-  cleaned = cleaned.replace(/^(?:\d+-[a-zA-Z0-9_-]+[/\\])+/g, '')
-  // Strip file extensions and index suffixes
-  cleaned = cleaned
-    .replace(/[/\\]index(\.html|\.mustache)?$/i, '')
-    .replace(/\.html$/i, '')
-    .replace(/\.mustache$/i, '')
-    .replace(/^\d+[-_]/, '') // 01_, 01-
-    .toLocaleLowerCase('tr-TR')
-    .toLowerCase()
-    .replace(/ğ/g, 'g')
-    .replace(/ü/g, 'u')
-    .replace(/ş/g, 's')
-    .replace(/ı/g, 'i')
-    .replace(/ö/g, 'o')
-    .replace(/ç/g, 'c')
-    .replace(/[^a-z0-9]/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
-  return cleaned
-}
+import { normalizeTemplateKey } from '@temin360/document-templates'
+export { normalizeTemplateKey }
 
 export function resolveTemplateConfig(documentId: string | null | undefined): {
   config: TemplateType

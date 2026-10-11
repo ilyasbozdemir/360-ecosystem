@@ -9,7 +9,9 @@ import {
   ShieldCheck
 } from 'lucide-react'
 import { Modal } from '../ui/Modal'
+import { formatFileSize } from '../ui/google-drive/gdriveUtils'
 import { useWorkspaceStore } from '../../store/workspaceStore'
+import { useClickOutside } from '../../hooks/useClickOutside'
 
 interface GDriveFile {
   id: string
@@ -169,19 +171,13 @@ export function GoogleDriveFooterWidget(): React.JSX.Element | null {
 
     window.addEventListener('workspace-saved', handleSaved)
 
-    const handleClickOutside = (e: MouseEvent) => {
-      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
-        setShowPopover(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-
     return () => {
       clearInterval(interval)
       window.removeEventListener('workspace-saved', handleSaved)
-      document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [fileName, activeMeta?.updated_at])
+
+  useClickOutside(popoverRef, () => setShowPopover(false), showPopover)
 
   const handleApplyCloudUpdate = async (): Promise<void> => {
     if (!newerFile || !window.electron?.ipcRenderer) return
@@ -212,14 +208,6 @@ export function GoogleDriveFooterWidget(): React.JSX.Element | null {
   const openGDriveSettings = (): void => {
     window.dispatchEvent(new CustomEvent('open-gdrive-modal'))
     setShowPopover(false)
-  }
-
-  const formatFileSize = (bytes?: string | number): string => {
-    const b = typeof bytes === 'string' ? parseInt(bytes, 10) : bytes
-    if (!b || isNaN(b)) return ''
-    if (b < 1024) return `${b} B`
-    if (b < 1024 * 1024) return `${(b / 1024).toFixed(1)} KB`
-    return `${(b / (1024 * 1024)).toFixed(2)} MB`
   }
 
   const formatDateTime = (isoString?: string | null): string => {

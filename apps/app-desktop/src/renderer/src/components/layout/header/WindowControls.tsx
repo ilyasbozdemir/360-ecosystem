@@ -1,10 +1,9 @@
 import React from 'react'
 import { Minus, Square, X } from 'lucide-react'
+import { useWindowControls } from '../../../hooks/useWindowControls'
 
 export const WindowControls = React.memo(function WindowControls(): React.JSX.Element {
-  const handleMinimize = (): void => window.electron?.ipcRenderer.send('window-minimize')
-  const handleMaximize = (): void => window.electron?.ipcRenderer.send('window-maximize')
-  const handleClose = (): void => window.electron?.ipcRenderer.send('window-close')
+  const { minimize, maximize, close } = useWindowControls()
 
   return (
     <div
@@ -12,7 +11,7 @@ export const WindowControls = React.memo(function WindowControls(): React.JSX.El
       style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
     >
       <button
-        onClick={handleMinimize}
+        onClick={minimize}
         className="w-11 h-9 flex items-center justify-center text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
         title="Simge Durumuna Küçült"
       >
@@ -20,7 +19,7 @@ export const WindowControls = React.memo(function WindowControls(): React.JSX.El
       </button>
 
       <button
-        onClick={handleMaximize}
+        onClick={maximize}
         className="w-11 h-9 flex items-center justify-center text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
         title="Ekranı Kapla / Geri Getir"
       >
@@ -28,7 +27,7 @@ export const WindowControls = React.memo(function WindowControls(): React.JSX.El
       </button>
 
       <button
-        onClick={handleClose}
+        onClick={close}
         className="w-11 h-9 flex items-center justify-center text-slate-500 hover:text-white hover:bg-rose-600 transition-colors cursor-pointer"
         title="Kapat"
       >

@@ -105,7 +105,7 @@ export function groupOfDocument(docIds: string | string[]): DocGroup | null {
   return groups.find((g) => inGroup(g, resolvedIds)) ?? null
 }
 
-function parseTargets(raw?: string | string[] | null): string[] {
+export function parseTargets(raw?: string | string[] | null | any): string[] {
   if (Array.isArray(raw)) return raw.map(String)
   if (!raw) return []
   try {

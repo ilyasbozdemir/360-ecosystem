@@ -14,6 +14,7 @@ import {
 import { RaporFilters } from '../raporlar.hooks'
 import { useDokumanlarRaporu, RaporDokumanItem } from '../useDokumanlarRaporu'
 import { DokumanEkleModal } from './DokumanEkleModal'
+import { exportCsv } from '../../../utils/csvExport'
 
 interface DokumanlarViewProps {
   filters: RaporFilters
@@ -60,7 +61,7 @@ export function DokumanlarView({ filters }: DokumanlarViewProps): React.JSX.Elem
     refetch()
   }
 
-  const handleExportCSV = () => {
+  const handleExportCSV = (): void => {
     if (data.length === 0) return
     const headers = ['İhale No', 'İhale Adı', 'Dosya Adı', 'Format', 'Eklenme Tarihi', 'Birim']
     const rows = data.map((d) => [
@@ -71,12 +72,7 @@ export function DokumanlarView({ filters }: DokumanlarViewProps): React.JSX.Elem
       `"${d.eklenme_tarihi}"`,
       `"${d.birim || ''}"`
     ])
-    const csvContent = '\uFEFF' + [headers.join(';'), ...rows.map((r) => r.join(';'))].join('\n')
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-    const link = document.createElement('a')
-    link.href = URL.createObjectURL(blob)
-    link.download = `ihale_dokumanlari_raporu_${new Date().toISOString().split('T')[0]}.csv`
-    link.click()
+    exportCsv(`ihale_dokumanlari_raporu_${new Date().toISOString().split('T')[0]}.csv`, headers, rows)
   }
 
   const getFormatBadge = (fmt: string) => {
