@@ -13,6 +13,7 @@ import { recentFilesStore } from '../store/recentFiles'
 import { pocketBaseSyncService, PocketBaseConfig } from '../services/pocketbaseSyncService'
 import { minioSyncService, MinIOConfig } from '../services/minioSyncService'
 import { getDeviceInfo } from '../utils/deviceInfo'
+import { getSmtpSetting } from '../utils/settingsHelper'
 export { getDeviceInfo }
 
 export function registerWorkspaceIpcHandlers(closeAllSecondaryWindows: () => void): void {
@@ -1175,18 +1176,6 @@ export function registerWorkspaceIpcHandlers(closeAllSecondaryWindows: () => voi
           skipped: true,
           message:
             'Dosyada son gönderimden bu yana herhangi bir değişiklik bulunmadığı için e-posta gönderimi atlandı.'
-        }
-      }
-
-      const db = workspaceManager.getDb()
-      const getSmtpSetting = (k1: string, k2: string): string => {
-        try {
-          const row = db
-            .prepare('SELECT value FROM settings WHERE key = ? OR key = ?')
-            .get(k1, k2) as { value?: string } | undefined
-          return row?.value || ''
-        } catch {
-          return ''
         }
       }
 

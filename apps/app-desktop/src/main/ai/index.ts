@@ -2,6 +2,7 @@ import { GoogleGenAI } from '@google/genai'
 import OpenAI from 'openai'
 import Anthropic from '@anthropic-ai/sdk'
 import { workspaceManager } from '../database/workspace'
+import { getSetting } from '../utils/settingsHelper'
 
 export interface AIGenerateOptions {
   prompt: string
@@ -13,19 +14,6 @@ export interface AIResult {
   success: boolean
   data?: string
   error?: string
-}
-
-// ─── Ortak yardımcı: Settings'ten anahtar çek ─────────────────────────────
-function getSetting(key: string): string | undefined {
-  try {
-    const db = workspaceManager.getDb()
-    const row = db.prepare('SELECT value FROM settings WHERE key = ?').get(key) as
-      | { value: string }
-      | undefined
-    return row?.value
-  } catch {
-    return undefined
-  }
 }
 
 // ─── Gemini ────────────────────────────────────────────────────────────────
