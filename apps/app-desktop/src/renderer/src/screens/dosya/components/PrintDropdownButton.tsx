@@ -117,13 +117,6 @@ export function PrintDropdownButton({
     })
   }, [sablons, kategori])
 
-  function getCleanName(ad: string): string {
-    let clean = ad
-    const matchStatus = clean.match(/^\[(.*?)\]\s*(.*)$/)
-    if (matchStatus) clean = matchStatus[2].trim()
-    return clean
-  }
-
   function isSablonMatch(docStr: string, sablon: any): boolean {
     if (!docStr || !sablon) return false
     const cleanDocStr = docStr.replace(/\.html$/i, '')

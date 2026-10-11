@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { getCleanName } from '@renderer/screens/system/utils/statusUtils'
 import { normalizeForMatch } from '../../useDosyaAsamasiSablons'
 
 export function usePiyasaFiyatPresets(sablons: any[], activeStarredDocs: string[]) {
@@ -38,13 +39,6 @@ export function usePiyasaFiyatPresets(sablons: any[], activeStarredDocs: string[
         s.kategori === '2-piyasa-fiyat-arastirmasi' || s.kategori === '2. Piyasa Fiyat Araştırması'
     )
   }, [sablons])
-
-  function getCleanName(ad: string): string {
-    let clean = ad
-    const matchStatus = clean.match(/^\[(.*?)\]\s*(.*)$/)
-    if (matchStatus) clean = matchStatus[2].trim()
-    return clean
-  }
 
   const starredDocsForFilter = useMemo(() => {
     const activePresetId = selectedPresetId || (presets.length > 0 ? presets[0].id : '')

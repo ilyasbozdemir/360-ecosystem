@@ -13,18 +13,8 @@ import { useCiktiMerkeziData } from '../CiktiMerkezi.hooks'
 import { StatusFilterType } from '../components/CiktiStatusFilterTabs'
 import { ToastInfo } from '../components/CiktiToast'
 
-export const normalizeForMatch = (str: string): string => {
-  return str
-    .toLocaleLowerCase('tr-TR')
-    .replace(/ğ/g, 'g')
-    .replace(/ü/g, 'u')
-    .replace(/ş/g, 's')
-    .replace(/ı/g, 'i')
-    .replace(/i̇/g, 'i')
-    .replace(/ö/g, 'o')
-    .replace(/ç/g, 'c')
-    .replace(/[^a-z0-9]/g, '')
-}
+import { normalizeForMatch } from '@renderer/utils/formatters'
+export { normalizeForMatch }
 
 export const getSablonGroup = (sablon: Sablon): string => {
   if (sablon.kategori) return sablon.kategori
