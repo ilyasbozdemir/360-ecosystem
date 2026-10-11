@@ -28,6 +28,7 @@ import { BIRIM_KATEGORILERI, useOlcuBirimleri } from '../olcubirimleri/olcubirim
 import { useOkasKodHooks } from '../okaskod/okaskod.hooks'
 import { useTasinirKodHooks } from '../tasinirkod/tasinirkod.hooks'
 import { cn } from '../../utils/cn'
+import { generateBarcode } from '../../utils/barcodeUtils'
 import { PozSecimModal, SelectedPozData } from './components/PozSecimModal'
 import { getDinamikFiyatDonemleri } from './components/pozKitaplari.data'
 import {
@@ -70,8 +71,6 @@ export default function YeniMalzemeScreen(): React.JSX.Element {
   const { data: birimler = [] } = useOlcuBirimleri()
   const { okasKodList, isLoading: isOkasLoading } = useOkasKodHooks()
   const { tasinirKodList, isLoading: isTasinirLoading } = useTasinirKodHooks()
-
-  const generateBarcode = () => Math.floor(1000000000000 + Math.random() * 9000000000000).toString()
 
   // Entry Mode: 'batch' for fast Excel-style multiple items or 'single' for detailed single item form
   const [entryMode, setEntryMode] = useState<'batch' | 'single'>(editId ? 'single' : 'batch')

@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { generateBarcode } from '../../utils/barcodeUtils'
 
 export interface PozFiyatGecmisi {
   donem: string
@@ -33,8 +34,6 @@ export interface PozItem {
   kdv_orani?: number
   aktif_mi?: number
 }
-
-const generateBarcode = () => Math.floor(1000000000000 + Math.random() * 9000000000000).toString()
 
 const fetchPozlar = async (): Promise<PozItem[]> => {
   const res = await window.electron.ipcRenderer.invoke(
