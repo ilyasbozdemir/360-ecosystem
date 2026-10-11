@@ -43,7 +43,6 @@ export * from "./templates/teknik-sartname";
 // Mapping Resolver
 export * from "./resolver/types";
 export * from "./resolver/mappingResolver";
-export * from "./resolver/MappingResolverTest";
 export * from "./resolver/TemplateResolver";
 
 export * from "./constants/template-registry";
