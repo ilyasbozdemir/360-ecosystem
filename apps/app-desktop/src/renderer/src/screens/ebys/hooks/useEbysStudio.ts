@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from 'react'
 import { EBYS_TEMPLATES } from '../data/ebysTemplates.data'
 import { EbysCategory, EbysTemplateVariables } from '../ebys.types'
 
-export type StudioTab = 'preview' | 'html' | 'css' | 'mevzuat'
+export type StudioTab = 'preview' | 'resmi_yazi' | 'html' | 'css' | 'mevzuat'
 
 export function useEbysStudio() {
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('ust_yazi_standart')
