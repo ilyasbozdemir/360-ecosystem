@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { IhtiyacListesiType } from '@temin360/document-templates'
 import { useWorkspaceStore } from '../../../../../store/workspaceStore'
 import { useSettingsStore } from '../../../../../store/settingsStore'
+import { useClickOutside } from '../../../../../hooks/useClickOutside'
 import { Personel } from '../types'
 import { resolveTemplateConfig, TEMPLATE_OPTIONS } from '../templateResolver'
 import { documentPreloadService } from '../../../../../services/documentPreloadService'
@@ -220,17 +221,7 @@ export function useDocumentPreviewData({
   ])
 
   // Dropdown outside click handler
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setDownloadOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [])
+  useClickOutside(dropdownRef, () => setDownloadOpen(false))
 
   // Save handler
   const handleSaveToDb = async (): Promise<void> => {

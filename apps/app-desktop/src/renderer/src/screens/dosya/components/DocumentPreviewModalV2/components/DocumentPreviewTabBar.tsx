@@ -1,7 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { ChevronDown, FileText, Layers, Plus, X, Copy, Check } from "lucide-react";
 import { DocumentPreviewTab } from "../../../../../store/globalDocumentPreviewStore";
 import { TemplateOptionItem } from "../templateResolver";
+import { useClickOutside } from "../../../../../hooks/useClickOutside";
 
 import { copyToClipboard } from "../../../../../utils/copyToClipboard";
 
@@ -39,19 +40,7 @@ export function DocumentPreviewTabBar({
     setTimeout(() => setCopiedId(null), 1500);
   };
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent): void => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setDropdownOpen(false);
-      }
-    };
-    if (dropdownOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [dropdownOpen]);
+  useClickOutside(menuRef, () => setDropdownOpen(false), dropdownOpen);
 
   if (tabs.length === 0) return null;
 

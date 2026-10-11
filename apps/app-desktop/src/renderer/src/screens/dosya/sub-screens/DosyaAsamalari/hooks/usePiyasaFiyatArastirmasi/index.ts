@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
+import { useClickOutside } from '../../../../../../hooks/useClickOutside'
 import { useDosyaAsamasiSablons } from '../../useDosyaAsamasiSablons'
 import { useTabStore } from '../../../../../../store/tabStore'
 import { usePiyasaFiyatData } from './usePiyasaFiyatData'
@@ -28,15 +29,7 @@ export function usePiyasaFiyatArastirmasiLogic() {
   const [belgeMenuOpen, setBelgeMenuOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setBelgeMenuOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  useClickOutside(dropdownRef, () => setBelgeMenuOpen(false))
 
   const presetsHook = usePiyasaFiyatPresets(sablons, activeStarredDocs)
 
