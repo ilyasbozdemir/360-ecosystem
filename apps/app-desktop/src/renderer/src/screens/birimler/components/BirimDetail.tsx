@@ -151,31 +151,46 @@ export const BirimDetail: React.FC<BirimDetailProps> = ({
             </div>
           )}
 
-          {viewingBirim.ihtiyac_yeri_eki && (
-            <div className="col-span-full p-4 bg-amber-50/50 dark:bg-amber-900/10 rounded-xl border border-amber-100 dark:border-amber-900/30">
-              <span className="flex items-center gap-1.5 text-xs font-bold text-amber-600/70 dark:text-amber-500/70 uppercase tracking-wider mb-3">
-                <MapPin className="w-4 h-4 text-amber-500" /> İhtiyaç Yerleri
-              </span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                {viewingBirim.ihtiyac_yeri_eki
-                  .split('\n')
-                  .filter((y: string) => y.trim())
-                  .map((yer: string, index: number) => (
-                    <div
-                      key={index}
-                      className="flex items-center gap-2 bg-white dark:bg-slate-900 p-2.5 rounded-lg border border-amber-200/50 dark:border-amber-800/50 shadow-sm"
-                    >
-                      <div className="w-5 h-5 rounded-full bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 flex items-center justify-center text-[10px] font-bold shrink-0">
-                        {index + 1}
+          {viewingBirim.ihtiyac_yeri_eki &&
+            viewingBirim.ihtiyac_yeri_eki !== '[]' &&
+            viewingBirim.ihtiyac_yeri_eki !== '[""]' && (() => {
+              let items: string[] = []
+              try {
+                if (viewingBirim.ihtiyac_yeri_eki.startsWith('[')) {
+                  const parsed = JSON.parse(viewingBirim.ihtiyac_yeri_eki)
+                  if (Array.isArray(parsed)) {
+                    items = parsed.map((s: any) => String(s || '').trim()).filter(Boolean)
+                  }
+                }
+              } catch {}
+              if (items.length === 0) {
+                items = viewingBirim.ihtiyac_yeri_eki.split('\n').map((y: string) => y.trim()).filter(Boolean)
+              }
+              if (items.length === 0) return null
+
+              return (
+                <div className="col-span-full p-4 bg-amber-50/50 dark:bg-amber-900/10 rounded-xl border border-amber-100 dark:border-amber-900/30">
+                  <span className="flex items-center gap-1.5 text-xs font-bold text-amber-600/70 dark:text-amber-500/70 uppercase tracking-wider mb-3">
+                    <MapPin className="w-4 h-4 text-amber-500" /> İhtiyaç Yerleri
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    {items.map((yer: string, index: number) => (
+                      <div
+                        key={index}
+                        className="flex items-center gap-2 bg-white dark:bg-slate-900 p-2.5 rounded-lg border border-amber-200/50 dark:border-amber-800/50 shadow-sm"
+                      >
+                        <div className="w-5 h-5 rounded-full bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 flex items-center justify-center text-[10px] font-bold shrink-0">
+                          {index + 1}
+                        </div>
+                        <span className="text-sm text-slate-700 dark:text-slate-300 font-medium truncate">
+                          {yer}
+                        </span>
                       </div>
-                      <span className="text-sm text-slate-700 dark:text-slate-300 font-medium truncate">
-                        {yer}
-                      </span>
-                    </div>
-                  ))}
-              </div>
-            </div>
-          )}
+                    ))}
+                  </div>
+                </div>
+              )
+            })()}
         </div>
       </div>
     </div>

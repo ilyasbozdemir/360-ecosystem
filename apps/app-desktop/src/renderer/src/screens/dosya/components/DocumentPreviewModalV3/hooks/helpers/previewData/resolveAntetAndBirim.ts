@@ -67,12 +67,18 @@ export async function resolveAntetAndBirim(
     formatDateString(dosyaObj.onay_tarihi) || baseData.onayTarihi || formattedAcilisTarihi
 
   baseData.kurumumuz = baseData.kurumumuz || ctx.kurumumuz || ctx.altKurumBizim || 'İdaremiz'
-  baseData.ihtiyacYeri =
+  const rawIhtiyac =
     dosyaObj.ihtiyac_yeri ||
     baseData.ihtiyacYeri ||
     ctx.ihtiyacYeri ||
     dosyaObj.ihtiyac_yeri_eki ||
-    'İdaremizin'
+    ctx.altKurumBulunma ||
+    ctx.altKurumBizim ||
+    'İdaremizde'
+  baseData.ihtiyacYeri =
+    rawIhtiyac === '[]' || rawIhtiyac === '[""]'
+      ? (ctx.altKurumBulunma || 'İdaremizde')
+      : rawIhtiyac
 
   let matchedBirimName =
     dosyaObj.islem_yapan_birim ||

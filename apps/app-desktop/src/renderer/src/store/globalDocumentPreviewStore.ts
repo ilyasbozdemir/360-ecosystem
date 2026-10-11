@@ -1,4 +1,6 @@
 import { create } from 'zustand'
+import { useTabStore } from './tabStore'
+import { APP_ROUTES } from '../constants/routeConstants'
 
 export interface DocumentPreviewTab {
   tabId: string
@@ -80,6 +82,21 @@ export const useGlobalDocumentPreviewStore = create<GlobalDocumentPreviewState>(
     const tabId = generateTabId(params)
     const { tabs } = get()
     const existingIndex = tabs.findIndex((t) => t.tabId === tabId)
+
+    // Uygulama sekmesine dahil et (yeni tab olarak aç veya mevcut sekmeye odaklan)
+    if (!params.startAsBalloon) {
+      const titleParam = params.documentTitle ? `&title=${encodeURIComponent(params.documentTitle)}` : ''
+      const idParam = params.dosyaId ? `&id=${params.dosyaId}` : ''
+      const docParam = `doc=${encodeURIComponent(params.documentId)}`
+      const targetPath = `${APP_ROUTES.BELGE_ONIZLEME}?${docParam}${idParam}${titleParam}`
+      useTabStore.getState().addTab(targetPath)
+      if (typeof window !== 'undefined') {
+        const cleanHash = window.location.hash.replace(/^#/, '')
+        if (cleanHash !== targetPath) {
+          window.location.hash = targetPath
+        }
+      }
+    }
 
     if (existingIndex >= 0) {
       // Sekme zaten açık, sadece o sekmeye odaklan

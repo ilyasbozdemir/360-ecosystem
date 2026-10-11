@@ -1,5 +1,5 @@
 import type { TableColumnMapping } from '../types';
-import { toPossessiveSuffix } from '../../utils/textHelpers';
+import { toPossessiveSuffix, toLocativeSuffix } from '../../utils/textHelpers';
 
 export async function resolveSingleColumn(
   rule: TableColumnMapping,
@@ -193,52 +193,64 @@ export async function resolveSingleColumn(
 
         if (!foundIhtiyacYeri) {
           const kRes = await queryExecutor(
-            'SELECT alt_kurum_bizim, alt_kurum_tipi, kurum_tipi, kurum_adi FROM TANIM_Kurum LIMIT 1',
+            'SELECT alt_kurum_bizim, alt_kurum_bulunma, alt_kurum_tipi, kurum_tipi, kurum_adi FROM TANIM_Kurum LIMIT 1',
             []
           );
           if (kRes?.[0]) {
             const kRow = kRes[0];
-            if (kRow.alt_kurum_bizim && String(kRow.alt_kurum_bizim).trim()) {
-              foundIhtiyacYeri = toPossessiveSuffix(kRow.alt_kurum_bizim.trim());
+            if (kRow.alt_kurum_bulunma && String(kRow.alt_kurum_bulunma).trim()) {
+              foundIhtiyacYeri = kRow.alt_kurum_bulunma.trim();
+            } else if (kRow.alt_kurum_bizim && String(kRow.alt_kurum_bizim).trim()) {
+              foundIhtiyacYeri = toLocativeSuffix(kRow.alt_kurum_bizim.trim());
             } else if (kRow.alt_kurum_tipi) {
               const map: Record<string, string> = {
-                belediye: 'Belediyemizin',
-                mudurluk: 'Müdürlüğümüzün',
-                bakanlik: 'Bakanlığımızın',
-                valilik: 'Valiliğimizin',
-                kaymakamlik: 'Kaymakamlığımızın',
-                universite: 'Üniversitemizin',
-                il_ozel: 'İl Özel İdaremizin',
-                koy: 'Muhtarlığımızın',
-                sgk: 'Müdürlüğümüzün',
-                kurul: 'Kurulumuzun',
-                diger: 'İdaremizin'
+                belediye: 'Belediyemizde',
+                mudurluk: 'Müdürlüğümüzde',
+                bakanlik: 'Bakanlığımızda',
+                valilik: 'Valiliğimizde',
+                kaymakamlik: 'Kaymakamlığımızda',
+                universite: 'Üniversitemizde',
+                il_ozel: 'İl Özel İdaremizde',
+                koy: 'Muhtarlığımızda',
+                sgk: 'Müdürlüğümüzde',
+                kurul: 'Kurulumuzda',
+                diger: 'İdaremizde'
               };
-              foundIhtiyacYeri = map[kRow.alt_kurum_tipi] || 'İdaremizin';
+              foundIhtiyacYeri = map[kRow.alt_kurum_tipi] || 'İdaremizde';
             } else if (kRow.kurum_tipi === 'belediye') {
-              foundIhtiyacYeri = 'Belediyemizin';
+              foundIhtiyacYeri = 'Belediyemizde';
             } else if (kRow.kurum_tipi === 'ozel_butce') {
-              foundIhtiyacYeri = 'Üniversitemizin';
+              foundIhtiyacYeri = 'Üniversitemizde';
             } else if (kRow.kurum_tipi === 'duzenleyici') {
-              foundIhtiyacYeri = 'Kurulumuzun';
+              foundIhtiyacYeri = 'Kurulumuzda';
             } else if (kRow.kurum_tipi === 'genel_butce') {
-              foundIhtiyacYeri = 'Müdürlüğümüzün';
+              foundIhtiyacYeri = 'Müdürlüğümüzde';
             } else {
-              foundIhtiyacYeri = 'İdaremizin';
+              foundIhtiyacYeri = 'İdaremizde';
             }
           }
         }
 
-        if (foundIhtiyacYeri) {
+        if (foundIhtiyacYeri && foundIhtiyacYeri !== '[]') {
           rawValue = foundIhtiyacYeri;
         }
       } catch (e) {}
     }
 
+    // Sanitize empty JSON array string
+    if (typeof rawValue === 'string' && (rawValue.trim() === '[]' || rawValue.trim() === '[""]')) {
+      rawValue = '';
+    }
+
     // Handle stringified JSON arrays
     if (typeof rawValue === 'string' && (rawValue.trim().startsWith('[') || rawValue.trim().startsWith('{'))) {
       try {
-        resolvedPayload[sablonDegiskeni] = JSON.parse(rawValue);
+        const parsedJson = JSON.parse(rawValue);
+        if (Array.isArray(parsedJson) && parsedJson.length === 0) {
+          resolvedPayload[sablonDegiskeni] = rule.varsayilan ?? '';
+        } else {
+          resolvedPayload[sablonDegiskeni] = parsedJson;
+        }
       } catch (e) {
         resolvedPayload[sablonDegiskeni] = rawValue;
       }

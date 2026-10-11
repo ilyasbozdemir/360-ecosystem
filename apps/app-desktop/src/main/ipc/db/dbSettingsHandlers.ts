@@ -21,11 +21,32 @@ export function registerDbSettingsHandlers(): void {
         key: string
         value: string
       }[]
-      const settingsObj: Record<string, string> = {}
+      const settingsObj: Record<string, string | string[] | undefined> = {}
       for (const r of rows) {
         if (r.key && r.value !== undefined && r.value !== null) {
           settingsObj[r.key] = r.value
         }
+      }
+
+      // Bilinen yüklenmiş Google Drive yedek ID'lerini topla
+      try {
+        const historyRows = db
+          .prepare(
+            "SELECT gdrive_file_id FROM LOG_YedekGecmisi WHERE gdrive_file_id IS NOT NULL AND gdrive_file_id != ''"
+          )
+          .all() as { gdrive_file_id?: string }[]
+        const knownBackupIds = historyRows
+          .map((h) => h.gdrive_file_id)
+          .filter((id): id is string => !!id)
+        if (typeof settingsObj.lastBackupFileId === 'string' && settingsObj.lastBackupFileId) {
+          knownBackupIds.push(settingsObj.lastBackupFileId)
+        }
+        settingsObj.knownBackupFileIds = Array.from(new Set(knownBackupIds))
+      } catch {
+        settingsObj.knownBackupFileIds =
+          typeof settingsObj.lastBackupFileId === 'string' && settingsObj.lastBackupFileId
+            ? [settingsObj.lastBackupFileId]
+            : []
       }
 
       // Fallback from TANIM_Kurum if not present in settings

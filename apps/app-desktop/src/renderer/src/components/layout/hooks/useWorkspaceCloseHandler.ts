@@ -116,6 +116,12 @@ export function useWorkspaceCloseHandler(
           const res = await window.electron.ipcRenderer.invoke('workspace:backup-gdrive', {
             force: true
           })
+          if (res?.fileId) {
+            localStorage.setItem('lastGdriveUploadedFileId', res.fileId)
+          }
+          if (res?.backupFileName) {
+            localStorage.setItem('lastGdriveUploadedFileName', res.backupFileName)
+          }
           if (!res?.success) {
             throw new Error(res?.error || 'Google Drive bulut yedekleme işlemi başarısız oldu.')
           }

@@ -1,5 +1,5 @@
 import { ProcessMapping } from './types';
-import { toPossessiveSuffix, formatDateTR } from '../utils/textHelpers';
+import { toPossessiveSuffix, toLocativeSuffix, formatDateTR } from '../utils/textHelpers';
 import { resolveEvrakSayisi } from './helpers/resolveEvrakSayisi';
 import { resolveAntetSatirlari } from './helpers/resolveAntetSatirlari';
 import { resolveFormula } from './helpers/resolveFormula';
@@ -7,7 +7,7 @@ import { resolveTableArray } from './helpers/resolveTableArray';
 import { resolveCommissionMembers } from './helpers/resolveCommissionMembers';
 import { resolveSingleColumn } from './helpers/resolveSingleColumn';
 
-export { toPossessiveSuffix, formatDateTR, resolveEvrakSayisi, resolveAntetSatirlari, resolveFormula };
+export { toPossessiveSuffix, toLocativeSuffix, formatDateTR, resolveEvrakSayisi, resolveAntetSatirlari, resolveFormula };
 
 /**
  * Resolves all variables in a ProcessMapping using database query execution.

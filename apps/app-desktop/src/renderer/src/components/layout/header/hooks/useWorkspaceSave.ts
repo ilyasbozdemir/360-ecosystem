@@ -27,6 +27,13 @@ export function useWorkspaceSave(): UseWorkspaceSaveReturn {
           force: true
         })
         if (gdriveRes?.success) {
+          if (gdriveRes.fileId) {
+            localStorage.setItem('lastGdriveUploadedFileId', gdriveRes.fileId)
+          }
+          if (gdriveRes.backupFileName) {
+            localStorage.setItem('lastGdriveUploadedFileName', gdriveRes.backupFileName)
+          }
+          window.dispatchEvent(new CustomEvent('workspace-saved'))
           setSaveFeedback(
             gdriveRes?.skipped
               ? '✓ Kaydedildi (Drive yedeği güncel)'

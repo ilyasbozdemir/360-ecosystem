@@ -124,6 +124,10 @@ const CiktiMerkeziScreen = lazyRoute(
   () => import("./screens/dosya/CiktiMerkezi.screen"),
   "CiktiMerkeziScreen",
 );
+const BelgeOnizlemeScreen = lazyRoute(
+  () => import("./screens/dosya/BelgeOnizleme.screen"),
+  "BelgeOnizlemeScreen",
+);
 
 // SubScreens
 const HazirlikVeIhtiyac = lazyRoute(
@@ -478,6 +482,12 @@ const faturaVeIrsaliyeRoute = createRoute({
   component: FaturaVeIrsaliye,
 });
 
+const belgeOnizlemeRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: APP_ROUTES.BELGE_ONIZLEME,
+  component: BelgeOnizlemeScreen,
+});
+
 const imzaliBelgelerRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: APP_ROUTES.IMZALI_BELGELER,
@@ -566,6 +576,7 @@ const routeTree = rootRoute.addChildren([
   yardimRoute,
   hesaplamaAraclariRoute,
   ebysRoute,
+  belgeOnizlemeRoute,
 ]);
 
 const hashHistory = createHashHistory();

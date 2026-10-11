@@ -3,6 +3,7 @@ import { basename } from 'path'
 import nodemailer from 'nodemailer'
 import { workspaceManager } from '../database/workspace'
 import { getSmtpSetting } from '../utils/settingsHelper'
+import { getDeviceInfo } from '../utils/deviceInfo'
 
 export async function performAutoCloudSync(): Promise<void> {
   try {
@@ -188,18 +189,27 @@ export async function performAutoCloudSync(): Promise<void> {
             const fileName = basename(curFile)
             const fileData = fs.readFileSync(curFile)
             const now = new Date()
-            const dateStr = now.toISOString().slice(0, 10)
-            const timeStr = `${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}`
+            const pad = (n: number): string => String(n).padStart(2, '0')
+            const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+            const timeStr = `${pad(now.getHours())}-${pad(now.getMinutes())}`
             const rawBase = fileName
-              .replace(/\.dtal$/i, '')
-              .replace(/_\d{4}-\d{2}-\d{2}_\\d{2}-\\d{2}$/, '')
-            const backupFileName = `${rawBase}_${dateStr}_${timeStr}.dtal`
+              .replace(/\.(temin|dtal|hkmp|dtm|dte|dta|tmn360|sqlite|db|zip|bak)$/i, '')
+              .replace(/_\d{4}[-_.]\d{2}[-_.]\d{2}(?:[-_.]\d{2}[-_.]\d{2})?$/, '')
+            const backupFileName = `${rawBase}_${dateStr}_${timeStr}.temin`
 
+            const devInfo = getDeviceInfo()
             const boundary = '--------------------------' + Date.now().toString(16)
             const metadata = JSON.stringify({
               name: backupFileName,
-              description: `TEMİN 360 Kapanış Otomatik Yedeği (${new Date().toLocaleString('tr-TR')})`,
-              parents: [folderId]
+              description: `TEMİN 360 Kapanış Otomatik Yedeği [Cihaz: ${devInfo.deviceLabel}] (${dateStr} ${timeStr.replace('-', ':')})`,
+              parents: [folderId],
+              appProperties: {
+                deviceName: devInfo.hostname,
+                userName: devInfo.username,
+                userFullName: devInfo.userFullName || devInfo.username,
+                deviceLabel: devInfo.deviceLabel,
+                appVersion: '1.0.0-beta.238'
+              }
             })
 
             const metadataBuffer = Buffer.from(
@@ -218,14 +228,51 @@ export async function performAutoCloudSync(): Promise<void> {
               closingBuffer
             ])
 
-            await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-              method: 'POST',
-              headers: {
-                Authorization: `Bearer ${cleanToken}`,
-                'Content-Type': `multipart/related; boundary=${boundary}`
-              },
-              body: multipartBody
-            })
+            const uploadRes = await fetch(
+              'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
+              {
+                method: 'POST',
+                headers: {
+                  Authorization: `Bearer ${cleanToken}`,
+                  'Content-Type': `multipart/related; boundary=${boundary}`
+                },
+                body: multipartBody
+              }
+            )
+
+            if (uploadRes.ok) {
+              const uploadedFile = (await uploadRes.json()) as { id?: string }
+              if (uploadedFile?.id && db) {
+                try {
+                  db.prepare(
+                    `INSERT INTO LOG_YedekGecmisi (hedef, dosya_adi, gdrive_file_id, boyut_bytes, surum_no, tarih, aciklama)
+                     VALUES (?, ?, ?, ?, ?, datetime('now', 'localtime'), ?)`
+                  ).run(
+                    'gdrive',
+                    backupFileName,
+                    uploadedFile.id,
+                    fileData.length,
+                    '1.0.0-beta.238',
+                    `Google Drive Kapanış Otomatik Yedeği (${devInfo.deviceLabel})`
+                  )
+                  db.prepare(
+                    `INSERT OR REPLACE INTO settings (key, value) VALUES ('lastGdriveSync', ?)`
+                  ).run(new Date().toISOString())
+                  db.prepare(
+                    `INSERT OR REPLACE INTO settings (key, value) VALUES ('lastGdriveSyncDevice', ?)`
+                  ).run(devInfo.deviceLabel)
+                  db.prepare(
+                    `INSERT OR REPLACE INTO settings (key, value) VALUES ('lastBackupFileName', ?)`
+                  ).run(backupFileName)
+                  db.prepare(
+                    `INSERT OR REPLACE INTO settings (key, value) VALUES ('lastBackupFileId', ?)`
+                  ).run(uploadedFile.id)
+                  workspaceManager.save(true)
+                } catch (dbErr) {
+                  console.warn('[AutoCloudSync] Could not save backup settings:', dbErr)
+                }
+              }
+            }
 
             workspaceManager.markSynced('gdrive')
 

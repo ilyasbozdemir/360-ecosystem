@@ -39,32 +39,47 @@ export function SubScreen({
   invitedFirms,
   onClosePreview
 }: SubScreenProps): React.JSX.Element {
-  const { activeTabPath, tabs, goBack } = useTabStore()
-  const { activeDosyaId, setActiveStarredDocs } = useWorkspaceStore()
-  const { openDocument } = useGlobalDocumentPreviewStore()
-
-  const currentTab = tabs.find((t) => t.path === activeTabPath)
-  const canGoBack = currentTab ? currentTab.currentIndex > 0 : false
+  const activeTabPath = useTabStore((s) => s.activeTabPath)
+  const canGoBack = useTabStore((s) => {
+    const currentTab = s.tabs.find((t) => t.path === s.activeTabPath)
+    return currentTab ? currentTab.currentIndex > 0 : false
+  })
+  const goBack = useTabStore((s) => s.goBack)
+  const activeDosyaId = useWorkspaceStore((s) => s.activeDosyaId)
+  const setActiveStarredDocs = useWorkspaceStore((s) => s.setActiveStarredDocs)
 
   useEffect(() => {
     document.title = `${title} - Doğrudan Temin`
   }, [title])
 
+  const lastOpenedDocRef = React.useRef<string | null>(null)
+  const onClosePreviewRef = React.useRef(onClosePreview)
+  const invitedFirmsRef = React.useRef(invitedFirms)
+  const selectedFirmaRef = React.useRef(selectedFirma)
+
   useEffect(() => {
-    if (previewDocumentId) {
-      openDocument({
+    onClosePreviewRef.current = onClosePreview
+    invitedFirmsRef.current = invitedFirms
+    selectedFirmaRef.current = selectedFirma
+  })
+
+  useEffect(() => {
+    if (previewDocumentId && lastOpenedDocRef.current !== previewDocumentId) {
+      lastOpenedDocRef.current = previewDocumentId
+      useGlobalDocumentPreviewStore.getState().openDocument({
         documentId: previewDocumentId.replace('.html', ''),
         dosyaId: activeDosyaId || undefined,
-        invitedFirms,
-        selectedFirma: selectedFirma || null,
+        invitedFirms: invitedFirmsRef.current,
+        selectedFirma: selectedFirmaRef.current || null,
         onClose: () => {
-          if (onClosePreview) {
-            onClosePreview()
-          }
+          lastOpenedDocRef.current = null
+          onClosePreviewRef.current?.()
         }
       })
+    } else if (!previewDocumentId) {
+      lastOpenedDocRef.current = null
     }
-  }, [previewDocumentId, activeDosyaId, invitedFirms, selectedFirma, openDocument, onClosePreview])
+  }, [previewDocumentId, activeDosyaId])
 
   useEffect(() => {
     if (!activeDosyaId) return

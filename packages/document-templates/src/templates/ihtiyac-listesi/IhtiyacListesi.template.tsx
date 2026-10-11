@@ -14,7 +14,10 @@ import {
   paginateData,
 } from "../../document/DynamicPaginatedTable";
 import { IhtiyacListesiType } from "./IhtiyacListesi.schema";
-import { toPossessiveSuffix } from "../../resolver/mappingResolver";
+import {
+  toLocativeSuffix,
+  toPossessiveSuffix,
+} from "../../resolver/mappingResolver";
 
 interface IhtiyacListesiProps {
   data?: Partial<IhtiyacListesiType>;
@@ -39,7 +42,7 @@ export function IhtiyacListesi({
     { key: "malzemeAdi", label: "Malzeme Adı", width: "25%", align: "left" },
     { key: "ozelligi", label: "Özelliği", width: "20%", align: "left" },
     { key: "birimi", label: "Birimi", width: "10%", align: "center" },
-    { key: "kdvOrani", label: "KDV  Oranı %", width: "8%", align: "center" },
+    { key: "kdvOrani", label: "KDV  Oranı %", width: "10%", align: "center" },
     { key: "miktar", label: "Miktar", width: "12%", align: "right" },
   ];
 
@@ -122,17 +125,25 @@ export function IhtiyacListesi({
                 >
                   <EditableField
                     name="ihtiyacYeri"
-                    value={
-                      data.ihtiyacYeri ||
-                      (data as any).ihtiyac_yeri ||
-                      (data as any).ihtiyac_yeri_eki ||
-                      toPossessiveSuffix(
+                    value={(!data.ihtiyacYeri || data.ihtiyacYeri === "[]"
+                      ? ""
+                      : data.ihtiyacYeri) ||
+                      (!((data as any).ihtiyac_yeri) ||
+                          (data as any).ihtiyac_yeri === "[]"
+                        ? ""
+                        : (data as any).ihtiyac_yeri) ||
+                      (!((data as any).ihtiyac_yeri_eki) ||
+                          (data as any).ihtiyac_yeri_eki === "[]"
+                        ? ""
+                        : (data as any).ihtiyac_yeri_eki) ||
+                      (data as any).altKurumBulunma ||
+                      (data as any).alt_kurum_bulunma ||
+                      toLocativeSuffix(
                         (data as any).altKurumBizim ||
                           (data as any).kurumumuz ||
                           (data as any).mudurluk ||
-                          ""
-                      )
-                    }
+                          "",
+                      )}
                     placeholder="İhtiyaç Yeri"
                   />{" "}
                   ihtiyacı olan aşağıda yazılı mal/hizmet kalemlerinin temin
@@ -151,7 +162,7 @@ export function IhtiyacListesi({
                   Söz konusu ihtiyacın 4734 sayılı Kamu İhale Kanununun{" "}
                   <EditableField
                     name="maddeNo"
-                    value={data.maddeNo || "ilgili"}
+                    value={"ilgili"}
                     placeholder="ilgili"
                   />{" "}
                   maddesine göre temini için gereğini olurlarınıza arz ederim.
@@ -166,8 +177,6 @@ export function IhtiyacListesi({
                 />
               </>
             )}
-
-
 
             <DocumentTable
               columns={columns}

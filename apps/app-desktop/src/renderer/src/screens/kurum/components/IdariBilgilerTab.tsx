@@ -14,7 +14,10 @@ import {
   DetsisVerificationState,
 } from "../../../components/ui/DetsisBadge";
 import { DetsisSearchModal } from "../../../components/ui/DetsisSearchModal";
-import { getSubInstitutionOptions } from "../../../utils/kurumHelper";
+import {
+  getSubInstitutionOptions,
+  INSTITUTION_MAP,
+} from "../../../utils/kurumHelper";
 import { KurumTabProps } from "../types";
 
 export const IdariBilgilerTab: React.FC<KurumTabProps> = ({
@@ -455,11 +458,25 @@ export const IdariBilgilerTab: React.FC<KurumTabProps> = ({
             );
             if (options.length <= 1) return null;
 
+            const selectedKey = data.alt_kurum_tipi || options[0]?.value || "belediye";
+            const selectedInfo = INSTITUTION_MAP[selectedKey] || INSTITUTION_MAP.diger;
+            const currentBulunma = selectedKey === "diger"
+              ? (data.alt_kurum_bulunma || selectedInfo.bulunma)
+              : selectedInfo.bulunma;
+            const currentBizim = selectedKey === "diger"
+              ? (data.alt_kurum_bizim || selectedInfo.kurumumuz)
+              : selectedInfo.kurumumuz;
+
             return (
               <div className="mt-3 bg-slate-100/50 dark:bg-slate-900/30 p-3 rounded-2xl border border-slate-200/50 dark:border-slate-800/50">
-                <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1.5">
-                  Alt Kurum Türü / Tabiri *
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400">
+                    Alt Kurum Türü / Tabiri *
+                  </label>
+                  <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800">
+                    Bulunma Hâl Eki: <strong>{currentBulunma}</strong>
+                  </span>
+                </div>
                 <select
                   value={data.alt_kurum_tipi || "belediye"}
                   onChange={(e) => onChange("alt_kurum_tipi", e.target.value)}
@@ -472,6 +489,21 @@ export const IdariBilgilerTab: React.FC<KurumTabProps> = ({
                   ))}
                 </select>
 
+                <div className="mt-2.5 flex flex-wrap items-center gap-2 text-[11px] bg-white/80 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-200/60 dark:border-slate-800/60">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-slate-500 font-medium">Bulunma Hâli (-de / -da):</span>
+                    <span className="font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-900/50 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800">
+                      {currentBulunma}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-slate-500 font-medium">Bizim:</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">
+                      {currentBizim}
+                    </span>
+                  </div>
+                </div>
+
                 {(data.alt_kurum_tipi || "belediye") === "diger" && (
                   <div className="mt-4 p-4 bg-white dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800/60 rounded-xl space-y-4 shadow-inner">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -483,6 +515,18 @@ export const IdariBilgilerTab: React.FC<KurumTabProps> = ({
                           value={data.alt_kurum_ozel_tanim || ""}
                           onChange={(e) =>
                             onChange("alt_kurum_ozel_tanim", e.target.value)}
+                          className="bg-slate-50 dark:bg-slate-950 text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-semibold text-slate-600 mb-1">
+                          Bulunma Hali (-de / -da, Örn: Müdürlüğümüzde)
+                        </label>
+                        <Input
+                          value={data.alt_kurum_bulunma || ""}
+                          onChange={(e) =>
+                            onChange("alt_kurum_bulunma", e.target.value)}
+                          placeholder="Örn: Müdürlüğümüzde"
                           className="bg-slate-50 dark:bg-slate-950 text-xs"
                         />
                       </div>

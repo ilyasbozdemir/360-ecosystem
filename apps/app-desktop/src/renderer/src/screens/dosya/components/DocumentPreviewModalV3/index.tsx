@@ -114,10 +114,27 @@ export function DocumentPreviewModalV3({
         ? "fixed inset-0 z-[200] w-screen h-screen max-w-none max-h-none rounded-none border-none shadow-none flex flex-col bg-white dark:bg-slate-900 overflow-hidden animate-in fade-in duration-150"
         : isModal
         ? "bg-white dark:bg-slate-900 w-full max-w-[95vw] h-[95vh] rounded-2xl shadow-2xl flex flex-col border border-slate-200 dark:border-slate-800 overflow-hidden"
-        : "fixed inset-0 z-[100] w-screen h-screen max-w-none max-h-none rounded-none border-none shadow-none flex flex-col bg-slate-100 dark:bg-slate-950 overflow-hidden"}
+        : "absolute inset-0 z-40 w-full h-full max-w-none max-h-none rounded-none border-none shadow-none flex flex-col bg-slate-100 dark:bg-slate-950 overflow-hidden animate-in fade-in duration-150"}
       onClick={(e) => (isModal || isFullScreen) && e.stopPropagation()}
     >
-      {/* Header Bar */}
+      {/* 1. Belge Sekmeleri Çubuğu (En Üstte) */}
+      {tabs && tabs.length > 0 && onSwitchTab && onCloseTab && (
+        <DocumentPreviewTabBar
+          tabs={tabs}
+          activeTabId={activeTabId || null}
+          onSwitchTab={onSwitchTab}
+          onCloseTab={onCloseTab}
+          onAddTab={onAddTab}
+          templateOptions={templateOptions}
+          currentDosyaId={propDosyaId}
+          onToggleBalloon={() => setIsBalloon(true)}
+          isFullScreen={isFullScreen}
+          setIsFullScreen={setIsFullScreen}
+          onClose={handleClose}
+        />
+      )}
+
+      {/* 2. Aktif Belge Araç Çubuğu */}
       <DocumentPreviewHeader
         onClose={handleClose}
         documentTitle={docTitle}
@@ -148,19 +165,6 @@ export function DocumentPreviewModalV3({
         docKey={selectedDocId}
         orientation={orientation}
       />
-
-      {/* Çoklu Sekme Çubuğu (Multi-Tab Document Workspace) */}
-      {tabs && tabs.length > 0 && onSwitchTab && onCloseTab && (
-        <DocumentPreviewTabBar
-          tabs={tabs}
-          activeTabId={activeTabId || null}
-          onSwitchTab={onSwitchTab}
-          onCloseTab={onCloseTab}
-          onAddTab={onAddTab}
-          templateOptions={templateOptions}
-          currentDosyaId={propDosyaId}
-        />
-      )}
 
       {/* Main Area: Sidebar + Canvas */}
       <div className="flex-1 flex overflow-hidden min-h-0 relative">

@@ -158,7 +158,8 @@ export default function BirimlerScreen({
     e.preventDefault()
     if (!form.birim_adi.trim()) return
 
-    const finalIhtiyacYeri = JSON.stringify(ihtiyacYeriList.filter((v) => v.trim() !== ''))
+    const validItems = ihtiyacYeriList.filter((v) => v && v.trim() !== '')
+    const finalIhtiyacYeri = validItems.length > 0 ? JSON.stringify(validItems) : ''
     const submitData = { ...form, ihtiyac_yeri_eki: finalIhtiyacYeri }
 
     try {
@@ -211,10 +212,11 @@ export default function BirimlerScreen({
       ilgili_personel_id: birim.ilgili_personel_id || null
     })
     let parsedIhtiyacList = ['']
-    if (birim.ihtiyac_yeri_eki) {
+    if (birim.ihtiyac_yeri_eki && birim.ihtiyac_yeri_eki !== '[]' && birim.ihtiyac_yeri_eki !== '[""]') {
       try {
         if (birim.ihtiyac_yeri_eki.startsWith('[')) {
-          parsedIhtiyacList = JSON.parse(birim.ihtiyac_yeri_eki)
+          const parsed = JSON.parse(birim.ihtiyac_yeri_eki)
+          parsedIhtiyacList = Array.isArray(parsed) && parsed.length > 0 ? parsed : ['']
         } else {
           parsedIhtiyacList = birim.ihtiyac_yeri_eki.split('\n')
         }
@@ -222,6 +224,7 @@ export default function BirimlerScreen({
         parsedIhtiyacList = [birim.ihtiyac_yeri_eki]
       }
     }
+    if (parsedIhtiyacList.length === 0) parsedIhtiyacList = ['']
     setIhtiyacYeriList(parsedIhtiyacList)
     setEditingBirimId(birim.id)
     setShowExtraFields(true)

@@ -13,9 +13,9 @@ import LauncherScreen from '../../screens/launcher/index.screen'
 import LockScreen from './LockScreen'
 import { routeComponents } from './routeComponents'
 import { FindInPage } from './FindInPage'
+import { APP_ROUTES } from '../../constants/routeConstants'
 import { WorkspaceCloseModal } from './WorkspaceCloseModal'
 import { ShutdownOverlay } from './ShutdownOverlay'
-import { GlobalDocumentPreviewHost } from './GlobalDocumentPreviewHost'
 
 const DisclaimerModal = React.lazy(() =>
   import('../modals/DisclaimerModal').then((m) => ({ default: m.DisclaimerModal }))
@@ -177,7 +177,11 @@ export function PageWrapper(): React.ReactNode {
                 <div
                   key={tab.path}
                   style={{ display: isActive ? 'block' : 'none' }}
-                  className="h-full w-full absolute inset-0 p-6 overflow-auto"
+                  className={
+                    cleanPath === APP_ROUTES.BELGE_ONIZLEME
+                      ? 'h-full w-full absolute inset-0 p-0 overflow-hidden'
+                      : 'h-full w-full absolute inset-0 p-6 overflow-auto'
+                  }
                 >
                   <Component />
                 </div>
@@ -195,7 +199,6 @@ export function PageWrapper(): React.ReactNode {
         onConfirm={handleConfirmClose}
       />
       <GoogleDriveModal isOpen={isGDriveModalOpen} onClose={() => setIsGDriveModalOpen(false)} />
-      <GlobalDocumentPreviewHost />
       <FormatUpgradeModal
         isOpen={showFormatUpgradeModal}
         filePath={upgradeFilePath}

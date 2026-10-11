@@ -19,6 +19,13 @@ interface GDriveFile {
   size?: string
   modifiedTime?: string
   createdTime?: string
+  appProperties?: {
+    deviceName?: string
+    deviceLabel?: string
+    userName?: string
+    userFullName?: string
+    appVersion?: string
+  }
 }
 
 export function GoogleDriveFooterWidget(): React.JSX.Element | null {
@@ -54,6 +61,17 @@ export function GoogleDriveFooterWidget(): React.JSX.Element | null {
       setLastSyncTime(settings?.lastGdriveSync || null)
       const lastFileId = settings?.lastBackupFileId
       const lastFileName = settings?.lastBackupFileName
+      const knownBackupIds: string[] = Array.isArray(settings?.knownBackupFileIds)
+        ? (settings.knownBackupFileIds as string[])
+        : []
+
+      // Cihaz kimlik bilgisi (bu makinenin hostname ve etiketi)
+      let devInfo: { hostname?: string; deviceLabel?: string; username?: string } | null = null
+      try {
+        devInfo = await window.electron.ipcRenderer.invoke('workspace:get-device-info')
+      } catch {
+        // Fallback
+      }
 
       const res = await window.electron.ipcRenderer.invoke('workspace:list-gdrive-files')
       if (!res?.success) {
@@ -98,19 +116,39 @@ export function GoogleDriveFooterWidget(): React.JSX.Element | null {
         return
       }
 
-      // Aktif dosya ismine göre eşleşen yedekleri filtrele
+      // Aktif dosya ana adını (base name) temizle ve ayrıştır
       const currentFileNameClean = (fileName || '').trim().toLowerCase()
       const rawBase = (fileName || '')
-        .replace(/\.(temin|dtal|hkmp)$/i, '')
-        .replace(/_\d{4}[-_.]\d{2}[-_.]\d{2}(?:[-_.]\d{2}[-_.]\d{2})?$/, '')
+        .replace(/\.(temin|dtal|hkmp|dtm|dte|dta|tmn360|sqlite|db|zip|bak)$/i, '')
+        .replace(/_\d{4}[-_.]\d{2}[-_.]\d{2}(?:[-_.T]\d{2}[-_.]\d{2}(?:[-_.]\d{2})?)?$/i, '')
         .replace(/_surum\s*#?\d+/i, '')
         .trim()
 
-      let matching = validBackups.filter((f) =>
-        rawBase ? f.name.toLowerCase().startsWith(rawBase.toLowerCase()) : true
-      )
+      if (!rawBase) {
+        // Aktif dosya ana adı yoksa yabancı yedekleri bu çalışma alanına asla eşleştirme
+        setHasNewerVersion(false)
+        setNewerFile(null)
+        setIsChecking(false)
+        return
+      }
+
+      // SADECE aktif çalışma dosyasıyla aynı köke ait yedekleri filtrele
+      const rawBaseLower = rawBase.toLowerCase()
+      const matching = validBackups.filter((f) => {
+        const fname = f.name.toLowerCase()
+        return (
+          fname.startsWith(rawBaseLower + '_') ||
+          fname.startsWith(rawBaseLower + '.') ||
+          fname === rawBaseLower
+        )
+      })
+
+      // Bu dosyaya ait hiçbir yedek Drive'da yoksa ASLA başka projenin yedeğini güncelleme olarak gösterme!
       if (matching.length === 0) {
-        matching = validBackups
+        setHasNewerVersion(false)
+        setNewerFile(null)
+        setIsChecking(false)
+        return
       }
 
       // En yeni oluşturulan dosya (list API createdTime desc sıralı döndürür)
@@ -124,12 +162,41 @@ export function GoogleDriveFooterWidget(): React.JSX.Element | null {
 
       const latestNameClean = latestCloudFile.name.trim().toLowerCase()
       const lastBackupNameClean = (lastFileName || '').trim().toLowerCase()
+      const localUploadedId = localStorage.getItem('lastGdriveUploadedFileId')
+      const localUploadedName = (localStorage.getItem('lastGdriveUploadedFileName') || '')
+        .trim()
+        .toLowerCase()
 
-      // 1. Dosya kimliği veya adı yereldekiyle birebir aynıysa bu dosya zaten yerelde aktiftir
-      const isSameFileAsActive =
-        latestCloudFile.id === lastFileId ||
+      // 1. Dosya kimliği veya adı bilinen kendi yüklediğimiz yedeğimiz mi?
+      const isKnownUploadedFile =
+        (lastFileId && latestCloudFile.id === lastFileId) ||
+        knownBackupIds.includes(latestCloudFile.id) ||
+        (localUploadedId && latestCloudFile.id === localUploadedId)
+
+      const isSameName =
         latestNameClean === currentFileNameClean ||
-        (lastBackupNameClean && latestNameClean === lastBackupNameClean)
+        (lastBackupNameClean && latestNameClean === lastBackupNameClean) ||
+        (localUploadedName && latestNameClean === localUploadedName)
+
+      // Kendi veritabanımızın yüklediği veya açık olan dosyaysa asla "güncelleme var" deme
+      if (isKnownUploadedFile || isSameName) {
+        setHasNewerVersion(false)
+        setNewerFile(null)
+        setIsChecking(false)
+        return
+      }
+
+      // 2. Cihaz eşleşmesi: Bu yedek şu anki bilgisayar tarafından mı yüklendi?
+      const cloudDeviceName = latestCloudFile.appProperties?.deviceName?.trim().toLowerCase()
+      const cloudDeviceLabel = latestCloudFile.appProperties?.deviceLabel?.trim().toLowerCase()
+      const localDeviceName = devInfo?.hostname?.trim().toLowerCase()
+      const localDeviceLabel = devInfo?.deviceLabel?.trim().toLowerCase()
+
+      const isSameDevice =
+        !!(
+          (localDeviceName && cloudDeviceName && localDeviceName === cloudDeviceName) ||
+          (localDeviceLabel && cloudDeviceLabel && localDeviceLabel === cloudDeviceLabel)
+        )
 
       const cloudTime = new Date(
         latestCloudFile.createdTime || latestCloudFile.modifiedTime || 0
@@ -138,10 +205,16 @@ export function GoogleDriveFooterWidget(): React.JSX.Element | null {
       const localFileTime = new Date(activeMeta?.updated_at || 0).getTime()
       const localTime = Math.max(localSyncTime, localFileTime)
 
-      // 2. Buluttaki dosya yereldekinden farklı bir ID ve dosya adı taşıyorsa VE yerel senkronizasyon zamanından en az 60 saniye yeniyse
-      const isCloudNewer =
-        !isSameFileAsActive &&
-        cloudTime > localTime + 60000
+      // Aynı cihaz tarafından yüklenmişse ve yerel zamandan en az 5 dakika daha yeni değilse kendi çalışmamız say
+      if (isSameDevice && cloudTime <= localTime + 300000) {
+        setHasNewerVersion(false)
+        setNewerFile(null)
+        setIsChecking(false)
+        return
+      }
+
+      // 3. Buluttaki dosya farklı bir makineden/oturumdan ve yerel zamandan belirgin şekilde (en az 90 saniye) yeniyse
+      const isCloudNewer = cloudTime > localTime + 90000
 
       if (isCloudNewer) {
         setHasNewerVersion(true)

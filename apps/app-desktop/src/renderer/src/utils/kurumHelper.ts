@@ -1,4 +1,7 @@
-import { toPossessiveSuffix as toPossessiveSuffixBase } from '@temin360/document-templates'
+import {
+  toPossessiveSuffix as toPossessiveSuffixBase,
+  toLocativeSuffix as toLocativeSuffixBase
+} from '@temin360/document-templates'
 
 export interface SubInstOption {
   value: string
@@ -11,6 +14,7 @@ export interface InstitutionSuffixes {
   kurumunuz: string // 2nd person plural (sizin)
   kurumu: string // 3rd person singular possessive (onun)
   kurumlari: string // 3rd person plural possessive (onların)
+  bulunma: string // locative (-de/-da, e.g. "Müdürlüğümüzde", "Belediyemizde")
 }
 
 export const INSTITUTION_MAP: Record<string, InstitutionSuffixes> = {
@@ -19,77 +23,88 @@ export const INSTITUTION_MAP: Record<string, InstitutionSuffixes> = {
     kurumumuz: 'Müdürlüğümüz',
     kurumunuz: 'Müdürlüğünüz',
     kurumu: 'Müdürlüğü',
-    kurumlari: 'Müdürlükleri'
+    kurumlari: 'Müdürlükleri',
+    bulunma: 'Müdürlüğümüzde'
   },
   bakanlik: {
     label: 'Bakanlık',
     kurumumuz: 'Bakanlığımız',
     kurumunuz: 'Bakanlığınız',
     kurumu: 'Bakanlığı',
-    kurumlari: 'Bakanlıkları'
+    kurumlari: 'Bakanlıkları',
+    bulunma: 'Bakanlığımızda'
   },
   valilik: {
     label: 'Valilik',
     kurumumuz: 'Valiliğimiz',
     kurumunuz: 'Valiliğiniz',
     kurumu: 'Valiliği',
-    kurumlari: 'Valilikleri'
+    kurumlari: 'Valilikleri',
+    bulunma: 'Valiliğimizde'
   },
   kaymakamlik: {
     label: 'Kaymakamlık',
     kurumumuz: 'Kaymakamlığımız',
     kurumunuz: 'Kaymakamlığınız',
     kurumu: 'Kaymakamlığı',
-    kurumlari: 'Kaymakamlıkları'
+    kurumlari: 'Kaymakamlıkları',
+    bulunma: 'Kaymakamlığımızda'
   },
   universite: {
     label: 'Üniversite',
     kurumumuz: 'Üniversitemiz',
     kurumunuz: 'Üniversiteniz',
     kurumu: 'Üniversitesi',
-    kurumlari: 'Üniversiteleri'
+    kurumlari: 'Üniversiteleri',
+    bulunma: 'Üniversitemizde'
   },
   belediye: {
     label: 'Belediye',
     kurumumuz: 'Belediyemiz',
     kurumunuz: 'Belediyeniz',
     kurumu: 'Belediyesi',
-    kurumlari: 'Belediyeleri'
+    kurumlari: 'Belediyeleri',
+    bulunma: 'Belediyemizde'
   },
   il_ozel: {
     label: 'İl Özel İdaresi',
     kurumumuz: 'İl Özel İdaremiz',
     kurumunuz: 'İl Özel İdareniz',
     kurumu: 'İl Özel İdaresi',
-    kurumlari: 'İl Özel İdareleri'
+    kurumlari: 'İl Özel İdareleri',
+    bulunma: 'İl Özel İdaremizde'
   },
   koy: {
     label: 'Köy Muhtarlığı',
     kurumumuz: 'Muhtarlığımız',
     kurumunuz: 'Muhtarlığınız',
     kurumu: 'Muhtarlığı',
-    kurumlari: 'Muhtarlıkları'
+    kurumlari: 'Muhtarlıkları',
+    bulunma: 'Muhtarlığımızda'
   },
   sgk: {
     label: 'Sosyal Güvenlik İl Müdürlüğü',
     kurumumuz: 'Müdürlüğümüz',
     kurumunuz: 'Müdürlüğünüz',
     kurumu: 'Müdürlüğü',
-    kurumlari: 'Müdürlükleri'
+    kurumlari: 'Müdürlükleri',
+    bulunma: 'Müdürlüğümüzde'
   },
   kurul: {
     label: 'Kurul / Kurum',
     kurumumuz: 'Kurulumuz',
     kurumunuz: 'Kurulunuz',
     kurumu: 'Kurulu',
-    kurumlari: 'Kurulları'
+    kurumlari: 'Kurulları',
+    bulunma: 'Kurulumuzda'
   },
   diger: {
     label: 'Diğer',
     kurumumuz: 'İdaremiz',
     kurumunuz: 'İdareniz',
     kurumu: 'İdaresi',
-    kurumlari: 'İdareleri'
+    kurumlari: 'İdareleri',
+    bulunma: 'İdaremizde'
   }
 }
 
@@ -111,7 +126,7 @@ export function getSubInstitutionOptions(instType: string, finKodu: string): Sub
     const item = INSTITUTION_MAP[key] || INSTITUTION_MAP.diger
     return {
       value: key,
-      label: `${item.label} (Şablonlarda: "${item.kurumumuz}")`
+      label: `${item.label} (Şablonlarda: "${item.kurumumuz}" / Bulunma: "${item.bulunma}")`
     }
   })
 }
@@ -127,7 +142,8 @@ export function getInstitutionSuffixes(
       kurumumuz: customSuffixes.kurumumuz || base.kurumumuz,
       kurumunuz: customSuffixes.kurumunuz || base.kurumunuz,
       kurumu: customSuffixes.kurumu || base.kurumu,
-      kurumlari: customSuffixes.kurumlari || base.kurumlari
+      kurumlari: customSuffixes.kurumlari || base.kurumlari,
+      bulunma: customSuffixes.bulunma || base.bulunma
     }
   }
   return base
@@ -150,36 +166,32 @@ export function toPossessiveSuffix(str: string): string {
   return toPossessiveSuffixBase(str, 'İdaremizin')
 }
 
+export function toLocativeSuffix(str: string): string {
+  return toLocativeSuffixBase(str, 'İdaremizde')
+}
+
 export function getKurumIhtiyacYeriDefault(
   kurum?: {
     alt_kurum_bizim?: string
+    alt_kurum_bulunma?: string
     alt_kurum_tipi?: string
     kurum_tipi?: string
   } | null
 ): string {
-  if (!kurum) return 'İdaremizin'
+  if (!kurum) return 'İdaremizde'
+  if (kurum.alt_kurum_bulunma && String(kurum.alt_kurum_bulunma).trim()) {
+    return kurum.alt_kurum_bulunma.trim()
+  }
   if (kurum.alt_kurum_bizim && String(kurum.alt_kurum_bizim).trim()) {
-    return toPossessiveSuffix(kurum.alt_kurum_bizim.trim())
+    return toLocativeSuffix(kurum.alt_kurum_bizim.trim())
   }
   if (kurum.alt_kurum_tipi) {
-    const map: Record<string, string> = {
-      belediye: 'Belediyemizin',
-      mudurluk: 'Müdürlüğümüzün',
-      bakanlik: 'Bakanlığımızın',
-      valilik: 'Valiliğimizin',
-      kaymakamlik: 'Kaymakamlığımızın',
-      universite: 'Üniversitemizin',
-      il_ozel: 'İl Özel İdaremizin',
-      koy: 'Muhtarlığımızın',
-      sgk: 'Müdürlüğümüzün',
-      kurul: 'Kurulumuzun',
-      diger: 'İdaremizin'
-    }
-    if (map[kurum.alt_kurum_tipi]) return map[kurum.alt_kurum_tipi]
+    const item = INSTITUTION_MAP[kurum.alt_kurum_tipi]
+    if (item?.bulunma) return item.bulunma
   }
-  if (kurum.kurum_tipi === 'belediye') return 'Belediyemizin'
-  if (kurum.kurum_tipi === 'ozel_butce') return 'Üniversitemizin'
-  if (kurum.kurum_tipi === 'duzenleyici') return 'Kurulumuzun'
-  if (kurum.kurum_tipi === 'genel_butce') return 'Müdürlüğümüzün'
-  return 'İdaremizin'
+  if (kurum.kurum_tipi === 'belediye') return 'Belediyemizde'
+  if (kurum.kurum_tipi === 'ozel_butce') return 'Üniversitemizde'
+  if (kurum.kurum_tipi === 'duzenleyici') return 'Kurulumuzda'
+  if (kurum.kurum_tipi === 'genel_butce') return 'Müdürlüğümüzde'
+  return 'İdaremizde'
 }

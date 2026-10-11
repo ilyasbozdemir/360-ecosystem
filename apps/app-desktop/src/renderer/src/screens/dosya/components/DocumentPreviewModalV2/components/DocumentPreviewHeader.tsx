@@ -1,6 +1,5 @@
 import React from 'react'
 import {
-  ArrowLeft,
   CheckCircle2,
   Download,
   Eye,
@@ -108,19 +107,9 @@ export function DocumentPreviewHeader({
   }
 
   return (
-    <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 gap-4 shrink-0 select-none">
-      {/* Left: Back Button & Title */}
+    <div className="flex items-center justify-between px-4 py-2 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 gap-3 shrink-0 select-none">
+      {/* Left: Document Icon & Title */}
       <div className="flex items-center gap-3 min-w-0">
-        <button
-          type="button"
-          onClick={onClose}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition-all cursor-pointer border border-slate-200 dark:border-slate-700 shrink-0"
-          title="İşlemler ve İhtiyaç Listesi Ekranına Dön"
-        >
-          <ArrowLeft className="w-3.5 h-3.5 text-slate-500" />
-          <span>İşlemlere Dön</span>
-        </button>
-
         <div className="p-2 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-xl shrink-0">
           <FileText className="w-4 h-4" />
         </div>

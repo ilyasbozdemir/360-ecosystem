@@ -116,6 +116,15 @@ export function getTabLabel(fullPath: string): string {
   if (path.startsWith(APP_ROUTES.CIKTI_MERKEZI_DASHBOARD)) return 'Çıktı & Üretim Merkezi'
   if (path.startsWith(APP_ROUTES.DT_SUREC_AKISI)) return 'Doğrudan Temin'
   if (path.startsWith(APP_ROUTES.EBYS)) return 'EBYS Resmî Yazı Şablonları'
+  if (path.startsWith(APP_ROUTES.BELGE_ONIZLEME)) {
+    const query = fullPath.split('?')[1] || ''
+    const sp = new URLSearchParams(query)
+    const title = sp.get('title')
+    const doc = sp.get('doc')
+    if (title) return `📄 ${decodeURIComponent(title)}`
+    if (doc) return `📄 ${decodeURIComponent(doc)}`
+    return '📄 Belge Düzenleyici'
+  }
   return 'Yeni Sekme'
 }
 
@@ -162,7 +171,9 @@ export const useTabStore = create<TabState>((set, get) => ({
       if (existingKurumIndex > -1) {
         // Aynı path'e zaten aktifse sadece activeTabPath güncelle
         if (tabs[existingKurumIndex].path === path) {
-          set({ activeTabPath: path })
+          if (get().activeTabPath !== path) {
+            set({ activeTabPath: path })
+          }
           return
         }
         // If it exists, push to history
@@ -209,7 +220,9 @@ export const useTabStore = create<TabState>((set, get) => ({
       if (existingDosyaIndex > -1) {
         // Aynı path'e zaten aktifse sadece activeTabPath güncelle
         if (tabs[existingDosyaIndex].path === path) {
-          set({ activeTabPath: path })
+          if (get().activeTabPath !== path) {
+            set({ activeTabPath: path })
+          }
           return
         }
         const updatedTabs = [...tabs]
@@ -240,8 +253,10 @@ export const useTabStore = create<TabState>((set, get) => ({
       const newTabs = [...uniqueTabs, { path, label, history: [path], currentIndex: 0 }]
       set({ tabs: newTabs, activeTabPath: path })
     } else {
-      // It exists with the same path, just switch to it.
-      set({ activeTabPath: path })
+      // It exists with the same path, just switch to it if not already active.
+      if (get().activeTabPath !== path) {
+        set({ activeTabPath: path })
+      }
     }
   },
 

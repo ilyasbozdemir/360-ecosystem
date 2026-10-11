@@ -215,6 +215,13 @@ export function useGoogleDrive(isOpen: boolean, onClose: () => void) {
     try {
       const res = await ipc('workspace:backup-gdrive', tokenPayload(cToken))
       if (!res.success) return notify(res.error || 'Yükleme başarısız.', 'error')
+      if (res.fileId) {
+        localStorage.setItem('lastGdriveUploadedFileId', res.fileId)
+      }
+      if (res.backupFileName) {
+        localStorage.setItem('lastGdriveUploadedFileName', res.backupFileName)
+      }
+      window.dispatchEvent(new CustomEvent('workspace-saved'))
       notify(res.message || 'Dosya Google Drive hesabınıza başarıyla yüklendi.', 'success')
       fetchDriveFiles(cToken || undefined)
     } catch (err) {

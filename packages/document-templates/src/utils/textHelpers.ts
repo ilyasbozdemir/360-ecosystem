@@ -69,6 +69,73 @@ export function toPossessiveSuffix(str: string, fallback: string = "Kurumumuzun"
 }
 
 /**
+ * Kurum / Birim adının bulunma hal ekini (-de / -da / -te / -ta / -nde / -nda) türetir.
+ * Örnek: "Müdürlüğümüz" -> "Müdürlüğümüzde", "Belediyemiz" -> "Belediyemizde",
+ * "Bakanlığımız" -> "Bakanlığımızda", "Fen İşleri Müdürlüğü" -> "Fen İşleri Müdürlüğünde"
+ */
+export function toLocativeSuffix(str: string, fallback: string = "İdaremizde"): string {
+  if (!str) return fallback;
+  const trimmed = str.trim();
+  if (!trimmed || trimmed === "[]") return fallback;
+  const lower = trimmed.toLowerCase();
+
+  // Zaten bulunma ekiyle bitiyorsa (-de, -da, -te, -ta)
+  if (
+    lower.endsWith("de") ||
+    lower.endsWith("da") ||
+    lower.endsWith("te") ||
+    lower.endsWith("ta")
+  ) {
+    return trimmed;
+  }
+
+  // 1. Çoğul iyelikli bitişler (-miz, -müz, -mız, -muz)
+  if (lower.endsWith("miz") || lower.endsWith("müz")) return `${trimmed}de`;
+  if (lower.endsWith("mız") || lower.endsWith("muz")) return `${trimmed}da`;
+
+  // 3. Tekil iyelikli bitişler (-si, -su, -sü, -sı veya -i, -ı, -u, -ü)
+  // Türkçe kuralı: 3. şahıs iyelik ekinden sonra gelen bulunma hali 'n' kaynaştırma harfi alır (-nde, -nda)
+  if (
+    lower.endsWith("si") ||
+    lower.endsWith("sü") ||
+    lower.endsWith("i") ||
+    lower.endsWith("ü")
+  ) {
+    return `${trimmed}nde`;
+  }
+  if (
+    lower.endsWith("su") ||
+    lower.endsWith("sı") ||
+    lower.endsWith("ı") ||
+    lower.endsWith("u")
+  ) {
+    return `${trimmed}nda`;
+  }
+
+  // Sert ünsüzle bitiyorsa (f, s, t, k, ç, ş, h, p) -> -te / -ta
+  const fstkcshp = "fstkçşhpFSTKÇŞHP";
+  const lastChar = trimmed[trimmed.length - 1];
+  const isHardConsonant = fstkcshp.includes(lastChar);
+
+  // Son sesli harfe göre kalınlık/incelik
+  const vowels = "aıoueiöüAIOUEİÖÜ";
+  const backVowels = "aıouAIOU";
+  let lastVowel = "";
+  for (let i = trimmed.length - 1; i >= 0; i--) {
+    if (vowels.includes(trimmed[i])) {
+      lastVowel = trimmed[i];
+      break;
+    }
+  }
+
+  const isBack = backVowels.includes(lastVowel);
+  if (isHardConsonant) {
+    return isBack ? `${trimmed}ta` : `${trimmed}te`;
+  }
+  return isBack ? `${trimmed}da` : `${trimmed}de`;
+}
+
+/**
  * Sayısal veya metinsel tutarı Türk Lirası para birimi formatına (1.250,50) dönüştürür.
  */
 export function formatCurrency(

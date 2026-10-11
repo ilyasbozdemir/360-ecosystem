@@ -160,14 +160,26 @@ export const BirimGrid: React.FC<BirimGridProps> = ({
                 </div>
               )}
 
-              {birim.ihtiyac_yeri_eki && (
+              {birim.ihtiyac_yeri_eki &&
+                birim.ihtiyac_yeri_eki !== '[]' &&
+                birim.ihtiyac_yeri_eki !== '[""]' && (
                 <div className="flex items-start gap-2 text-[11px] text-slate-655 dark:text-slate-400">
                   <MapPin className="w-3.5 h-3.5 shrink-0 text-slate-400 mt-0.5" />
                   <div>
                     <span className="font-semibold text-slate-700 dark:text-slate-300 block mb-0.5">
                       İhtiyaç Yeri
                     </span>
-                    <span className="line-clamp-2 leading-relaxed">{birim.ihtiyac_yeri_eki}</span>
+                    <span className="line-clamp-2 leading-relaxed">
+                      {(() => {
+                        try {
+                          if (birim.ihtiyac_yeri_eki.startsWith('[')) {
+                            const arr = JSON.parse(birim.ihtiyac_yeri_eki)
+                            return Array.isArray(arr) ? arr.join(', ') : birim.ihtiyac_yeri_eki
+                          }
+                        } catch {}
+                        return birim.ihtiyac_yeri_eki
+                      })()}
+                    </span>
                   </div>
                 </div>
               )}

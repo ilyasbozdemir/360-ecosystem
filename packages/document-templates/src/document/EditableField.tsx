@@ -75,8 +75,10 @@ export function EditableField({
       ? (val: string) => context.onFieldChange!(name, val)
       : undefined);
 
+  const safeValue = value === "[]" || value === '[""]' ? "" : (value || "");
+
   if (!activeEditing || !activeOnChange) {
-    return <span style={style} className={className}>{value || ""}</span>;
+    return <span style={style} className={className}>{safeValue}</span>;
   }
 
   const tooltipText = title || (name ? FIELD_SOURCE_INFO[name] : undefined) ||
@@ -112,7 +114,7 @@ export function EditableField({
   if (availableOptions && availableOptions.length > 0) {
     return (
       <select
-        value={value}
+        value={safeValue}
         onChange={(e) => activeOnChange(e.target.value)}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
@@ -130,8 +132,8 @@ export function EditableField({
         }}
         className={className}
       >
-        {value && !availableOptions.includes(value) && (
-          <option value={value}>{value}</option>
+        {safeValue && !availableOptions.includes(safeValue) && (
+          <option value={safeValue}>{safeValue}</option>
         )}
         {availableOptions.map((opt, i) => (
           <option key={i} value={opt}>
@@ -145,7 +147,7 @@ export function EditableField({
   if (multiline) {
     return (
       <textarea
-        value={value}
+        value={safeValue}
         onChange={(e) => activeOnChange(e.target.value)}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
@@ -153,7 +155,7 @@ export function EditableField({
         onMouseLeave={() => setIsHovered(false)}
         placeholder={placeholder}
         title={tooltipText}
-        rows={Math.max(2, (value || "").split("\n").length)}
+        rows={Math.max(2, (safeValue || "").split("\n").length)}
         style={{
           ...baseStyle,
           width: "100%",
@@ -171,7 +173,7 @@ export function EditableField({
   }
 
   const charLength = Math.max(
-    (value || "").length,
+    (safeValue || "").length,
     (placeholder || "").length,
     4,
   );
@@ -182,7 +184,7 @@ export function EditableField({
   return (
     <input
       type="text"
-      value={value}
+      value={safeValue}
       onChange={(e) => activeOnChange(e.target.value)}
       onFocus={() => setIsFocused(true)}
       onBlur={() => setIsFocused(false)}

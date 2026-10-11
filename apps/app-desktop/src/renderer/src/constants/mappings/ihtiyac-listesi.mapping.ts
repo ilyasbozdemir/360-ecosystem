@@ -9,7 +9,7 @@ export const IhtiyacListesiMapping: ProcessMapping = {
   dosyaKonusu: { deger: 'İhtiyaç Listesi', aciklama: 'Belge Başlığı / Konusu' },
   evrakSayisi: {
     aciklama:
-      'E-DETSİS-SDP-NO standart formatına uygun resmi evrak sayısı (örn: E-10234521-934.01-0001)'
+      'E-DETSİS-SDP-NO standart formatına uygun resmi evrak sayısı (örn: 10234521-934.01-0001)'
   },
 
   tarih: {

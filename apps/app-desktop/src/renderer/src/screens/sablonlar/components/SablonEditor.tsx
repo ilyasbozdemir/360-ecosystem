@@ -1,25 +1,36 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from "react";
 
-import Mustache from 'mustache'
-import { SAYI_YAZI_MAP, sayiyiYaziyaCevir } from '../../../constants/sayiEslesmeleri'
-import { FileText, Download, Save, ArrowLeft, LayoutTemplate, Eye, Sparkles } from 'lucide-react'
-import { Button } from '../../../components/ui/Button'
-import { Sablon, useSaveSablon } from '../sablonlar.hooks'
-import { useSettingsStore } from '../../../store/settingsStore'
-import { getInstitutionSuffixes } from '../../../utils/kurumHelper'
-import { logActivity } from '../../../utils/logger'
+import Mustache from "mustache";
+import {
+  SAYI_YAZI_MAP,
+  sayiyiYaziyaCevir,
+} from "../../../constants/sayiEslesmeleri";
+import {
+  ArrowLeft,
+  Download,
+  Eye,
+  FileText,
+  LayoutTemplate,
+  Save,
+  Sparkles,
+} from "lucide-react";
+import { Button } from "../../../components/ui/Button";
+import { Sablon, useSaveSablon } from "../sablonlar.hooks";
+import { useSettingsStore } from "../../../store/settingsStore";
+import { getInstitutionSuffixes } from "../../../utils/kurumHelper";
+import { logActivity } from "../../../utils/logger";
 
-import { AiTemplateGeneratorModal } from './AiTemplateGeneratorModal'
-import { A4Editor } from '../../../components/editor/A4Editor'
-import { PreviewTab } from './tabs/PreviewTab'
-import { PdfTab } from './tabs/PdfTab'
+import { AiTemplateGeneratorModal } from "./AiTemplateGeneratorModal";
+import { A4Editor } from "../../../components/editor/A4Editor";
+import { PreviewTab } from "./tabs/PreviewTab";
+import { PdfTab } from "./tabs/PdfTab";
 
 export function SablonEditor({
   sablon,
-  onBack
+  onBack,
 }: {
-  sablon?: Sablon
-  onBack: () => void
+  sablon?: Sablon;
+  onBack: () => void;
 }): React.ReactElement {
   const {
     subInstitutionType,
@@ -27,25 +38,27 @@ export function SablonEditor({
     customSubInstitutionKurumumuz,
     customSubInstitutionKurumunuz,
     customSubInstitutionKurumu,
-    customSubInstitutionKurumlari
-  } = useSettingsStore()
-  const [ad, setAd] = useState(sablon?.ad || '')
-  const [dosyaAdi, setDosyaAdi] = useState(sablon?.dosya_adi || '')
-  const [aciklama, setAciklama] = useState(sablon?.aciklama || '')
-  const [htmlCode, setHtmlCode] = useState(sablon?.icerik || `<p>Merhaba, {{firma_adi}}!</p>`)
-  const today = new Intl.DateTimeFormat('tr-TR', {
-    timeZone: 'Europe/Istanbul',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  }).format(new Date())
+    customSubInstitutionKurumlari,
+  } = useSettingsStore();
+  const [ad, setAd] = useState(sablon?.ad || "");
+  const [dosyaAdi, setDosyaAdi] = useState(sablon?.dosya_adi || "");
+  const [aciklama, setAciklama] = useState(sablon?.aciklama || "");
+  const [htmlCode, setHtmlCode] = useState(
+    sablon?.icerik || `<p>Merhaba, {{firma_adi}}!</p>`,
+  );
+  const today = new Intl.DateTimeFormat("tr-TR", {
+    timeZone: "Europe/Istanbul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
 
   const defaultTestJson = `{
   "tarih": "${today}",
   "dosyaTarihi": "${today}",
   "firma_adi": "Test Firması A.Ş.",
   "kurumIci": true,
-  "evrakSayisi": "E-12345",
+  "evrakSayisi": "12345",
   "sunulacakMakamAdi": "MAKAM ONAYINA",
   "dosyaKonusu": "KONUSU",
   "hazirlayanPersonelAdi": "Ahmet Yılmaz",
@@ -58,40 +71,44 @@ export function SablonEditor({
     { "siraNo": 2, "kodu": "LAB-002", "malzemeAdi": "Maske", "ozelligi": "N95", "birimi": "Adet", "kdvOrani": "%10", "miktar": 200 }
   ]
 }
-`
-  const [testJson, setTestJson] = useState(defaultTestJson)
-  const [activeTab, setActiveTab] = useState<'design' | 'preview' | 'pdf'>('design')
-  const [pdfBase64, setPdfBase64] = useState<string>('')
-  const [isPdfLoading, setIsPdfLoading] = useState(false)
-  const [isAiModalOpen, setIsAiModalOpen] = useState(false)
-  const [isSystemTemplate, setIsSystemTemplate] = useState(false)
-  const [originalDosyaAdi, setOriginalDosyaAdi] = useState('')
+`;
+  const [testJson, setTestJson] = useState(defaultTestJson);
+  const [activeTab, setActiveTab] = useState<"design" | "preview" | "pdf">(
+    "design",
+  );
+  const [pdfBase64, setPdfBase64] = useState<string>("");
+  const [isPdfLoading, setIsPdfLoading] = useState(false);
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+  const [isSystemTemplate, setIsSystemTemplate] = useState(false);
+  const [originalDosyaAdi, setOriginalDosyaAdi] = useState("");
 
   useEffect(() => {
     if (sablon?.dosya_adi && window.electron) {
-      const dosya = sablon.dosya_adi
-      const jsonFile = dosya.endsWith('.html') ? dosya + '.json' : dosya + '/index.html.json'
+      const dosya = sablon.dosya_adi;
+      const jsonFile = dosya.endsWith(".html")
+        ? dosya + ".json"
+        : dosya + "/index.html.json";
 
       window.electron.ipcRenderer
-        .invoke('template:read-system', jsonFile)
+        .invoke("template:read-system", jsonFile)
         .then((res: any) => {
           if (res && res.success) {
-            setTestJson(res.data)
-            setIsSystemTemplate(true)
-            setOriginalDosyaAdi(sablon.dosya_adi)
+            setTestJson(res.data);
+            setIsSystemTemplate(true);
+            setOriginalDosyaAdi(sablon.dosya_adi);
           } else if (sablon.test_verisi) {
-            setTestJson(sablon.test_verisi)
+            setTestJson(sablon.test_verisi);
           }
         })
         .catch(() => {
-          if (sablon.test_verisi) setTestJson(sablon.test_verisi)
-        })
+          if (sablon.test_verisi) setTestJson(sablon.test_verisi);
+        });
     } else if (sablon?.test_verisi) {
-      setTestJson(sablon.test_verisi)
+      setTestJson(sablon.test_verisi);
     }
-  }, [sablon])
+  }, [sablon]);
 
-  const saveSablon = useSaveSablon()
+  const saveSablon = useSaveSablon();
 
   const parsedData = React.useMemo(() => {
     const suffixes = getInstitutionSuffixes(subInstitutionType, {
@@ -99,13 +116,14 @@ export function SablonEditor({
       kurumumuz: customSubInstitutionKurumumuz,
       kurumunuz: customSubInstitutionKurumunuz,
       kurumu: customSubInstitutionKurumu,
-      kurumlari: customSubInstitutionKurumlari
-    })
+      kurumlari: customSubInstitutionKurumlari,
+    });
 
     try {
-      const parsed = JSON.parse(testJson)
-      const kSayisi = parsed.kalemSayisi || parsed.ihtiyacKalemleri?.length || 0
-      const kSayisiYazi = parsed.kalemSayisiYazi || sayiyiYaziyaCevir(kSayisi)
+      const parsed = JSON.parse(testJson);
+      const kSayisi = parsed.kalemSayisi || parsed.ihtiyacKalemleri?.length ||
+        0;
+      const kSayisiYazi = parsed.kalemSayisiYazi || sayiyiYaziyaCevir(kSayisi);
       return {
         sayiYazıyla: SAYI_YAZI_MAP,
         kurumumuz: suffixes.kurumumuz,
@@ -114,8 +132,8 @@ export function SablonEditor({
         kurumlari: suffixes.kurumlari,
         kalemSayisi: kSayisi,
         kalemSayisiYazi: kSayisiYazi,
-        ...parsed
-      }
+        ...parsed,
+      };
     } catch {
       return {
         sayiYazıyla: SAYI_YAZI_MAP,
@@ -124,8 +142,8 @@ export function SablonEditor({
         kurumu: suffixes.kurumu,
         kurumlari: suffixes.kurumlari,
         kalemSayisi: 0,
-        kalemSayisiYazi: 'sıfır'
-      }
+        kalemSayisiYazi: "sıfır",
+      };
     }
   }, [
     testJson,
@@ -134,177 +152,187 @@ export function SablonEditor({
     customSubInstitutionKurumumuz,
     customSubInstitutionKurumunuz,
     customSubInstitutionKurumu,
-    customSubInstitutionKurumlari
-  ])
+    customSubInstitutionKurumlari,
+  ]);
 
   // Calculate final HTML synchronously so iframe instantly updates via srcDoc
   const finalHtmlForPreview = (() => {
     try {
-      const rawHtml = Mustache.render(htmlCode, parsedData)
-      return rawHtml
+      const rawHtml = Mustache.render(htmlCode, parsedData);
+      return rawHtml;
     } catch (e) {
-      return '<div style="color:red;padding:20px;">Şablon Hatası: ' + String(e) + '</div>'
+      return '<div style="color:red;padding:20px;">Şablon Hatası: ' +
+        String(e) + "</div>";
     }
-  })()
+  })();
 
   const handleExportHtml = async () => {
     try {
       if (!window.electron) {
-        alert('Bu özellik yalnızca masaüstü uygulamasında (Electron) çalışır.')
-        return
+        alert("Bu özellik yalnızca masaüstü uygulamasında (Electron) çalışır.");
+        return;
       }
-      const rawHtml = Mustache.render(htmlCode, parsedData)
+      const rawHtml = Mustache.render(htmlCode, parsedData);
       const res = await window.electron.ipcRenderer.invoke(
-        'export-html',
+        "export-html",
         rawHtml,
-        { paperSize: 'A4' },
-        ad || dosyaAdi
-      )
+        { paperSize: "A4" },
+        ad || dosyaAdi,
+      );
       if (res.success) {
-        alert('Şablon başarıyla HTML olarak dışa aktarıldı.')
-      } else if (res.error !== 'İptal edildi') {
-        alert('Dışa aktarma hatası: ' + res.error)
+        alert("Şablon başarıyla HTML olarak dışa aktarıldı.");
+      } else if (res.error !== "İptal edildi") {
+        alert("Dışa aktarma hatası: " + res.error);
       }
     } catch (err: any) {
-      alert('Hata: ' + err.message)
+      alert("Hata: " + err.message);
     }
-  }
+  };
 
   const handleExportPdf = async () => {
     try {
       if (!window.electron) {
-        alert('Bu özellik yalnızca masaüstü uygulamasında (Electron) çalışır.')
-        return
+        alert("Bu özellik yalnızca masaüstü uygulamasında (Electron) çalışır.");
+        return;
       }
-      const rawHtml = Mustache.render(htmlCode, parsedData)
+      const rawHtml = Mustache.render(htmlCode, parsedData);
       const res = await window.electron.ipcRenderer.invoke(
-        'export-pdf',
+        "export-pdf",
         rawHtml,
         null,
-        ad || dosyaAdi
-      )
+        ad || dosyaAdi,
+      );
       if (res.success) {
-        alert('Şablon başarıyla PDF olarak dışa aktarıldı.')
-      } else if (res.error !== 'İptal edildi') {
-        alert('Dışa aktarma hatası: ' + res.error)
+        alert("Şablon başarıyla PDF olarak dışa aktarıldı.");
+      } else if (res.error !== "İptal edildi") {
+        alert("Dışa aktarma hatası: " + res.error);
       }
     } catch (err: any) {
-      alert('Hata: ' + err.message)
+      alert("Hata: " + err.message);
     }
-  }
+  };
 
   const handleExportDocx = async () => {
     try {
       if (!window.electron) {
-        alert('Bu özellik yalnızca masaüstü uygulamasında (Electron) çalışır.')
-        return
+        alert("Bu özellik yalnızca masaüstü uygulamasında (Electron) çalışır.");
+        return;
       }
-      const rawHtml = Mustache.render(htmlCode, parsedData)
-      const res = await window.electron.ipcRenderer.invoke('export-docx', rawHtml, ad || dosyaAdi)
+      const rawHtml = Mustache.render(htmlCode, parsedData);
+      const res = await window.electron.ipcRenderer.invoke(
+        "export-docx",
+        rawHtml,
+        ad || dosyaAdi,
+      );
       if (res.success) {
-        alert('Şablon başarıyla Word (DOCX) olarak dışa aktarıldı.')
-      } else if (res.error !== 'İptal edildi') {
-        alert('Dışa aktarma hatası: ' + res.error)
+        alert("Şablon başarıyla Word (DOCX) olarak dışa aktarıldı.");
+      } else if (res.error !== "İptal edildi") {
+        alert("Dışa aktarma hatası: " + res.error);
       }
     } catch (err: any) {
-      alert('Hata: ' + err.message)
+      alert("Hata: " + err.message);
     }
-  }
+  };
 
   const handleUpdatePdfPreview = async () => {
     if (!window.electron) {
       alert(
-        'PDF önizleme özelliği yalnızca masaüstü uygulamasında (Electron) çalışır. Tarayıcıda desteklenmemektedir.'
-      )
-      return
+        "PDF önizleme özelliği yalnızca masaüstü uygulamasında (Electron) çalışır. Tarayıcıda desteklenmemektedir.",
+      );
+      return;
     }
-    setIsPdfLoading(true)
+    setIsPdfLoading(true);
     try {
-      const rawHtml = Mustache.render(htmlCode, parsedData)
-      const res = await window.electron.ipcRenderer.invoke('preview-pdf', rawHtml)
+      const rawHtml = Mustache.render(htmlCode, parsedData);
+      const res = await window.electron.ipcRenderer.invoke(
+        "preview-pdf",
+        rawHtml,
+      );
       if (res.success && res.data) {
-        setPdfBase64(res.data)
+        setPdfBase64(res.data);
       } else {
-        alert('PDF oluşturulamadı: ' + res.error)
+        alert("PDF oluşturulamadı: " + res.error);
       }
     } catch (err: any) {
-      alert('Hata: ' + err.message)
+      alert("Hata: " + err.message);
     } finally {
-      setIsPdfLoading(false)
+      setIsPdfLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    if (activeTab === 'pdf' && !pdfBase64) {
-      handleUpdatePdfPreview()
+    if (activeTab === "pdf" && !pdfBase64) {
+      handleUpdatePdfPreview();
     }
-  }, [activeTab, pdfBase64])
+  }, [activeTab, pdfBase64]);
 
   const handleSave = async () => {
     if (!ad || !dosyaAdi) {
-      alert('Lütfen şablon adı ve dosya adını girin.')
-      return
+      alert("Lütfen şablon adı ve dosya adını girin.");
+      return;
     }
 
     if (isSystemTemplate && dosyaAdi === originalDosyaAdi && !sablon) {
       alert(
         "Bu bir sistem şablonudur, değişikliklerinizi kaydetmek için lütfen dosya adını değiştirerek 'Farklı Kaydet' yapın (Örn: " +
           dosyaAdi +
-          '_ozel).'
-      )
-      return
+          "_ozel).",
+      );
+      return;
     }
 
-    const message = 'Onaylıyor musunuz?'
-    const isConfirmed = window.confirm(message)
-    if (!isConfirmed) return
+    const message = "Onaylıyor musunuz?";
+    const isConfirmed = window.confirm(message);
+    if (!isConfirmed) return;
 
     saveSablon.mutate(
       {
         ad,
         dosya_adi: dosyaAdi,
-        dosya_turu: 'html',
+        dosya_turu: "html",
         icerik: htmlCode,
         aciklama,
         test_verisi: testJson,
         oldSablon: sablon,
-        extractedPlaceholders: []
+        extractedPlaceholders: [],
       },
       {
         onSuccess: async () => {
           // Sistem şablonuysa dosyaya da kaydetmeye çalış
-          if (isSystemTemplate && window.electron && dosyaAdi === originalDosyaAdi) {
+          if (
+            isSystemTemplate && window.electron && dosyaAdi === originalDosyaAdi
+          ) {
             try {
               // html için
               await window.electron.ipcRenderer.invoke(
-                'template:write-system',
-                dosyaAdi + '.html',
-                htmlCode
-              )
+                "template:write-system",
+                dosyaAdi + ".html",
+                htmlCode,
+              );
               // json için
               await window.electron.ipcRenderer.invoke(
-                'template:write-system',
-                dosyaAdi + '.html.json',
-                testJson
-              )
+                "template:write-system",
+                dosyaAdi + ".html.json",
+                testJson,
+              );
             } catch (e) {
-              console.error('Dosyaya yazma hatası:', e)
+              console.error("Dosyaya yazma hatası:", e);
             }
           }
           await logActivity(
-            'Şablon Kaydedildi',
+            "Şablon Kaydedildi",
             `"${ad}" isimli şablon başarıyla güncellendi.`,
-            'success'
-          )
-          alert('Şablon başarıyla kaydedildi!')
-          onBack()
+            "success",
+          );
+          alert("Şablon başarıyla kaydedildi!");
+          onBack();
         },
         onError: (err: any) => {
-          alert('Kaydetme hatası: ' + err.message)
-        }
-      }
-    )
-  }
+          alert("Kaydetme hatası: " + err.message);
+        },
+      },
+    );
+  };
 
   return (
     <div className="flex flex-col h-full space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
@@ -319,11 +347,13 @@ export function SablonEditor({
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
-              {sablon ? sablon.ad + ' (v' + sablon.versiyon + ') Düzenle' : 'Yeni Şablon Oluştur'}
+              {sablon
+                ? sablon.ad + " (v" + sablon.versiyon + ") Düzenle"
+                : "Yeni Şablon Oluştur"}
             </h1>
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-              HTML Şablonunuzu yazın, test verisi girin ve anlık önizleme alın. Yer tutucular için{' '}
-              {'{{degisken}}'} kullanın.
+              HTML Şablonunuzu yazın, test verisi girin ve anlık önizleme alın.
+              Yer tutucular için {"{{degisken}}"} kullanın.
               <br />
               <span className="inline-flex flex-wrap items-center gap-1 mt-1 text-xs bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-md border border-blue-100 dark:border-blue-800">
                 💡 Geliştiriciler için web şablon test alanı:
@@ -376,36 +406,40 @@ export function SablonEditor({
             onClick={async () => {
               if (
                 confirm(
-                  'Varsayılan şablona dönmek istediğinize emin misiniz? Yapılan tüm özelleştirmeler silinecektir.'
+                  "Varsayılan şablona dönmek istediğinize emin misiniz? Yapılan tüm özelleştirmeler silinecektir.",
                 )
               ) {
                 try {
                   if (!window.electron) {
-                    alert('Bu özellik yalnızca masaüstü uygulamasında (Electron) çalışır.')
-                    return
+                    alert(
+                      "Bu özellik yalnızca masaüstü uygulamasında (Electron) çalışır.",
+                    );
+                    return;
                   }
                   const content = await window.electron.ipcRenderer.invoke(
-                    'template:read-system',
-                    dosyaAdi
-                  )
+                    "template:read-system",
+                    dosyaAdi,
+                  );
                   const jsonContent = await window.electron.ipcRenderer.invoke(
-                    'template:read-system',
-                    dosyaAdi.endsWith('.html') ? dosyaAdi + '.json' : dosyaAdi + '/index.html.json'
-                  )
+                    "template:read-system",
+                    dosyaAdi.endsWith(".html")
+                      ? dosyaAdi + ".json"
+                      : dosyaAdi + "/index.html.json",
+                  );
 
                   if (content) {
-                    setHtmlCode(content)
+                    setHtmlCode(content);
                     if (jsonContent) {
-                      setTestJson(jsonContent)
+                      setTestJson(jsonContent);
                     }
-                    setIsSystemTemplate(true)
-                    setOriginalDosyaAdi(dosyaAdi)
-                    alert('Varsayılan şablon ve test verisi yüklendi.')
+                    setIsSystemTemplate(true);
+                    setOriginalDosyaAdi(dosyaAdi);
+                    alert("Varsayılan şablon ve test verisi yüklendi.");
                   } else {
-                    alert('Varsayılan şablon dosyası bulunamadı.')
+                    alert("Varsayılan şablon dosyası bulunamadı.");
                   }
                 } catch (e: any) {
-                  alert('Hata: ' + e.message)
+                  alert("Hata: " + e.message);
                 }
               }
             }}
@@ -419,7 +453,7 @@ export function SablonEditor({
             className="bg-purple-600 hover:bg-purple-700 text-xs font-semibold py-2 px-4 shadow-md flex items-center gap-2 text-white"
           >
             <Save className="w-3.5 h-3.5" />
-            {saveSablon.isPending ? 'Kaydediliyor...' : 'Kaydet'}
+            {saveSablon.isPending ? "Kaydediliyor..." : "Kaydet"}
           </Button>
         </div>
       </div>
@@ -451,33 +485,33 @@ export function SablonEditor({
 
       <div className="flex border-b border-slate-200 dark:border-slate-800 mb-2">
         <button
-          onClick={() => setActiveTab('design')}
+          onClick={() => setActiveTab("design")}
           className={`flex items-center gap-2 px-6 py-3 font-semibold text-sm border-b-2 transition-colors ${
-            activeTab === 'design'
-              ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-              : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+            activeTab === "design"
+              ? "border-blue-600 text-blue-600 dark:text-blue-400"
+              : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
           }`}
         >
           <LayoutTemplate className="w-4 h-4" />
           Word Görünümü (Tasarım)
         </button>
         <button
-          onClick={() => setActiveTab('preview')}
+          onClick={() => setActiveTab("preview")}
           className={`flex items-center gap-2 px-6 py-3 font-semibold text-sm border-b-2 transition-colors ${
-            activeTab === 'preview'
-              ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-              : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+            activeTab === "preview"
+              ? "border-blue-600 text-blue-600 dark:text-blue-400"
+              : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
           }`}
         >
           <Eye className="w-4 h-4" />
           Mustache.js Önizleme
         </button>
         <button
-          onClick={() => setActiveTab('pdf')}
+          onClick={() => setActiveTab("pdf")}
           className={`flex items-center gap-2 px-6 py-3 font-semibold text-sm border-b-2 transition-colors ${
-            activeTab === 'pdf'
-              ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-              : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+            activeTab === "pdf"
+              ? "border-blue-600 text-blue-600 dark:text-blue-400"
+              : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
           }`}
         >
           <FileText className="w-4 h-4" />
@@ -485,34 +519,40 @@ export function SablonEditor({
         </button>
       </div>
 
-      {activeTab === 'design' ? (
-        <div className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
-          <A4Editor content={htmlCode} onChange={setHtmlCode} />
-        </div>
-      ) : activeTab === 'preview' ? (
-        <PreviewTab
-          htmlCode={htmlCode}
-          setHtmlCode={setHtmlCode}
-          testJson={testJson}
-          setTestJson={setTestJson}
-          finalHtmlForPreview={finalHtmlForPreview}
-        />
-      ) : activeTab === 'pdf' ? (
-        <PdfTab
-          isPdfLoading={isPdfLoading}
-          pdfBase64={pdfBase64}
-          handleUpdatePdfPreview={handleUpdatePdfPreview}
-        />
-      ) : null}
+      {activeTab === "design"
+        ? (
+          <div className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+            <A4Editor content={htmlCode} onChange={setHtmlCode} />
+          </div>
+        )
+        : activeTab === "preview"
+        ? (
+          <PreviewTab
+            htmlCode={htmlCode}
+            setHtmlCode={setHtmlCode}
+            testJson={testJson}
+            setTestJson={setTestJson}
+            finalHtmlForPreview={finalHtmlForPreview}
+          />
+        )
+        : activeTab === "pdf"
+        ? (
+          <PdfTab
+            isPdfLoading={isPdfLoading}
+            pdfBase64={pdfBase64}
+            handleUpdatePdfPreview={handleUpdatePdfPreview}
+          />
+        )
+        : null}
 
       <AiTemplateGeneratorModal
         isOpen={isAiModalOpen}
         onClose={() => setIsAiModalOpen(false)}
         currentHtml={htmlCode}
         onApply={(newHtml) => {
-          setHtmlCode(newHtml)
+          setHtmlCode(newHtml);
         }}
       />
     </div>
-  )
+  );
 }

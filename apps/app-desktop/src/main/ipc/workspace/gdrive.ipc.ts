@@ -373,6 +373,10 @@ export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void):
     }
   )
 
+  ipcMain.handle('workspace:get-device-info', async () => {
+    return getDeviceInfo()
+  })
+
   ipcMain.handle(
     'workspace:backup-gdrive',
     async (_, args?: { token?: string; force?: boolean }) => {
@@ -555,6 +559,7 @@ export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void):
               db.prepare(
                 `INSERT OR REPLACE INTO settings (key, value) VALUES ('dbVersion', '1.0.0-beta.92')`
               ).run()
+              workspaceManager.save(true)
             }
           } catch (dbErr) {
             console.error('Failed to log backup history in DB:', dbErr)
@@ -567,7 +572,8 @@ export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void):
           return {
             success: true,
             message: successMsg,
-            fileId: uploadedFile.id
+            fileId: uploadedFile.id,
+            backupFileName
           }
         }
 

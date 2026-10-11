@@ -61,11 +61,21 @@ export const BirimList: React.FC<BirimListProps> = ({
                     <span>{personel ? personel.ad_soyad : legacyPersonelText}</span>
                   </div>
                 )}
-                {birim.ihtiyac_yeri_eki && (
+                {birim.ihtiyac_yeri_eki &&
+                  birim.ihtiyac_yeri_eki !== '[]' &&
+                  birim.ihtiyac_yeri_eki !== '[""]' && (
                   <div className="flex items-center gap-1.5 mt-1">
                     <MapPin className="w-3.5 h-3.5 text-amber-500" />
                     <span className="truncate max-w-[200px]">
-                      {birim.ihtiyac_yeri_eki.split('\n')[0]}...
+                      {(() => {
+                        try {
+                          if (birim.ihtiyac_yeri_eki.startsWith('[')) {
+                            const arr = JSON.parse(birim.ihtiyac_yeri_eki)
+                            return Array.isArray(arr) ? arr.join(', ') : birim.ihtiyac_yeri_eki
+                          }
+                        } catch {}
+                        return birim.ihtiyac_yeri_eki.split('\n')[0]
+                      })()}
                     </span>
                   </div>
                 )}

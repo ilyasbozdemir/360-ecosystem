@@ -5,7 +5,7 @@ export function buildFormattedEvrakSayisi(
   explicitIsEImza?: boolean
 ): string {
   const detsisNo = kurum?.detsis_kodu || ''
-  const dosyaSayisi = dosyaResData?.temin_no || ''
+  const dosyaSayisi = String(dosyaResData?.temin_no || '')
 
   let sdpAltKodu = '99'
   if (rawTur === 'mal') {
@@ -29,30 +29,15 @@ export function buildFormattedEvrakSayisi(
   // "E-" öneki evrak sayısının asli parçası değil, belgenin elektronik ortamda (EBYS'de / e-imzayla) düzenlendiğini gösteren ön ektir.
   // E-imzalı yazı: E-56383307-934.01-0001
   // Islak imzalı yazı: 56383307-934.01-0001 (başında E- olmaz)
-  const isEImza =
-    explicitIsEImza !== undefined
-      ? explicitIsEImza
-      : dosyaResData?.imza_turu === 'islak' ||
-          dosyaResData?.imza_turu === 'fiziksel' ||
-          dosyaResData?.is_eimza === false ||
-          dosyaResData?.e_imza === false
-        ? false
-        : true
+  const imzaTuru = String(dosyaResData?.imza_turu ?? '').toLowerCase().trim()
+  const isIslak =
+    ['islak', 'ıslak', 'fiziksel'].includes(imzaTuru) ||
+    [false, 'false', 0, '0'].includes(dosyaResData?.is_eimza) ||
+    [false, 'false', 0, '0'].includes(dosyaResData?.e_imza)
 
-  const prefix = isEImza ? 'E-' : ''
+  // Açık parametre varsa o kazanır, yoksa ıslak imza işareti yoksa e-imzalı kabul edilir
+  const isEImza = typeof explicitIsEImza === 'boolean' ? explicitIsEImza : !isIslak
+
+  const prefix = isEImza ? '' : ''
   return `${prefix}${effectiveDetsis}-${sdpKodu}-${paddedSayi}`
-}
-
-export function formatEvrakSayisi(options: {
-  detsisKodu?: string
-  sdpKodu?: string
-  siraNo?: string | number
-  isEImza?: boolean
-}): string {
-  const effectiveDetsis = options.detsisKodu || '0000000000'
-  const effectiveSdp = options.sdpKodu || '934.01'
-  const cleanSayi = String(options.siraNo || '1').replace(/\D/g, '') || '1'
-  const paddedSayi = cleanSayi.padStart(4, '0')
-  const prefix = options.isEImza !== false ? 'E-' : ''
-  return `${prefix}${effectiveDetsis}-${effectiveSdp}-${paddedSayi}`
 }

@@ -24,6 +24,7 @@ export const TANIM_Kurum = {
     { name: 'alt_kurum_tipi', type: 'TEXT', default: '"belediye"' },
     { name: 'alt_kurum_ozel_tanim', type: 'TEXT', default: '""' },
     { name: 'alt_kurum_bizim', type: 'TEXT', default: '""' },
+    { name: 'alt_kurum_bulunma', type: 'TEXT', default: '""' },
     { name: 'alt_kurum_sizin', type: 'TEXT', default: '""' },
     { name: 'alt_kurum_onun', type: 'TEXT', default: '""' },
     { name: 'alt_kurum_onlarin', type: 'TEXT', default: '""' },

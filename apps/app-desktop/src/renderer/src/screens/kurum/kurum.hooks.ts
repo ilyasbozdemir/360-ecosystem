@@ -20,6 +20,7 @@ export interface KurumVerisi {
   alt_kurum_tipi?: string
   alt_kurum_ozel_tanim?: string
   alt_kurum_bizim?: string
+  alt_kurum_bulunma?: string
   alt_kurum_sizin?: string
   alt_kurum_onun?: string
   alt_kurum_onlarin?: string
@@ -127,6 +128,7 @@ export function useKurumHooks() {
           'alt_kurum_tipi',
           'alt_kurum_ozel_tanim',
           'alt_kurum_bizim',
+          'alt_kurum_bulunma',
           'alt_kurum_sizin',
           'alt_kurum_onun',
           'alt_kurum_onlarin',

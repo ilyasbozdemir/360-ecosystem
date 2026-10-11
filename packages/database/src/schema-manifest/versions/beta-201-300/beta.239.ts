@@ -1,0 +1,24 @@
+/* eslint-disable */
+/**
+ * AKTİF GELİŞTİRME ŞEMA MANİFESTİ (1.0.0-beta.current)
+ * TANIM_Kurum tablosuna alt_kurum_bulunma kolonu eklendi.
+ */
+export default {
+  app: "1.0.0-beta.239",
+  schema_min: 1,
+  schema_max: 44,
+  release_date: "2026-10-11",
+  changes: [
+    {
+      schema: 44,
+      type: "update",
+      description: "TANIM_Kurum tablosuna alt_kurum_bulunma kolonu eklendi.",
+      columns_added: [
+        { table: "TANIM_Kurum", column: "alt_kurum_bulunma" }
+      ],
+      raw_sql: [
+        "ALTER TABLE TANIM_Kurum ADD COLUMN alt_kurum_bulunma TEXT DEFAULT '';"
+      ]
+    }
+  ]
+};

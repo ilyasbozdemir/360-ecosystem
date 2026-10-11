@@ -6,6 +6,7 @@ import { DocumentPreviewModalV3 } from "../../screens/dosya/components/DocumentP
 export function GlobalDocumentPreviewHost(): React.JSX.Element | null {
   const {
     isOpen,
+    isBalloon,
     tabs,
     activeTabId,
     switchTab,
@@ -14,7 +15,9 @@ export function GlobalDocumentPreviewHost(): React.JSX.Element | null {
     closeDocument,
   } = useGlobalDocumentPreviewStore();
 
-  if (!isOpen || tabs.length === 0) return null;
+  // Belge önizleme artık çalışma alanı sekmesinde (BelgeOnizlemeScreen) sunulduğundan,
+  // global host yalnızca yüzen balon (isBalloon) modunda görünür.
+  if (!isOpen || tabs.length === 0 || !isBalloon) return null;
 
   const activeTab = tabs.find((t) => t.tabId === activeTabId) || tabs[0];
   if (!activeTab) return null;

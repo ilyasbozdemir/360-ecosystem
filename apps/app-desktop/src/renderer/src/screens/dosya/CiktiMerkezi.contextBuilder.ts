@@ -113,7 +113,9 @@ export function buildDocumentContext(
     formatTR
   )
 
-  const formattedEvrakSayisi = buildFormattedEvrakSayisi(kurum, dosyaResData, rawTur)
+
+
+  const formattedEvrakSayisi = buildFormattedEvrakSayisi(kurum, dosyaResData, rawTur,false)
   const aciklamaMaddeleri = parseAciklamaMaddeleri(dosyaResData?.isin_aciklama_maddeleri)
 
   const dosyaSayisi = dosyaResData?.temin_no || ''
