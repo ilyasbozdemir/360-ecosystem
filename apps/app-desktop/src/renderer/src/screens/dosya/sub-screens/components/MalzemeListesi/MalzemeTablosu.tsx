@@ -29,6 +29,7 @@ import { findSablonByAlias } from "../../DosyaAsamalari/constants/sablonAliases"
 import { exportDogrudanTeminMasterExcel } from "../../../../../services/excelExportService";
 import { useGlobalDocumentPreviewStore } from "../../../../../store/globalDocumentPreviewStore";
 import { seedDossierCommission } from "../../../../../services/commission/commissionSeedService";
+import { useSetSelection } from "../../../../../hooks/useSetSelection";
 
 export function MalzemeTablosu({
   state,
@@ -106,26 +107,15 @@ export function MalzemeTablosu({
   };
 
   // Checkbox ve toplu işlem state'leri
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
-
-  const handleToggleSelectRow = (id: number) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  };
+  const {
+    selectedIds,
+    setSelectedIds,
+    handleToggleSelectRow,
+    handleToggleSelectAll: handleToggleSelectAllBase
+  } = useSetSelection<number>();
 
   const handleToggleSelectAll = () => {
-    if (selectedIds.size === items.length) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(items.map((item: any) => item.id)));
-    }
+    handleToggleSelectAllBase(items.map((item: any) => item.id));
   };
 
   const handleDeleteSelected = async () => {
