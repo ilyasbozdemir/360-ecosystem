@@ -18,6 +18,7 @@ import {
 import { KurumVerisi } from '../kurum.hooks'
 import { KeyValuePair, KurumMetadataManager } from './KurumMetadataManager'
 import { useSettingsStore } from '../../../store/settingsStore'
+import { copyToClipboard } from '../../../utils/copyToClipboard'
 
 interface KurumViewCardProps {
   data: Partial<KurumVerisi>
@@ -67,30 +68,10 @@ export const KurumViewCard: React.FC<KurumViewCardProps> = ({
 
   const handleCopy = async (text: string | undefined, fieldKey: string): Promise<void> => {
     if (!text || text === '—') return
-    try {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(text)
-      } else {
-        throw new Error('Clipboard API unavailable')
-      }
+    const success = await copyToClipboard(text)
+    if (success) {
       setCopiedField(fieldKey)
       setTimeout(() => setCopiedField(null), 1800)
-    } catch {
-      try {
-        const textarea = document.createElement('textarea')
-        textarea.value = text
-        textarea.style.position = 'fixed'
-        textarea.style.opacity = '0'
-        document.body.appendChild(textarea)
-        textarea.focus()
-        textarea.select()
-        document.execCommand('copy')
-        document.body.removeChild(textarea)
-        setCopiedField(fieldKey)
-        setTimeout(() => setCopiedField(null), 1800)
-      } catch (err) {
-        console.warn('Clipboard copy failed:', err)
-      }
     }
   }
 

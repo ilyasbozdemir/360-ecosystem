@@ -6,13 +6,14 @@ import {
   FINANSMAN_KODLARI,
   GELIR_KODLARI
 } from '../../../constants/butce-kodlari'
+import { copyToClipboard } from '../../../utils/copyToClipboard'
 
 export function ButceKodlariTab(): React.JSX.Element {
   const [butceSearch, setButceSearch] = useState('')
   const [copiedText, setCopiedText] = useState('')
 
   const handleCopy = (text: string): void => {
-    navigator.clipboard.writeText(text)
+    void copyToClipboard(text)
     setCopiedText(text)
     setTimeout(() => setCopiedText(''), 1500)
   }
