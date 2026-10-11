@@ -135,27 +135,24 @@ export const PiyasaFiyatArastirmaGorevlendirmesi: React.FC<Props> = ({
   })();
 
   // Evrak sayısı oluşturma (EBYS Standart Formatı: E-DETSİS-SDP-NO)
-  const evrakNo =
-    data.evrakSayisi && !data.evrakSayisi.includes('/')
-      ? data.evrakSayisi
-      : data.evrakSayisi ||
-        `${data.detsisNo || "........"}-${data.yili || "...."}/${
-          data.sayisi || "...."
-        }`;
+  const evrakNo = data.evrakSayisi && !data.evrakSayisi.includes("/")
+    ? data.evrakSayisi
+    : data.evrakSayisi ||
+      `${data.detsisNo || "........"}-${data.yili || "...."}/${
+        data.sayisi || "...."
+      }`;
 
   const konuMetni = data.dosyaKonusu ??
     "Piyasa Fiyat Araştırması Görevlendirmesi";
 
   const fallbackKurum = data.altKurumBizim || data.kurumBizim || "İdaremiz";
-  const kurumumuzMetni =
-    data.kurumumuz &&
-    data.kurumumuz !== "Belediyemiz / İdaremiz" &&
-    data.kurumumuz !== "Belediyemiz"
-      ? data.kurumumuz
-      : fallbackKurum;
+  const kurumumuzMetni = data.kurumumuz &&
+      data.kurumumuz !== "Belediyemiz / İdaremiz" &&
+      data.kurumumuz !== "Belediyemiz"
+    ? data.kurumumuz
+    : fallbackKurum;
 
-  const isinAdiMetni =
-    data.isinAdi ?? "Alımı yapılacak";
+  const isinAdiMetni = data.isinAdi ?? "Alımı yapılacak";
 
   return (
     <DocumentLayout
@@ -292,21 +289,21 @@ export const PiyasaFiyatArastirmaGorevlendirmesi: React.FC<Props> = ({
         />
 
         {/* OLUR Onay Bloğu (Orta) */}
-        {data.olurYazisi !== false ? (
-          <ApprovalSignature
-            title={(data as any).olurBaslik || "OLUR"}
-            date={data.dosyaTarihi || data.tarih || ""}
-            adSoyad={data.onaylayanPersonelAdi}
-            unvan={data.onaylayanPersonelUnvan}
-            showSpace={true}
-            marginTop={25}
-            nameField="onaylayanPersonelAdi"
-            unvanField="onaylayanPersonelUnvan"
-            dateField="dosyaTarihi"
-          />
-        ) : (
-          <EditableOlurPlaceholder />
-        )}
+        {data.olurYazisi !== false
+          ? (
+            <ApprovalSignature
+              title={(data as any).olurBaslik || "OLUR"}
+              date={data.dosyaTarihi || data.tarih || ""}
+              adSoyad={data.onaylayanPersonelAdi}
+              unvan={data.onaylayanPersonelUnvan}
+              showSpace={true}
+              marginTop={25}
+              nameField="onaylayanPersonelAdi"
+              unvanField="onaylayanPersonelUnvan"
+              dateField="dosyaTarihi"
+            />
+          )
+          : <EditableOlurPlaceholder />}
 
         {/* DAĞITIM (Sol Alt) */}
         <div

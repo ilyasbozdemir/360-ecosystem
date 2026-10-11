@@ -143,8 +143,7 @@ export function buildDocumentCategories(
       items: [
         {
           id: "yaklasikMaliyetKomisyonu",
-          label:
-            "Yaklaşık Maliyet Komisyonu (Piyasa Fiyat Araştırması) Görevlendirmesi",
+          label: "Yaklaşık Maliyet Komisyonu Görevlendirmesi",
           icon: Users,
           iconColorClass: "text-indigo-600",
           onClick: onPiyasaArastirmaGorevlendirmesi ||
@@ -153,8 +152,16 @@ export function buildDocumentCategories(
           steps: [1, 2, 3, 4],
         },
         {
+          id: "muayeneKabulKomisyonu",
+          label: "Muayene ve Kabul Komisyonu Görevlendirmesi",
+          icon: UserCheck,
+          iconColorClass: "text-sky-600",
+          onClick: onMuayeneKabulKomisyonu || onMuayeneKabulBelgesi,
+          steps: [1, 2, 3, 4],
+        },
+        {
           id: "fiyatArastirmaVeMuayeneKomisyonu",
-          label: "Fiyat Araştırma ve Muayene Komisyonu Görevlendirmesi",
+          label: "Komisyon Görevlendirmesi",
           icon: FileCheck,
           iconColorClass: "text-blue-600",
           onClick: onGorevlendirmeOnayi,
@@ -162,18 +169,10 @@ export function buildDocumentCategories(
         },
         {
           id: "gorevlendirmeOnayEki",
-          label: "Komisyon (Görevlendirme Onay Eki) Görevlendirmesi",
+          label: "Komisyon (Onay Eki) Görevlendirmesi",
           icon: FileSignature,
           iconColorClass: "text-teal-600",
           onClick: onGorevlendirmeOnayEki,
-          steps: [1, 2, 3, 4],
-        },
-        {
-          id: "muayeneKabulKomisyonu",
-          label: "Muayene ve Kabul Komisyonu Görevlendirmesi",
-          icon: UserCheck,
-          iconColorClass: "text-sky-600",
-          onClick: onMuayeneKabulKomisyonu || onMuayeneKabulBelgesi,
           steps: [1, 2, 3, 4],
         },
       ],
