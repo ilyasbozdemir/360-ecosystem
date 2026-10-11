@@ -5,16 +5,17 @@ import {
   ipcMain,
   dialog,
   Tray,
-  Menu,
   session,
   protocol,
   nativeImage
 } from 'electron'
 import { join, basename, dirname } from 'path'
-import { execFile } from 'child_process'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import mime from 'mime-types'
 import fs from 'fs'
+import { registerWindowsFileAssociations } from './platform/fileAssociations'
+import { createSystemTray } from './platform/tray'
+import { registerWindowIpcHandlers } from './ipc/window.ipc'
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -313,69 +314,6 @@ function createWindow(): void {
     }
   })
 
-  ipcMain.on('window-minimize', (event) => {
-    const win = BrowserWindow.fromWebContents(event.sender)
-    if (win) win.minimize()
-  })
-
-  ipcMain.on('window-maximize', (event) => {
-    const win = BrowserWindow.fromWebContents(event.sender)
-    if (win) {
-      if (win.isMaximized()) {
-        win.unmaximize()
-      } else {
-        win.maximize()
-      }
-    }
-  })
-
-  ipcMain.on('window-close', (event) => {
-    const win = BrowserWindow.fromWebContents(event.sender)
-    if (win) win.close()
-  })
-
-  ipcMain.on('window-toggle-devtools', (event) => {
-    const win = BrowserWindow.fromWebContents(event.sender)
-    if (win) win.webContents.toggleDevTools()
-  })
-
-  ipcMain.on('open-external-url', (_event, url) => {
-    if (url && typeof url === 'string') {
-      shell.openExternal(url)
-    }
-  })
-
-  ipcMain.handle('shell:openExternal', async (_event, url: string) => {
-    if (url && typeof url === 'string') {
-      return shell.openExternal(url)
-    }
-    return Promise.resolve()
-  })
-
-  ipcMain.handle('shell:openPath', async (_event, targetPath: string) => {
-    if (targetPath && typeof targetPath === 'string') {
-      return shell.openPath(targetPath)
-    }
-    return Promise.resolve('')
-  })
-
-  ipcMain.on('find-in-page:start', (event, text, options = {}) => {
-    const win = BrowserWindow.fromWebContents(event.sender)
-    if (win && text) {
-      win.webContents.findInPage(text, {
-        forward: options.forward !== false,
-        findNext: options.findNext === true
-      })
-    }
-  })
-
-  ipcMain.on('find-in-page:stop', (event, action = 'clearSelection') => {
-    const win = BrowserWindow.fromWebContents(event.sender)
-    if (win) {
-      win.webContents.stopFindInPage(action)
-    }
-  })
-
   // Helper to open dta-res URLs in external application safely
   function openDtaResExternally(requestUrl: string): void {
     try {
@@ -549,166 +487,7 @@ if (!gotTheLock && !isMultiInstance) {
     }
   })
 
-  function registerWindowsFileAssociations(): void {
-    if (process.platform !== 'win32') return
-    // Geliştirme (dev) ortamında process.execPath geçici dev electron.exe olduğu için
-    // Windows kayıt defterini bozmasını önlüyoruz. Yalnızca paketlenmiş prod ortamda çalışır.
-    if (!app.isPackaged) return
-    try {
-      const exePath = process.execPath
 
-      // İkon dosyasını doğrudan resources/icon.ico olarak tespit et
-      let iconPath = `${exePath},0`
-      const p1 = join(process.resourcesPath, 'icon.ico')
-      const p2 = join(process.resourcesPath, 'resources', 'icon.ico')
-      const p3 = join(dirname(exePath), 'resources', 'icon.ico')
-      const pDev = join(app.getAppPath(), 'resources', 'icon.ico')
-      const pRoot = join(__dirname, '../../resources/icon.ico')
-
-      if (fs.existsSync(p1)) iconPath = p1
-      else if (fs.existsSync(p2)) iconPath = p2
-      else if (fs.existsSync(p3)) iconPath = p3
-      else if (fs.existsSync(pDev)) iconPath = pDev
-      else if (fs.existsSync(pRoot)) iconPath = pRoot
-
-      // 1. ProgID ve Uygulama Kayıtları
-      execFile('reg.exe', [
-        'add',
-        'HKCU\\Software\\Classes\\Temin360.Document',
-        '/ve',
-        '/d',
-        'TEMİN 360 Proje Dosyası',
-        '/f'
-      ])
-      execFile('reg.exe', [
-        'add',
-        'HKCU\\Software\\Classes\\Temin360.Document\\DefaultIcon',
-        '/ve',
-        '/d',
-        iconPath,
-        '/f'
-      ])
-      execFile('reg.exe', [
-        'add',
-        'HKCU\\Software\\Classes\\Temin360.Document\\shell',
-        '/ve',
-        '/d',
-        'open',
-        '/f'
-      ])
-      execFile('reg.exe', [
-        'add',
-        'HKCU\\Software\\Classes\\Temin360.Document\\shell\\open',
-        '/ve',
-        '/d',
-        'TEMİN 360 ile Aç',
-        '/f'
-      ])
-      execFile('reg.exe', [
-        'add',
-        'HKCU\\Software\\Classes\\Temin360.Document\\shell\\open\\command',
-        '/ve',
-        '/d',
-        `"${exePath}" "%1"`,
-        '/f'
-      ])
-
-      execFile('reg.exe', [
-        'add',
-        'HKCU\\Software\\Classes\\Applications\\TEMIN360.exe',
-        '/v',
-        'FriendlyAppName',
-        '/d',
-        'TEMİN 360',
-        '/f'
-      ])
-      execFile('reg.exe', [
-        'add',
-        'HKCU\\Software\\Classes\\Applications\\TEMIN360.exe\\DefaultIcon',
-        '/ve',
-        '/d',
-        iconPath,
-        '/f'
-      ])
-      execFile('reg.exe', [
-        'add',
-        'HKCU\\Software\\Classes\\Applications\\TEMIN360.exe\\shell\\open\\command',
-        '/ve',
-        '/d',
-        `"${exePath}" "%1"`,
-        '/f'
-      ])
-
-      // 2. Sadece .temin uzantısını kaydet
-      const ext = 'temin'
-      execFile('reg.exe', [
-        'add',
-        `HKCU\\Software\\Classes\\.${ext}`,
-        '/ve',
-        '/d',
-        'Temin360.Document',
-        '/f'
-      ])
-      execFile('reg.exe', [
-        'add',
-        `HKCU\\Software\\Classes\\.${ext}\\OpenWithProgids`,
-        '/v',
-        'Temin360.Document',
-        '/t',
-        'REG_SZ',
-        '/d',
-        '',
-        '/f'
-      ])
-      execFile('reg.exe', [
-        'add',
-        `HKCU\\Software\\Classes\\.${ext}\\DefaultIcon`,
-        '/ve',
-        '/d',
-        iconPath,
-        '/f'
-      ])
-      execFile('reg.exe', [
-        'add',
-        'HKCU\\Software\\Classes\\Applications\\TEMIN360.exe\\SupportedTypes',
-        '/v',
-        `.${ext}`,
-        '/d',
-        '',
-        '/f'
-      ])
-      execFile('reg.exe', [
-        'add',
-        `HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.${ext}\\OpenWithProgids`,
-        '/v',
-        'Temin360.Document',
-        '/t',
-        'REG_NONE',
-        '/d',
-        '',
-        '/f'
-      ])
-
-      // Eski uzantıları kayıt defterinden temizle
-      for (const oldExt of ['dtal', 'hkmp', 'dtm', 'dte', 'dta', 'tmn360']) {
-        execFile('reg.exe', ['delete', `HKCU\\Software\\Classes\\.${oldExt}`, '/f'])
-      }
-
-      // 3. Windows Explorer İkon Önbelleğini Yenile (SHChangeNotify)
-      const psCmd = `
-        $code = '[DllImport("shell32.dll")] public static extern void SHChangeNotify(int eventId, int flags, IntPtr item1, IntPtr item2);'
-        Add-Type -MemberDefinition $code -Namespace Win32 -Name Shell
-        [Win32.Shell]::SHChangeNotify(0x08000000, 0, [IntPtr]::Zero, [IntPtr]::Zero)
-      `
-      execFile(
-        'powershell.exe',
-        ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', psCmd],
-        () => {}
-      )
-    } catch (regErr) {
-      console.warn('Dosya ilişkilendirme kaydı hatası:', regErr)
-    }
-  }
 
   // This method will be called when Electron has finished
   // initialization and is ready to create browser windows.
@@ -774,55 +553,7 @@ if (!gotTheLock && !isMultiInstance) {
       registerWindowsFileAssociations()
     }
 
-    try {
-      const trayImg = getAppIcon()
-      if (trayImg) {
-        tray = new Tray(trayImg)
-        const contextMenu = Menu.buildFromTemplate([
-          {
-            label: 'Gösterge Paneli',
-            click: () => {
-              const windows = BrowserWindow.getAllWindows()
-              if (windows.length > 0) {
-                windows[0].show()
-                windows[0].webContents.send('app:navigate', '/')
-              }
-            }
-          },
-          {
-            label: 'Yeni Doğrudan Temin Dosyası',
-            click: () => {
-              const windows = BrowserWindow.getAllWindows()
-              if (windows.length > 0) {
-                windows[0].show()
-                windows[0].webContents.send('app:navigate', '/dosyalar/yeni')
-              }
-            }
-          },
-          { type: 'separator' },
-          {
-            label: 'Çıkış',
-            click: () => {
-              app.quit()
-            }
-          }
-        ])
-        tray.setToolTip('TEMİN 360')
-        tray.setContextMenu(contextMenu)
-        tray.on('click', () => {
-          const windows = BrowserWindow.getAllWindows()
-          if (windows.length > 0) {
-            if (windows[0].isVisible()) {
-              windows[0].hide()
-            } else {
-              windows[0].show()
-            }
-          }
-        })
-      }
-    } catch (e) {
-      console.warn('Tray başlatılırken hata oluştu:', e)
-    }
+    tray = createSystemTray(getAppIcon())
 
     // Set app user model id for windows
     electronApp.setAppUserModelId('dev.ilyasbozdemir.temin360')
@@ -911,205 +642,11 @@ if (!gotTheLock && !isMultiInstance) {
       if (BrowserWindow.getAllWindows().length === 0) createWindow()
     })
 
-    // --- Workspace & SQLite Handlers ---
-    const broadcastDbChange = () => {
-      BrowserWindow.getAllWindows().forEach((win) => {
-        if (!win.isDestroyed()) {
-          win.webContents.send('db:invalidated')
-        }
-      })
-    }
-
-    ipcMain.on('window:close-secondary-windows', () => {
-      closeAllSecondaryWindows()
-    })
-
-    ipcMain.on('window:open-external', (_, data: { url: string; title?: string }) => {
-      const newWindow = new BrowserWindow({
-        width: 1200,
-        height: 800,
-        minWidth: 800,
-        minHeight: 600,
-        show: false,
-        autoHideMenuBar: false,
-        title: data.title || 'Sorgulama Ekranı',
-        icon: getAppIcon(),
-        webPreferences: {
-          nodeIntegration: false,
-          contextIsolation: true
-        }
-      })
-      secondaryWindows.add(newWindow)
-      newWindow.on('closed', () => secondaryWindows.delete(newWindow))
-      newWindow.once('ready-to-show', () => {
-        newWindow.show()
-        newWindow.focus()
-      })
-      newWindow.loadURL(data.url)
-    })
-
-    ipcMain.on(
-      'window:open-secondary',
-      (_, data: { path: string; search: string; title?: string }) => {
-        const newWindow = new BrowserWindow({
-          width: 1000,
-          height: 750,
-          minWidth: 800,
-          minHeight: 600,
-          show: false,
-          autoHideMenuBar: true,
-          title: data.title || 'TEMİN 360 — Detay',
-          icon: getAppIcon(),
-          webPreferences: {
-            preload: join(__dirname, '../preload/index.js'),
-            sandbox: false
-          }
-        })
-
-        secondaryWindows.add(newWindow)
-        newWindow.on('closed', () => secondaryWindows.delete(newWindow))
-        newWindow.once('ready-to-show', () => {
-          newWindow.show()
-          newWindow.focus()
-        })
-
-        if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-          newWindow.loadURL(process.env['ELECTRON_RENDERER_URL'] + data.search + '#' + data.path)
-        } else {
-          const indexHtml = join(__dirname, '../renderer/index.html')
-          newWindow.loadFile(indexHtml, {
-            search: data.search.replace(/^\?/, ''),
-            hash: data.path
-          })
-        }
-      }
-    )
-
-    // --- Dosya ↔ Window IPC Handlers ---
-    const dosyaWindows = new Map<number, BrowserWindow>()
-
-    ipcMain.on(
-      'window:open-dosya',
-      (_, data: { dosyaId: number; path: string; workspacePath: string; title?: string }) => {
-        const existingWin = dosyaWindows.get(data.dosyaId)
-        if (existingWin && !existingWin.isDestroyed()) {
-          if (existingWin.isMinimized()) existingWin.restore()
-          existingWin.focus()
-          return
-        }
-
-        const newWindow = new BrowserWindow({
-          width: 1100,
-          height: 800,
-          minWidth: 800,
-          minHeight: 600,
-          show: false,
-          autoHideMenuBar: true,
-          frame: false,
-          titleBarStyle: 'hidden',
-          titleBarOverlay: false,
-          title: data.title || `Dosya #${data.dosyaId}`,
-          icon: getAppIcon(),
-          webPreferences: {
-            preload: join(__dirname, '../preload/index.js'),
-            sandbox: false
-          }
-        })
-
-        dosyaWindows.set(data.dosyaId, newWindow)
-        newWindow.on('closed', () => {
-          dosyaWindows.delete(data.dosyaId)
-        })
-        newWindow.once('ready-to-show', () => {
-          newWindow.show()
-          newWindow.focus()
-        })
-
-        const wpParam = data.workspacePath ? '&wp=' + encodeURIComponent(data.workspacePath) : ''
-        const searchParams = `?mode=dosya_window&dosyaId=${data.dosyaId}${wpParam}`
-
-        if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-          newWindow.loadURL(process.env['ELECTRON_RENDERER_URL'] + searchParams + '#' + data.path)
-        } else {
-          const indexHtml = join(__dirname, '../renderer/index.html')
-          newWindow.loadFile(indexHtml, {
-            hash: data.path,
-            search: searchParams.replace(/^\?/, '')
-          })
-        }
-      }
-    )
-
-    // --- Tab ↔ Window IPC Handlers ---
-    // Opens a tab's content in a separate detached window
-    ipcMain.on(
-      'tab:open-in-window',
-      (_, data: { path: string; title: string; workspacePath?: string; dosyaId?: number }) => {
-        const newWindow = new BrowserWindow({
-          width: 1000,
-          height: 750,
-          minWidth: 800,
-          minHeight: 600,
-          show: false,
-          autoHideMenuBar: true,
-          frame: false,
-          titleBarStyle: 'hidden',
-          titleBarOverlay: false,
-          title: data.title || 'TEMİN 360',
-          icon: getAppIcon(),
-          webPreferences: {
-            preload: join(__dirname, '../preload/index.js'),
-            sandbox: false
-          }
-        })
-
-        secondaryWindows.add(newWindow)
-        newWindow.on('closed', () => secondaryWindows.delete(newWindow))
-        newWindow.once('ready-to-show', () => {
-          newWindow.show()
-          newWindow.focus()
-        })
-
-        // data.path may contain query params (e.g. "/dosya/hazirlik?id=5")
-        // Split into pure path and tab-specific query params
-        const [purePath, tabQuery] = data.path.split('?')
-        const wpParam = data.workspacePath ? '&wp=' + encodeURIComponent(data.workspacePath) : ''
-        const dosyaParam = data.dosyaId ? '&dosyaId=' + data.dosyaId : ''
-        const tabQueryParam = tabQuery ? '&' + tabQuery : ''
-        const searchString = '?mode=window' + wpParam + dosyaParam + tabQueryParam
-
-        if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-          // Dev: pure path into hash, all params into search string
-          newWindow.loadURL(process.env['ELECTRON_RENDERER_URL'] + searchString + '#' + purePath)
-        } else {
-          // Production: pure path into hash, all params into search
-          const indexHtml = join(__dirname, '../renderer/index.html')
-          newWindow.loadFile(indexHtml, {
-            hash: purePath,
-            search: searchString.replace(/^\?/, '')
-          })
-        }
-      }
-    )
-
-    // Returns a detached window's content back to the main window as a tab
-    ipcMain.on('tab:return-to-parent', (event, data: { path: string }) => {
-      // Find the main window (the first window that is NOT the sender)
-      const senderWindow = BrowserWindow.fromWebContents(event.sender)
-      const allWindows = BrowserWindow.getAllWindows()
-      const mainWindow = allWindows.find((w) => w !== senderWindow) || allWindows[0]
-
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        // Tell the main window to re-add this path as a tab
-        mainWindow.webContents.send('tab:returned-from-window', { path: data.path })
-        if (mainWindow.isMinimized()) mainWindow.restore()
-        mainWindow.focus()
-      }
-
-      // Close the child window
-      if (senderWindow && !senderWindow.isDestroyed()) {
-        senderWindow.close()
-      }
+    registerWindowIpcHandlers({
+      getAppIcon,
+      closeAllSecondaryWindows,
+      secondaryWindows,
+      dosyaWindows
     })
   })
 }
