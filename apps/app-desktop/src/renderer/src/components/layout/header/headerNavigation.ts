@@ -39,6 +39,10 @@ export function getHeaderMenus(opts: HeaderNavigationOptions): HeaderMenu[] {
       items: [
         { label: 'Gösterge Paneli', onClick: (): Promise<void> => navigate({ to: '/' }) },
         {
+          label: '📑 EBYS Resmî Yazı Şablonları',
+          onClick: (): Promise<void> => navigate({ to: '/ebys' })
+        },
+        {
           label: 'Yeni Doğrudan Temin Dosyası',
           onClick: (): Promise<void> => navigate({ to: '/dosyalar/yeni' })
         },
@@ -163,6 +167,10 @@ function getYonetimVeYardimMenu(
       {
         label: 'Şablon Listesi ve Süreçler',
         onClick: (): Promise<void> => navigate({ to: '/taslakyonetim' })
+      },
+      {
+        label: '📑 EBYS Resmî Yazı Şablonları',
+        onClick: (): Promise<void> => navigate({ to: '/ebys' })
       },
       { label: 'Toplu İçe Aktarma', onClick: (): Promise<void> => navigate({ to: '/import' }) },
       { label: 'Raporlar', onClick: (): Promise<void> => navigate({ to: '/raporlar' }) },

@@ -64,6 +64,12 @@ export function getSidebarMenuGroups(
         items: [
           { name: 'Gösterge Paneli', path: '/', icon: Home },
           {
+            name: 'EBYS Resmî Yazı Şablonları',
+            path: '/ebys',
+            icon: FileText,
+            badge: 'YENİ'
+          },
+          {
             name: '2886 İhale Dosyaları Yönetimi',
             path: '/devlet-ihale-2886?tab=dosyalar',
             icon: FolderOpen,
@@ -160,7 +166,6 @@ export function getSidebarMenuGroups(
         title: 'Sistem',
         items: [
           { name: 'Raporlar & Gelir Cetvelleri', path: '/raporlar', icon: BarChart3 },
-          { name: 'EBYS Resmî Yazı Şablonları', path: '/ebys', icon: FileText, badge: 'YENİ' },
           { name: '2886 Mevzuat ve Parametreler', path: '/mevzuat', icon: Scale },
           { name: 'Şablon Listesi ve Süreçler', path: '/taslakyonetim', icon: Star },
           { name: 'Sürüm Notları', path: '/changelog', icon: Megaphone },
@@ -194,6 +199,12 @@ export function getSidebarMenuGroups(
         title: 'İhale Süreçleri (KİK 19/21)',
         items: [
           { name: 'Gösterge Paneli', path: '/', icon: Home },
+          {
+            name: 'EBYS Resmî Yazı Şablonları',
+            path: '/ebys',
+            icon: FileText,
+            badge: 'YENİ'
+          },
           {
             name: 'Harcama & İhale Merkezi',
             path: '/harcama-merkezi',
@@ -288,7 +299,6 @@ export function getSidebarMenuGroups(
         title: 'Sistem',
         items: [
           { name: 'Raporlar & Harcama Analizleri', path: '/raporlar', icon: BarChart3 },
-          { name: 'EBYS Resmî Yazı Şablonları', path: '/ebys', icon: FileText, badge: 'YENİ' },
           { name: 'İhale Mevzuatı ve Parametreler', path: '/mevzuat', icon: Scale },
           { name: 'Sürüm Notları', path: '/changelog', icon: Megaphone },
           { name: 'Yardım & Kılavuzlar', path: '/yardim', icon: HelpCircle },
@@ -321,6 +331,12 @@ export function getSidebarMenuGroups(
       title: 'Ana Menü',
       items: [
         { name: 'Gösterge Paneli', path: '/', icon: Home },
+        {
+          name: 'EBYS Resmî Yazı Şablonları',
+          path: '/ebys',
+          icon: FileText,
+          badge: 'YENİ'
+        },
         {
           name: 'Doğrudan Temin Dosyaları',
           path: '/dosyalar',
@@ -432,7 +448,6 @@ export function getSidebarMenuGroups(
       title: 'Sistem',
       items: [
         { name: 'Raporlar', path: '/raporlar', icon: BarChart3 },
-        { name: 'EBYS Resmî Yazı Şablonları', path: '/ebys', icon: FileText, badge: 'YENİ' },
         {
           name: 'Şablon Listesi ve Süreçler',
           path: '/taslakyonetim',
