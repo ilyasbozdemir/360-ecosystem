@@ -4,7 +4,6 @@ import { useSablonlar } from '../sablonlar/sablonlar.hooks'
 import { subPagesMapping } from '../../constants/surecler'
 import { useWorkspaceStore } from '../../store/workspaceStore'
 import { useDosyaAsamasiSablons } from '../dosya/sub-screens/DosyaAsamalari/useDosyaAsamasiSablons'
-import { DocumentPreviewModal } from '../dosya/components/DocumentPreviewModal'
 
 // Subcomponents
 import { DocumentCard } from './components/DocumentCard'
@@ -22,23 +21,9 @@ export default function TaslakYoneticisi(): React.JSX.Element {
 
   const {
     sablons,
-    masterHtml,
-    dosyaContext,
-    placeholders,
-    contextsByPath,
-    personelListesi,
-    previewModalOpen,
-    setPreviewModalOpen,
-    previewData,
     handleOpenPreviewForSablon,
     quickPrint,
-    quickExport,
-    executePrint,
-    executeExportPdf,
-    executeExportDocx,
-    executeExportUdf,
-    refreshSnapshot,
-    saveSnapshot
+    quickExport
   } = useDosyaAsamasiSablons()
 
   const [activeStage, setActiveStage] = useState<string>('1. İhtiyaç Tespiti & Başlangıç')
@@ -599,35 +584,6 @@ export default function TaslakYoneticisi(): React.JSX.Element {
             </div>
           </div>
         </div>
-      )}
-
-      {/* Document Preview Modal */}
-      {previewData && previewModalOpen && (
-        <DocumentPreviewModal
-          isOpen={previewModalOpen}
-          onClose={() => setPreviewModalOpen(false)}
-          title={previewData.title}
-          templateHtml={previewData.templateHtml}
-          masterHtml={masterHtml || ''}
-          baseContext={
-            previewData.snapshotContext || contextsByPath[previewData.processPath] || dosyaContext
-          }
-          placeholders={placeholders}
-          personelListesi={personelListesi}
-          onPrint={executePrint}
-          onExportPdf={executeExportPdf}
-          onExportDocx={executeExportDocx}
-          onExportUdf={executeExportUdf}
-          isStarred={starredList.some(
-            (d) => normalizeForMatch(d) === normalizeForMatch(previewData.title || '')
-          )}
-          onToggleStar={() => previewData?.title && toggleStar(previewData.title)}
-          isInline={false}
-          templateTestVerisi={previewData.templateTestVerisi}
-          dosyaAdi={previewData.dosyaAdi}
-          onRefreshSnapshot={refreshSnapshot}
-          onSaveSnapshot={saveSnapshot}
-        />
       )}
     </div>
   )

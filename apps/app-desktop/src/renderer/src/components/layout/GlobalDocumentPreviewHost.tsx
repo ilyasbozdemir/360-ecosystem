@@ -1,18 +1,37 @@
-import React from 'react'
-import { useGlobalDocumentPreviewStore } from '../../store/globalDocumentPreviewStore'
-import { DocumentPreviewModalV2 } from '../../screens/dosya/components/DocumentPreviewModalV2'
+import React from "react";
+import { useGlobalDocumentPreviewStore } from "../../store/globalDocumentPreviewStore";
+import { DocumentPreviewModalV2 } from "../../screens/dosya/components/DocumentPreviewModalV2";
+import { DocumentPreviewModalV3 } from "../../screens/dosya/components/DocumentPreviewModalV3";
 
 export function GlobalDocumentPreviewHost(): React.JSX.Element | null {
-  const { isOpen, tabs, activeTabId, switchTab, closeTab, openDocument, closeDocument } =
-    useGlobalDocumentPreviewStore()
+  const {
+    isOpen,
+    tabs,
+    activeTabId,
+    switchTab,
+    closeTab,
+    openDocument,
+    closeDocument,
+  } = useGlobalDocumentPreviewStore();
 
-  if (!isOpen || tabs.length === 0) return null
+  if (!isOpen || tabs.length === 0) return null;
 
-  const activeTab = tabs.find((t) => t.tabId === activeTabId) || tabs[0]
-  if (!activeTab) return null
+  const activeTab = tabs.find((t) => t.tabId === activeTabId) || tabs[0];
+  if (!activeTab) return null;
+
+  const DOCUMENT_PREVIEW_VERSIONS = {
+    v2: DocumentPreviewModalV2,
+    v3: DocumentPreviewModalV3,
+  } as const;
+
+  type DocumentPreviewVersion = keyof typeof DOCUMENT_PREVIEW_VERSIONS;
+  const ACTIVE_DOCUMENT_PREVIEW_VERSION: DocumentPreviewVersion = "v3";
+
+  const ActiveDocumentPreview =
+    DOCUMENT_PREVIEW_VERSIONS[ACTIVE_DOCUMENT_PREVIEW_VERSION];
 
   return (
-    <DocumentPreviewModalV2
+    <ActiveDocumentPreview
       key={activeTab.tabId}
       isOpen={isOpen}
       documentId={activeTab.documentId}
@@ -28,5 +47,5 @@ export function GlobalDocumentPreviewHost(): React.JSX.Element | null {
       onCloseTab={closeTab}
       onAddTab={openDocument}
     />
-  )
+  );
 }

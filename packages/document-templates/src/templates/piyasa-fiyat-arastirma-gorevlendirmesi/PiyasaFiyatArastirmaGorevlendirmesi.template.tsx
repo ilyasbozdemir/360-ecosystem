@@ -154,6 +154,8 @@ export const PiyasaFiyatArastirmaGorevlendirmesi: React.FC<Props> = ({
 
   const isinAdiMetni = data.isinAdi ?? "Alımı yapılacak";
 
+  console.log("data", data);
+
   return (
     <DocumentLayout
       data={data as any}
