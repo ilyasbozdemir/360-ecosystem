@@ -27,7 +27,8 @@ import {
   Tag,
   User,
   Users,
-  Boxes
+  Boxes,
+  Store
 } from 'lucide-react'
 
 export interface SubItem {
@@ -80,6 +81,12 @@ export function getSidebarMenuGroups(
             path: '/devlet-ihale-2886',
             icon: Landmark,
             badge: 'GELİR'
+          },
+          {
+            name: 'Modül & Belge Mağazası',
+            path: '/modul-magazasi',
+            icon: Store,
+            badge: 'YENİ'
           }
         ]
       },
@@ -216,6 +223,12 @@ export function getSidebarMenuGroups(
             path: '/hakedis',
             icon: Hammer,
             badge: 'HAKEDİŞ'
+          },
+          {
+            name: 'Modül & Belge Mağazası',
+            path: '/modul-magazasi',
+            icon: Store,
+            badge: 'YENİ'
           }
         ]
       },
@@ -347,6 +360,12 @@ export function getSidebarMenuGroups(
           name: 'Harcama & Hakediş Merkezi',
           path: '/harcama-merkezi',
           icon: Landmark,
+          badge: 'YENİ'
+        },
+        {
+          name: 'Modül & Belge Mağazası',
+          path: '/modul-magazasi',
+          icon: Store,
           badge: 'YENİ'
         }
       ]

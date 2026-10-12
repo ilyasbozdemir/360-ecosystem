@@ -101,5 +101,6 @@ export const routeComponents: Record<string, () => React.ReactElement> = {
   '/surec-akisi': lazyRoute(() => import('../../screens/system/DTSurecAkisiScreen')),
   '/yardim': lazyRoute(() => import('../../screens/system/YardimScreen')),
   '/ebys': lazyRoute(() => import('../../screens/ebys/index.screen')),
-  '/dosya/belge-onizleme': lazyRoute(() => import('../../screens/dosya/BelgeOnizleme.screen'))
+  '/dosya/belge-onizleme': lazyRoute(() => import('../../screens/dosya/BelgeOnizleme.screen')),
+  '/modul-magazasi': lazyRoute(() => import('../../screens/modul-magazasi/index.screen'))
 }

@@ -117,6 +117,9 @@ const TakipScreen = lazyRoute(
   "TakipScreen",
 );
 const EbysScreen = lazyRoute(() => import("./screens/ebys/index.screen"));
+const ModulMagazasiScreen = lazyRoute(() =>
+  import("./screens/modul-magazasi/index.screen")
+);
 const TaslakYoneticisi = lazyRoute(() =>
   import("./screens/system/TaslakYoneticisi")
 );
@@ -518,6 +521,12 @@ const ebysRoute = createRoute({
   component: EbysScreen,
 });
 
+const modulMagazasiRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: APP_ROUTES.MODUL_MAGAZASI,
+  component: ModulMagazasiScreen,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   harcamaMerkeziRoute,
@@ -576,6 +585,7 @@ const routeTree = rootRoute.addChildren([
   yardimRoute,
   hesaplamaAraclariRoute,
   ebysRoute,
+  modulMagazasiRoute,
   belgeOnizlemeRoute,
 ]);
 
