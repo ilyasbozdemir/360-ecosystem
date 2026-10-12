@@ -18,16 +18,24 @@ export interface IpcRegistrationOptions {
 }
 
 export function registerAllIpcHandlers(options: IpcRegistrationOptions): void {
-  registerDbIpcHandlers()
-  registerWorkspaceIpcHandlers(options.closeAllSecondaryWindows)
-  registerNetworkIpcHandlers()
-  registerDocumentIpcHandlers()
-  registerTemplateIpcHandlers()
-  registerAppIpcHandlers(options.setForceQuit, options.initialFilePath)
-  registerDialogIpcHandlers()
-  registerAiIpcHandlers()
-  registerUpdaterIpcHandlers()
-  registerTestIpcHandlers()
-  registerLoggerIpcHandlers()
-  registerArchiveHandlers()
+  const safeRegister = (name: string, fn: () => void): void => {
+    try {
+      fn()
+    } catch (err: unknown) {
+      console.error(`[IPC Register Error] ${name} kaydedilirken hata oluştu:`, err)
+    }
+  }
+
+  safeRegister('Db', () => registerDbIpcHandlers())
+  safeRegister('Workspace', () => registerWorkspaceIpcHandlers(options.closeAllSecondaryWindows))
+  safeRegister('Network', () => registerNetworkIpcHandlers())
+  safeRegister('Document', () => registerDocumentIpcHandlers())
+  safeRegister('Template', () => registerTemplateIpcHandlers())
+  safeRegister('App', () => registerAppIpcHandlers(options.setForceQuit, options.initialFilePath))
+  safeRegister('Dialog', () => registerDialogIpcHandlers())
+  safeRegister('Ai', () => registerAiIpcHandlers())
+  safeRegister('Updater', () => registerUpdaterIpcHandlers())
+  safeRegister('Test', () => registerTestIpcHandlers())
+  safeRegister('Logger', () => registerLoggerIpcHandlers())
+  safeRegister('Archive', () => registerArchiveHandlers())
 }
