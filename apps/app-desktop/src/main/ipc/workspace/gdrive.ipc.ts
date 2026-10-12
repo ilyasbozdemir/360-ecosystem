@@ -373,10 +373,6 @@ export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void):
     }
   )
 
-  ipcMain.handle('workspace:get-device-info', async () => {
-    return getDeviceInfo()
-  })
-
   ipcMain.handle(
     'workspace:backup-gdrive',
     async (_, args?: { token?: string; force?: boolean }) => {
