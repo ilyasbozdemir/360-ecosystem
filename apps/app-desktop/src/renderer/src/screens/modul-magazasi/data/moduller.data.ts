@@ -49,7 +49,7 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     kategori: 'satis_kiralama',
     ikon: 'Landmark',
     renk: 'emerald',
-    durum: 'kurulu',
+    durum: 'kurulabilir',
     versiyon: 'v2.1.0',
     etiketler: ['2886', 'Gelir İhalesi', 'Taşınmaz Satışı', 'Kira', 'Encümen'],
     araclar: ['Muhammen Bedel & %3 Geçici Teminat Hesabı', 'Yİ-ÜFE Kira Artış Robotu', 'İhale Usul Karar Matrisi'],

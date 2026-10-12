@@ -3,7 +3,7 @@ import type { ModulPaketi, ModulKategoriFiltresi } from '../modulMagazasi.types'
 import { RESMI_MODUL_PAKETLERI } from '../data/moduller.data'
 
 const STORAGE_KEY = 'temin360_installed_modules'
-const DEFAULT_INSTALLED = ['kik-dogrudan-temin-22d', 'dik-devlet-ihale-2886']
+const DEFAULT_INSTALLED = ['kik-dogrudan-temin-22d']
 
 export function useModulMagazasiLogic() {
   const [searchQuery, setSearchQuery] = useState('')
