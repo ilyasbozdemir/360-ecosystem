@@ -35,18 +35,30 @@ export async function loadDocumentPreviewData({
   const mapping = getDefaultMappingForProcess(resolvedId)
   const resolver = new TemplateResolver(queryExecutor)
 
-  // Fetch complete pre-computed document payload via single native Electron IPC handler + resolver in parallel
-  const [payloadRes, resolved] = await Promise.all([
-    window.electron?.ipcRenderer
-      ? window.electron.ipcRenderer.invoke('belge:get-document-payload', {
-          dosyaId: activeDosyaId,
-          documentId: resolvedId
-        })
-      : Promise.resolve({ success: false, data: {} }),
-    resolver.resolve(mapping, activeDosyaId || 0)
-  ])
+  // Fetch complete pre-computed document payload via single native Electron IPC handler
+  let payloadData: any = {}
+  let resolved: any = {}
 
-  const payloadData = payloadRes?.success ? payloadRes.data : {}
+  if (window.electron?.ipcRenderer) {
+    try {
+      const payloadRes = await window.electron.ipcRenderer.invoke('belge:get-document-payload', {
+        dosyaId: activeDosyaId,
+        documentId: resolvedId
+      })
+      if (payloadRes?.success && payloadRes.data) {
+        payloadData = payloadRes.data
+      }
+    } catch (err) {
+      console.warn('[previewDataLoader] belge:get-document-payload IPC error:', err)
+    }
+  }
+
+  // Sadece merkezi backend yanıt vermediyse renderer tarafındaki resolver'ı çalıştır
+  if (!payloadData || Object.keys(payloadData).length === 0) {
+    const mapping = getDefaultMappingForProcess(resolvedId)
+    const resolver = new TemplateResolver(queryExecutor)
+    resolved = await resolver.resolve(mapping, activeDosyaId || 0)
+  }
   let dosyaRecord = payloadData.dosya || null
   if (!dosyaRecord && activeDosyaId) {
     const res = await queryExecutor('SELECT * FROM DATA_TeminDosyasi WHERE id = ?', [activeDosyaId])

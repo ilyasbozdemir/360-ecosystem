@@ -111,23 +111,35 @@ class DocumentPreloadService {
           }
         }
 
-        const mapping = getDefaultMappingForProcess(resolvedId)
-        const resolver = new TemplateResolver(queryExecutor)
+        let payloadData: any = {}
+        let resolvedData: any = {}
 
-        const [payloadRes, resolved] = await Promise.all([
-          window.electron?.ipcRenderer
-            ? window.electron.ipcRenderer.invoke('belge:get-document-payload', {
+        if (window.electron?.ipcRenderer) {
+          try {
+            const payloadRes = await window.electron.ipcRenderer.invoke(
+              'belge:get-document-payload',
+              {
                 dosyaId,
                 documentId: resolvedId
-              })
-            : Promise.resolve({ success: false, data: {} }),
-          resolver.resolve(mapping, dosyaId || 0)
-        ])
+              }
+            )
+            if (payloadRes?.success && payloadRes.data) {
+              payloadData = payloadRes.data
+            }
+          } catch (err) {
+            console.warn('[DocumentPreloadService] belge:get-document-payload error:', err)
+          }
+        }
 
-        const payloadData = payloadRes?.success ? payloadRes.data : {}
+        if (!payloadData || Object.keys(payloadData).length === 0) {
+          const mapping = getDefaultMappingForProcess(resolvedId)
+          const resolver = new TemplateResolver(queryExecutor)
+          resolvedData = await resolver.resolve(mapping, dosyaId || 0)
+        }
+
         const entry: PreloadedDocumentData = {
           payloadData,
-          resolvedData: resolved || {},
+          resolvedData,
           timestamp: Date.now()
         }
 

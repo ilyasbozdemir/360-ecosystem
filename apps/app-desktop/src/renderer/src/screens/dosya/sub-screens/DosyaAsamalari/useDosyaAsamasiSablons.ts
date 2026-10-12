@@ -240,7 +240,6 @@ export function useDosyaAsamasiSablons() {
       selectedFirma: selectedFirma || null
     })
     setPreviewModalOpen(true)
-    setPreviewModalOpen(true)
 
     const docId = (sablon.dosya_adi || sablon.route_path || '').replace(/\.html$/, '')
     useGlobalDocumentPreviewStore.getState().openDocument({
