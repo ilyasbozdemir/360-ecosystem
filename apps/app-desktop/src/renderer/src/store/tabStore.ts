@@ -116,6 +116,7 @@ export function getTabLabel(fullPath: string): string {
   if (path.startsWith(APP_ROUTES.CIKTI_MERKEZI_DASHBOARD)) return 'Çıktı & Üretim Merkezi'
   if (path.startsWith(APP_ROUTES.DT_SUREC_AKISI)) return 'Doğrudan Temin'
   if (path.startsWith(APP_ROUTES.EBYS)) return 'EBYS Resmî Yazı Şablonları'
+  if (path.startsWith(APP_ROUTES.MODUL_MAGAZASI)) return 'Modül & Belge Mağazası'
   if (path.startsWith(APP_ROUTES.BELGE_ONIZLEME)) {
     const query = fullPath.split('?')[1] || ''
     const sp = new URLSearchParams(query)
