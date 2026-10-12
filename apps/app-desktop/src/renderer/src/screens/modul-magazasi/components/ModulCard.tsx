@@ -9,7 +9,8 @@ import {
   Download,
   Info,
   GitFork,
-  Trash2
+  Trash2,
+  Loader2
 } from 'lucide-react'
 import { cn } from '../../../utils/cn'
 import type { ModulPaketi } from '../modulMagazasi.types'
@@ -17,7 +18,9 @@ import type { ModulPaketi } from '../modulMagazasi.types'
 interface ModulCardProps {
   modul: ModulPaketi
   isInstalled: boolean
-  onToggleInstall: (id: string) => void
+  isInstalling?: boolean
+  onInstall: (id: string) => void
+  onPromptUninstall: (modul: ModulPaketi) => void
   onOpenDetail: (modul: ModulPaketi) => void
 }
 
@@ -79,7 +82,9 @@ const COLOR_MAP: Record<
 export const ModulCard: React.FC<ModulCardProps> = ({
   modul,
   isInstalled,
-  onToggleInstall,
+  isInstalling,
+  onInstall,
+  onPromptUninstall,
   onOpenDetail
 }) => {
   const colorTheme = COLOR_MAP[modul.renk] || COLOR_MAP.blue
@@ -188,7 +193,7 @@ export const ModulCard: React.FC<ModulCardProps> = ({
       <div className="relative z-10 pt-5 mt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center gap-2">
         <button
           onClick={() => onOpenDetail(modul)}
-          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700 transition-all hover:border-slate-300 dark:hover:border-slate-600"
+          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700 transition-all hover:border-slate-300 dark:hover:border-slate-600 cursor-pointer"
         >
           <Info className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
           Detayları & Belgeleri Gör
@@ -196,16 +201,24 @@ export const ModulCard: React.FC<ModulCardProps> = ({
 
         {isInstalled ? (
           <button
-            onClick={() => onToggleInstall(modul.id)}
-            title="Modülü kaldır veya pasife al"
-            className="flex items-center justify-center p-2 rounded-xl text-xs font-semibold bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/20 transition-all"
+            onClick={() => onPromptUninstall(modul)}
+            title="Modülü kaldır"
+            className="flex items-center justify-center p-2 rounded-xl text-xs font-semibold bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/20 transition-all cursor-pointer"
           >
             <Trash2 className="w-4 h-4" />
           </button>
+        ) : isInstalling ? (
+          <button
+            disabled
+            className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold bg-indigo-500/80 text-white cursor-wait animate-pulse shadow-xs"
+          >
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            <span>Kuruluyor...</span>
+          </button>
         ) : (
           <button
-            onClick={() => onToggleInstall(modul.id)}
-            className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-xs shadow-indigo-600/30 transition-all"
+            onClick={() => onInstall(modul.id)}
+            className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-xs shadow-indigo-600/30 transition-all hover:scale-102 active:scale-98 cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
             Modülü Kur

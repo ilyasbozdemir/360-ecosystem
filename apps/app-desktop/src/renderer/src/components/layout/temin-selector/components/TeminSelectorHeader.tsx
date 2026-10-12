@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Gavel, Landmark, Plus, Zap } from 'lucide-react'
 import { ProcurementMode } from '../teminSelector.types'
+import { useModuleStore } from '@renderer/store/moduleStore'
 
 interface TeminSelectorHeaderProps {
   procurementMode: ProcurementMode
@@ -14,6 +15,7 @@ interface TeminSelectorHeaderProps {
 }
 
 export const TeminSelectorHeader: React.FC<TeminSelectorHeaderProps> = ({
+  procurementMode,
   setGlobalMode,
   isDt,
   is2886,
@@ -22,6 +24,19 @@ export const TeminSelectorHeader: React.FC<TeminSelectorHeaderProps> = ({
   ihale2886Count,
   handleCreateYeniDosya
 }) => {
+  const isInstalled = useModuleStore((s) => s.isInstalled)
+  const isIhaleInstalled = isInstalled('kik-acik-ihale-19-21')
+  const is2886Installed = isInstalled('dik-devlet-ihale-2886')
+
+  // Modül kaldırıldığında veya pasif olduğunda doğrudan temin moduna geri dön
+  useEffect(() => {
+    if (procurementMode === 'ihale' && !isIhaleInstalled) {
+      setGlobalMode('dogrudan_temin')
+    } else if (procurementMode === 'devlet_ihale_2886' && !is2886Installed) {
+      setGlobalMode('dogrudan_temin')
+    }
+  }, [procurementMode, isIhaleInstalled, is2886Installed, setGlobalMode])
+
   return (
     <div className="flex items-center justify-between gap-2 p-1.5 bg-slate-100/70 dark:bg-slate-950/60 rounded-xl border border-slate-200/60 dark:border-slate-800 mb-2.5">
       <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto custom-scrollbar">
@@ -48,49 +63,53 @@ export const TeminSelectorHeader: React.FC<TeminSelectorHeaderProps> = ({
         </button>
 
         {/* 2. Mod: İhale Süreçleri (KİK 19/21) */}
-        <button
-          onClick={() => setGlobalMode('ihale')}
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 ${
-            !isDt && !is2886
-              ? 'bg-indigo-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800 hover:text-slate-900'
-          }`}
-        >
-          <Gavel className="w-3.5 h-3.5" />
-          <span>İhale Süreçleri (KİK 19/21)</span>
-          <span
-            className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+        {isIhaleInstalled && (
+          <button
+            onClick={() => setGlobalMode('ihale')}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 ${
               !isDt && !is2886
-                ? 'bg-indigo-700 text-white font-bold'
-                : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                ? 'bg-indigo-600 text-white shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800 hover:text-slate-900'
             }`}
           >
-            {ihaleCount}
-          </span>
-        </button>
+            <Gavel className="w-3.5 h-3.5" />
+            <span>İhale Süreçleri (KİK 19/21)</span>
+            <span
+              className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                !isDt && !is2886
+                  ? 'bg-indigo-700 text-white font-bold'
+                  : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+              }`}
+            >
+              {ihaleCount}
+            </span>
+          </button>
+        )}
 
         {/* 3. Mod: 2886 Devlet İhale */}
-        <button
-          onClick={() => setGlobalMode('devlet_ihale_2886')}
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 ${
-            is2886
-              ? 'bg-purple-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-purple-700 dark:hover:text-purple-300'
-          }`}
-          title="2886 Sayılı Devlet İhale Kanunu (Satış, Kiralama, Trampa)"
-        >
-          <Landmark className="w-3.5 h-3.5 text-purple-400" />
-          <span>2886 Devlet İhale</span>
-          <span
-            className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+        {is2886Installed && (
+          <button
+            onClick={() => setGlobalMode('devlet_ihale_2886')}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 ${
               is2886
-                ? 'bg-purple-700 text-white font-bold'
-                : 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border border-purple-200 dark:border-purple-800'
+                ? 'bg-purple-600 text-white shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-purple-700 dark:hover:text-purple-300'
             }`}
+            title="2886 Sayılı Devlet İhale Kanunu (Satış, Kiralama, Trampa)"
           >
-            {ihale2886Count}
-          </span>
-        </button>
+            <Landmark className="w-3.5 h-3.5 text-purple-400" />
+            <span>2886 Devlet İhale</span>
+            <span
+              className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                is2886
+                  ? 'bg-purple-700 text-white font-bold'
+                  : 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border border-purple-200 dark:border-purple-800'
+              }`}
+            >
+              {ihale2886Count}
+            </span>
+          </button>
+        )}
       </div>
 
       <button

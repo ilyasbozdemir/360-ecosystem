@@ -1,48 +1,46 @@
-import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import type { ModulPaketi, ModulKategoriFiltresi } from '../modulMagazasi.types'
 import { RESMI_MODUL_PAKETLERI } from '../data/moduller.data'
-
-const STORAGE_KEY = 'temin360_installed_modules_v2'
-const DEFAULT_INSTALLED = ['kik-dogrudan-temin-22d']
+import { useModuleStore } from '@renderer/store/moduleStore'
 
 export function useModulMagazasiLogic() {
   const [searchQuery, setSearchQuery] = useState('')
   const [activeKategori, setActiveKategori] = useState<ModulKategoriFiltresi>('tum')
   const [activeDetailModul, setActiveDetailModul] = useState<ModulPaketi | null>(null)
-  const [installedIds, setInstalledIds] = useState<string[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY)
-      if (saved) {
-        const parsed = JSON.parse(saved)
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed
-      }
-    } catch {
-      // ignore
-    }
-    return DEFAULT_INSTALLED
-  })
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(installedIds))
-    } catch {
-      // ignore
-    }
-  }, [installedIds])
+  // Global store
+  const { installedIds, isInstalled, installModule, uninstallModule } = useModuleStore()
 
-  const isInstalled = useCallback(
-    (id: string) => installedIds.includes(id),
-    [installedIds]
+  // Kurulum animasyonu durumu
+  const [installingId, setInstallingId] = useState<string | null>(null)
+
+  // Kaldırma onay modalı adayı
+  const [uninstallCandidate, setUninstallCandidate] = useState<ModulPaketi | null>(null)
+
+  const handleStartInstall = useCallback(
+    (id: string) => {
+      setInstallingId(id)
+      setTimeout(() => {
+        installModule(id)
+        setInstallingId(null)
+      }, 1200)
+    },
+    [installModule]
   )
 
-  const toggleInstall = useCallback((id: string) => {
-    setInstalledIds((prev) => {
-      if (prev.includes(id)) {
-        return prev.filter((item) => item !== id)
-      } else {
-        return [...prev, id]
-      }
-    })
+  const handlePromptUninstall = useCallback((modul: ModulPaketi) => {
+    setUninstallCandidate(modul)
+  }, [])
+
+  const handleConfirmUninstall = useCallback(() => {
+    if (uninstallCandidate) {
+      uninstallModule(uninstallCandidate.id)
+      setUninstallCandidate(null)
+    }
+  }, [uninstallCandidate, uninstallModule])
+
+  const handleCloseUninstallModal = useCallback(() => {
+    setUninstallCandidate(null)
   }, [])
 
   const filteredModuller = useMemo(() => {
@@ -69,10 +67,11 @@ export function useModulMagazasiLogic() {
   }, [activeKategori, searchQuery, installedIds])
 
   const stats = useMemo(() => {
+    const installedCount = RESMI_MODUL_PAKETLERI.filter((m) => installedIds.includes(m.id)).length
     return {
       total: RESMI_MODUL_PAKETLERI.length,
-      installed: RESMI_MODUL_PAKETLERI.filter((m) => installedIds.includes(m.id)).length,
-      available: RESMI_MODUL_PAKETLERI.length - RESMI_MODUL_PAKETLERI.filter((m) => installedIds.includes(m.id)).length,
+      installed: installedCount,
+      available: RESMI_MODUL_PAKETLERI.length - installedCount,
       totalTemplates: RESMI_MODUL_PAKETLERI.reduce((sum, m) => sum + m.belgeler.length, 0)
     }
   }, [installedIds])
@@ -86,7 +85,12 @@ export function useModulMagazasiLogic() {
     setActiveDetailModul,
     installedIds,
     isInstalled,
-    toggleInstall,
+    installingId,
+    handleStartInstall,
+    uninstallCandidate,
+    handlePromptUninstall,
+    handleConfirmUninstall,
+    handleCloseUninstallModal,
     filteredModuller,
     stats
   }

@@ -9,7 +9,8 @@ import {
   Trash2,
   BadgeAlert,
   Wrench,
-  Check
+  Check,
+  Loader2
 } from 'lucide-react'
 import { cn } from '../../../utils/cn'
 import type { ModulPaketi } from '../modulMagazasi.types'
@@ -17,8 +18,10 @@ import type { ModulPaketi } from '../modulMagazasi.types'
 interface ModulDetailModalProps {
   modul: ModulPaketi | null
   isInstalled: boolean
+  isInstalling?: boolean
   onClose: () => void
-  onToggleInstall: (id: string) => void
+  onInstall: (id: string) => void
+  onPromptUninstall: (modul: ModulPaketi) => void
 }
 
 type TabType = 'belgeler' | 'asamalar' | 'mevzuat'
@@ -26,8 +29,10 @@ type TabType = 'belgeler' | 'asamalar' | 'mevzuat'
 export const ModulDetailModal: React.FC<ModulDetailModalProps> = ({
   modul,
   isInstalled,
+  isInstalling,
   onClose,
-  onToggleInstall
+  onInstall,
+  onPromptUninstall
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>('belgeler')
 
@@ -225,16 +230,24 @@ export const ModulDetailModal: React.FC<ModulDetailModalProps> = ({
             </button>
             {isInstalled ? (
               <button
-                onClick={() => onToggleInstall(modul.id)}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/30 transition-all"
+                onClick={() => onPromptUninstall(modul)}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/30 transition-all cursor-pointer"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 Modülü Kaldır
               </button>
+            ) : isInstalling ? (
+              <button
+                disabled
+                className="flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-semibold bg-indigo-500/80 text-white cursor-wait animate-pulse shadow-md shadow-indigo-600/20"
+              >
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span>Modül Paketi Kuruluyor...</span>
+              </button>
             ) : (
               <button
-                onClick={() => onToggleInstall(modul.id)}
-                className="flex items-center gap-1.5 px-5 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/30 transition-all"
+                onClick={() => onInstall(modul.id)}
+                className="flex items-center gap-1.5 px-5 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/30 transition-all cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
                 Modülü Hemen Kur
