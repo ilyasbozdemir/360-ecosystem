@@ -6,7 +6,9 @@ import {
   Layers,
   Search,
   FileSpreadsheet,
-  FileCheck2
+  FileCheck2,
+  Calculator,
+  Puzzle
 } from 'lucide-react'
 import type { ModulKategoriFiltresi } from '../modulMagazasi.types'
 
@@ -24,12 +26,13 @@ interface ModulMagazasiHeaderProps {
 }
 
 const KATEGORI_SEKMELERI: { id: ModulKategoriFiltresi; label: string; icon: React.ReactNode }[] = [
-  { id: 'tum', label: 'Tüm Modüller', icon: <Layers className="w-3.5 h-3.5" /> },
+  { id: 'tum', label: 'Tüm Paketler', icon: <Layers className="w-3.5 h-3.5" /> },
+  { id: 'tip_modul', label: 'Süreç Modülleri', icon: <Layers className="w-3.5 h-3.5" /> },
+  { id: 'tip_utils', label: 'Hesap & Araçlar', icon: <Calculator className="w-3.5 h-3.5" /> },
+  { id: 'tip_extension', label: 'Eklentiler', icon: <Puzzle className="w-3.5 h-3.5" /> },
   { id: 'kurulu', label: 'Kurulu Paketler', icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
   { id: 'alim_ihale', label: 'Alım & İhale (4734)', icon: <FileCheck2 className="w-3.5 h-3.5" /> },
-  { id: 'satis_kiralama', label: 'Satış & Kiralama (2886)', icon: <Store className="w-3.5 h-3.5" /> },
-  { id: 'ozel_istisna', label: 'İstisnalar & Doğrudan', icon: <Sparkles className="w-3.5 h-3.5" /> },
-  { id: 'yapim_hakedis', label: 'Yapım & Hakediş', icon: <FileSpreadsheet className="w-3.5 h-3.5" /> }
+  { id: 'satis_kiralama', label: 'Satış & Kiralama (2886)', icon: <Store className="w-3.5 h-3.5" /> }
 ]
 
 export const ModulMagazasiHeader: React.FC<ModulMagazasiHeaderProps> = ({

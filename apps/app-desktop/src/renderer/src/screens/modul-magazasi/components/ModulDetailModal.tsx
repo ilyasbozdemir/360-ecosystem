@@ -48,6 +48,19 @@ export const ModulDetailModal: React.FC<ModulDetailModalProps> = ({
               <span className="px-2.5 py-0.5 rounded text-xs font-bold bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/30 font-mono">
                 {modul.kod}
               </span>
+              {modul.paketTipi === 'extension' ? (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold border tracking-wider uppercase bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30">
+                  🔌 EKLENTİ
+                </span>
+              ) : modul.paketTipi === 'utils' ? (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold border tracking-wider uppercase bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30">
+                  🧮 HESAP ARACI
+                </span>
+              ) : (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold border tracking-wider uppercase bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30">
+                  🏛️ MODÜL
+                </span>
+              )}
               {modul.surumAsamasi && (
                 <span
                   className={cn(

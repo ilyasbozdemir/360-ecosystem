@@ -1,4 +1,12 @@
-export type ModulKategori = 'alim_ihale' | 'satis_kiralama' | 'ozel_istisna' | 'yapim_hakedis'
+export type ModulPaketTipi = 'modul' | 'extension' | 'utils'
+
+export type ModulKategori =
+  | 'alim_ihale'
+  | 'satis_kiralama'
+  | 'ozel_istisna'
+  | 'yapim_hakedis'
+  | 'finans_hesap'
+  | 'entegrasyon'
 
 export type ModulDurumu = 'kurulu' | 'kurulabilir' | 'yeni'
 
@@ -23,6 +31,7 @@ export interface ModulPaketi {
   detayliAciklama: string
   mevzuat: string
   kategori: ModulKategori
+  paketTipi?: ModulPaketTipi
   ikon: string
   renk: string
   durum: ModulDurumu
@@ -32,6 +41,13 @@ export interface ModulPaketi {
   belgeler: ModulBelge[]
   asamalar: ModulAsama[]
   araclar: string[]
+  routePath?: string
 }
 
-export type ModulKategoriFiltresi = 'tum' | 'kurulu' | ModulKategori
+export type ModulKategoriFiltresi =
+  | 'tum'
+  | 'kurulu'
+  | 'tip_modul'
+  | 'tip_extension'
+  | 'tip_utils'
+  | ModulKategori

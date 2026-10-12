@@ -10,7 +10,14 @@ import {
   Info,
   GitFork,
   Trash2,
-  Loader2
+  Loader2,
+  Calculator,
+  TrendingUp,
+  Clock,
+  Percent,
+  Coins,
+  Cpu,
+  Puzzle
 } from 'lucide-react'
 import { cn } from '../../../utils/cn'
 import type { ModulPaketi } from '../modulMagazasi.types'
@@ -29,7 +36,14 @@ const ICON_MAP: Record<string, React.ReactNode> = {
   Landmark: <Landmark className="w-6 h-6" />,
   FileSpreadsheet: <FileSpreadsheet className="w-6 h-6" />,
   FileText: <FileText className="w-6 h-6" />,
-  ShieldCheck: <ShieldCheck className="w-6 h-6" />
+  ShieldCheck: <ShieldCheck className="w-6 h-6" />,
+  Calculator: <Calculator className="w-6 h-6" />,
+  TrendingUp: <TrendingUp className="w-6 h-6" />,
+  Clock: <Clock className="w-6 h-6" />,
+  Percent: <Percent className="w-6 h-6" />,
+  Coins: <Coins className="w-6 h-6" />,
+  Cpu: <Cpu className="w-6 h-6" />,
+  Puzzle: <Puzzle className="w-6 h-6" />
 }
 
 const COLOR_MAP: Record<
@@ -76,6 +90,13 @@ const COLOR_MAP: Record<
     glow: 'from-cyan-500/10 dark:from-cyan-600/10 to-transparent',
     iconBg: 'bg-cyan-50 text-cyan-600 border-cyan-200 dark:bg-cyan-500/20 dark:text-cyan-400 dark:border-cyan-500/30',
     text: 'text-cyan-600 dark:text-cyan-400'
+  },
+  rose: {
+    border: 'hover:border-rose-500/50',
+    badge: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/30',
+    glow: 'from-rose-500/10 dark:from-rose-600/10 to-transparent',
+    iconBg: 'bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-500/20 dark:text-rose-400 dark:border-rose-500/30',
+    text: 'text-rose-600 dark:text-rose-400'
   }
 }
 
@@ -115,6 +136,19 @@ export const ModulCard: React.FC<ModulCardProps> = ({
                 >
                   {modul.kod}
                 </span>
+                {modul.paketTipi === 'extension' ? (
+                  <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold border tracking-wider uppercase bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30">
+                    🔌 EKLENTİ
+                  </span>
+                ) : modul.paketTipi === 'utils' ? (
+                  <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold border tracking-wider uppercase bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30">
+                    🧮 HESAP ARACI
+                  </span>
+                ) : (
+                  <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold border tracking-wider uppercase bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30">
+                    🏛️ MODÜL
+                  </span>
+                )}
                 {modul.surumAsamasi && (
                   <span
                     className={cn(

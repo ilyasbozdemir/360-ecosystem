@@ -45,9 +45,15 @@ export function useModulMagazasiLogic() {
 
   const filteredModuller = useMemo(() => {
     return RESMI_MODUL_PAKETLERI.filter((modul) => {
-      // Kategori filtresi
+      // Kategori ve Paket Tipi filtresi
       if (activeKategori === 'kurulu') {
         if (!installedIds.includes(modul.id)) return false
+      } else if (activeKategori === 'tip_modul') {
+        if (modul.paketTipi !== 'modul') return false
+      } else if (activeKategori === 'tip_extension') {
+        if (modul.paketTipi !== 'extension') return false
+      } else if (activeKategori === 'tip_utils') {
+        if (modul.paketTipi !== 'utils') return false
       } else if (activeKategori !== 'tum') {
         if (modul.kategori !== activeKategori) return false
       }

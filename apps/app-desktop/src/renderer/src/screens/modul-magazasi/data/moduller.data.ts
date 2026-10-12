@@ -1,9 +1,13 @@
 import type { ModulPaketi } from '../modulMagazasi.types'
 
 export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
+  // =========================================================================
+  // 1. SÜREÇ & KANUN MODÜLLERİ (paketTipi: 'modul')
+  // =========================================================================
   {
     id: 'kik-dogrudan-temin-22d',
     kod: 'KİK-22-D',
+    paketTipi: 'modul',
     baslik: '4734 Doğrudan Temin Süreç & Belge Paketi',
     kisaAciklama:
       '4734 Sayılı Kanun Madde 22/d uyarınca parasal limitler dahilinde mal, hizmet ve yapım alımları süreç yönetimi.',
@@ -41,6 +45,7 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
   {
     id: 'dik-devlet-ihale-2886',
     kod: 'DİK-2886',
+    paketTipi: 'modul',
     baslik: '2886 Devlet İhale Kanunu Paketi (Satış & Kiralama)',
     kisaAciklama:
       'Taşınmaz satış, kiralama, trampa ve irtifak hakkı tesisine yönelik encümen onaylı gelir ihaleleri paketi.',
@@ -77,6 +82,7 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
   {
     id: 'kik-acik-ihale-19-21',
     kod: 'KİK-19/21',
+    paketTipi: 'modul',
     baslik: '4734 Açık İhale & Pazarlık Süreç Modülü',
     kisaAciklama:
       'KİK Madde 19 (Açık İhale) ve Madde 21 (Pazarlık Usulü) tam kapsamlı ihale dosyası ve EKAP uyum paketi.',
@@ -116,6 +122,7 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
   {
     id: 'kik-istisnalar-22-abc',
     kod: 'KİK-İSTİSNA',
+    paketTipi: 'modul',
     baslik: '4734 İstisnalar & Özel Teminler (22/a, 22/b, 22/c, 22/e)',
     kisaAciklama:
       'Tek satıcı, fikri ve sınai mülkiyet, mevcut malın tamamlayıcısı ve taşınmaz kiralama özel alım gerekçeleri.',
@@ -145,6 +152,7 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
   {
     id: 'yapim-fen-isleri-hakedis',
     kod: 'FEN-HAKEDİŞ',
+    paketTipi: 'modul',
     baslik: 'Fen İşleri, Park & Bahçeler Hakediş & Metraj Paketi',
     kisaAciklama:
       'Yapım ve bakım işleri için yer teslimi, metraj cetvelleri, ataşman defteri, yeşil defter ve hakediş kapakları.',
@@ -152,8 +160,8 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
       'Park yapımları, yol ve bina tadilatları gibi sahada imalat gerektiren alımlarda yükleniciye ara ve kesin hakediş ödemesi yapmak için gereken tüm mühendislik ve kontrolörlük evrakları.',
     mevzuat: 'Yapım İşleri Genel Şartnamesi & 4735 Sayılı Kanun',
     kategori: 'yapim_hakedis',
-    ikon: 'Wrench',
-    renk: 'rose',
+    ikon: 'FileSpreadsheet',
+    renk: 'cyan',
     durum: 'kurulabilir',
     versiyon: 'v2.0.0',
     surumAsamasi: 'Alfa',
@@ -172,6 +180,260 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
       { ad: 'Hakediş Arka Kapağı ve Kesintiler Cetveli', kod: 'HKD-04', aciklama: 'Stopaj, avans, gecikme cezası ve net ödenecek tutar özeti.', zorunluMu: true },
       { ad: 'Geçici Kabul Komisyonu Tutanağı', kod: 'HKD-05', aciklama: 'İşin bitiminde oluşturulan kontrol heyeti kabul tutanağı.', zorunluMu: true },
       { ad: 'Kesin Kabul ve Teminat İade Yazısı', kod: 'HKD-06', aciklama: 'Teminat süresi sonunda teminatın çözülmesi yazısı.', zorunluMu: false }
+    ]
+  },
+
+  // =========================================================================
+  // 2. HESAPLAMA ARAÇLARI & YARDIMCILAR (paketTipi: 'utils')
+  // =========================================================================
+  {
+    id: 'arac-vergi-tevkifat',
+    kod: 'HSP-VERGİ',
+    paketTipi: 'utils',
+    baslik: 'Damga Vergisi, Stopaj & KDV Tevkifat Hesaplayıcı',
+    kisaAciklama:
+      'İhale ve doğrudan teminlerde binde 9,48 damga vergisi, 2/10 - 9/10 tevkifat ve net-brüt tahakkuk hesabı.',
+    detayliAciklama:
+      '488 Sayılı Damga Vergisi Kanunu ve 3065 Sayılı KDV Kanunu genel tebliğleri doğrultusunda sözleşme ve karar pulu kesintilerini, KDV tevkifat oranlarını ve ödeme emri net tutarlarını kuruşu kuruşuna hesaplar.',
+    mevzuat: '488 S. Damga Vergisi & 3065 S. KDV Kanunu',
+    kategori: 'finans_hesap',
+    ikon: 'Coins',
+    renk: 'amber',
+    durum: 'kurulu',
+    versiyon: 'v2.2.0',
+    surumAsamasi: 'Kararlı',
+    etiketler: ['KDV Tevkifat', 'Damga Vergisi', 'Stopaj', 'Tahakkuk', 'Net-Brüt'],
+    araclar: ['Tevkifat Matrah Motoru', 'Binde 9.48 ve Binde 5.69 Kesinti Tablosu', 'Ödeme Emri Net Tutar Dağıtıcısı'],
+    asamalar: [
+      { sira: 1, baslik: 'Fatura / Hakediş Matrah Girişi', aciklama: 'KDV hariç veya dahil tutarın Decimal duyarlılıkla girilmesi.' },
+      { sira: 2, baslik: 'Tevkifat Oranı Seçimi', aciklama: 'Tebliğe uygun 2/10, 5/10, 7/10 veya 9/10 tevkifat türünün belirlenmesi.' },
+      { sira: 3, baslik: 'Kesintiler ve Net Tutar', aciklama: 'Damga vergisi, KİK payı ve gelir stopajı düşülerek net ödemenin dökülmesi.' }
+    ],
+    belgeler: [
+      { ad: 'Vergi ve Tevkifat Hesap Tablosu', kod: 'VRG-01', aciklama: 'Muhasebe işlem fişine iliştirilecek detaylı hesap pusulası.', zorunluMu: true },
+      { ad: 'Net-Brüt Hakediş Kesinti İcmali', kod: 'VRG-02', aciklama: 'Yükleniciye ödenecek ve vergi dairesine yatırılacak tutarlar özeti.', zorunluMu: true }
+    ]
+  },
+  {
+    id: 'arac-tuik-fiyat-farki',
+    kod: 'HSP-FİYAT-FARKI',
+    paketTipi: 'utils',
+    baslik: 'TÜİK Fiyat Farkı & Katsayı Hesaplama Motoru',
+    kisaAciklama:
+      'Mal, hizmet ve yapım sözleşmelerinde Yİ-ÜFE ve TÜFE endeksleri üzerinden resmi fiyat farkı hesabı.',
+    detayliAciklama:
+      '4734 Sayılı Kanun Madde 8 ve 4735 Sayılı Kanuna dayalı Fiyat Farkı Esasları uyarınca ihale tarihi ile hakediş/teslim tarihi arasındaki endeks değişimlerini (Pn, Po formülü) tek tıkla hesaplar.',
+    mevzuat: '4734 S. Kanun m.8 & Bakanlar Kurulu Fiyat Farkı Esasları',
+    kategori: 'finans_hesap',
+    ikon: 'TrendingUp',
+    renk: 'blue',
+    durum: 'kurulabilir',
+    versiyon: 'v1.9.0',
+    surumAsamasi: 'Alfa',
+    etiketler: ['Fiyat Farkı', 'TÜİK Endeks', 'Yİ-ÜFE', 'Pn Katsayısı', 'Akaryakıt'],
+    araclar: ['Ağırlık Oranları (a,b,c,d) Matrisi', 'Akaryakıt & Çimento Katsayıları', 'Kümülatif Fark Çıktısı'],
+    asamalar: [
+      { sira: 1, baslik: 'Temel Endeks Belirleme (Po)', aciklama: 'İhale veya teklif tarihinin ait olduğu ayın Yİ-ÜFE genel/özel endeksi.' },
+      { sira: 2, baslik: 'Uygulama Ayı Endeksi (Pn)', aciklama: 'Hakedişin veya mal tesliminin gerçekleştiği ayın güncel endeksi.' },
+      { sira: 3, baslik: 'Pn Katsayısı ve Fark Hesabı', aciklama: 'F = An x B x (Pn - 1) formülü ile net ödenecek fiyat farkı çıktısı.' }
+    ],
+    belgeler: [
+      { ad: 'Fiyat Farkı Hesap Cetveli', kod: 'FF-01', aciklama: 'İdare ve yüklenici onayına sunulan resmi katsayı hesap tablosu.', zorunluMu: true },
+      { ad: 'TÜİK Endeks Karşılaştırma Raporu', kod: 'FF-02', aciklama: 'İlgili aylara ait resmi bülten endekslerinin dökümü.', zorunluMu: false }
+    ]
+  },
+  {
+    id: 'arac-gecikme-cezasi-faiz',
+    kod: 'HSP-CEZA-FAİZ',
+    paketTipi: 'utils',
+    baslik: 'Gecikme Cezası & Yasal Faiz Hesaplayıcı',
+    kisaAciklama:
+      'Taahhüdün süresinde yerine getirilmemesi durumunda günlük ceza kesintisi ve 3095 S. yasal temerrüt faizi.',
+    detayliAciklama:
+      'Tip sözleşmelerdeki onbinde 3 ile onbinde 5 arasındaki gecikme cezası oranlarını tatil günleri dahil net takvim gününe göre hesaplar; alacak/borç ilişkilerinde yasal ve ticari temerrüt faizini çıkarır.',
+    mevzuat: '3095 Sayılı Kanuni Faiz ve Temerrüt Faizi Kanunu',
+    kategori: 'finans_hesap',
+    ikon: 'Clock',
+    renk: 'rose',
+    durum: 'kurulabilir',
+    versiyon: 'v1.5.0',
+    surumAsamasi: 'Alfa',
+    etiketler: ['Gecikme Cezası', 'Yasal Faiz', 'Temerrüt', 'Onbinde 5', 'Sözleşme Feshi'],
+    araclar: ['Günlük Ceza Oranı Çarpımı', 'TCMB Avans/Temerrüt Faiz Oranları', 'Hakedişten Mahsup Çizelgesi'],
+    asamalar: [
+      { sira: 1, baslik: 'Sözleşme Bitiş & Teslim Tarihi', aciklama: 'İşin bitirilmesi gereken gün ile fiili teslim günü arasındaki fark.' },
+      { sira: 2, baslik: 'Sözleşme Bedeli ve Oran', aciklama: 'İhale sözleşmesinde yazılı günlük ceza oranının (onbinde 3-5) işletilmesi.' },
+      { sira: 3, baslik: 'İrat Kaydı veya Kesinti', aciklama: 'Cezanın hakedişten kesilmesi veya teminattan tahsil kararı.' }
+    ],
+    belgeler: [
+      { ad: 'Gecikme Cezası Tahakkuk Müzekkeresi', kod: 'CZ-01', aciklama: 'Muhasebeye bildirilen ceza kesinti yazısı.', zorunluMu: true },
+      { ad: 'Süre Uzatımı ve İhtarlı Tebligat Tutanağı', kod: 'CZ-02', aciklama: 'Firmaya verilen ek süre ve ceza uyarısı resmi bildirimi.', zorunluMu: false }
+    ]
+  },
+  {
+    id: 'arac-sayi-yazi-cevirici',
+    kod: 'HSP-YAZI-ÇEVİR',
+    paketTipi: 'utils',
+    baslik: 'Çift Yönlü Sayı ↔ Yazı & Metin Çevirici',
+    kisaAciklama:
+      'Rakamla yazılan parasal tutarları kuruş haneli Türkçe metne, metinleri sayısal tutara dönüştürür.',
+    detayliAciklama:
+      'Sözleşmelerde, teklif mektuplarında ve kabul tutanaklarında zorunlu olan "Yalnız ... Türk Lirası ... Kuruş" ibaresini hatasız oluşturur; kopyalanan metinlerdeki yazılı tutarları anında sayıya çevirir.',
+    mevzuat: 'Maliye Muhasebe Standartları & TTK Genel Hükümleri',
+    kategori: 'finans_hesap',
+    ikon: 'Calculator',
+    renk: 'emerald',
+    durum: 'kurulabilir',
+    versiyon: 'v2.0.0',
+    surumAsamasi: 'Kararlı',
+    etiketler: ['Yazıyla Tutar', 'Kuruş Formatlama', 'Çift Yönlü', 'Sözleşme Metni'],
+    araclar: ['Decimal.js Yüksek Hassasiyet', 'Çift Yönlü Algılama', 'Standart Banka / Çek İbaresi'],
+    asamalar: [
+      { sira: 1, baslik: 'Sayı veya Yazı Girişi', aciklama: 'Rakamla tutar girildiğinde anında metne; metin girildiğinde sayıya dönüştürür.' },
+      { sira: 2, baslik: 'Kuruş & Para Birimi Biçimi', aciklama: 'TL/Kuruş, Dolar/Cent veya Euro/Cent biçiminde resmi standart metin üretir.' }
+    ],
+    belgeler: [
+      { ad: 'Resmi Tutar Yazı Karşılığı Formu', kod: 'YZ-01', aciklama: 'Sözleşme ve teklif mektuplarına yapıştırılacak standart onay metni.', zorunluMu: false }
+    ]
+  },
+  {
+    id: 'arac-butce-tavani-denetim',
+    kod: 'HSP-BÜTÇE-%10',
+    paketTipi: 'utils',
+    baslik: '%10 Bütçe Tavanı & Parasal Limit Denetleyicisi',
+    kisaAciklama:
+      '4734 Sayılı Kanun Madde 62/ı uyarınca doğrudan teminlerin bütçe ödeneğine oranını (%10) denetler.',
+    detayliAciklama:
+      'İdarenin bütçesine konulan ödeneklerin yüzde 10’unu aşan doğrudan temin (22/d) alımlarında Kamu İhale Kurulu izni zorunludur. Bu araç kurum bütçesini analiz ederek limit aşımı risklerini önceden raporlar.',
+    mevzuat: '4734 Sayılı KİK m.62/ı & m.22/d',
+    kategori: 'finans_hesap',
+    ikon: 'Percent',
+    renk: 'purple',
+    durum: 'kurulabilir',
+    versiyon: 'v1.4.0',
+    surumAsamasi: 'Alfa',
+    etiketler: ['%10 Bütçe Tavanı', '62/ı Maddesi', 'KİK İzin', 'Ödenek Takibi'],
+    araclar: ['Yıllık Kümülatif Limit Grafiği', 'Kalan Güvenli Limit Uyarısı', 'Kurul İzni Başvuru Rehberi'],
+    asamalar: [
+      { sira: 1, baslik: 'Kurum Yıllık Mal/Hizmet Ödeneği', aciklama: 'Bütçe kanunu veya belediye meclisi onaylı yıllık başlangıç ödeneği.' },
+      { sira: 2, baslik: 'Gerçekleşen 22/d Alımları Toplamı', aciklama: 'Yıl başından itibaren yapılan tüm doğrudan temin harcamaları.' },
+      { sira: 3, baslik: '%10 Eşik Değer Alarmı', aciklama: '%8 seviyesinde sarı ikaz, %10 seviyesinde KİK izin gereklilik bildirimi.' }
+    ],
+    belgeler: [
+      { ad: 'Yıllık %10 Doğrudan Temin İcmal Raporu', kod: 'BT-01', aciklama: 'Harcama yetkilisi ve Sayıştay denetimine sunulan tavan takip cetveli.', zorunluMu: true }
+    ]
+  },
+  {
+    id: 'arac-dinamik-formul-motoru',
+    kod: 'HSP-FORMÜL',
+    paketTipi: 'utils',
+    baslik: 'Dinamik Formül Motoru & Birim Çevirici',
+    kisaAciklama:
+      'Ölçü birimleri dönüşümleri (m, m2, m3, ton), yoğunluk katsayıları ve kurum içi özel hesaplama formülleri.',
+    detayliAciklama:
+      'Fen işleri, destek hizmetleri ve fen metrajları için değişken parametreli (x, y, z) özel matematik formülleri oluşturup saklayabileceğiniz, birimler arası otomatik katsayı çevirimi sağlayan yardımcı motor.',
+    mevzuat: 'Mühendislik Metraj & Standart Ölçü Formülleri',
+    kategori: 'finans_hesap',
+    ikon: 'Cpu',
+    renk: 'cyan',
+    durum: 'kurulabilir',
+    versiyon: 'v1.6.0',
+    surumAsamasi: 'Alfa',
+    etiketler: ['Formül Motoru', 'Birim Çevirici', 'Metraj', 'Yoğunluk', 'Katsayı'],
+    araclar: ['Ölçü Birimleri Matrisi', 'Özel Değişken Tanımlayıcı', 'Formül Kütüphanesi'],
+    asamalar: [
+      { sira: 1, baslik: 'Formül ve Parametre Tanımı', aciklama: 'Örn: Asfalt ton hesabı = Boy x En x Kalınlık x 2.4 yoğunluk katsayısı.' },
+      { sira: 2, baslik: 'Değişkenlerin Girilmesi', aciklama: 'Saha ölçüm değerleri girilerek anında hesaplama üretimi.' }
+    ],
+    belgeler: [
+      { ad: 'Dinamik Formül Hesap Çıktısı', kod: 'FM-01', aciklama: 'Yaklaşık maliyete dayanak oluşturan metraj detay dökümü.', zorunluMu: false }
+    ]
+  },
+
+  // =========================================================================
+  // 3. EKLENTİLER & ENTEGRASYONLAR (paketTipi: 'extension')
+  // =========================================================================
+  {
+    id: 'ext-ekap-entegrator',
+    kod: 'EXT-EKAP',
+    paketTipi: 'extension',
+    baslik: 'EKAP İKN & Yasaklılık Entegratörü',
+    kisaAciklama:
+      'EKAP üzerinden İhale Kayıt Numarası (İKN) eşitleme, firma yasaklılık teyit belgesi ve e-İhale bildirimleri.',
+    detayliAciklama:
+      'Elektronik Kamu Alımları Platformu (EKAP) ile dosya verilerini senkronize eder; firmaların vergi numarası ile KİK yasaklılar listesinde olup olmadığını tek tıkla sorgulayıp resmi teyit çıktısı üretir.',
+    mevzuat: 'EKAP Yönetmeliği & 4734 Sayılı Kanun m.58',
+    kategori: 'entegrasyon',
+    ikon: 'Puzzle',
+    renk: 'emerald',
+    durum: 'kurulabilir',
+    versiyon: 'v2.5.0',
+    surumAsamasi: 'Alfa',
+    etiketler: ['EKAP', 'İKN', 'Yasaklılık Sorgusu', 'e-İhale', 'Vergi Kimlik No'],
+    araclar: ['Otomatik Yasaklılık Kontrolü', 'EKAP İKN Senkronizasyonu', 'e-Tebligat Takibi'],
+    asamalar: [
+      { sira: 1, baslik: 'VKN/TCKN ile Yasaklılık Sorgusu', aciklama: 'KİK resmi yasaklılık veri tabanından anlık teyit alma.' },
+      { sira: 2, baslik: 'İKN Dosya Eşitleme', aciklama: 'EKAP üzerinde açılan ihalenin numarasını ve ilan metnini bağlama.' },
+      { sira: 3, baslik: 'Teyit Belgesi Arşivi', aciklama: 'İhale günü alınan yasaklılık belgesinin dosya klasörüne eklenmesi.' }
+    ],
+    belgeler: [
+      { ad: 'EKAP Yasaklılık Teyit Belgesi', kod: 'EKP-01', aciklama: 'İsteklinin ihalelere katılmaktan yasaklı olmadığını gösteren teyit çıktısı.', zorunluMu: true },
+      { ad: 'EKAP İKN Bilgi Kartı', kod: 'EKP-02', aciklama: 'EKAP sistemindeki ihale özet parametreleri çıktısı.', zorunluMu: false }
+    ]
+  },
+  {
+    id: 'ext-sayistay-raporlayici',
+    kod: 'EXT-SAYIŞTAY',
+    paketTipi: 'extension',
+    baslik: 'Sayıştay & İç Denetim Standartları Paketi',
+    kisaAciklama:
+      'Harcama ve ihale dosyalarını Sayıştay denetim kriterlerine göre tarar; eksik evrak ve riskleri raporlar.',
+    detayliAciklama:
+      '6085 Sayılı Sayıştay Kanunu ve Kamu İç Denetim Standartları uyarınca, denetim müfettişlerinin aradığı standart klasör fihristini, dizi pusulalarını ve mevzuat kontrol listelerini otomatik oluşturur.',
+    mevzuat: '6085 Sayılı Sayıştay Kanunu & Kamu İç Denetim Kılavuzu',
+    kategori: 'entegrasyon',
+    ikon: 'ShieldCheck',
+    renk: 'purple',
+    durum: 'kurulabilir',
+    versiyon: 'v1.7.0',
+    surumAsamasi: 'Alfa',
+    etiketler: ['Sayıştay', 'İç Denetim', 'Dizi Pusulası', 'Risk Taraması', 'Müfettiş Klasörü'],
+    araclar: ['Eksik Evrak Erken Uyarı Sistemi', '5018 Harcama Kontrol Matrisi', 'Müfettiş Dizi Pusulası Çıktısı'],
+    asamalar: [
+      { sira: 1, baslik: 'Dosya Evrak Eksiklik Taraması', aciklama: 'Zorunlu tutanak ve onayların varlık kontrolü.' },
+      { sira: 2, baslik: 'Mevzuat Maddesi Uygunluk Denetimi', aciklama: 'Parasal limit, tevkifat ve imza yetkisi doğruluk analizi.' },
+      { sira: 3, baslik: 'Denetim Klasörü Paketi Çıktısı', aciklama: 'Sayıştay fihrist sıralamasına uygun PDF dizi pusulası oluşturma.' }
+    ],
+    belgeler: [
+      { ad: 'Sayıştay Standart Dizi Pusulası', kod: 'SY-01', aciklama: 'Dosyadaki tüm evrakların sayfa numaralı fihrist listesi.', zorunluMu: true },
+      { ad: 'İç Denetim Uygunluk Kontrol Raporu', kod: 'SY-02', aciklama: 'Olası zimmet ve kamu zararı risklerini önceden işaretleyen denetim raporu.', zorunluMu: false }
+    ]
+  },
+  {
+    id: 'ext-excel-aktarici',
+    kod: 'EXT-EXCEL-DOC',
+    paketTipi: 'extension',
+    baslik: 'Akıllı Excel Tablo & Medya Dönüştürücü',
+    kisaAciklama:
+      'Pano veya Excel dosyasından kopyalanan yaklaşık maliyet tablolarını ve belgeleri tek tıkla içe aktarır.',
+    detayliAciklama:
+      'Excel veya web sayfalarından kopyalanan tablolardaki malzeme adı, miktar, birim fiyat ve KDV sütunlarını otomatik tanır; Word, PDF ve görsel belgeler arası format dönüşümünü yerel olarak gerçekleştirir.',
+    mevzuat: 'Ofis ve Veri Entegrasyonu Standartları',
+    kategori: 'entegrasyon',
+    ikon: 'FileSpreadsheet',
+    renk: 'blue',
+    durum: 'kurulabilir',
+    versiyon: 'v2.1.0',
+    surumAsamasi: 'Beta',
+    etiketler: ['Excel Aktarımı', 'Pano Yapıştırma', 'Tablo Ayrıştırıcı', 'PDF Dönüştürücü'],
+    araclar: ['Clipboard Akıllı Parser', 'Sütun Otomatik Eşleştirici', 'Word/PDF Çıktı Motoru'],
+    asamalar: [
+      { sira: 1, baslik: 'Excel veya Pano Verisi Yapıştırma', aciklama: 'Ctrl+V ile tablonun panodan okunması.' },
+      { sira: 2, baslik: 'Sütun Eşleme ve Doğrulama', aciklama: 'Malzeme adı, miktar ve fiyat sütunlarının otomatik tespiti.' },
+      { sira: 3, baslik: 'Tek Tıkla Dosyaya Aktarım', aciklama: 'İhtiyaç listesi veya yaklaşık maliyet cetveline aktarım.' }
+    ],
+    belgeler: [
+      { ad: 'Excel İçe Aktarım Doğrulama Raporu', kod: 'EX-01', aciklama: 'Aktarılan satır sayısı ve toplam maliyet teyit formu.', zorunluMu: false }
     ]
   }
 ]
