@@ -1,5 +1,5 @@
 import React from 'react'
-import { Calculator, CheckSquare, DownloadCloud, Moon, Sun } from 'lucide-react'
+import { Calculator, CheckSquare, DownloadCloud, Moon, Store, Sun } from 'lucide-react'
 import { SyncPopover } from './SyncPopover'
 import { NotificationPopover } from './NotificationPopover'
 
@@ -23,6 +23,16 @@ export const HeaderActions = React.memo(function HeaderActions({
       className="flex items-center gap-1.5"
       style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
     >
+      {/* Modül & Eklenti Mağazası */}
+      <button
+        onClick={(): void => navigate({ to: '/modul-magazasi' })}
+        className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800/60 transition-all rounded-xl cursor-pointer shadow-2xs"
+        title="Modül & Eklenti Mağazası (Süreç, Mevzuat ve Belge Paketleri)"
+      >
+        <Store className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+        <span className="hidden md:inline text-[11px]">Eklenti Mağazası</span>
+      </button>
+
       {/* Yüzde & Muhasebe Hesap Araçları Süiti */}
       <button
         onClick={(): void => navigate({ to: '/hesaplama-araclari' })}
