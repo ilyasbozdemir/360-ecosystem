@@ -1,33 +1,11 @@
-import React, { useEffect, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { useNavigate } from '@tanstack/react-router'
-import { Coins, FileCheck, FileText, Scale, ShieldCheck } from 'lucide-react'
-
-import { useSettingsStore } from '../../store/settingsStore'
-import { useWorkspaceStore } from '../../store/workspaceStore'
-import {
-  useAnnouncements,
-  useDashboardStats,
-  useSmartAlerts
-} from './dashboard.hooks'
-import { useDosyalarHooks } from '../dosyalar/dosyalar.hooks'
-import { useAyarlarHooks } from '../ayarlar/ayarlar.hooks'
-import { logActivity } from '../../utils/logger'
+import React from 'react'
 import { AITextGeneratorModal } from '../../components/ui/AITextGeneratorModal'
-import {
-  getInitial2886Dosyalar,
-  getInitial2886ActiveDosya,
-  persist2886ActiveDosya
-} from '../../components/layout/temin-selector/teminSelector.storage'
-import { Dosya2886Item } from '../../components/layout/temin-selector/teminSelector.types'
+import { persist2886ActiveDosya } from '../../components/layout/temin-selector/teminSelector.storage'
 
-// Modular Subcomponents
+// Modular Subcomponents & Helpers
 import { ActiveDosyaCard } from './components/ActiveDosyaCard'
 import { DashboardHeroV2 } from './components/DashboardHeroV2'
-import {
-  PillarItem,
-  TeminPillarsMatrix
-} from './components/TeminPillarsMatrix'
+import { TeminPillarsMatrix } from './components/TeminPillarsMatrix'
 import { ProcurementMethodsSummary } from './components/ProcurementMethodsSummary'
 import { DashboardKpiCardsV2 } from './components/DashboardKpiCardsV2'
 import { CostDistributionSection } from './components/CostDistributionSection'
@@ -37,423 +15,56 @@ import { AiAdvisorCard } from './components/AiAdvisorCard'
 import { AnnouncementsCardV2 } from './components/AnnouncementsCardV2'
 import { AiMissingModal } from './components/AiMissingModal'
 import { KikLimitVeBirimAnalizSection } from './components/KikLimitVeBirimAnalizSection'
+import { formatCurrency, getDtFileColor, getDtFileText } from './components/dashboardV2.helpers'
+import { useDashboardV2Logic } from './components/useDashboardV2Logic'
 
 export default function DashboardScreenV2(): React.JSX.Element {
-  const navigate = useNavigate()
   const {
+    navigate,
     institutionName,
     limitType,
-    institutionType,
     kurumsalKod,
     fonksiyonelKod,
     muhasebeBirimAdi,
     harcamaBirimAdi,
     adminName,
     adminTitle,
-    adminUsername
-  } = useSettingsStore()
-
-  const { activeDosyaId, setActiveDosyaId } = useWorkspaceStore()
-
-  // 2886 Dosyaları ve Aktif 2886 Dosyası
-  const [dosyalar2886, setDosyalar2886] = useState<Dosya2886Item[]>(() => getInitial2886Dosyalar())
-  const [active2886Dosya, setActive2886Dosya] = useState<Dosya2886Item | null>(() =>
-    getInitial2886ActiveDosya()
-  )
-
-  useEffect(() => {
-    const handleReload2886 = (): void => {
-      setDosyalar2886(getInitial2886Dosyalar())
-      setActive2886Dosya(getInitial2886ActiveDosya())
-    }
-    window.addEventListener('devlet-ihale-2886-reloaded', handleReload2886)
-    window.addEventListener('storage', handleReload2886)
-    return () => {
-      window.removeEventListener('devlet-ihale-2886-reloaded', handleReload2886)
-      window.removeEventListener('storage', handleReload2886)
-    }
-  }, [])
-
-  // Mod Seçici Durumu: 'dogrudan_temin' (KİK 22), 'ihale' (KİK 19/21), 'devlet_ihale_2886' veya 'all'
-  const [procurementMode, setProcurementMode] = useState<
-    'dogrudan_temin' | 'ihale' | 'devlet_ihale_2886' | 'all'
-  >(() => {
-    return (
-      (localStorage.getItem('temin_procurement_mode') as
-        | 'dogrudan_temin'
-        | 'ihale'
-        | 'devlet_ihale_2886') || 'dogrudan_temin'
-    )
-  })
-
-  const isIhale = procurementMode === 'ihale'
-
-  // Header veya diğer bileşenlerden gelen mod değişimlerini dinle
-  useEffect(() => {
-    const handleModeChange = (e: any): void => {
-      if (e.detail?.mode) {
-        setProcurementMode(e.detail.mode)
-      }
-    }
-    window.addEventListener('procurement-mode-change', handleModeChange)
-    return () => {
-      window.removeEventListener('procurement-mode-change', handleModeChange)
-    }
-  }, [])
-
-  const switchProcurementMode = (
-    mode: 'dogrudan_temin' | 'ihale' | 'devlet_ihale_2886' | 'all'
-  ): void => {
-    setProcurementMode(mode)
-    if (mode !== 'all') {
-      localStorage.setItem('temin_procurement_mode', mode)
-      window.dispatchEvent(
-        new CustomEvent('procurement-mode-change', {
-          detail: { mode }
-        })
-      )
-    }
-  }
-
-  const { stats, isLoading } = useDashboardStats(procurementMode)
-  const { announcements } = useAnnouncements()
-  const { dosyalar } = useDosyalarHooks()
-  const { settings } = useAyarlarHooks()
-  const isMailConfigured = !!settings.smtp_host
-  const isAiConfigured = Boolean(
-    settings.ai_gemini_api_key?.trim() ||
-      settings.ai_openai_api_key?.trim() ||
-      settings.ai_anthropic_api_key?.trim()
-  )
-
-  const [showAIModal, setShowAIModal] = useState(false)
-  const [showAiMissingModal, setShowAiMissingModal] = useState(false)
-  const [selectedFileForAI, setSelectedFileForAI] = useState<any>(null)
-  const [activePillar, setActivePillar] = useState<'T' | 'E' | 'M' | 'I' | 'N'>('T')
-  const [searchTerm, setSearchTerm] = useState('')
-
-  // Zaman tabanlı karşılama
-  const greeting = (() => {
-    const hours = new Date().getHours()
-    if (hours >= 6 && hours < 12) return 'Günaydın'
-    if (hours >= 12 && hours < 18) return 'İyi Günler'
-    if (hours >= 18 && hours < 23) return 'İyi Akşamlar'
-    return 'İyi Geceler'
-  })()
-
-  const currentDate = new Intl.DateTimeFormat('tr-TR', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  }).format(new Date())
-
-  // Kurum Türü Başlığı
-  const getInstitutionTypeLabel = (type: string): string => {
-    switch (type) {
-      case 'belediye':
-        return 'Belediye / Mahalli İdare'
-      case 'genel_butce':
-        return 'Bakanlık / Genel Bütçe'
-      case 'ozel_butce':
-        return 'Üniversite / Özel Bütçe'
-      case 'duzenleyici':
-        return 'Düzenleyici / Denetleyici Kurum'
-      case 'diger':
-        return 'Diğer Kurum'
-      default:
-        return 'Kurum Tipi Belirtilmedi'
-    }
-  }
-  const kurumTuruLabel = getInstitutionTypeLabel(institutionType || '')
-
-  // Para Biçimlendirme
-  const formatCurrency = (value: number): string => {
-    return new Intl.NumberFormat('tr-TR', {
-      style: 'currency',
-      currency: 'TRY',
-      maximumFractionDigits: 0
-    }).format(value || 0)
-  }
-
-  // 4734 Sayılı Kanun Madde 22/d KİK Eşik Değeri
-  const kikLimit = limitType === 'buyuksehir' ? 1021827 : 340391
-
-  // Bütçe / Harcama Tür Dağılımı
-  const totalCat =
-    (stats.malYaklasikMaliyet || 0) +
-      (stats.hizmetYaklasikMaliyet || 0) +
-      (stats.yapimYaklasikMaliyet || 0) +
-      (stats.danismanlikYaklasikMaliyet || 0) || 1
-  const malPct = Math.round(((stats.malYaklasikMaliyet || 0) / totalCat) * 100)
-  const hizmetPct = Math.round(((stats.hizmetYaklasikMaliyet || 0) / totalCat) * 100)
-  const yapimPct = Math.round(((stats.yapimYaklasikMaliyet || 0) / totalCat) * 100)
-  const danismanlikPct = Math.max(0, 100 - malPct - hizmetPct - yapimPct)
-
-  // Asamalar Sorgusu
-  const fetchAsamalar = async (): Promise<any[]> => {
-    const res = await window.electron.ipcRenderer.invoke(
-      'db:query',
-      'SELECT * FROM TANIM_Asama WHERE aktif_mi = 1 ORDER BY asama_sira ASC'
-    )
-    if (!res.success) throw new Error(res.error)
-    return res.data
-  }
-
-  const { data: asamalar = [] } = useQuery<any[]>({
-    queryKey: ['asamalar_dashboard_v2'],
-    queryFn: fetchAsamalar
-  })
-
-  // Harcama Yetkilisi
-  const fetchHarcamaYetkilisi = async (): Promise<{
-    ad_soyad: string
-    unvan: string | null
-  } | null> => {
-    const res = await window.electron.ipcRenderer.invoke(
-      'db:query',
-      `SELECT p.ad_soyad, p.unvan 
-       FROM TANIM_Roller r 
-       LEFT JOIN TANIM_Personel p ON r.varsayilan_personel_id = p.id 
-       WHERE r.rol_kodu = 'harcama_yetkilisi'`
-    )
-    if (!res.success) throw new Error(res.error)
-    return res.data[0] || null
-  }
-
-  const { data: harcamaYetkilisi = null } = useQuery({
-    queryKey: ['harcama_yetkilisi_dashboard_v2'],
-    queryFn: fetchHarcamaYetkilisi
-  })
-
-  const smartAlerts = useSmartAlerts(settings, activeDosyaId, null)
-
-  useEffect(() => {
-    if (isLoading) return
-
-    const notifiedStr = localStorage.getItem('dta_notified_syslog_keys') || '[]'
-    let notifiedKeys: string[] = []
-    try {
-      notifiedKeys = JSON.parse(notifiedStr)
-    } catch {
-      notifiedKeys = []
-    }
-
-    const newNotifiedKeys = [...notifiedKeys]
-    let hasNewLog = false
-
-    if (!isMailConfigured) {
-      const key = 'smtp_not_configured'
-      if (!notifiedKeys.includes(key)) {
-        logActivity(
-          'Mail (SMTP) Yapılandırılmamış',
-          'Posta sunucu ayarlarınız eksik. Bildirimler ve onay mailleri devre dışı kalabilir.',
-          'warning'
-        )
-        newNotifiedKeys.push(key)
-        hasNewLog = true
-      }
-    }
-
-    smartAlerts.forEach((alert) => {
-      if (alert.type === 'error' || alert.type === 'warning') {
-        const key = `alert_${alert.id}`
-        if (!notifiedKeys.includes(key)) {
-          logActivity(alert.title, alert.message, alert.type)
-          newNotifiedKeys.push(key)
-          hasNewLog = true
-        }
-      }
-    })
-
-    if (hasNewLog) {
-      localStorage.setItem('dta_notified_syslog_keys', JSON.stringify(newNotifiedKeys))
-    }
-  }, [smartAlerts, isMailConfigured, isLoading])
-
-  // Aşama Renk ve İsim Tanımlayıcı
-  const getAsamaDetails = (asamaSira: number): { name: string; color: string } => {
-    const asama = asamalar.find((a: any) => a.asama_sira === asamaSira)
-    if (asama) {
-      return {
-        name: asama.asama_adi,
-        color:
-          'border-blue-200 dark:border-blue-800/80 text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60'
-      }
-    }
-
-    switch (asamaSira) {
-      case 1:
-        return {
-          name: '1. İhtiyaç & Lüzum',
-          color:
-            'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800/60'
-        }
-      case 2:
-        return {
-          name: '2. Piyasa Fiyat Araştırması',
-          color:
-            'border-amber-200 dark:border-amber-800/80 text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60'
-        }
-      case 3:
-        return {
-          name: '3. Teklif Değerlendirme',
-          color:
-            'border-indigo-200 dark:border-indigo-800/80 text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60'
-        }
-      case 4:
-        return {
-          name: '4. Karar & Onay Belgesi',
-          color:
-            'border-purple-200 dark:border-purple-800/80 text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/60'
-        }
-      case 5:
-        return {
-          name: '5. Muayene Kabul & Ödeme',
-          color:
-            'border-emerald-200 dark:border-emerald-800/80 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60'
-        }
-      default:
-        return {
-          name: 'Süreç İlerliyor',
-          color:
-            'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-400 bg-slate-100 dark:bg-slate-900'
-        }
-    }
-  }
-
-  // Konsolide veya Moda Göre Filtrelenmiş Dosyalar
-  const filteredDosyalar = (() => {
-    const q = searchTerm.toLowerCase().trim()
-
-    let pool: any[] = []
-    if (procurementMode === 'devlet_ihale_2886') {
-      pool = dosyalar2886
-    } else if (procurementMode === 'all') {
-      pool = [...dosyalar, ...dosyalar2886]
-    } else {
-      pool = dosyalar
-    }
-
-    if (!q) return pool
-
-    return pool.filter((d) => {
-      const no = (d.temin_no || d.ihaleKayitNo || '').toLowerCase()
-      const subject = (d.konu || d.ihaleAdi || '').toLowerCase()
-      const dept = (d.harcama_birimi || d.tasinmaz?.ilce || '').toLowerCase()
-      return no.includes(q) || subject.includes(q) || dept.includes(q)
-    })
-  })()
-
-  // Aktif Dosya Bilgisi (4734 veya 2886)
-  const activeDosya = (() => {
-    if (procurementMode === 'devlet_ihale_2886') {
-      return active2886Dosya || (dosyalar2886.length > 0 ? dosyalar2886[0] : null)
-    }
-    const found4734 = dosyalar.find((d) => d.id === activeDosyaId)
-    if (found4734) return found4734
-    if (procurementMode === 'all' && active2886Dosya) return active2886Dosya
-    return null
-  })()
-
-  // TEMİN 360 Modülleri Bilgisi
-  const teminPillars: PillarItem[] = [
-    {
-      key: 'T' as const,
-      letter: 'T',
-      title: 'Teklif & Piyasa Fiyat Araştırması',
-      subtitle: 'Piyasa Araştırma Tutanağı & Teklif Havuzu',
-      icon: Coins,
-      badge: `${formatCurrency(stats.toplamYaklasikMaliyet)} Toplam Alım`,
-      description:
-        'Tedarikçi teklif mektuplarını toplar, yaklaşık maliyet cetvellerini otomatik hesaplar ve piyasa fiyat araştırma tutanaklarını kanuna tam uyumlu üretir.',
-      statsText: `${stats.kayitliFirmaSayisi} İstekli Firma & Tedarikçi Havuzu`
-    },
-    {
-      key: 'E' as const,
-      letter: 'E',
-      title: 'Evrak, Şartname & E-İmza',
-      subtitle: 'Resmi Yazışma Standartları & EBYS Uyumluluğu',
-      icon: FileCheck,
-      badge: 'Baskıya & EBYS Hazır',
-      description:
-        'React TSX şablon motoruyla Onay Belgesi, İhtiyaç Belgesi, Piyasa Araştırma Tutanağı ve Ödeme Emri evraklarını tek tıkla mühürlü/imzalı PDF olarak üretir.',
-      statsText: '25+ Resmi Kamu Evrak ve Tutanak Şablonu'
-    },
-    {
-      key: 'M' as const,
-      letter: 'M',
-      title: 'Maliyet, Bütçe & Harcama Yönetimi',
-      subtitle: '4734 / 22-d ve 5018 Sayılı Mali Yönetim',
-      icon: Scale,
-      badge: '%100 Mevzuat Uyum Skoru',
-      description:
-        'KİK doğrudan temin eşik limitlerini, harcama birimi bütçe tertiplerini ve analitik bütçe kodlarını gerçek zamanlı kontrol altında tutar.',
-      statsText: `Yıllık KİK Eşik Sınırı: ${formatCurrency(kikLimit)} (${
-        limitType === 'buyuksehir' ? 'Büyükşehir' : 'Normal'
-      })`
-    },
-    {
-      key: 'I' as const,
-      letter: 'İ',
-      title: 'İhale, Doğrudan Temin & Sözleşme',
-      subtitle: 'Uçtan Uca 4 Aşamalı Dijital Dosya Yaşam Döngüsü',
-      icon: FileText,
-      badge: `${stats.ihaleDosyaSayisi} Kayıtlı Dosya`,
-      description:
-        'İhtiyaç lüzumundan piyasa araştırmasına, teklif mektubu dağıtımından onay belgesine kadar tüm doğrudan temin adımlarını kanuna uygun yürütür.',
-      statsText: `${
-        stats.aktifDosyaSayisi || stats.ihaleDosyaSayisi
-      } Aktif Süreç Devam Ediyor`
-    },
-    {
-      key: 'N' as const,
-      letter: 'N',
-      title: 'Netice, Hakediş & Muayene Kabul',
-      subtitle: 'Muayene Komisyonu, Hakediş & Ödeme Emri',
-      icon: ShieldCheck,
-      badge: 'Sayıştay Güvenceli',
-      description:
-        'Mal/hizmet ve yapım işleri için ara ve kesin hakediş raporları hazırlar, KDV tevkifatı ve damga vergisi kesintilerini hesaplar, muhasebe ödeme emrine bağlar.',
-      statsText: `${stats.kayitliPersonelSayisi} Yetkili & Komisyon Üyesi Kayıtlı`
-    }
-  ]
-
-  const currentPillar = teminPillars.find((p) => p.key === activePillar) || teminPillars[0]
-
-  function getDtFileText(type?: string | null): string {
-    if (!type) return 'Mal Alımı'
-    const t = type.toLowerCase().trim()
-    if (t === 'mal') return 'Mal Alımı'
-    if (t === 'hizmet') return 'Hizmet Alımı'
-    if (t === 'yapim_isi' || t === 'yapim' || t.includes('yapım')) {
-      return 'Yapım İşi / Onarım'
-    }
-    if (t === 'danismanlik' || t.includes('danışman')) return 'Danışmanlık'
-    if (t === 'hakedis' || t.includes('hakediş')) return 'Hakediş'
-    if (t === 'ihale') return 'İhale'
-    return type
-  }
-
-  function getDtFileColor(type?: string | null): string {
-    const t = (type || "").toLowerCase().trim()
-    if (t === 'mal') {
-      return 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 border-blue-200/80 dark:border-blue-800/60'
-    }
-    if (t === 'hizmet') {
-      return 'text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-950/60 border-violet-200/80 dark:border-violet-800/60'
-    }
-    if (t === 'yapim_isi' || t === 'yapim' || t.includes('yapım')) {
-      return 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 border-amber-200/80 dark:border-amber-800/60'
-    }
-    if (t === 'danismanlik' || t.includes('danışman')) {
-      return 'text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/60 border-purple-200/80 dark:border-purple-800/60'
-    }
-    if (t === 'hakedis' || t.includes('hakediş')) {
-      return 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200/80 dark:border-emerald-800/60'
-    }
-    return 'text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700'
-  }
+    adminUsername,
+    setActiveDosyaId,
+    procurementMode,
+    isIhale,
+    switchProcurementMode,
+    stats,
+    isLoading,
+    announcements,
+    isAiConfigured,
+    showAIModal,
+    setShowAIModal,
+    showAiMissingModal,
+    setShowAiMissingModal,
+    selectedFileForAI,
+    setSelectedFileForAI,
+    activePillar,
+    setActivePillar,
+    searchTerm,
+    setSearchTerm,
+    greeting,
+    currentDate,
+    kurumTuruLabel,
+    kikLimit,
+    totalCat,
+    malPct,
+    hizmetPct,
+    yapimPct,
+    danismanlikPct,
+    harcamaYetkilisi,
+    smartAlerts,
+    filteredDosyalar,
+    activeDosya,
+    teminPillars,
+    currentPillar,
+    resolveAsamaDetails
+  } = useDashboardV2Logic()
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-412.5 mx-auto pb-12 animate-in fade-in slide-in-from-bottom-3 duration-500 text-slate-800 dark:text-slate-100">
@@ -462,7 +73,7 @@ export default function DashboardScreenV2(): React.JSX.Element {
         <ActiveDosyaCard
           activeDosya={activeDosya}
           harcamaBirimAdi={harcamaBirimAdi}
-          getAsamaDetails={getAsamaDetails}
+          getAsamaDetails={resolveAsamaDetails}
           getDtFileColor={getDtFileColor}
           getDtFileText={getDtFileText}
           formatCurrency={formatCurrency}
@@ -569,7 +180,7 @@ export default function DashboardScreenV2(): React.JSX.Element {
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
             harcamaBirimAdi={harcamaBirimAdi}
-            getAsamaDetails={getAsamaDetails}
+            getAsamaDetails={resolveAsamaDetails}
             getDtFileColor={getDtFileColor}
             getDtFileText={getDtFileText}
             formatCurrency={formatCurrency}
