@@ -15,6 +15,7 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     renk: 'blue',
     durum: 'kurulu',
     versiyon: 'v2.4.0',
+    surumAsamasi: 'Beta',
     etiketler: ['Doğrudan Temin', '22/d', 'Piyasa Araştırması', 'Resmi Onay'],
     araclar: ['KİK Parasal Limit Denetleyicisi', 'KDV Tevkifat Hesaplama', 'EKAP Yasaklılık Kontrol'],
     asamalar: [
@@ -51,6 +52,7 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     renk: 'emerald',
     durum: 'kurulabilir',
     versiyon: 'v2.1.0',
+    surumAsamasi: 'Alfa',
     etiketler: ['2886', 'Gelir İhalesi', 'Taşınmaz Satışı', 'Kira', 'Encümen'],
     araclar: ['Muhammen Bedel & %3 Geçici Teminat Hesabı', 'Yİ-ÜFE Kira Artış Robotu', 'İhale Usul Karar Matrisi'],
     asamalar: [
@@ -86,6 +88,7 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     renk: 'purple',
     durum: 'kurulabilir',
     versiyon: 'v3.0.0',
+    surumAsamasi: 'Alfa',
     etiketler: ['Açık İhale', 'Pazarlık 21/b', 'EKAP', 'Komisyon Kararı', 'İdari Şartname'],
     araclar: ['Sınır Değer & R Katsayısı Hesaplayıcı', 'Kesin Teminat Oranı Takvimi', 'EKAP Form Eşleştirici'],
     asamalar: [
@@ -124,6 +127,7 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     renk: 'amber',
     durum: 'kurulabilir',
     versiyon: 'v1.8.0',
+    surumAsamasi: 'Alfa',
     etiketler: ['Tek Satıcı', 'Yedek Parça', 'Lisans', 'Taşınmaz Kiralama', 'Müelliflik'],
     araclar: ['Tek Satıcılık Belgesi Doğrulama', 'Ekspertiz Kira Bedel Tespit Formülü'],
     asamalar: [
@@ -152,6 +156,7 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     renk: 'rose',
     durum: 'kurulabilir',
     versiyon: 'v2.0.0',
+    surumAsamasi: 'Alfa',
     etiketler: ['Hakediş', 'Yeşil Defter', 'Metraj', 'Ataşman', 'Yer Teslimi', 'Geçici Kabul'],
     araclar: ['Yapım Fiyat Farkı (Bakanlar Kurulu Kararı)', 'KDV & Stopaj Kesinti Robotu', 'Metraj Çarpım Tablosu'],
     asamalar: [

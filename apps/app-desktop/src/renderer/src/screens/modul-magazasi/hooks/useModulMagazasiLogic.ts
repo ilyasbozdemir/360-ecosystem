@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback, useEffect } from 'react'
 import type { ModulPaketi, ModulKategoriFiltresi } from '../modulMagazasi.types'
 import { RESMI_MODUL_PAKETLERI } from '../data/moduller.data'
 
-const STORAGE_KEY = 'temin360_installed_modules'
+const STORAGE_KEY = 'temin360_installed_modules_v2'
 const DEFAULT_INSTALLED = ['kik-dogrudan-temin-22d']
 
 export function useModulMagazasiLogic() {

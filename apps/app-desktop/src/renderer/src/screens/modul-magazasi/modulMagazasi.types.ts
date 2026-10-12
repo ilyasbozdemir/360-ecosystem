@@ -27,6 +27,7 @@ export interface ModulPaketi {
   renk: string
   durum: ModulDurumu
   versiyon: string
+  surumAsamasi?: 'Alfa' | 'Beta' | 'Kararlı'
   etiketler: string[]
   belgeler: ModulBelge[]
   asamalar: ModulAsama[]

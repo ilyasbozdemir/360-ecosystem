@@ -11,6 +11,7 @@ import {
   Wrench,
   Check
 } from 'lucide-react'
+import { cn } from '../../../utils/cn'
 import type { ModulPaketi } from '../modulMagazasi.types'
 
 interface ModulDetailModalProps {
@@ -38,10 +39,22 @@ export const ModulDetailModal: React.FC<ModulDetailModalProps> = ({
         {/* Üst Başlık & Kapatma */}
         <div className="p-6 border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 via-indigo-50/40 to-slate-50 dark:from-slate-900 dark:via-indigo-950/40 dark:to-slate-900 flex items-start justify-between gap-4">
           <div className="space-y-1.5">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="px-2.5 py-0.5 rounded text-xs font-bold bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/30 font-mono">
                 {modul.kod}
               </span>
+              {modul.surumAsamasi && (
+                <span
+                  className={cn(
+                    'px-2 py-0.5 rounded-full text-[10px] font-extrabold border tracking-wider uppercase',
+                    modul.surumAsamasi === 'Beta'
+                      ? 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/40'
+                      : 'bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-500/15 dark:text-purple-300 dark:border-purple-500/40'
+                  )}
+                >
+                  {modul.surumAsamasi}
+                </span>
+              )}
               <span className="text-xs text-slate-600 dark:text-slate-400 font-medium">{modul.mevzuat}</span>
               <span className="text-xs text-slate-400 dark:text-slate-500 font-mono">({modul.versiyon})</span>
             </div>

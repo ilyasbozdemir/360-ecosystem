@@ -11,6 +11,7 @@ import {
   GitFork,
   Trash2
 } from 'lucide-react'
+import { cn } from '../../../utils/cn'
 import type { ModulPaketi } from '../modulMagazasi.types'
 
 interface ModulCardProps {
@@ -103,12 +104,24 @@ export const ModulCard: React.FC<ModulCardProps> = ({
               {icon}
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span
                   className={`px-2 py-0.5 rounded text-[11px] font-bold border tracking-wider uppercase ${colorTheme.badge}`}
                 >
                   {modul.kod}
                 </span>
+                {modul.surumAsamasi && (
+                  <span
+                    className={cn(
+                      'px-2 py-0.5 rounded-full text-[10px] font-extrabold border tracking-wider uppercase shadow-xs',
+                      modul.surumAsamasi === 'Beta'
+                        ? 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/40'
+                        : 'bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-500/15 dark:text-purple-300 dark:border-purple-500/40'
+                    )}
+                  >
+                    {modul.surumAsamasi}
+                  </span>
+                )}
                 <span className="text-slate-400 dark:text-slate-500 text-xs font-mono">{modul.versiyon}</span>
               </div>
               <span className="text-xs text-slate-500 dark:text-slate-400 font-medium block mt-0.5">
