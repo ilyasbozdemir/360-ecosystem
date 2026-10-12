@@ -1,6 +1,5 @@
 import React from "react";
 import { useGlobalDocumentPreviewStore } from "../../store/globalDocumentPreviewStore";
-import { DocumentPreviewModalV2 } from "../../screens/dosya/components/DocumentPreviewModalV2";
 import { DocumentPreviewModalV3 } from "../../screens/dosya/components/DocumentPreviewModalV3";
 
 export function GlobalDocumentPreviewHost(): React.JSX.Element | null {
@@ -22,19 +21,8 @@ export function GlobalDocumentPreviewHost(): React.JSX.Element | null {
   const activeTab = tabs.find((t) => t.tabId === activeTabId) || tabs[0];
   if (!activeTab) return null;
 
-  const DOCUMENT_PREVIEW_VERSIONS = {
-    v2: DocumentPreviewModalV2,
-    v3: DocumentPreviewModalV3,
-  } as const;
-
-  type DocumentPreviewVersion = keyof typeof DOCUMENT_PREVIEW_VERSIONS;
-  const ACTIVE_DOCUMENT_PREVIEW_VERSION: DocumentPreviewVersion = "v3";
-
-  const ActiveDocumentPreview =
-    DOCUMENT_PREVIEW_VERSIONS[ACTIVE_DOCUMENT_PREVIEW_VERSION];
-
   return (
-    <ActiveDocumentPreview
+    <DocumentPreviewModalV3
       key={activeTab.tabId}
       isOpen={isOpen}
       documentId={activeTab.documentId}

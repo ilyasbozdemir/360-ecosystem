@@ -1,6 +1,6 @@
 import { TemplateResolver } from '@temin360/document-templates'
 import { getDefaultMappingForProcess } from '../constants/mappings'
-import { resolveTemplateConfig } from '../screens/dosya/components/DocumentPreviewModalV2/templateResolver'
+import { resolveTemplateConfig } from '../screens/dosya/components/DocumentPreviewModalV3/templateResolver'
 
 export interface PreloadedDocumentData {
   payloadData: any

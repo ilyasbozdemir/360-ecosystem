@@ -6,7 +6,7 @@ import {
   resolveFirmsAndItems
 } from '../index'
 
-describe('DocumentPreviewModalV2 - previewData modular helpers', () => {
+describe('DocumentPreviewModalV3 - previewData modular helpers', () => {
   it('parseNumericPrice handles numbers, strings with commas and dots correctly', () => {
     expect(parseNumericPrice(1250.5)).toBe(1250.5)
     expect(parseNumericPrice('1.250,50')).toBe(1250.5)
