@@ -156,7 +156,7 @@ export class DtmWorkspace {
       meta.last_user_mutation_at = previousUserMutationAt
       meta.integrity_hash = calculateIntegrityHash(meta)
       fs.writeFileSync(metaPath, JSON.stringify(meta, null, 2))
-      this.saveWorkspace()
+      this.saveWorkspace(true)
     } else {
       const dbFileName = meta.active_db_file || 'database.sqlite'
       const dbPath = path.join(this.tempDir, dbFileName)
