@@ -48,17 +48,17 @@ export function UstYaziRotaAkisi(props: RotaProps): React.JSX.Element {
             </div>
           ))}
 
-          {/* Final Gönderim Düğümü */}
+          {/* Final Dosya Arşiv Düğümü */}
           <div className="relative flex items-start gap-4">
             <div className="w-7 h-7 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shrink-0 z-10 shadow-xs">
               ✓
             </div>
             <div className="bg-emerald-50/50 dark:bg-emerald-950/20 p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-900/40 flex-1">
               <div className="font-bold text-xs text-emerald-800 dark:text-emerald-300">
-                Resmî Gönderim &amp; EBYS Kaydı
+                Dosyaya Kayıt &amp; Onaylı Arşiv
               </div>
               <div className="text-[11px] text-slate-500 mt-0.5">
-                Belge dağıtım listesine göre EBYS veya KEP üzerinden muhataplara iletilir.
+                Belge doğrudan temin dosyası içinde arşivlenir, paraflar ve imzalar tamamlanarak dosya çıktısı alınır (Harici EBYS gönderimi yapılmaz).
               </div>
             </div>
           </div>

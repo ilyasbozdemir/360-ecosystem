@@ -4,8 +4,6 @@ import {
   Printer,
   Save,
   CheckCircle2,
-  FileText,
-  SlidersHorizontal,
   Code2,
   BookOpen,
   Send,
@@ -21,11 +19,16 @@ import { EbysMevzuatGuide } from '../../../ebys/components/EbysMevzuatGuide'
 import { ResmiUstYaziTab } from '../../../ebys/components/ResmiUstYaziTab'
 
 export interface DTEbysStudyosuTabProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dosya: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   kalemler: any[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   firmalar: any[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   komisyonlar: any[]
   toplamBedel: number
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dosyaContext?: any
 }
 
@@ -87,9 +90,12 @@ export function DTEbysStudyosuTab({
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
                 EYP 2.0 & Yönetmelik Uyumlu
               </span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                Dosya İçi Evrak (Harici Gönderim Yoktur)
+              </span>
             </div>
             <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
-              Dosya konusu, onay numarası, istekli firmalar ve yetkili makamlar şablonlara otomatik aktarılmıştır.
+              Evraklar resmî yazışma formatında doğrudan temin dosyasında arşivlenmek ve yazdırılmak üzere hazırlanır; dış EBYS/KEP servisine gönderilme yapılmaz.
             </p>
           </div>
         </div>

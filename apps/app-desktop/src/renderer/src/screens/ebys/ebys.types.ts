@@ -12,6 +12,12 @@ export type EbysCategory =
   | "cok_sayfali";
 
 export type MuhatapHiyerarsi = "ust" | "es" | "alt";
+
+/**
+ * Gönderim / Dağıtım Türü
+ * NOT: Doğrudan Temin sürecinde harici EBYS veya KEP servislerine dış gönderim yapılmaz.
+ * Evraklar doğrudan temin dosyası içinde arşivlenir, paraflanır ve dosya çıktısı olarak saklanır.
+ */
 export type GonderimKanali = "EBYS" | "KEP" | "ELDEN";
 
 export interface EbysMuhatap {
