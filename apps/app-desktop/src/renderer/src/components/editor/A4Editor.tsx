@@ -29,13 +29,20 @@ import {
 } from 'lucide-react'
 import { KutuphaneEditorExtensions } from '../../screens/belgelerim/editor/kutuphaneEditorExtensions'
 
+export interface EditorVariable {
+  label: string
+  var: string
+  group?: string
+}
+
 interface A4EditorProps {
   content: string
   onChange: (html: string) => void
   readOnly?: boolean
   enableKutuphaneExtensions?: boolean
-  availablePlaceholders?: Array<{ key: string; label: string }>
+  availablePlaceholders?: Array<{ key: string; label: string; group?: string }>
   availableConditions?: Array<{ flag: string; label?: string }>
+  variables?: EditorVariable[]
 }
 
 export function A4Editor({
@@ -44,7 +51,8 @@ export function A4Editor({
   readOnly = false,
   enableKutuphaneExtensions = false,
   availablePlaceholders = [],
-  availableConditions = []
+  availableConditions = [],
+  variables
 }: A4EditorProps): React.JSX.Element {
   const [isRawMode, setIsRawMode] = useState(false)
   const [showPhPrompt, setShowPhPrompt] = useState(false)
@@ -55,7 +63,21 @@ export function A4Editor({
   const [customFlag, setCustomFlag] = useState('')
   const [customList, setCustomList] = useState('')
 
-  const getInnerAndShell = (html: string) => {
+  const resolvedVariables = React.useMemo<EditorVariable[]>(() => {
+    if (variables && variables.length > 0) {
+      return variables
+    }
+    if (availablePlaceholders && availablePlaceholders.length > 0) {
+      return availablePlaceholders.map((p) => ({
+        label: p.label,
+        var: `{{${p.key}}}`,
+        group: p.group || 'Tanımlı Değişkenler'
+      }))
+    }
+    return []
+  }, [variables, availablePlaceholders])
+
+  const getInnerAndShell = (html: string): { inner: string; prefix: string; suffix: string } => {
     const bodyMatch = html.match(/(<body[^>]*>)([\s\S]*?)(<\/body>)/i)
     if (bodyMatch) {
       const bodyTag = bodyMatch[1]
@@ -293,42 +315,34 @@ export function A4Editor({
                 <FileText className="w-4 h-4" /> Word Yükle
               </button>
 
-              {/* DEĞİŞKEN EKLE DROPDOWN */}
-              <div className="relative group">
-                <button
-                  className="p-1.5 rounded bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 font-semibold text-xs flex items-center gap-1 border border-emerald-200 dark:border-emerald-800/60"
-                  title="Dinamik Şablon Değişkeni Ekle"
-                >
-                  <Sparkles className="w-3.5 h-3.5" /> Değişken Ekle
-                </button>
-                <div className="absolute left-0 top-full mt-1 hidden group-hover:block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl py-1.5 min-w-[200px] z-50">
-                  <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase border-b border-slate-100 dark:border-slate-800">
-                    2886 & Temin Değişkenleri
+              {/* DİNAMİK DEĞİŞKEN EKLE DROPDOWN */}
+              {resolvedVariables.length > 0 && (
+                <div className="relative group">
+                  <button
+                    className="p-1.5 rounded bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 font-semibold text-xs flex items-center gap-1 border border-emerald-200 dark:border-emerald-800/60"
+                    title="Dinamik Şablon Değişkeni Ekle"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" /> Değişken Ekle
+                  </button>
+                  <div className="absolute left-0 top-full mt-1 hidden group-hover:block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl py-1.5 min-w-55 max-h-72 overflow-y-auto z-50">
+                    <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase border-b border-slate-100 dark:border-slate-800">
+                      Şablon Değişkenleri
+                    </div>
+                    {resolvedVariables.map((item) => (
+                      <button
+                        key={item.var}
+                        onClick={() => editor.chain().focus().insertContent(` ${item.var} `).run()}
+                        className="w-full text-left px-3 py-1.5 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 text-xs text-slate-700 dark:text-slate-200 flex justify-between items-center transition-colors gap-2"
+                      >
+                        <span className="truncate">{item.label}</span>
+                        <code className="text-[10px] bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded text-emerald-600 dark:text-emerald-400 font-mono shrink-0">
+                          {item.var}
+                        </code>
+                      </button>
+                    ))}
                   </div>
-                  {[
-                    { label: 'İstekli Firma Adı', var: '{{firma_adi}}' },
-                    { label: 'Vergi No / TCKN', var: '{{firma_vkn}}' },
-                    { label: 'Toplam Tutar (TL)', var: '{{toplam_tutar}}' },
-                    { label: 'Belge Tarihi', var: '{{tarih}}' },
-                    { label: 'Dosya Konusu', var: '{{dosyaKonusu}}' },
-                    { label: 'Makam Adı', var: '{{sunulacakMakamAdi}}' },
-                    { label: 'Hazırlayan Personel', var: '{{hazirlayanPersonelAdi}}' },
-                    { label: 'Onaylayan Personel', var: '{{onaylayanPersonelAdi}}' },
-                    { label: 'İhale Maddesi', var: '{{2886_madde_no}}' }
-                  ].map((item) => (
-                    <button
-                      key={item.var}
-                      onClick={() => editor.chain().focus().insertContent(` ${item.var} `).run()}
-                      className="w-full text-left px-3 py-1.5 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 text-xs text-slate-700 dark:text-slate-200 flex justify-between items-center transition-colors"
-                    >
-                      <span>{item.label}</span>
-                      <code className="text-[10px] bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded text-emerald-600 dark:text-emerald-400 font-mono">
-                        {item.var}
-                      </code>
-                    </button>
-                  ))}
                 </div>
-              </div>
+              )}
 
               {/* KÜTÜPHANE ÖZEL ARAÇLARI (Yer Tutucu Chip, Koşul Bloğu, Liste Döngüsü) */}
               {enableKutuphaneExtensions && (
