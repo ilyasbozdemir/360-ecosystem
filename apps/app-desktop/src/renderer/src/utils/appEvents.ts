@@ -14,6 +14,10 @@ export type AppEventType =
   | 'workspace:refreshed'
   | 'print_queue:updated'
   | 'theme:changed'
+  | 'module:installed'
+  | 'module:uninstalled'
+  | 'module:trashed'
+  | 'module:restored'
 
 export interface AppEventPayload {
   dosyaId?: number | null

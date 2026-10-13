@@ -3,6 +3,8 @@ import { useState, useEffect, useCallback } from 'react'
 import fallbackAnnouncements from '../../constants/announcements.fallback.json'
 import { useAppEventListener } from '../../utils/appEvents'
 import { useSettingsStore } from '../../store/settingsStore'
+import { useModuleStore } from '../../store/moduleStore'
+import { RESMI_MODUL_PAKETLERI } from '../modul-magazasi/data/moduller.data'
 
 export interface BirimHarcamaStat {
   id: number
@@ -596,6 +598,7 @@ export interface Announcement {
   content: string
   date: string
   type: 'info' | 'success' | 'warning' | 'error'
+  _rawDate?: number
 }
 
 export function useAnnouncements() {
@@ -733,8 +736,79 @@ export function useAnnouncements() {
         // quiet fallback
       }
 
+      // Fetch soft-deleted files to alert user about trash expiration
+      let fileTrashNotifications: Announcement[] = []
+      try {
+        if (window.electron) {
+          const trashFilesRes = await window.electron.ipcRenderer.invoke(
+            'db:query',
+            `SELECT d.id, d.temin_no, d.konu, d.updated_at
+             FROM DATA_TeminDosyasi d
+             WHERE d.is_deleted = 1
+             ORDER BY d.updated_at DESC LIMIT 10`
+          )
+          if (trashFilesRes?.success && trashFilesRes.data) {
+            const retentionDays = useSettingsStore.getState().trashRetentionDays || 30
+            fileTrashNotifications = trashFilesRes.data.map((row: any) => {
+              const dateObj = new Date(row.updated_at || Date.now())
+              const dateStr = dateObj.toLocaleDateString('tr-TR', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+              })
+              const elapsedDays = Math.floor((Date.now() - dateObj.getTime()) / (1000 * 60 * 60 * 24))
+              const remainingDays = Math.max(0, retentionDays - elapsedDays)
+
+              return {
+                id: `trash_file_${row.id}`,
+                title: `🗑️ Çöp Kutusu: ${row.konu ? `"${row.konu}"` : row.temin_no || 'Temin Dosyası'}`,
+                content: `Dosya çöp kutusunda bekletiliyor. ${remainingDays > 0 ? `${remainingDays} gün sonra kalıcı olarak temizlenecektir.` : 'Saklama süresi doldu, kalıcı olarak silinebilir.'} (Saklama Süresi: ${retentionDays} gün)`,
+                date: dateStr,
+                _rawDate: dateObj.getTime(),
+                type: 'warning'
+              }
+            })
+          }
+        }
+      } catch {
+        // quiet fallback
+      }
+
+      // Modules in trash notifications
+      const moduleTrashNotifications: Announcement[] = []
+      try {
+        const moduleStore = useModuleStore.getState()
+        const trashed = Object.values(moduleStore.trashedModules || {})
+        for (const item of trashed) {
+          const modDef = RESMI_MODUL_PAKETLERI.find((m) => m.id === item.id)
+          const modTitle = modDef?.baslik || item.id
+          const dateObj = new Date(item.trashedAt)
+          const remainingDays = moduleStore.getRemainingTrashDays(item.id)
+          moduleTrashNotifications.push({
+            id: `trash_mod_${item.id}`,
+            title: `📦 Çöp Kutusu: ${modTitle}`,
+            content: `"${modTitle}" paketi çöp kutusunda bekliyor. ${remainingDays > 0 ? `${remainingDays} gün sonra kalıcı olarak kaldırılacaktır.` : 'Saklama süresi doldu.'} Modül Mağazasından geri yükleyebilirsiniz.`,
+            date: dateObj.toLocaleDateString('tr-TR', {
+              day: '2-digit',
+              month: 'short',
+              year: 'numeric'
+            }),
+            _rawDate: dateObj.getTime(),
+            type: 'warning'
+          })
+        }
+      } catch {
+        // quiet fallback
+      }
+
       // Merge and sort
-      const merged = [...remoteData, ...localLogs, ...fileNotifications].sort((a: any, b: any) => {
+      const merged = [
+        ...remoteData,
+        ...localLogs,
+        ...fileNotifications,
+        ...fileTrashNotifications,
+        ...moduleTrashNotifications
+      ].sort((a: any, b: any) => {
         const timeA = a._rawDate || 0
         const timeB = b._rawDate || 0
         return timeB - timeA
@@ -753,7 +827,11 @@ export function useAnnouncements() {
       'dossier:updated',
       'dossier:deleted',
       'status:changed',
-      'workspace:refreshed'
+      'workspace:refreshed',
+      'module:installed',
+      'module:uninstalled',
+      'module:trashed',
+      'module:restored'
     ],
     () => {
       loadAnnouncements()

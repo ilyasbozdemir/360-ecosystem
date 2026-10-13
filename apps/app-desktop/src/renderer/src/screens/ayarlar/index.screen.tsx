@@ -4,7 +4,7 @@ import { menuItems } from './ayarlar.constants'
 import { Button } from '../../components/ui/Button'
 import { useSettingsStore } from '../../store/settingsStore'
 import { Save, Settings } from 'lucide-react'
-import { InnerMenu, InnerMenuItem } from '../../components/ui/InnerMenu'
+import { InnerMenu } from '../../components/ui/InnerMenu'
 import TemaScreen from './TemaScreen'
 import { useLocation } from '@tanstack/react-router'
 
@@ -72,6 +72,7 @@ export default function AyarlarScreen(): React.ReactNode {
   // Tab: Genel
   const [disableDocumentGuidance, setDisableDocumentGuidance] = useState(true)
   const [unifiedStepperMode, setUnifiedStepperMode] = useState(true)
+  const [trashRetentionDays, setTrashRetentionDays] = useState(30)
 
   // Tab: Geliştirici Ayarları
   const [devUpdateTestMode, setDevUpdateTestMode] = useState(false)
@@ -127,6 +128,7 @@ export default function AyarlarScreen(): React.ReactNode {
 
         setDisableDocumentGuidance(settings.disableDocumentGuidance !== 'false')
         setUnifiedStepperMode(settings.unifiedStepperMode !== 'false')
+        setTrashRetentionDays(parseInt(settings.trashRetentionDays || '30', 10) || 30)
       }, 0)
     }
   }, [settings])
@@ -219,6 +221,8 @@ export default function AyarlarScreen(): React.ReactNode {
       if (tab === 'genel') {
         dataToSave.disableDocumentGuidance = disableDocumentGuidance ? 'true' : 'false'
         dataToSave.unifiedStepperMode = unifiedStepperMode ? 'true' : 'false'
+        dataToSave.trashRetentionDays = String(trashRetentionDays)
+        useSettingsStore.getState().setTrashRetentionDays(trashRetentionDays)
       } else if (tab === 'smtp') {
         dataToSave.smtp_host = smtpHost
         dataToSave.smtpHost = smtpHost
@@ -297,6 +301,8 @@ export default function AyarlarScreen(): React.ReactNode {
                     setDisableDocumentGuidance={setDisableDocumentGuidance}
                     unifiedStepperMode={unifiedStepperMode}
                     setUnifiedStepperMode={setUnifiedStepperMode}
+                    trashRetentionDays={trashRetentionDays}
+                    setTrashRetentionDays={setTrashRetentionDays}
                   />
                 )}
 

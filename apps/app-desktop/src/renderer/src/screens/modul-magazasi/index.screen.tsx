@@ -15,11 +15,15 @@ export const ModulMagazasiScreen: React.FC = () => {
     activeDetailModul,
     setActiveDetailModul,
     isInstalled,
+    isTrashed,
+    getRemainingTrashDays,
     installingId,
     handleStartInstall,
+    handleRestore,
     uninstallCandidate,
     handlePromptUninstall,
-    handleConfirmUninstall,
+    handleConfirmTrash,
+    handleConfirmPermanent,
     handleCloseUninstallModal,
     filteredModuller,
     stats
@@ -44,8 +48,11 @@ export const ModulMagazasiScreen: React.FC = () => {
               key={modul.id}
               modul={modul}
               isInstalled={isInstalled(modul.id)}
+              isTrashed={isTrashed(modul.id)}
+              remainingTrashDays={getRemainingTrashDays(modul.id)}
               isInstalling={installingId === modul.id}
               onInstall={handleStartInstall}
+              onRestore={handleRestore}
               onPromptUninstall={handlePromptUninstall}
               onOpenDetail={setActiveDetailModul}
             />
@@ -58,7 +65,7 @@ export const ModulMagazasiScreen: React.FC = () => {
             Aramanıza Uygun Modül Bulunamadı
           </h3>
           <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mt-1">
-            Farklı anahtar kelimeler ile arama yapabilir veya kategori filtresini &apos;Tüm Modüller&apos; olarak seçebilirsiniz.
+            Farklı anahtar kelimeler ile arama yapabilir veya kategori filtresini &apos;Tüm Paketler&apos; olarak seçebilirsiniz.
           </p>
           <button
             onClick={() => {
@@ -82,12 +89,13 @@ export const ModulMagazasiScreen: React.FC = () => {
         onPromptUninstall={handlePromptUninstall}
       />
 
-      {/* Kaldırma Onay & Uyarı Modalı */}
+      {/* Kaldırma / Çöp Kutusuna Taşıma Onay Modalı */}
       <ModulUninstallModal
         modul={uninstallCandidate}
         isOpen={Boolean(uninstallCandidate)}
         onClose={handleCloseUninstallModal}
-        onConfirm={handleConfirmUninstall}
+        onConfirmTrash={handleConfirmTrash}
+        onConfirmPermanent={handleConfirmPermanent}
       />
     </div>
   )

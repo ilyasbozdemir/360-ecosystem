@@ -63,6 +63,8 @@ interface SettingsState {
   setDisclaimerAccepted: (val: boolean) => void
   setShowLogoLeft: (val: boolean) => void
   setShowLogoRight: (val: boolean) => void
+  trashRetentionDays: number
+  setTrashRetentionDays: (days: number) => void
   isAiConfigured: boolean
   aiProvider: string
   loadSettings: () => Promise<void>
@@ -107,6 +109,8 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   disclaimerHistory: '[]',
   isAiConfigured: false,
   aiProvider: 'gemini',
+  trashRetentionDays: 30,
+  setTrashRetentionDays: (val) => set({ trashRetentionDays: val }),
   setDisableDocumentGuidance: (val) => set({ disableDocumentGuidance: val }),
   setUnifiedStepperMode: (val) => set({ unifiedStepperMode: val }),
   setShowLogoLeft: (val) => set({ showLogoLeft: val }),
@@ -185,6 +189,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         ekapDonemKurali: settings.ekapDonemKurali || '',
         disableDocumentGuidance: settings.disableDocumentGuidance !== 'false',
         disclaimerHistory: settings.disclaimerHistory || '[]',
+        trashRetentionDays: parseInt(settings.trashRetentionDays || '30', 10) || 30,
         isAiConfigured,
         aiProvider
         // isDisclaimerAccepted is intentionally not loaded from DB to show it on every app launch

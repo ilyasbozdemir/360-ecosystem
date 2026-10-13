@@ -5,10 +5,10 @@ import {
   CheckCircle2,
   Layers,
   Search,
-  FileSpreadsheet,
   FileCheck2,
   Calculator,
-  Puzzle
+  Puzzle,
+  Archive
 } from 'lucide-react'
 import type { ModulKategoriFiltresi } from '../modulMagazasi.types'
 
@@ -20,20 +20,11 @@ interface ModulMagazasiHeaderProps {
   stats: {
     total: number
     installed: number
+    trashed?: number
     available: number
     totalTemplates: number
   }
 }
-
-const KATEGORI_SEKMELERI: { id: ModulKategoriFiltresi; label: string; icon: React.ReactNode }[] = [
-  { id: 'tum', label: 'Tüm Paketler', icon: <Layers className="w-3.5 h-3.5" /> },
-  { id: 'tip_modul', label: 'Süreç Modülleri', icon: <Layers className="w-3.5 h-3.5" /> },
-  { id: 'tip_utils', label: 'Hesap & Araçlar', icon: <Calculator className="w-3.5 h-3.5" /> },
-  { id: 'tip_extension', label: 'Eklentiler', icon: <Puzzle className="w-3.5 h-3.5" /> },
-  { id: 'kurulu', label: 'Kurulu Paketler', icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
-  { id: 'alim_ihale', label: 'Alım & İhale (4734)', icon: <FileCheck2 className="w-3.5 h-3.5" /> },
-  { id: 'satis_kiralama', label: 'Satış & Kiralama (2886)', icon: <Store className="w-3.5 h-3.5" /> }
-]
 
 export const ModulMagazasiHeader: React.FC<ModulMagazasiHeaderProps> = ({
   searchQuery,
@@ -42,6 +33,26 @@ export const ModulMagazasiHeader: React.FC<ModulMagazasiHeaderProps> = ({
   onSelectKategori,
   stats
 }) => {
+  const KATEGORI_SEKMELERI: { id: ModulKategoriFiltresi; label: string; icon: React.ReactNode; badge?: number }[] = [
+    { id: 'tum', label: 'Tüm Paketler', icon: <Layers className="w-3.5 h-3.5" /> },
+    { id: 'tip_modul', label: 'Süreç Modülleri', icon: <Layers className="w-3.5 h-3.5" /> },
+    { id: 'tip_utils', label: 'Hesap & Araçlar', icon: <Calculator className="w-3.5 h-3.5" /> },
+    { id: 'tip_extension', label: 'Eklentiler', icon: <Puzzle className="w-3.5 h-3.5" /> },
+    { id: 'kurulu', label: 'Kurulu Paketler', icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
+    ...(stats.trashed && stats.trashed > 0
+      ? [
+          {
+            id: 'cop_kutusu' as ModulKategoriFiltresi,
+            label: 'Çöp Kutusu',
+            icon: <Archive className="w-3.5 h-3.5 text-amber-500" />,
+            badge: stats.trashed
+          }
+        ]
+      : []),
+    { id: 'alim_ihale', label: 'Alım & İhale (4734)', icon: <FileCheck2 className="w-3.5 h-3.5" /> },
+    { id: 'satis_kiralama', label: 'Satış & Kiralama (2886)', icon: <Store className="w-3.5 h-3.5" /> }
+  ]
+
   return (
     <div className="space-y-6">
       {/* Üst Banner & Başlık */}
@@ -71,6 +82,16 @@ export const ModulMagazasiHeader: React.FC<ModulMagazasiHeaderProps> = ({
               <div className="text-2xl font-black text-indigo-600 dark:text-indigo-400">{stats.installed}</div>
               <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Kurulu Paket</div>
             </div>
+            {stats.trashed !== undefined && stats.trashed > 0 && (
+              <div
+                onClick={() => onSelectKategori('cop_kutusu')}
+                className="flex-1 md:flex-none px-4 py-3 rounded-xl bg-amber-50/90 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-700/60 backdrop-blur-sm text-center shadow-xs cursor-pointer hover:scale-102 transition-transform"
+                title="Çöp kutusundaki modülleri gör"
+              >
+                <div className="text-2xl font-black text-amber-600 dark:text-amber-400">{stats.trashed}</div>
+                <div className="text-[11px] font-bold text-amber-700 dark:text-amber-300 uppercase tracking-wider">Çöp Kutusunda</div>
+              </div>
+            )}
             <div className="flex-1 md:flex-none px-4 py-3 rounded-xl bg-white/90 dark:bg-slate-800/80 border border-slate-200/90 dark:border-slate-700/60 backdrop-blur-sm text-center shadow-xs dark:shadow-none">
               <div className="text-2xl font-black text-sky-600 dark:text-sky-400">{stats.total}</div>
               <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Katalog Paketi</div>
@@ -113,7 +134,7 @@ export const ModulMagazasiHeader: React.FC<ModulMagazasiHeaderProps> = ({
               <button
                 key={sekme.id}
                 onClick={() => onSelectKategori(sekme.id)}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                   isActive
                     ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
                     : 'bg-white hover:bg-slate-100 text-slate-700 hover:text-slate-900 border border-slate-200 shadow-xs dark:bg-slate-800/70 dark:hover:bg-slate-800 dark:text-slate-300 dark:hover:text-white dark:border-slate-700/50'
@@ -121,6 +142,11 @@ export const ModulMagazasiHeader: React.FC<ModulMagazasiHeaderProps> = ({
               >
                 {sekme.icon}
                 <span>{sekme.label}</span>
+                {sekme.badge && (
+                  <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-500 text-white font-bold ml-0.5">
+                    {sekme.badge}
+                  </span>
+                )}
               </button>
             )
           })}

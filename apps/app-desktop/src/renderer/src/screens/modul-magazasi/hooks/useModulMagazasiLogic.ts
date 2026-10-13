@@ -9,7 +9,17 @@ export function useModulMagazasiLogic() {
   const [activeDetailModul, setActiveDetailModul] = useState<ModulPaketi | null>(null)
 
   // Global store
-  const { installedIds, isInstalled, installModule, uninstallModule } = useModuleStore()
+  const {
+    installedIds,
+    isInstalled,
+    isTrashed,
+    getRemainingTrashDays,
+    installModule,
+    trashModule,
+    restoreModule,
+    permanentlyDeleteModule,
+    trashedModules
+  } = useModuleStore()
 
   // Kurulum animasyonu durumu
   const [installingId, setInstallingId] = useState<string | null>(null)
@@ -23,21 +33,38 @@ export function useModulMagazasiLogic() {
       setTimeout(() => {
         installModule(id)
         setInstallingId(null)
-      }, 1200)
+      }, 1000)
     },
     [installModule]
+  )
+
+  const handleRestore = useCallback(
+    (id: string) => {
+      restoreModule(id)
+    },
+    [restoreModule]
   )
 
   const handlePromptUninstall = useCallback((modul: ModulPaketi) => {
     setUninstallCandidate(modul)
   }, [])
 
-  const handleConfirmUninstall = useCallback(() => {
+  const handleConfirmTrash = useCallback(
+    (retentionDays: number) => {
+      if (uninstallCandidate) {
+        trashModule(uninstallCandidate.id, retentionDays)
+        setUninstallCandidate(null)
+      }
+    },
+    [uninstallCandidate, trashModule]
+  )
+
+  const handleConfirmPermanent = useCallback(() => {
     if (uninstallCandidate) {
-      uninstallModule(uninstallCandidate.id)
+      permanentlyDeleteModule(uninstallCandidate.id)
       setUninstallCandidate(null)
     }
-  }, [uninstallCandidate, uninstallModule])
+  }, [uninstallCandidate, permanentlyDeleteModule])
 
   const handleCloseUninstallModal = useCallback(() => {
     setUninstallCandidate(null)
@@ -45,8 +72,10 @@ export function useModulMagazasiLogic() {
 
   const filteredModuller = useMemo(() => {
     return RESMI_MODUL_PAKETLERI.filter((modul) => {
-      // Kategori ve Paket Tipi filtresi
-      if (activeKategori === 'kurulu') {
+      // Çöp kutusu veya Kurulu filtresi
+      if (activeKategori === 'cop_kutusu') {
+        if (!isTrashed(modul.id)) return false
+      } else if (activeKategori === 'kurulu') {
         if (!installedIds.includes(modul.id)) return false
       } else if (activeKategori === 'tip_modul') {
         if (modul.paketTipi !== 'modul') return false
@@ -70,17 +99,19 @@ export function useModulMagazasiLogic() {
 
       return inBaslik || inKod || inMevzuat || inAciklama || inEtiket || inBelge
     })
-  }, [activeKategori, searchQuery, installedIds])
+  }, [activeKategori, searchQuery, installedIds, isTrashed])
 
   const stats = useMemo(() => {
     const installedCount = RESMI_MODUL_PAKETLERI.filter((m) => installedIds.includes(m.id)).length
+    const trashedCount = RESMI_MODUL_PAKETLERI.filter((m) => isTrashed(m.id)).length
     return {
       total: RESMI_MODUL_PAKETLERI.length,
       installed: installedCount,
-      available: RESMI_MODUL_PAKETLERI.length - installedCount,
+      trashed: trashedCount,
+      available: RESMI_MODUL_PAKETLERI.length - installedCount - trashedCount,
       totalTemplates: RESMI_MODUL_PAKETLERI.reduce((sum, m) => sum + m.belgeler.length, 0)
     }
-  }, [installedIds])
+  }, [installedIds, isTrashed])
 
   return {
     searchQuery,
@@ -91,13 +122,18 @@ export function useModulMagazasiLogic() {
     setActiveDetailModul,
     installedIds,
     isInstalled,
+    isTrashed,
+    getRemainingTrashDays,
     installingId,
     handleStartInstall,
+    handleRestore,
     uninstallCandidate,
     handlePromptUninstall,
-    handleConfirmUninstall,
+    handleConfirmTrash,
+    handleConfirmPermanent,
     handleCloseUninstallModal,
     filteredModuller,
-    stats
+    stats,
+    trashedModules
   }
 }
