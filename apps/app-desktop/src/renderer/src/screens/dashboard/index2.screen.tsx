@@ -17,6 +17,7 @@ import { AiMissingModal } from './components/AiMissingModal'
 import { KikLimitVeBirimAnalizSection } from './components/KikLimitVeBirimAnalizSection'
 import { formatCurrency, getDtFileColor, getDtFileText } from './components/dashboardV2.helpers'
 import { useDashboardV2Logic } from './components/useDashboardV2Logic'
+import { APP_ROUTES } from '../../constants/routeConstants'
 
 export default function DashboardScreenV2(): React.JSX.Element {
   const {
@@ -188,10 +189,10 @@ export default function DashboardScreenV2(): React.JSX.Element {
             onOpenDosya={(id, dosya) => {
               if (dosya?.ihaleKayitNo || dosya?.islemTuru) {
                 persist2886ActiveDosya(dosya)
-                navigate({ to: '/devlet-ihale-2886' })
+                navigate({ to: APP_ROUTES.DEVLET_IHALE_2886 })
               } else {
                 setActiveDosyaId(id as any)
-                navigate({ to: '/takip' })
+                navigate({ to: APP_ROUTES.TAKIP })
               }
             }}
             onAiConsult={(dosya) => {
@@ -269,7 +270,7 @@ export default function DashboardScreenV2(): React.JSX.Element {
         onClose={() => setShowAiMissingModal(false)}
         onGoToSettings={() => {
           setShowAiMissingModal(false)
-          navigate({ to: '/ayarlar', search: { tab: 'ai' } as any })
+          navigate({ to: APP_ROUTES.AYARLAR, search: { tab: 'ai' } as any })
         }}
       />
     </div>

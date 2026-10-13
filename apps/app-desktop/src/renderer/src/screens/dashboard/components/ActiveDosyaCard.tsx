@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { ArrowRight, FolderOpen, Landmark, Sparkles, X } from 'lucide-react'
 import { formatDosyaNo } from '../../../utils/formatDosyaNo'
 import { cn } from '../../../utils/cn'
+import { APP_ROUTES } from '../../../constants/routeConstants'
 
 interface ActiveDosyaCardProps {
   activeDosya: any
@@ -120,42 +121,42 @@ export const ActiveDosyaCard: React.FC<ActiveDosyaCardProps> = ({
             <div className="flex flex-wrap items-center gap-2 pt-1">
               <button
                 type="button"
-                onClick={() => navigate({ to: '/devlet-ihale-2886', search: { tab: 'studyo' } as any })}
+                onClick={() => navigate({ to: APP_ROUTES.DEVLET_IHALE_2886, search: { tab: 'studyo' } as any })}
                 className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-indigo-100 hover:text-white text-[11px] font-semibold border border-white/10 transition-colors cursor-pointer"
               >
                 1. Belge & Şablon Stüdyosu
               </button>
               <button
                 type="button"
-                onClick={() => navigate({ to: '/devlet-ihale-2886', search: { tab: 'takdir' } as any })}
+                onClick={() => navigate({ to: APP_ROUTES.DEVLET_IHALE_2886, search: { tab: 'takdir' } as any })}
                 className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-indigo-100 hover:text-white text-[11px] font-semibold border border-white/10 transition-colors cursor-pointer"
               >
                 2. Kıymet Takdiri
               </button>
               <button
                 type="button"
-                onClick={() => navigate({ to: '/devlet-ihale-2886', search: { tab: 'usul' } as any })}
+                onClick={() => navigate({ to: APP_ROUTES.DEVLET_IHALE_2886, search: { tab: 'usul' } as any })}
                 className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-indigo-100 hover:text-white text-[11px] font-semibold border border-white/10 transition-colors cursor-pointer"
               >
                 3. Encümen Usulü
               </button>
               <button
                 type="button"
-                onClick={() => navigate({ to: '/devlet-ihale-2886', search: { tab: 'evraklar' } as any })}
+                onClick={() => navigate({ to: APP_ROUTES.DEVLET_IHALE_2886, search: { tab: 'evraklar' } as any })}
                 className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-indigo-100 hover:text-white text-[11px] font-semibold border border-white/10 transition-colors cursor-pointer"
               >
                 4. Süreç Evrakları
               </button>
               <button
                 type="button"
-                onClick={() => navigate({ to: '/devlet-ihale-2886', search: { tab: 'ihale_gunu' } as any })}
+                onClick={() => navigate({ to: APP_ROUTES.DEVLET_IHALE_2886, search: { tab: 'ihale_gunu' } as any })}
                 className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-indigo-100 hover:text-white text-[11px] font-semibold border border-white/10 transition-colors cursor-pointer"
               >
                 5. Açık Artırma & Teklifler
               </button>
               <button
                 type="button"
-                onClick={() => navigate({ to: '/devlet-ihale-2886', search: { tab: 'tahsilat' } as any })}
+                onClick={() => navigate({ to: APP_ROUTES.DEVLET_IHALE_2886, search: { tab: 'tahsilat' } as any })}
                 className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-indigo-100 hover:text-white text-[11px] font-semibold border border-white/10 transition-colors cursor-pointer"
               >
                 6. Kira & Tahsilat
@@ -167,7 +168,7 @@ export const ActiveDosyaCard: React.FC<ActiveDosyaCardProps> = ({
           <div className="flex flex-wrap lg:flex-nowrap items-center gap-2.5 shrink-0 w-full lg:w-auto">
             <button
               type="button"
-              onClick={() => navigate({ to: '/devlet-ihale-2886' })}
+              onClick={() => navigate({ to: APP_ROUTES.DEVLET_IHALE_2886 })}
               className="flex-1 lg:flex-none bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-3 px-5 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
             >
               <FolderOpen className="w-4 h-4" />
@@ -258,28 +259,28 @@ export const ActiveDosyaCard: React.FC<ActiveDosyaCardProps> = ({
           <div className="flex flex-wrap items-center gap-2 pt-1">
             <button
               type="button"
-              onClick={() => navigate({ to: '/dosya/hazirlik-ve-ihtiyac' })}
+              onClick={() => navigate({ to: APP_ROUTES.HAZIRLIK_VE_IHTIYAC })}
               className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-blue-100 hover:text-white text-[11px] font-semibold border border-white/10 transition-colors cursor-pointer"
             >
               1. İhtiyaç & Onay
             </button>
             <button
               type="button"
-              onClick={() => navigate({ to: '/dosya/piyasa-fiyat-arastirmasi' })}
+              onClick={() => navigate({ to: APP_ROUTES.PIYASA_FIYAT_ARASTIRMASI })}
               className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-blue-100 hover:text-white text-[11px] font-semibold border border-white/10 transition-colors cursor-pointer"
             >
               2. Piyasa Araştırması
             </button>
             <button
               type="button"
-              onClick={() => navigate({ to: '/dosya/siparis-ve-sozlesme' })}
+              onClick={() => navigate({ to: APP_ROUTES.SIPARIS_VE_SOZLESME })}
               className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-blue-100 hover:text-white text-[11px] font-semibold border border-white/10 transition-colors cursor-pointer"
             >
               3. Karar & Sözleşme
             </button>
             <button
               type="button"
-              onClick={() => navigate({ to: '/dosya/kabul-ve-odeme' })}
+              onClick={() => navigate({ to: APP_ROUTES.KABUL_VE_ODEME })}
               className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-blue-100 hover:text-white text-[11px] font-semibold border border-white/10 transition-colors cursor-pointer"
             >
               4. Muayene & Ödeme
@@ -291,7 +292,7 @@ export const ActiveDosyaCard: React.FC<ActiveDosyaCardProps> = ({
         <div className="flex flex-wrap lg:flex-nowrap items-center gap-2.5 shrink-0 w-full lg:w-auto">
           <button
             type="button"
-            onClick={() => navigate({ to: '/takip' })}
+            onClick={() => navigate({ to: APP_ROUTES.TAKIP })}
             className="flex-1 lg:flex-none bg-blue-600 hover:bg-blue-500 text-white font-black text-xs py-3 px-5 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
           >
             <FolderOpen className="w-4 h-4" />

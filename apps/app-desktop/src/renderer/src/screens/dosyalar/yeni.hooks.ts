@@ -9,6 +9,7 @@ import { buildAIFormContext, resolveDefaultPersonnel } from './yeni.config'
 import { AIFilledValues } from '../../components/ui/AIFormFillModal'
 import { logActivity } from '../../utils/logger'
 import { cloneDosyaWithItems, CloneDosyaCustomOptions } from '../../utils/cloneDosya'
+import { APP_ROUTES } from '../../constants/routeConstants'
 
 export interface UseYeniDosyaScreenReturn {
   navigate: ReturnType<typeof useNavigate>
@@ -350,7 +351,7 @@ export function useYeniDosyaScreen(): UseYeniDosyaScreenReturn {
       setShowKopyalaModal(false)
       if (res.success && res.newId) {
         navigate({
-          to: `/dosyalar/yeni?id=${res.newId}` as any
+          to: `${APP_ROUTES.YENI_DOSYA}?id=${res.newId}` as any
         })
       } else {
         alert('Kopyalama sırasında hata oluştu: ' + (res.error || 'Bilinmeyen hata'))
@@ -704,7 +705,7 @@ export function useYeniDosyaScreen(): UseYeniDosyaScreenReturn {
         )
         alert('Yeni doğrudan temin dosyası başarıyla eklendi.')
       }
-      navigate({ to: '/dosyalar' })
+      navigate({ to: APP_ROUTES.DOSYALAR })
     } catch (error) {
       console.error(error)
       alert('Kaydetme sırasında bir hata oluştu: ' + (error as Error).message)

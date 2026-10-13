@@ -3,6 +3,7 @@ import { ExternalLink, Layers } from 'lucide-react'
 import { useTabStore } from '../../../../store/tabStore'
 import { useNavigate } from '@tanstack/react-router'
 import { useGlobalDocumentPreviewStore } from '../../../../store/globalDocumentPreviewStore'
+import { APP_ROUTES } from '../../../../constants/routeConstants'
 
 interface InspectorFooterProps {
   dosya: any
@@ -24,7 +25,7 @@ export const InspectorFooter: React.FC<InspectorFooterProps> = ({
       onClose()
     }
     addTab('/takip')
-    navigate({ to: '/takip' })
+    navigate({ to: APP_ROUTES.TAKIP })
   }
 
   const handleOpenArastirmaMektubu = () => {

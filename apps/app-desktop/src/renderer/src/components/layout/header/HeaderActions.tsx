@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { SyncPopover } from "./SyncPopover";
 import { NotificationPopover } from "./NotificationPopover";
+import { APP_ROUTES } from "../../../constants/routeConstants";
 
 interface HeaderActionsProps {
   theme: string;
@@ -32,7 +33,7 @@ export const HeaderActions = React.memo(function HeaderActions({
     >
       {/* Modül & Eklenti Mağazası */}
       <button
-        onClick={(): void => navigate({ to: "/modul-magazasi" })}
+        onClick={(): void => navigate({ to: APP_ROUTES.MODUL_MAGAZASI })}
         className="flex items-center gap-1 px-2 py-1 text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/60 hover:bg-violet-100 dark:hover:bg-violet-900/60 border border-violet-200 dark:border-violet-800/60 transition-all rounded-xl cursor-pointer shadow-2xs"
         title="Modül & Belge Mağazası"
       >
@@ -42,7 +43,7 @@ export const HeaderActions = React.memo(function HeaderActions({
 
       {/* Yüzde & Muhasebe Hesap Araçları Süiti */}
       <button
-        onClick={(): void => navigate({ to: "/hesaplama-araclari" })}
+        onClick={(): void => navigate({ to: APP_ROUTES.HESAPLAMA_ARACLARI })}
         className="flex items-center gap-1 px-2 py-1 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 border border-blue-200 dark:border-blue-800/60 transition-all rounded-xl cursor-pointer shadow-2xs"
         title="Hesap & Yüzde Araçları Süiti (KDV, İndirim, Kâr Marjı, Tarih Farkı)"
       >
@@ -52,7 +53,7 @@ export const HeaderActions = React.memo(function HeaderActions({
 
       {/* Notlar & Yapılacaklar (To-Do) Hızlı Erişim Butonu */}
       <button
-        onClick={(): void => navigate({ to: "/notlar" })}
+        onClick={(): void => navigate({ to: APP_ROUTES.NOTLAR })}
         className="p-1 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-all rounded hover:bg-slate-200/50 dark:hover:bg-slate-800/50 cursor-pointer"
         title="Notlar & Yapılacaklar Listesi (To-Do)"
       >

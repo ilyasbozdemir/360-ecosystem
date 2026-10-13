@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { Calculator, Sparkles, TrendingUp, X } from 'lucide-react'
 import { yiUfeService } from '../../services/yiUfeService'
 import { useNavigate } from '@tanstack/react-router'
+import { APP_ROUTES } from '../../constants/routeConstants'
 
 interface YiUfePriceBadgeProps {
   price: number
@@ -162,7 +163,7 @@ export function YiUfePriceBadge({
                 type="button"
                 onClick={() => {
                   setShowModal(false)
-                  navigate({ to: '/mevzuat', search: { tab: 'yi-ufe' } as any })
+                  navigate({ to: APP_ROUTES.MEVZUAT, search: { tab: 'yi-ufe' } as any })
                 }}
                 className="text-[11px] font-bold text-blue-600 hover:text-blue-700 underline cursor-pointer flex items-center gap-1"
               >

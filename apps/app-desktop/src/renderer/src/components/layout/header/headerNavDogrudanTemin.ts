@@ -1,5 +1,6 @@
 import { NavigateFn } from '@tanstack/react-router'
 import { HeaderMenu } from './header.types'
+import { APP_ROUTES } from '../../../constants/routeConstants'
 
 export function getDogrudanTeminMenus(
   navigate: NavigateFn,
@@ -8,31 +9,31 @@ export function getDogrudanTeminMenus(
   return [
     {
       name: 'Doğrudan Temin (KİK 22)',
-      onClick: (): Promise<void> => navigate({ to: '/dosyalar' }),
+      onClick: (): Promise<void> => navigate({ to: APP_ROUTES.DOSYALAR }),
       items: [
         {
           label: 'Tüm Doğrudan Temin Dosyaları',
-          onClick: (): Promise<void> => navigate({ to: '/dosyalar' })
+          onClick: (): Promise<void> => navigate({ to: APP_ROUTES.DOSYALAR })
         },
         {
           label: '📁 Proje Yönetimi & Yatırımlar',
-          onClick: (): Promise<void> => navigate({ to: '/projeler' })
+          onClick: (): Promise<void> => navigate({ to: APP_ROUTES.PROJELER })
         },
         {
           label: 'Yeni Doğrudan Temin Dosyası',
-          onClick: (): Promise<void> => navigate({ to: '/dosyalar/yeni' })
+          onClick: (): Promise<void> => navigate({ to: APP_ROUTES.YENI_DOSYA })
         },
         {
           label: 'Hızlı Dosya Ekle / Güncelle',
-          onClick: (): Promise<void> => navigate({ to: '/hizli-dosya-ekle' })
+          onClick: (): Promise<void> => navigate({ to: APP_ROUTES.HIZLI_DOSYA_EKLE })
         },
         {
           label: 'Süreç Akış Haritası (Beta)',
-          onClick: (): Promise<void> => navigate({ to: '/surec-akisi' })
+          onClick: (): Promise<void> => navigate({ to: APP_ROUTES.SUREC_AKISI })
         },
         {
           label: '📊 Harcama & Sayıştay Raporları',
-          onClick: (): Promise<void> => navigate({ to: '/raporlar' })
+          onClick: (): Promise<void> => navigate({ to: APP_ROUTES.RAPORLAR })
         }
       ]
     },
@@ -43,27 +44,27 @@ export function getDogrudanTeminMenus(
             items: [
               {
                 label: 'Süreç Takip & Durum Paneli',
-                onClick: (): Promise<void> => navigate({ to: '/takip' })
+                onClick: (): Promise<void> => navigate({ to: APP_ROUTES.TAKIP })
               },
               {
                 label: '🧭 Süreç Akış Haritası (Beta - Tablar)',
-                onClick: (): Promise<void> => navigate({ to: '/surec-akisi' })
+                onClick: (): Promise<void> => navigate({ to: APP_ROUTES.SUREC_AKISI })
               },
               {
                 label: 'Belge Çıktı Merkezi',
-                onClick: (): Promise<void> => navigate({ to: '/cikti-merkezi' })
+                onClick: (): Promise<void> => navigate({ to: APP_ROUTES.CIKTI_MERKEZI_DASHBOARD })
               },
               {
                 label: 'Hızlı Dosya Ekle / Güncelle',
-                onClick: (): Promise<void> => navigate({ to: '/hizli-dosya-ekle' })
+                onClick: (): Promise<void> => navigate({ to: APP_ROUTES.HIZLI_DOSYA_EKLE })
               },
               {
                 label: 'Şablon & Taslak Yöneticisi',
-                onClick: (): Promise<void> => navigate({ to: '/taslakyonetim' })
+                onClick: (): Promise<void> => navigate({ to: APP_ROUTES.TASLAK_YONETIM })
               },
               {
                 label: '📝 Dosya Notları & Yapılacaklar (To-Do)',
-                onClick: (): Promise<void> => navigate({ to: '/notlar' })
+                onClick: (): Promise<void> => navigate({ to: APP_ROUTES.NOTLAR })
               }
             ]
           },
@@ -72,23 +73,23 @@ export function getDogrudanTeminMenus(
             items: [
               {
                 label: '1. İhtiyaç Listesi & Maliyet & Onay',
-                onClick: (): Promise<void> => navigate({ to: '/dosya/hazirlik-ve-ihtiyac' })
+                onClick: (): Promise<void> => navigate({ to: APP_ROUTES.HAZIRLIK_VE_IHTIYAC })
               },
               {
                 label: '2. Piyasa Fiyat Araştırması',
-                onClick: (): Promise<void> => navigate({ to: '/dosya/piyasa-fiyat-arastirmasi' })
+                onClick: (): Promise<void> => navigate({ to: APP_ROUTES.PIYASA_FIYAT_ARASTIRMASI })
               },
               {
                 label: '3. Sipariş & Sözleşme',
-                onClick: (): Promise<void> => navigate({ to: '/dosya/siparis-ve-sozlesme' })
+                onClick: (): Promise<void> => navigate({ to: APP_ROUTES.SIPARIS_VE_SOZLESME })
               },
               {
                 label: '4. Muayene & Kabul & Ödeme İşlemleri',
-                onClick: (): Promise<void> => navigate({ to: '/dosya/kabul-ve-odeme' })
+                onClick: (): Promise<void> => navigate({ to: APP_ROUTES.KABUL_VE_ODEME })
               },
               {
                 label: '5. Klasör & Kapaklar',
-                onClick: (): Promise<void> => navigate({ to: '/dosya/klasor-ve-kapaklar' })
+                onClick: (): Promise<void> => navigate({ to: APP_ROUTES.KLASOR_VE_KAPAKLAR })
               }
             ]
           }
@@ -99,21 +100,21 @@ export function getDogrudanTeminMenus(
       items: [
         {
           label: '🧮 İhale & Kamu Maliyesi Hesaplama Araçları',
-          onClick: (): Promise<void> => navigate({ to: '/hesaplama-araclari' })
+          onClick: (): Promise<void> => navigate({ to: APP_ROUTES.HESAPLAMA_ARACLARI })
         },
         {
           label: '4734 Sayılı Kamu İhale Kanunu (KİK Md. 22)',
-          onClick: (): Promise<void> => navigate({ to: '/mevzuat' })
+          onClick: (): Promise<void> => navigate({ to: APP_ROUTES.MEVZUAT })
         },
         {
           label: 'Doğrudan Temin Parasal Limitleri (22/a, 22/d)',
           onClick: (): Promise<void> =>
-            navigate({ to: '/mevzuat', search: { tab: 'limitler' } as Record<string, string> })
+            navigate({ to: APP_ROUTES.MEVZUAT, search: { tab: 'limitler' } as Record<string, string> })
         },
         {
           label: 'TÜİK Yİ-ÜFE Endeksleri & Değerleme',
           onClick: (): Promise<void> =>
-            navigate({ to: '/mevzuat', search: { tab: 'yi-ufe' } as Record<string, string> })
+            navigate({ to: APP_ROUTES.MEVZUAT, search: { tab: 'yi-ufe' } as Record<string, string> })
         }
       ]
     }

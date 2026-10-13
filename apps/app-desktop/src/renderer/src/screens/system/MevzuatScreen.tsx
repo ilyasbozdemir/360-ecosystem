@@ -20,6 +20,7 @@ import { BentlerTab } from './tabs/BentlerTab'
 import { ButceKodlariTab } from './tabs/ButceKodlariTab'
 import { MevzuatKutuphanesiTab } from './tabs/MevzuatKutuphanesiTab'
 import { YiUfeEndeksTab } from './tabs/YiUfeEndeksTab'
+import { APP_ROUTES } from '../../constants/routeConstants'
 
 type MevzuatTabType =
   | 'kutuphane'
@@ -75,7 +76,7 @@ export function MevzuatScreen(): React.JSX.Element {
 
   const handleTabChange = (tabId: string): void => {
     navigate({
-      to: '/mevzuat',
+      to: APP_ROUTES.MEVZUAT,
       search: (prev: any) => ({ ...prev, tab: tabId })
     })
   }

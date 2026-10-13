@@ -13,6 +13,7 @@ import {
   persist2886ActiveDosya
 } from './teminSelector.storage'
 import { Dosya2886Item, DosyaListItem, ProcurementMode } from './teminSelector.types'
+import { APP_ROUTES } from '../../../constants/routeConstants'
 
 export interface UseTeminSelectorReturn {
   isOpen: boolean
@@ -123,7 +124,7 @@ export function useTeminSelector(): UseTeminSelectorReturn {
     (id: number): void => {
       setActiveDosyaId(id)
       setIsOpen(false)
-      navigate({ to: '/takip' })
+      navigate({ to: APP_ROUTES.TAKIP })
     },
     [setActiveDosyaId, navigate]
   )
@@ -133,7 +134,7 @@ export function useTeminSelector(): UseTeminSelectorReturn {
       setActive2886Dosya(item)
       persist2886ActiveDosya(item)
       setIsOpen(false)
-      navigate({ to: '/devlet-ihale-2886' })
+      navigate({ to: APP_ROUTES.DEVLET_IHALE_2886 })
     },
     [navigate]
   )
@@ -141,7 +142,7 @@ export function useTeminSelector(): UseTeminSelectorReturn {
   const handleCloseDosya = useCallback((): void => {
     setActiveDosyaId(null)
     setIsOpen(false)
-    navigate({ to: '/' })
+    navigate({ to: APP_ROUTES.DASHBOARD })
   }, [setActiveDosyaId, navigate])
 
   const handleClose2886Dosya = useCallback((): void => {
@@ -155,7 +156,7 @@ export function useTeminSelector(): UseTeminSelectorReturn {
       e.stopPropagation()
       setIsOpen(false)
       if (is2886) {
-        navigate({ to: '/devlet-ihale-2886' })
+        navigate({ to: APP_ROUTES.DEVLET_IHALE_2886 })
       } else {
         setShowYeniDosyaModal(true)
       }

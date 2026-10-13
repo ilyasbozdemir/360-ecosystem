@@ -9,6 +9,7 @@ import { FirmalarTab } from './surec-akisi/components/tabs/FirmalarTab'
 import { KomisyonTab } from './surec-akisi/components/tabs/KomisyonTab'
 import { BelgelerTab } from './surec-akisi/components/tabs/BelgelerTab'
 import { SurecTab } from './surec-akisi/components/tabs/SurecTab'
+import { APP_ROUTES } from '../../constants/routeConstants'
 
 export default function SurecAkisiScreen(): React.JSX.Element {
   const navigate = useNavigate()
@@ -56,9 +57,9 @@ export default function SurecAkisiScreen(): React.JSX.Element {
     { id: 'surec', label: 'Süreç' }
   ]
 
-  const handleNavigateCiktiMerkezi = () => navigate({ to: '/cikti-merkezi' as any })
-  const handleNavigateFirmalar = () => navigate({ to: '/firmalar' as any })
-  const handleNavigateKomisyonlar = () => navigate({ to: '/komisyonlar' as any })
+  const handleNavigateCiktiMerkezi = () => navigate({ to: APP_ROUTES.CIKTI_MERKEZI_DASHBOARD as any })
+  const handleNavigateFirmalar = () => navigate({ to: APP_ROUTES.FIRMALAR as any })
+  const handleNavigateKomisyonlar = () => navigate({ to: APP_ROUTES.KOMISYONLAR as any })
 
   return (
     <div className="w-full min-h-screen bg-slate-50 dark:bg-slate-900/60 p-6 animate-in fade-in duration-500 overflow-y-auto">

@@ -3,6 +3,7 @@ import { ChevronDown, Eye, Landmark, TrendingUp, X } from 'lucide-react'
 import { cn } from '../../../../utils/cn'
 import { Dosya2886Item } from '../teminSelector.types'
 import { formatMoney, get2886IslemTuruBadge, get2886MevzuatBadge } from '../teminSelector.utils'
+import { APP_ROUTES } from '../../../../constants/routeConstants'
 
 interface TeminSelectorActive2886Props {
   active2886Dosya: Dosya2886Item
@@ -69,7 +70,7 @@ export const TeminSelectorActive2886: React.FC<TeminSelectorActive2886Props> = (
         type="button"
         onClick={(e): void => {
           e.stopPropagation()
-          navigate({ to: '/devlet-ihale-2886' })
+          navigate({ to: APP_ROUTES.DEVLET_IHALE_2886 })
         }}
         className="p-1 sm:p-1.5 text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-500/10 rounded-lg transition-all shrink-0 active:scale-90 cursor-pointer"
         title="2886 Çalışma Masasına Git"

@@ -9,6 +9,7 @@ import { TurOzelAlanlarCard } from './components/TurOzelAlanlarCard'
 import { TeknikDetayCard } from './components/TeknikDetayCard'
 import { GorselUploadCard } from './components/GorselUploadCard'
 import { MalzemeModals } from './components/MalzemeModals'
+import { APP_ROUTES } from '../../constants/routeConstants'
 
 export default function YeniMalzemeScreen(): React.JSX.Element {
   const {
@@ -73,7 +74,7 @@ export default function YeniMalzemeScreen(): React.JSX.Element {
         setEntryMode={setEntryMode}
         isSaving={isSaving}
         handleSave={handleSave}
-        onCancel={() => navigate({ to: '/malzemeler' })}
+        onCancel={() => navigate({ to: APP_ROUTES.MALZEMELER })}
       />
 
       {/* Main Form Content */}
@@ -83,7 +84,7 @@ export default function YeniMalzemeScreen(): React.JSX.Element {
             <HizliTopluKalemGrid
               units={birimler}
               onSaveBatch={handleBatchSaveInLibrary}
-              onCancel={() => navigate({ to: '/malzemeler' })}
+              onCancel={() => navigate({ to: APP_ROUTES.MALZEMELER })}
             />
           </div>
         ) : (

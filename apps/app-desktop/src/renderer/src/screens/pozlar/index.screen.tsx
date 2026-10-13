@@ -110,7 +110,7 @@ export default function PozlarScreen() {
         <div className="flex items-center gap-2.5 flex-wrap">
           <Button
             variant="outline"
-            onClick={() => navigate({ to: '/mevzuat', search: { tab: 'yi-ufe' } as any })}
+            onClick={() => navigate({ to: APP_ROUTES.MEVZUAT, search: { tab: 'yi-ufe' } as any })}
             className="border-blue-500/40 text-blue-700 dark:text-blue-300 hover:bg-blue-500/10 gap-2 shadow-xs"
             title="TÜİK Yİ-ÜFE Endeksleri & Geçmiş Fiyatları Güncelleme Simülatörü"
           >

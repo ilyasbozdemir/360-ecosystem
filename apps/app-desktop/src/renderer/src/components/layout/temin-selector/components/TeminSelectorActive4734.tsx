@@ -5,6 +5,7 @@ import { formatDosyaNo } from '../../../../utils/formatDosyaNo'
 import { DosyaListItem } from '../teminSelector.types'
 import { TUR_COLOR, TUR_LABEL } from '../teminSelector.constants'
 import { formatMoney, getMevzuatBadgeInfo } from '../teminSelector.utils'
+import { APP_ROUTES } from '../../../../constants/routeConstants'
 
 interface TeminSelectorActive4734Props {
   selectedDosya: DosyaListItem
@@ -116,7 +117,7 @@ export const TeminSelectorActive4734: React.FC<TeminSelectorActive4734Props> = (
         onClick={(e): void => {
           e.stopPropagation()
           addTab(`/dosyalar/yeni?id=${selectedDosya.id}`)
-          navigate({ to: `/dosyalar/yeni?id=${selectedDosya.id}` })
+          navigate({ to: `${APP_ROUTES.YENI_DOSYA}?id=${selectedDosya.id}` })
         }}
         className="p-1 sm:p-1.5 text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-all shrink-0 active:scale-90 cursor-pointer"
         title="Dosya Formunu Düzenle"

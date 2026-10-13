@@ -5,6 +5,7 @@ import { ProjectBadge, TagBadge, TurBadge } from './Badges'
 import { DosyaActionMenu } from './DosyaActionMenu'
 import { DosyaHizliIcerikPopover } from './DosyaHizliIcerikPopover'
 import { useNavigate } from '@tanstack/react-router'
+import { APP_ROUTES } from '../../../constants/routeConstants'
 
 export interface DosyalarTableViewProps {
   groupedDosyalar: { baseKonu: string; files: any[] }[]
@@ -108,7 +109,7 @@ export function DosyalarTableView({
                         key={dosya.id}
                         onClick={() => {
                           setActiveDosyaId(dosya.id)
-                          navigate({ to: '/takip' })
+                          navigate({ to: APP_ROUTES.TAKIP })
                         }}
                         className={cn(
                           'group hover:bg-slate-50/50 dark:hover:bg-slate-800/30 cursor-pointer transition-colors',

@@ -15,6 +15,7 @@ import { DurumBadge, ProjectBadge, TagBadge, TurBadge } from './Badges'
 import { DosyaActionMenu } from './DosyaActionMenu'
 import { DosyaHizliIcerikPopover } from './DosyaHizliIcerikPopover'
 import { useNavigate } from '@tanstack/react-router'
+import { APP_ROUTES } from '../../../constants/routeConstants'
 
 export interface DosyalarGridViewProps {
   viewMode: 'grid' | 'list'
@@ -106,7 +107,7 @@ export function DosyalarGridView({
                   key={dosya.id}
                   onClick={() => {
                     setActiveDosyaId(dosya.id)
-                    navigate({ to: '/takip' })
+                    navigate({ to: APP_ROUTES.TAKIP })
                   }}
                   className={cn(
                     'bg-white dark:bg-slate-900 border rounded-2xl cursor-pointer hover:shadow-lg transition-all flex flex-col group relative min-h-[180px] h-full',

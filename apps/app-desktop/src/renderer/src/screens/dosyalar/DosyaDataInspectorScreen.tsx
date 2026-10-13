@@ -4,6 +4,7 @@ import { useWorkspaceStore } from '../../store/workspaceStore'
 import { DosyaInspectorView } from './components/inspector/DosyaInspectorView'
 import { FileSearch, Layers } from 'lucide-react'
 import { useNavigate } from '@tanstack/react-router'
+import { APP_ROUTES } from '../../constants/routeConstants'
 
 export const DosyaDataInspectorScreen: React.FC = () => {
   const { activeTabPath } = useTabStore()
@@ -80,7 +81,7 @@ export const DosyaDataInspectorScreen: React.FC = () => {
           listesinden bir dosya seçebilir veya Süreç Takip paneline gidebilirsiniz.
         </p>
         <button
-          onClick={() => navigate({ to: '/dosyalar' })}
+          onClick={() => navigate({ to: APP_ROUTES.DOSYALAR })}
           className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md cursor-pointer transition-all"
         >
           <Layers className="w-4 h-4" />

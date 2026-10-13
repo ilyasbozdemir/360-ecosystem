@@ -7,6 +7,7 @@ import { useTasinirKodHooks } from '../tasinirkod/tasinirkod.hooks'
 import { generateBarcode } from '../../utils/barcodeUtils'
 import { SelectedPozData } from './components/PozSecimModal'
 import { HizliKalemRow } from '../dosya/sub-screens/components/MalzemeListesi/HizliTopluKalemGrid'
+import { APP_ROUTES } from '../../constants/routeConstants'
 
 export function useYeniMalzeme() {
   const search: any = useSearch({ strict: false })
@@ -263,11 +264,11 @@ export function useYeniMalzeme() {
           barkod_id: generateBarcode()
         })
         if (editId) {
-          navigate({ to: '/malzemeler/yeni' } as any)
+          navigate({ to: APP_ROUTES.YENI_MALZEME } as any)
         }
         setTimeout(() => setToastMessage(null), 4000)
       } else {
-        navigate({ to: '/malzemeler' })
+        navigate({ to: APP_ROUTES.MALZEMELER })
       }
     } catch (err: any) {
       alert('Kaydedilirken hata oluştu: ' + err.message)
@@ -317,7 +318,7 @@ export function useYeniMalzeme() {
       }
       setToastMessage(`${count} adet kalem kütüphaneye başarıyla kaydedildi!`)
       setTimeout(() => {
-        navigate({ to: '/malzemeler' })
+        navigate({ to: APP_ROUTES.MALZEMELER })
       }, 1000)
       return true
     } catch (err: any) {

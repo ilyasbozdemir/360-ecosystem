@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { useProjeHooks, useProjeDosyalari, Proje, ProjeInput } from '../../hooks/useProjeHooks'
 import { useWorkspaceStore } from '../../store/workspaceStore'
 import { COLOR_PRESETS, generateDefaultProjectCode } from './constants'
+import { APP_ROUTES } from '../../constants/routeConstants'
 
 export function useProjelerScreen() {
   const navigate = useNavigate()
@@ -153,7 +154,7 @@ export function useProjelerScreen() {
 
   const handleNavigateToDosya = (dosyaId: number) => {
     setActiveDosyaId(dosyaId)
-    navigate({ to: '/dosya' })
+    navigate({ to: APP_ROUTES.DOSYA_DETAY })
   }
 
   return {

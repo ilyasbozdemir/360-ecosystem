@@ -5,6 +5,7 @@ import { useNotlarHooks } from '../notlar.hooks'
 import { NotModal } from './NotModal'
 import { NotVeGorev } from '../types'
 import { useWorkspaceStore } from '../../../store/workspaceStore'
+import { APP_ROUTES } from '../../../constants/routeConstants'
 
 interface DosyaNotlariWidgetProps {
   dosyaId: number
@@ -74,7 +75,7 @@ export function DosyaNotlariWidget({
             if (dosyaId) {
               useWorkspaceStore.getState().setActiveDosyaId(dosyaId)
             }
-            navigate({ to: '/notlar' as any, search: { dosyaId } as any })
+            navigate({ to: APP_ROUTES.NOTLAR as any, search: { dosyaId } as any })
           }}
           className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
           title="Bu dosyanın tüm not ve görevlerini Notlar ekranında aç"

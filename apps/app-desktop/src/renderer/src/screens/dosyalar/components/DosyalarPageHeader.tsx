@@ -2,6 +2,7 @@ import React from 'react'
 import { cn } from '../../../utils/cn'
 import { FileText, Grid, List, Sparkles, Plus, ClipboardList } from 'lucide-react'
 import { useNavigate } from '@tanstack/react-router'
+import { APP_ROUTES } from '../../../constants/routeConstants'
 
 export function DosyalarPageHeader({
   viewMode,
@@ -83,7 +84,7 @@ export function DosyalarPageHeader({
         <button
           onClick={() =>
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            navigate({ to: '/hizli-dosya-ekle' as any })
+            navigate({ to: APP_ROUTES.HIZLI_DOSYA_EKLE as any })
           }
           className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition-all border border-slate-200 dark:border-slate-700 flex items-center gap-1.5 cursor-pointer shrink-0 h-10"
           title="Excel benzeri tablo ile toplu dosya ekleme veya güncelleme"
@@ -94,7 +95,7 @@ export function DosyalarPageHeader({
 
         {/* YENİ EKLE */}
         <button
-          onClick={() => navigate({ to: '/dosyalar/yeni' })}
+          onClick={() => navigate({ to: APP_ROUTES.YENI_DOSYA })}
           className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-500/10 flex items-center gap-1.5 cursor-pointer shrink-0 h-10 border-0"
         >
           <Plus size={16} />

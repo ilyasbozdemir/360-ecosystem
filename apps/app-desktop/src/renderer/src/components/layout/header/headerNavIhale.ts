@@ -1,24 +1,25 @@
 import { NavigateFn } from '@tanstack/react-router'
 import { HeaderMenu } from './header.types'
+import { APP_ROUTES } from '../../../constants/routeConstants'
 
 export function getIhaleMenus(navigate: NavigateFn, activeDosyaId: number | null): HeaderMenu[] {
   return [
     {
       name: 'İhale Süreçleri (KİK 19/21)',
-      onClick: () => navigate({ to: '/harcama-merkezi' }),
+      onClick: () => navigate({ to: APP_ROUTES.HARCAMA_MERKEZI }),
       items: [
         {
           label: 'Açık İhale Süreçleri (KİK Md. 19)',
-          onClick: () => navigate({ to: '/harcama-merkezi' })
+          onClick: () => navigate({ to: APP_ROUTES.HARCAMA_MERKEZI })
         },
         {
           label: 'Pazarlık Usulü İhale (KİK Md. 21)',
-          onClick: () => navigate({ to: '/harcama-merkezi' })
+          onClick: () => navigate({ to: APP_ROUTES.HARCAMA_MERKEZI })
         },
-        { label: 'İhale Hakediş & Harcama Raporları', onClick: () => navigate({ to: '/hakedis' }) },
+        { label: 'İhale Hakediş & Harcama Raporları', onClick: () => navigate({ to: APP_ROUTES.HAKEDIS }) },
         { divider: true },
-        { label: 'Şablon & Kategori Yönetimi', onClick: () => navigate({ to: '/degiskenler' }) },
-        { label: 'Taslak & Belge Havuzu', onClick: () => navigate({ to: '/taslakyonetim' }) }
+        { label: 'Şablon & Kategori Yönetimi', onClick: () => navigate({ to: APP_ROUTES.DEGISKENLER }) },
+        { label: 'Taslak & Belge Havuzu', onClick: () => navigate({ to: APP_ROUTES.TASLAK_YONETIM }) }
       ]
     },
     ...(activeDosyaId
@@ -28,35 +29,35 @@ export function getIhaleMenus(navigate: NavigateFn, activeDosyaId: number | null
             items: [
               {
                 label: '1. İhale Onay Belgesi & Şartnameler',
-                onClick: () => navigate({ to: '/dosya/hazirlik-ve-ihtiyac' })
+                onClick: () => navigate({ to: APP_ROUTES.HAZIRLIK_VE_IHTIYAC })
               },
               {
                 label: '2. İhale İlanı & Davet Mektupları',
-                onClick: () => navigate({ to: '/dosya/piyasa-fiyat-arastirmasi' })
+                onClick: () => navigate({ to: APP_ROUTES.PIYASA_FIYAT_ARASTIRMASI })
               },
               {
                 label: '3. Teklif Değerlendirme & Komisyon Kararı',
-                onClick: () => navigate({ to: '/dosya/siparis-ve-sozlesme' })
+                onClick: () => navigate({ to: APP_ROUTES.SIPARIS_VE_SOZLESME })
               },
               {
                 label: '4. Sözleşme & Teminat İşlemleri',
-                onClick: () => navigate({ to: '/dosya/kabul-ve-odeme' })
+                onClick: () => navigate({ to: APP_ROUTES.KABUL_VE_ODEME })
               },
               {
                 label: '5. İhale Klasörü & Arşivleme',
-                onClick: () => navigate({ to: '/dosya/klasor-ve-kapaklar' })
+                onClick: () => navigate({ to: APP_ROUTES.KLASOR_VE_KAPAKLAR })
               }
             ]
           },
           {
             name: 'İhale İşlemleri',
             items: [
-              { label: 'İhale Dosya Durumu & Takip', onClick: () => navigate({ to: '/takip' }) },
+              { label: 'İhale Dosya Durumu & Takip', onClick: () => navigate({ to: APP_ROUTES.TAKIP }) },
               {
                 label: 'İhale Belge Çıktı Merkezi',
-                onClick: () => navigate({ to: '/cikti-merkezi' })
+                onClick: () => navigate({ to: APP_ROUTES.CIKTI_MERKEZI_DASHBOARD })
               },
-              { label: 'Hakediş & Ödeme Takibi', onClick: () => navigate({ to: '/hakedis' }) }
+              { label: 'Hakediş & Ödeme Takibi', onClick: () => navigate({ to: APP_ROUTES.HAKEDIS }) }
             ]
           }
         ]
@@ -66,17 +67,17 @@ export function getIhaleMenus(navigate: NavigateFn, activeDosyaId: number | null
       items: [
         {
           label: '🧮 İhale & Kamu Maliyesi Hesaplama Araçları',
-          onClick: (): Promise<void> => navigate({ to: '/hesaplama-araclari' })
+          onClick: (): Promise<void> => navigate({ to: APP_ROUTES.HESAPLAMA_ARACLARI })
         },
         {
           label: 'İhale Eşik Değerleri & Limitler',
-          onClick: (): Promise<void> => navigate({ to: '/mevzuat' })
+          onClick: (): Promise<void> => navigate({ to: APP_ROUTES.MEVZUAT })
         },
         {
           label: 'KİK Standart Şablon & Formlar',
-          onClick: () => navigate({ to: '/taslakyonetim' })
+          onClick: () => navigate({ to: APP_ROUTES.TASLAK_YONETIM })
         },
-        { label: 'Mevzuat & Genelgeler', onClick: () => navigate({ to: '/mevzuat' }) }
+        { label: 'Mevzuat & Genelgeler', onClick: () => navigate({ to: APP_ROUTES.MEVZUAT }) }
       ]
     }
   ]

@@ -16,6 +16,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { cn } from '../../../utils/cn'
 import { useTabStore } from '../../../store/tabStore'
 import { DosyaDataInspectorModal } from './DosyaDataInspectorModal'
+import { APP_ROUTES } from '../../../constants/routeConstants'
 
 export interface DosyaActionMenuProps {
   dosya: any
@@ -92,7 +93,7 @@ export function DosyaActionMenu({
                 onClick={() => {
                   setOpenMenuId(null)
                   navigate({
-                    to: `/dosyalar/yeni?id=${dosya.id}`
+                    to: `${APP_ROUTES.YENI_DOSYA}?id=${dosya.id}`
                   })
                 }}
                 className="w-full text-left px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"

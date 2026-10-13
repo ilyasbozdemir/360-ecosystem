@@ -5,6 +5,7 @@ import { getDogrudanTeminMenus } from './headerNavDogrudanTemin'
 import { getDevletIhale2886Menus } from './headerNavDevletIhale'
 import { getIhaleMenus } from './headerNavIhale'
 import { getSistemTanimlariMenu } from './headerNavSistemTanimlari'
+import { APP_ROUTES } from '../../../constants/routeConstants'
 
 export interface HeaderNavigationOptions {
   navigate: NavigateFn
@@ -37,18 +38,18 @@ export function getHeaderMenus(opts: HeaderNavigationOptions): HeaderMenu[] {
     {
       name: 'Dosya',
       items: [
-        { label: 'Gösterge Paneli', onClick: (): Promise<void> => navigate({ to: '/' }) },
+        { label: 'Gösterge Paneli', onClick: (): Promise<void> => navigate({ to: APP_ROUTES.DASHBOARD }) },
         {
           label: '📑 EBYS Resmî Yazı Şablonları',
-          onClick: (): Promise<void> => navigate({ to: '/ebys' })
+          onClick: (): Promise<void> => navigate({ to: APP_ROUTES.EBYS })
         },
         {
           label: 'Yeni Doğrudan Temin Dosyası',
-          onClick: (): Promise<void> => navigate({ to: '/dosyalar/yeni' })
+          onClick: (): Promise<void> => navigate({ to: APP_ROUTES.YENI_DOSYA })
         },
         {
           label: 'Çalışma Dosyası Detayları (.temin)',
-          onClick: (): Promise<void> => navigate({ to: '/dosya' })
+          onClick: (): Promise<void> => navigate({ to: APP_ROUTES.DOSYA_DETAY })
         },
         { label: "💾 Değişiklikleri Kaydet & Drive'a Gönder (Ctrl+S)", onClick: handleSaveAndSync },
         {
@@ -92,7 +93,7 @@ export function getHeaderMenus(opts: HeaderNavigationOptions): HeaderMenu[] {
               }
             ]
           : []),
-        { label: 'Kullanıcı Profili', onClick: (): Promise<void> => navigate({ to: '/profil' }) },
+        { label: 'Kullanıcı Profili', onClick: (): Promise<void> => navigate({ to: APP_ROUTES.PROFIL }) },
         { divider: true },
         {
           label: 'Farklı Çalışma Dosyası Aç (.temin, .dtal, .hkmp...)...',
@@ -144,43 +145,43 @@ function getYonetimVeYardimMenu(
   return {
     name: 'Yönetim & Yardım',
     items: [
-      { label: 'Genel Ayarlar', onClick: (): Promise<void> => navigate({ to: '/ayarlar' }) },
+      { label: 'Genel Ayarlar', onClick: (): Promise<void> => navigate({ to: APP_ROUTES.AYARLAR }) },
       {
         label: 'Mevzuat ve Parametreler',
         onClick: (): Promise<void> =>
-          navigate({ to: '/mevzuat', search: { tab: 'kutuphane' } as Record<string, string> })
+          navigate({ to: APP_ROUTES.MEVZUAT, search: { tab: 'kutuphane' } as Record<string, string> })
       },
       {
         label: '📈 TÜİK Yİ-ÜFE Endeksleri & Değerleme',
         onClick: (): Promise<void> =>
-          navigate({ to: '/mevzuat', search: { tab: 'yi-ufe' } as Record<string, string> })
+          navigate({ to: APP_ROUTES.MEVZUAT, search: { tab: 'yi-ufe' } as Record<string, string> })
       },
-      { label: 'Şablon Yönetimi', onClick: (): Promise<void> => navigate({ to: '/sablonlar' }) },
+      { label: 'Şablon Yönetimi', onClick: (): Promise<void> => navigate({ to: APP_ROUTES.SABLONLAR }) },
       {
         label: '🎨 Form Builder v2 (Sürükle & Bırak)',
-        onClick: (): Promise<void> => navigate({ to: '/form-builder' })
+        onClick: (): Promise<void> => navigate({ to: APP_ROUTES.FORM_BUILDER })
       },
       {
         label: 'Şablon & Kategori Yönetimi',
-        onClick: (): Promise<void> => navigate({ to: '/degiskenler' })
+        onClick: (): Promise<void> => navigate({ to: APP_ROUTES.DEGISKENLER })
       },
       {
         label: 'Şablon Listesi ve Süreçler',
-        onClick: (): Promise<void> => navigate({ to: '/taslakyonetim' })
+        onClick: (): Promise<void> => navigate({ to: APP_ROUTES.TASLAK_YONETIM })
       },
       {
         label: '📑 EBYS Resmî Yazı Şablonları',
-        onClick: (): Promise<void> => navigate({ to: '/ebys' })
+        onClick: (): Promise<void> => navigate({ to: APP_ROUTES.EBYS })
       },
-      { label: 'Toplu İçe Aktarma', onClick: (): Promise<void> => navigate({ to: '/import' }) },
-      { label: 'Raporlar', onClick: (): Promise<void> => navigate({ to: '/raporlar' }) },
+      { label: 'Toplu İçe Aktarma', onClick: (): Promise<void> => navigate({ to: APP_ROUTES.IMPORT }) },
+      { label: 'Raporlar', onClick: (): Promise<void> => navigate({ to: APP_ROUTES.RAPORLAR }) },
       {
         label: '🧮 İhale & Maliye Hesaplama Araçları',
-        onClick: (): Promise<void> => navigate({ to: '/hesaplama-araclari' })
+        onClick: (): Promise<void> => navigate({ to: APP_ROUTES.HESAPLAMA_ARACLARI })
       },
       {
         label: '📋 Notlar & Yapılacaklar Listesi (To-Do)',
-        onClick: (): Promise<void> => navigate({ to: '/notlar' })
+        onClick: (): Promise<void> => navigate({ to: APP_ROUTES.NOTLAR })
       },
       { divider: true },
       { label: 'Arayüzü Yenile (Ctrl+R)', onClick: (): void => window.location.reload() },
@@ -191,16 +192,16 @@ function getYonetimVeYardimMenu(
       {
         label: 'Test Verisi Tohumla (Dev Seed)',
         onClick: (): Promise<void> =>
-          navigate({ to: '/ayarlar', search: { tab: 'developer' } as Record<string, string> })
+          navigate({ to: APP_ROUTES.AYARLAR, search: { tab: 'developer' } as Record<string, string> })
       },
       { divider: true },
       {
         label: 'Kullanım Kılavuzu & Yardım',
-        onClick: (): Promise<void> => navigate({ to: '/yardim' })
+        onClick: (): Promise<void> => navigate({ to: APP_ROUTES.YARDIM })
       },
       {
         label: 'Sürüm Notları (Changelog)',
-        onClick: (): Promise<void> => navigate({ to: '/changelog' })
+        onClick: (): Promise<void> => navigate({ to: APP_ROUTES.CHANGELOG })
       },
       { label: 'Hakkında...', onClick: (): void => setShowAboutModal(true) }
     ]

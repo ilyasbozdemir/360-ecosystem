@@ -7,6 +7,7 @@ import { TeminDosyasi, useDosyalarHooks } from '../../screens/dosyalar/dosyalar.
 import { EskiDosyaKopyalaModal } from '../../screens/dosyalar/components/EskiDosyaKopyalaModal'
 import { cloneDosyaWithItems } from '../../utils/cloneDosya'
 import { TEMIN_TURLERI, teminMeta, type TeminTuruId } from '../../constants/teminTurleri'
+import { APP_ROUTES } from '../../constants/routeConstants'
 
 export interface YeniDosyaSecimModalProps {
   isOpen: boolean
@@ -27,14 +28,14 @@ export function YeniDosyaSecimModal({
   const handleSelectTeminTur = (tur: TeminTuruId) => {
     onClose()
     navigate({
-      to: '/dosyalar/yeni',
+      to: APP_ROUTES.YENI_DOSYA,
       search: { tur } as any
     })
   }
 
   const handleSelectHakedis = () => {
     onClose()
-    navigate({ to: '/hakedis' })
+    navigate({ to: APP_ROUTES.HAKEDIS })
   }
 
   const handleSelectKopyala = () => {
@@ -52,7 +53,7 @@ export function YeniDosyaSecimModal({
       if (res.success && res.newId) {
         onClose()
         navigate({
-          to: `/dosyalar/yeni?id=${res.newId}` as any
+          to: `${APP_ROUTES.YENI_DOSYA}?id=${res.newId}` as any
         })
       } else {
         alert('Kopyalama sırasında hata oluştu: ' + (res.error || 'Bilinmeyen hata'))
@@ -66,7 +67,7 @@ export function YeniDosyaSecimModal({
 
   const handleSelectImport = () => {
     onClose()
-    navigate({ to: '/import' })
+    navigate({ to: APP_ROUTES.IMPORT })
   }
 
   const teminTurleriList = TEMIN_TURLERI.map((t) => teminMeta(t.id)!).filter(Boolean)

@@ -15,6 +15,7 @@ import { Button } from '../../../components/ui/Button'
 import { Input } from '../../../components/ui/Input'
 import { Proje } from '../../../hooks/useProjeHooks'
 import { COLOR_PRESETS, DURUM_CONFIG } from '../constants'
+import { APP_ROUTES } from '../../../constants/routeConstants'
 
 interface ProjeDetailModalProps {
   detailProje: Proje | null
@@ -279,7 +280,7 @@ export function ProjeDetailModal({
               <Button
                 onClick={() => {
                   setDetailProje(null)
-                  navigate({ to: '/dosyalar/yeni' })
+                  navigate({ to: APP_ROUTES.YENI_DOSYA })
                 }}
                 className="text-xs h-8 px-3 bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-1 cursor-pointer"
               >

@@ -14,6 +14,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { useWorkspaceStore } from '../../../store/workspaceStore'
 import { useQuery } from '@tanstack/react-query'
 import { cn } from '../../../utils/cn'
+import { APP_ROUTES } from '../../../constants/routeConstants'
 
 interface DosyaHizliIcerikPopoverProps {
   dosya: any
@@ -189,7 +190,7 @@ export function DosyaHizliIcerikPopover({
     e.stopPropagation()
     setOpen(false)
     setActiveDosyaId(dosya.id)
-    navigate({ to: '/takip' })
+    navigate({ to: APP_ROUTES.TAKIP })
   }
 
   const formatMoney = (val?: number | null): string => {

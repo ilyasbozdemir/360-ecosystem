@@ -16,6 +16,7 @@ import {
   TeminKomisyonItem,
   UseTakipReturn
 } from './takip.types'
+import { APP_ROUTES } from '../../../../constants/routeConstants'
 
 export const STAGE_ROUTES: Record<number, string> = {
   1: '/dosya/hazirlik-ve-ihtiyac',
@@ -78,12 +79,12 @@ export function useTakip(): UseTakipReturn {
   const handleEditDosya = () => {
     if (!activeDosya) return
     addTab(`/dosyalar/yeni?id=${activeDosya.id}`)
-    navigate({ to: `/dosyalar/yeni?id=${activeDosya.id}` })
+    navigate({ to: `${APP_ROUTES.YENI_DOSYA}?id=${activeDosya.id}` })
   }
 
   const handleSurecAkisi = () => {
     addTab('/surec-akisi')
-    navigate({ to: '/surec-akisi' })
+    navigate({ to: APP_ROUTES.SUREC_AKISI })
   }
 
   const handleOpenInNewWindow = () => {

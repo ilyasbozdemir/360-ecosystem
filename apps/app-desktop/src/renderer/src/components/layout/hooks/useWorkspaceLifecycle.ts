@@ -3,6 +3,7 @@ import { QueryClient } from '@tanstack/react-query'
 import { useWorkspaceStore } from '../../../store/workspaceStore'
 import { useSettingsStore } from '../../../store/settingsStore'
 import { useTabStore } from '../../../store/tabStore'
+import { APP_ROUTES } from '../../../constants/routeConstants'
 
 export interface WorkspaceLifecycleState {
   showFormatUpgradeModal: boolean
@@ -28,7 +29,7 @@ export function useWorkspaceLifecycle(
     if (result.success) {
       queryClient.clear()
       clearTabs()
-      navigate({ to: '/' })
+      navigate({ to: APP_ROUTES.DASHBOARD })
     } else {
       throw new Error(result.error || 'Dönüştürme başarısız oldu.')
     }
@@ -173,7 +174,7 @@ export function useWorkspaceLifecycle(
         if (result.success) {
           queryClient.clear()
           clearTabs()
-          navigate({ to: '/' })
+          navigate({ to: APP_ROUTES.DASHBOARD })
         } else if (result.error) {
           alert(`Çalışma dosyası açılamadı!\n\nDosya: ${filePath}\nHata: ${result.error}`)
         }

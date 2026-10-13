@@ -2,6 +2,7 @@ import { FileText } from 'lucide-react'
 import { useNavigate } from '@tanstack/react-router'
 
 import React from 'react'
+import { APP_ROUTES } from '../../../constants/routeConstants'
 
 export function DosyalarEmptyState(): React.JSX.Element {
   const navigate = useNavigate()
@@ -16,7 +17,7 @@ export function DosyalarEmptyState(): React.JSX.Element {
         Arama kriterlerinize uyan veya kayıtlı herhangi bir doğrudan temin dosyası bulunmamaktadır.
       </p>
       <button
-        onClick={() => navigate({ to: '/dosyalar/yeni' })}
+        onClick={() => navigate({ to: APP_ROUTES.YENI_DOSYA })}
         className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"
       >
         Yeni Temin Dosyası Ekle
