@@ -31,6 +31,14 @@ export const HeaderActions = React.memo(function HeaderActions({
       style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
     >
       {/* Modül & Eklenti Mağazası */}
+      <button
+        onClick={(): void => navigate({ to: "/modul-magazasi" })}
+        className="flex items-center gap-1 px-2 py-1 text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/60 hover:bg-violet-100 dark:hover:bg-violet-900/60 border border-violet-200 dark:border-violet-800/60 transition-all rounded-xl cursor-pointer shadow-2xs"
+        title="Modül & Belge Mağazası"
+      >
+        <Store className="w-3.5 h-3.5 text-violet-600 dark:text-violet-400" />
+        <span className="hidden lg:inline text-[11px]">Mağaza</span>
+      </button>
 
       {/* Yüzde & Muhasebe Hesap Araçları Süiti */}
       <button
