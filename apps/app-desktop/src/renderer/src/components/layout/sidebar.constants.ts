@@ -31,6 +31,7 @@ import {
   Store
 } from 'lucide-react'
 import { APP_ROUTES } from '../../constants/routeConstants'
+import { useModuleStore } from '../../store/moduleStore'
 
 export interface SubItem {
   name: string
@@ -57,14 +58,25 @@ export type ProcurementMode = 'dogrudan_temin' | 'ihale' | 'devlet_ihale_2886'
 
 export function getSidebarMenuGroups(
   procurementMode: ProcurementMode,
-  activeDosyaId?: string | number | null
+  activeDosyaId?: string | number | null,
+  isInstalledParam?: (id: string) => boolean
 ): MenuGroup[] {
+  const isInstalled = isInstalledParam || ((id: string) => useModuleStore.getState().isInstalled(id))
+  const isBelgelerimActive = isInstalled('kutuphane-belgelerim')
+
+  const belgelerimMenuItem: MenuItem = {
+    name: 'Belgelerim (Özel Alan)',
+    path: APP_ROUTES.BELGELERIM,
+    icon: FolderTree,
+    badge: 'YENİ'
+  }
   if (procurementMode === 'devlet_ihale_2886') {
     return [
       {
         title: '2886 Devlet İhale (Gelir)',
         items: [
           { name: 'Gösterge Paneli', path: APP_ROUTES.DASHBOARD, icon: Home },
+          ...(isBelgelerimActive ? [belgelerimMenuItem] : []),
           {
             name: 'EBYS Resmî Yazı Şablonları',
             path: APP_ROUTES.EBYS,
@@ -345,6 +357,7 @@ export function getSidebarMenuGroups(
       title: 'Ana Menü',
       items: [
         { name: 'Gösterge Paneli', path: APP_ROUTES.DASHBOARD, icon: Home },
+        ...(isBelgelerimActive ? [belgelerimMenuItem] : []),
         {
           name: 'EBYS Resmî Yazı Şablonları',
           path: APP_ROUTES.EBYS,

@@ -45,6 +45,10 @@ import { DATA_DosyaSablonVeri } from './tables/DATA_DosyaSablonVeri'
 import { DATA_DosyaRevizyon } from './tables/DATA_DosyaRevizyon'
 import { DATA_NotVeGorev } from './tables/DATA_NotVeGorev'
 import { LOG_SystemLog } from './tables/LOG_SystemLog'
+import { DATA_KutuphaneGrup } from './tables/DATA_KutuphaneGrup'
+import { DATA_KutuphaneBelge } from './tables/DATA_KutuphaneBelge'
+import { DATA_KutuphaneBelgeSurum } from './tables/DATA_KutuphaneBelgeSurum'
+import { DATA_KutuphaneYerTutucu } from './tables/DATA_KutuphaneYerTutucu'
 import { runMigrations, CURRENT_SCHEMA_VERSION } from './migrate'
 import { defineTable } from './BaseTable'
 
@@ -93,6 +97,10 @@ const rawTables = [
   DATA_DosyaSablonVeri,
   DATA_DosyaRevizyon,
   DATA_NotVeGorev,
+  DATA_KutuphaneGrup,
+  DATA_KutuphaneBelge,
+  DATA_KutuphaneBelgeSurum,
+  DATA_KutuphaneYerTutucu,
   LOG_SystemLog
 ]
 
@@ -227,9 +235,14 @@ export { runMigrations, CURRENT_SCHEMA_VERSION }
 export { TANIM_Placeholder } from './tables/TANIM_Placeholder'
 export { TANIM_OlcuBirimi } from './tables/TANIM_OlcuBirimi'
 export { TANIM_BirimDonusum } from './tables/TANIM_BirimDonusum'
+export { DATA_KutuphaneGrup } from './tables/DATA_KutuphaneGrup'
+export { DATA_KutuphaneBelge } from './tables/DATA_KutuphaneBelge'
+export { DATA_KutuphaneBelgeSurum } from './tables/DATA_KutuphaneBelgeSurum'
+export { DATA_KutuphaneYerTutucu } from './tables/DATA_KutuphaneYerTutucu'
 export { manifests } from './schema-manifest/index'
 export { defineTable } from './BaseTable'
 export { auditColumns, auditColumnsNoRef } from './audit'
 export * from './migrate'
+
 
 

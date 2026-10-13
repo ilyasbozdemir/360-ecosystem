@@ -174,7 +174,28 @@ const allowedChannels = new Set([
   'logs:get-path',
   'logs:open-file',
   'logs:open-dir',
-  'logs:read-recent'
+  'logs:read-recent',
+  // Belgelerim Kütüphanesi
+  'kutuphane:grup:list',
+  'kutuphane:grup:save',
+  'kutuphane:grup:delete',
+  'kutuphane:belge:list',
+  'kutuphane:belge:get',
+  'kutuphane:belge:create',
+  'kutuphane:belge:saveRevision',
+  'kutuphane:belge:updateMeta',
+  'kutuphane:belge:trash',
+  'kutuphane:belge:restore',
+  'kutuphane:belge:permanentDelete',
+  'kutuphane:belge:purgeExpired',
+  'kutuphane:yertutucu:list',
+  'kutuphane:yertutucu:save',
+  'kutuphane:yertutucu:delete',
+  'kutuphane:yertutucu:findUsages',
+  'kutuphane:yertutucu:renameKey',
+  'kutuphane:dosyaya-bagla',
+  'kutuphane:dosya-ek-belgeleri:list',
+  'kutuphane:sablona-yayinla'
 ])
 
 // Secure gated wrapper exposing only authorized channels to renderer

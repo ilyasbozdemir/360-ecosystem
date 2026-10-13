@@ -521,15 +521,26 @@ const ebysRoute = createRoute({
   component: EbysScreen,
 });
 
+const BelgelerimScreen = lazyRoute(() =>
+  import("./screens/belgelerim/BelgelerimScreen")
+);
+
 const modulMagazasiRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: APP_ROUTES.MODUL_MAGAZASI,
   component: ModulMagazasiScreen,
 });
 
+const belgelerimRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: APP_ROUTES.BELGELERIM,
+  component: BelgelerimScreen,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   harcamaMerkeziRoute,
+  belgelerimRoute,
   projelerRoute,
   devletIhale2886Route,
   dosyalarRoute,

@@ -17,6 +17,7 @@ import {
 } from '../documentSettingsUtils'
 import type { DocumentEvrakSettings } from '../documentSettings.types'
 import { TemplateRegistryService } from '@temin360/document-templates'
+import { dosyaSablonVeriService } from '../../../../modules/dosya-sablon-veri'
 
 interface BelgeItem {
   id: string
@@ -39,6 +40,7 @@ interface YeniNesilBelgeStudyosuTabProps {
   dosyaContext?: any
   onBelgeOlustur?: (belge: any) => Promise<any>
   onPreviewBelge?: (belge: any) => void
+  onNavigateToV2?: () => void
 }
 
 export function YeniNesilBelgeStudyosuTab({
@@ -50,7 +52,8 @@ export function YeniNesilBelgeStudyosuTab({
   toplamBedel,
   dosyaContext,
   onBelgeOlustur,
-  onPreviewBelge
+  onPreviewBelge,
+  onNavigateToV2
 }: YeniNesilBelgeStudyosuTabProps): React.JSX.Element {
   const [selectedDocId, setSelectedDocId] = useState<string>(
     belgeler[0]?.id || 'luzum-muzekkeresi'
@@ -94,32 +97,20 @@ export function YeniNesilBelgeStudyosuTab({
     return result
   }, [belgeler, evrakSettingsMap])
 
-  // Debounced DB Kalıcılık: DATA_DosyaSablonVeri.veri_json güncelleme
+  // Debounced DB Kalıcılık: CQRS dosyaSablonVeriService üzerinden güncelleme
   const saveEvrakSettingsToDb = useCallback(
     async (docId: string, settings: DocumentEvrakSettings) => {
-      if (!window.electron?.ipcRenderer || !dosya?.id) return
+      if (!dosya?.id) return
       try {
-        // Mevcut snapshot verisini çek
-        const existingRes = await window.electron.ipcRenderer.invoke(
-          'db:query',
-          'SELECT veri_json FROM DATA_DosyaSablonVeri WHERE temin_dosya_id = ? AND sablon_kodu = ? LIMIT 1',
-          [dosya.id, docId]
-        )
-
-        const existingJson = existingRes?.data?.[0]?.veri_json || '{}'
+        // CQRS Query ile mevcut veriyi çek
+        const existingData = await dosyaSablonVeriService.getVeri(dosya.id, docId)
+        const existingJson = existingData?.veri_json || '{}'
         const updatedJson = mergeEvrakSettings(existingJson, settings)
 
-        // Güncelle veya oluştur
-        await window.electron.ipcRenderer.invoke(
-          'db:run',
-          `INSERT INTO DATA_DosyaSablonVeri (temin_dosya_id, sablon_kodu, veri_json, updated_at)
-           VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-           ON CONFLICT(temin_dosya_id, sablon_kodu)
-           DO UPDATE SET veri_json = excluded.veri_json, updated_at = CURRENT_TIMESTAMP`,
-          [dosya.id, docId, updatedJson]
-        )
+        // CQRS Command ile kaydet
+        await dosyaSablonVeriService.saveVeri(dosya.id, docId, updatedJson)
       } catch (err) {
-        console.error('Evrak ayarları DB kaydı sırasında hata:', err)
+        console.error('Evrak ayarları CQRS kaydı sırasında hata:', err)
       }
     },
     [dosya?.id]
@@ -203,6 +194,16 @@ export function YeniNesilBelgeStudyosuTab({
             </p>
           </div>
         </div>
+
+        {onNavigateToV2 && (
+          <button
+            type="button"
+            onClick={onNavigateToV2}
+            className="flex items-center gap-2 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer shrink-0"
+          >
+            <Sparkles className="w-4 h-4" /> Süreç Akışı v2 (EBYS Stüdyosu)&apos;na Geç
+          </button>
+        )}
       </div>
 
       {/* 3 SÜTUNLU ANA ÇALIŞMA ALANI */}

@@ -3,6 +3,7 @@ import { ChevronLeft, Edit3, FileText, Layers, Sliders } from 'lucide-react'
 import { IhtiyacListesiType } from '@temin360/document-templates'
 import { TemplateOptionItem } from '../templateResolver'
 import { useSettingsStore } from '../../../../../store/settingsStore'
+import { getTemplateFieldMapping } from '../../tek-tik-yazdir/ciktiWizardFieldMapping'
 
 interface DocumentPreviewSidebarProps {
   sidebarOpen: boolean
@@ -431,6 +432,224 @@ export function DocumentPreviewSidebar({
             </>
           )}
         </div>
+
+        {/* ========================================================= */}
+        {/* YENİ BÖLÜM: BELGE EVRAK AYARLARI (Muhatap, İlgi, Ek, Dağıtım) */}
+        {/* ========================================================= */}
+        {(() => {
+          const mapping = selectedDocId
+            ? getTemplateFieldMapping(selectedDocId)
+            : {}
+          const hasAnyEvrakField =
+            Boolean(mapping.muhatapKey) ||
+            Boolean(mapping.ilgiKey) ||
+            Boolean(mapping.eklerKey) ||
+            Boolean(mapping.dagitimKey)
+
+          if (!hasAnyEvrakField) return null
+
+          // Öneri Havuzu (Önceki Belgelerden / Standart Kalıplardan)
+          const suggestionPool = {
+            ilgi: [
+              'Doğrudan Temin Onay Belgesi',
+              'Lüzum Müzekkeresi',
+              'Piyasa Fiyat Araştırma Tutanağı',
+              'Yaklaşık Maliyet Hesap Cetveli'
+            ],
+            ekler: [
+              'Teknik Şartname',
+              'Yaklaşık Maliyet Hesap Cetveli',
+              'Piyasa Fiyat Araştırma Tutanağı',
+              'Fatura ve İrsaliye Örneği',
+              'Birim Fiyat Teklif Cetveli'
+            ]
+          }
+
+          return (
+            <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider block">
+                  Belge Evrak Ayarları
+                </span>
+              </div>
+
+              {/* 1. MUHATAP / SUNULACAK MAKAM */}
+              {mapping.muhatapKey && (
+                <div className="p-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl space-y-2">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-200 flex items-center justify-between">
+                    <span>Muhatap / Sunulacak Makam</span>
+                    <span className="text-[10px] text-purple-600 dark:text-purple-400 font-mono">
+                      {mapping.muhatapKey}
+                    </span>
+                  </label>
+                  <input
+                    type="text"
+                    value={String((formData as any)[mapping.muhatapKey] || '')}
+                    onChange={(e) =>
+                      setFormData((prev: any) => ({
+                        ...prev,
+                        [mapping.muhatapKey!]: e.target.value
+                      }))
+                    }
+                    placeholder="Örn: Destek Hizmetleri Müdürlüğüne"
+                    className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-hidden focus:border-purple-500"
+                  />
+                </div>
+              )}
+
+              {/* 2. İLGİ */}
+              {mapping.ilgiKey && (
+                <div className="p-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl space-y-2">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-200 flex items-center justify-between">
+                    <span>İlgi Tutulan Evrak / Yazı</span>
+                    <span className="text-[10px] text-purple-600 dark:text-purple-400 font-mono">
+                      {mapping.ilgiKey}
+                    </span>
+                  </label>
+                  <input
+                    type="text"
+                    value={String((formData as any)[mapping.ilgiKey] || '')}
+                    onChange={(e) =>
+                      setFormData((prev: any) => ({
+                        ...prev,
+                        [mapping.ilgiKey!]: e.target.value
+                      }))
+                    }
+                    placeholder="Örn: 10.10.2026 tarihli ve 104 sayılı Olur"
+                    className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-hidden focus:border-purple-500"
+                  />
+
+                  {/* Öneri Chipleri (Tıklayınca kopyalar, otomatik ezmez) */}
+                  <div className="space-y-1 pt-1">
+                    <span className="text-[10px] text-slate-400 block">Önceki Belgelerden Öneriler:</span>
+                    <div className="flex flex-wrap gap-1">
+                      {suggestionPool.ilgi.map((sug, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => {
+                            const current = (formData as any)[mapping.ilgiKey!]
+                            if (!current || String(current).trim() === '') {
+                              setFormData((prev: any) => ({
+                                ...prev,
+                                [mapping.ilgiKey!]: sug
+                              }))
+                            }
+                          }}
+                          className="px-2 py-0.5 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/60 rounded-md text-[10px] text-purple-700 dark:text-purple-300 hover:bg-purple-100 transition-colors cursor-pointer"
+                          title="Tıklayarak ilgi alanına yapıştırın"
+                        >
+                          + {sug}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 3. EKLER */}
+              {mapping.eklerKey && (
+                <div className="p-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl space-y-2">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-200 flex items-center justify-between">
+                    <span>Ekler Listesi</span>
+                    <span className="text-[10px] text-purple-600 dark:text-purple-400 font-mono">
+                      {mapping.eklerKey}
+                    </span>
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={
+                      Array.isArray((formData as any)[mapping.eklerKey])
+                        ? (formData as any)[mapping.eklerKey].join('\n')
+                        : String((formData as any)[mapping.eklerKey] || '')
+                    }
+                    onChange={(e) => {
+                      const lines = e.target.value.split('\n')
+                      setFormData((prev: any) => ({
+                        ...prev,
+                        [mapping.eklerKey!]: lines
+                      }))
+                    }}
+                    placeholder="Her satıra bir ek yazınız"
+                    className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-hidden focus:border-purple-500 custom-scrollbar resize-none"
+                  />
+
+                  {/* Önerilen Ekler */}
+                  <div className="space-y-1 pt-1">
+                    <span className="text-[10px] text-slate-400 block">Önerilen Ekler:</span>
+                    <div className="flex flex-wrap gap-1">
+                      {suggestionPool.ekler.map((ekItem, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => {
+                            const cur = (formData as any)[mapping.eklerKey!] || []
+                            const list = Array.isArray(cur) ? [...cur] : [String(cur)]
+                            if (!list.includes(ekItem)) {
+                              setFormData((prev: any) => ({
+                                ...prev,
+                                [mapping.eklerKey!]: [...list.filter(Boolean), ekItem]
+                              }))
+                            }
+                          }}
+                          className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-[10px] text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition-colors cursor-pointer"
+                          title="Tıklayarak listeye ekleyin"
+                        >
+                          + {ekItem}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 4. DAĞITIM */}
+              {mapping.dagitimKey && (
+                <div className="p-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl space-y-2">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-200 flex items-center justify-between">
+                    <span>Dağıtım Listesi</span>
+                    <span className="text-[10px] text-purple-600 dark:text-purple-400 font-mono">
+                      {mapping.dagitimKey}
+                    </span>
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={
+                      Array.isArray((formData as any)[mapping.dagitimKey])
+                        ? (formData as any)[mapping.dagitimKey].join('\n')
+                        : String((formData as any)[mapping.dagitimKey] || '')
+                    }
+                    onChange={(e) => {
+                      const lines = e.target.value.split('\n')
+                      setFormData((prev: any) => ({
+                        ...prev,
+                        [mapping.dagitimKey!]: lines
+                      }))
+                    }}
+                    placeholder="Gereği / Bilgi birimleri (Her satıra bir birim)"
+                    className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-hidden focus:border-purple-500 custom-scrollbar resize-none"
+                  />
+                </div>
+              )}
+
+              {/* 5. ROTA VE DAĞITIM GRUPLARI (İSKELET / WORKFLOW PROFİLİ ENTEGRASYONU) */}
+              <div className="p-3 bg-slate-100/60 dark:bg-slate-950/40 border border-dashed border-slate-300 dark:border-slate-800 rounded-xl space-y-1.5 opacity-85">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400">
+                    İmza Rotası & Dağıtım Grupları
+                  </span>
+                  <span className="px-1.5 py-0.2 rounded bg-slate-200 dark:bg-slate-800 text-[9px] font-semibold text-slate-500">
+                    İskelet Hazırlık
+                  </span>
+                </div>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
+                  Bu alan EBYS workflow profili ve kurumlar arası dağıtım grupları entegrasyonu tamamlandığında tam dinamik hale gelecektir.
+                </p>
+              </div>
+            </div>
+          )
+        })()}
       </div>
     </div>
   )

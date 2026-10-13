@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState, useRef } from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
@@ -20,21 +21,39 @@ import {
   Heading3,
   Code,
   FileText,
-  Sparkles
+  Sparkles,
+  Tag,
+  GitBranch,
+  Repeat,
+  Plus
 } from 'lucide-react'
+import { KutuphaneEditorExtensions } from '../../screens/belgelerim/editor/kutuphaneEditorExtensions'
 
 interface A4EditorProps {
   content: string
   onChange: (html: string) => void
   readOnly?: boolean
+  enableKutuphaneExtensions?: boolean
+  availablePlaceholders?: Array<{ key: string; label: string }>
+  availableConditions?: Array<{ flag: string; label?: string }>
 }
 
 export function A4Editor({
   content,
   onChange,
-  readOnly = false
+  readOnly = false,
+  enableKutuphaneExtensions = false,
+  availablePlaceholders = [],
+  availableConditions = []
 }: A4EditorProps): React.JSX.Element {
   const [isRawMode, setIsRawMode] = useState(false)
+  const [showPhPrompt, setShowPhPrompt] = useState(false)
+  const [showCondPrompt, setShowCondPrompt] = useState(false)
+  const [showEachPrompt, setShowEachPrompt] = useState(false)
+  const [customKey, setCustomKey] = useState('')
+  const [customLabel, setCustomLabel] = useState('')
+  const [customFlag, setCustomFlag] = useState('')
+  const [customList, setCustomList] = useState('')
 
   const getInnerAndShell = (html: string) => {
     const bodyMatch = html.match(/(<body[^>]*>)([\s\S]*?)(<\/body>)/i)
@@ -66,7 +85,8 @@ export function A4Editor({
       }),
       TableRow,
       TableHeader,
-      TableCell
+      TableCell,
+      ...(enableKutuphaneExtensions ? KutuphaneEditorExtensions : [])
     ],
     content: getInnerAndShell(content).inner,
     editable: !readOnly,
@@ -309,6 +329,199 @@ export function A4Editor({
                   ))}
                 </div>
               </div>
+
+              {/* KÜTÜPHANE ÖZEL ARAÇLARI (Yer Tutucu Chip, Koşul Bloğu, Liste Döngüsü) */}
+              {enableKutuphaneExtensions && (
+                <>
+                  <div className="w-px h-6 bg-slate-300 dark:bg-slate-700 mx-1 self-center" />
+
+                  {/* Yer Tutucu Chip Ekle */}
+                  <div className="relative">
+                    <button
+                      onClick={() => {
+                        setShowPhPrompt(!showPhPrompt)
+                        setShowCondPrompt(false)
+                        setShowEachPrompt(false)
+                      }}
+                      className="p-1.5 rounded bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 font-semibold text-xs flex items-center gap-1 border border-blue-200 dark:border-blue-800/60"
+                      title="Yer Tutucu Ekle (Kanonik HTML chip)"
+                    >
+                      <Tag className="w-3.5 h-3.5" /> Yer Tutucu
+                    </button>
+
+                    {showPhPrompt && (
+                      <div className="absolute left-0 top-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-2xl p-3 min-w-[260px] z-50">
+                        <div className="text-xs font-bold text-slate-700 dark:text-slate-200 mb-2">
+                          Yer Tutucu Ekle
+                        </div>
+                        {availablePlaceholders.length > 0 && (
+                          <div className="max-h-32 overflow-y-auto mb-2 space-y-1">
+                            {availablePlaceholders.map((p) => (
+                              <button
+                                key={p.key}
+                                onClick={() => {
+                                  ;(editor.chain().focus() as any)
+                                    .insertPlaceholder({ key: p.key, label: p.label })
+                                    .run()
+                                  setShowPhPrompt(false)
+                                }}
+                                className="w-full text-left px-2 py-1 text-xs hover:bg-blue-50 dark:hover:bg-blue-950/50 rounded flex justify-between items-center text-slate-700 dark:text-slate-200"
+                              >
+                                <span>{p.label}</span>
+                                <span className="font-mono text-[10px] text-blue-600 dark:text-blue-400">
+                                  {p.key}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                          <input
+                            type="text"
+                            placeholder="Yeni Anahtar (örn: sozlesmeTarihi)"
+                            value={customKey}
+                            onChange={(e) => setCustomKey(e.target.value)}
+                            className="w-full text-xs px-2 py-1 rounded border border-slate-300 dark:border-slate-700 bg-transparent text-slate-800 dark:text-slate-100"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Etiket (örn: Sözleşme Tarihi)"
+                            value={customLabel}
+                            onChange={(e) => setCustomLabel(e.target.value)}
+                            className="w-full text-xs px-2 py-1 rounded border border-slate-300 dark:border-slate-700 bg-transparent text-slate-800 dark:text-slate-100"
+                          />
+                          <button
+                            onClick={() => {
+                              if (!customKey.trim()) return
+                              ;(editor.chain().focus() as any)
+                                .insertPlaceholder({
+                                  key: customKey.trim(),
+                                  label: customLabel.trim() || customKey.trim()
+                                })
+                                .run()
+                              setCustomKey('')
+                              setCustomLabel('')
+                              setShowPhPrompt(false)
+                            }}
+                            className="w-full py-1 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded flex items-center justify-center gap-1"
+                          >
+                            <Plus className="w-3.5 h-3.5" /> Ekle
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Koşul Bloğu Ekle */}
+                  <div className="relative">
+                    <button
+                      onClick={() => {
+                        setShowCondPrompt(!showCondPrompt)
+                        setShowPhPrompt(false)
+                        setShowEachPrompt(false)
+                      }}
+                      className="p-1.5 rounded bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-amber-700 dark:text-amber-300 font-semibold text-xs flex items-center gap-1 border border-amber-200 dark:border-amber-800/60"
+                      title="Koşullu Blok Ekle"
+                    >
+                      <GitBranch className="w-3.5 h-3.5" /> Koşullu Blok
+                    </button>
+
+                    {showCondPrompt && (
+                      <div className="absolute left-0 top-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-2xl p-3 min-w-[240px] z-50">
+                        <div className="text-xs font-bold text-slate-700 dark:text-slate-200 mb-2">
+                          Koşullu Blok Ekle
+                        </div>
+                        {availableConditions.length > 0 && (
+                          <div className="max-h-32 overflow-y-auto mb-2 space-y-1">
+                            {availableConditions.map((c) => (
+                              <button
+                                key={c.flag}
+                                onClick={() => {
+                                  ;(editor.chain().focus() as any)
+                                    .insertConditionBlock(c.flag)
+                                    .run()
+                                  setShowCondPrompt(false)
+                                }}
+                                className="w-full text-left px-2 py-1 text-xs hover:bg-amber-50 dark:hover:bg-amber-950/50 rounded flex justify-between items-center text-slate-700 dark:text-slate-200"
+                              >
+                                <span>{c.label || c.flag}</span>
+                                <span className="font-mono text-[10px] text-amber-600 dark:text-amber-400">
+                                  {c.flag}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                          <input
+                            type="text"
+                            placeholder="Koşul Bayrağı (örn: kdvDahilMi)"
+                            value={customFlag}
+                            onChange={(e) => setCustomFlag(e.target.value)}
+                            className="w-full text-xs px-2 py-1 rounded border border-slate-300 dark:border-slate-700 bg-transparent text-slate-800 dark:text-slate-100"
+                          />
+                          <button
+                            onClick={() => {
+                              if (!customFlag.trim()) return
+                              ;(editor.chain().focus() as any)
+                                .insertConditionBlock(customFlag.trim())
+                                .run()
+                              setCustomFlag('')
+                              setShowCondPrompt(false)
+                            }}
+                            className="w-full py-1 text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white rounded flex items-center justify-center gap-1"
+                          >
+                            <Plus className="w-3.5 h-3.5" /> Blok Ekle
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Liste Döngüsü Ekle */}
+                  <div className="relative">
+                    <button
+                      onClick={() => {
+                        setShowEachPrompt(!showEachPrompt)
+                        setShowPhPrompt(false)
+                        setShowCondPrompt(false)
+                      }}
+                      className="p-1.5 rounded bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 font-semibold text-xs flex items-center gap-1 border border-emerald-200 dark:border-emerald-800/60"
+                      title="Liste Tekrarı (data-each)"
+                    >
+                      <Repeat className="w-3.5 h-3.5" /> Liste Bloğu
+                    </button>
+
+                    {showEachPrompt && (
+                      <div className="absolute left-0 top-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-2xl p-3 min-w-[240px] z-50">
+                        <div className="text-xs font-bold text-slate-700 dark:text-slate-200 mb-2">
+                          Liste Döngüsü Ekle
+                        </div>
+                        <input
+                          type="text"
+                          placeholder="Liste Adı (örn: uyeler, kalemler)"
+                          value={customList}
+                          onChange={(e) => setCustomList(e.target.value)}
+                          className="w-full text-xs px-2 py-1 rounded border border-slate-300 dark:border-slate-700 bg-transparent text-slate-800 dark:text-slate-100 mb-2"
+                        />
+                        <button
+                          onClick={() => {
+                            if (!customList.trim()) return
+                            ;(editor.chain().focus() as any)
+                              .insertEachBlock(customList.trim())
+                              .run()
+                            setCustomList('')
+                            setShowEachPrompt(false)
+                          }}
+                          className="w-full py-1 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded flex items-center justify-center gap-1"
+                        >
+                          <Plus className="w-3.5 h-3.5" /> Döngü Ekle
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
             </>
           )}
         </div>
@@ -347,6 +560,9 @@ export function A4Editor({
               .editor-content .ProseMirror th { font-weight: bold; background-color: #f1f5f9; text-align: left; }
               .editor-content .ProseMirror .selectedCell:after { z-index: 2; position: absolute; content: ""; left: 0; right: 0; top: 0; bottom: 0; background: rgba(200, 200, 255, 0.4); pointer-events: none; }
               .editor-content .ProseMirror .column-resize-handle { position: absolute; right: -2px; top: 0; bottom: -2px; width: 4px; background-color: #adf; pointer-events: none; }
+              .editor-content .kutuphane-ph-chip { display: inline-flex; align-items: center; padding: 1px 6px; border-radius: 4px; font-family: monospace; font-size: 11px; font-weight: 600; background-color: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; user-select: all; margin: 0 2px; }
+              .editor-content .kutuphane-cond-block { margin: 10px 0; padding: 8px 12px; border-left: 4px solid #f59e0b; background-color: rgba(254, 243, 199, 0.4); border-radius: 0 6px 6px 0; }
+              .editor-content .kutuphane-each-block { margin: 10px 0; padding: 8px 12px; border-left: 4px solid #10b981; background-color: rgba(209, 250, 229, 0.4); border-radius: 0 6px 6px 0; }
             `
               }}
             />

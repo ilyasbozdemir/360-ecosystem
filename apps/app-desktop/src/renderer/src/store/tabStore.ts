@@ -41,6 +41,7 @@ export function getTabLabel(fullPath: string): string {
     return hasId ? 'DT Dosyasını Düzenle' : 'Yeni DT Dosyası Ekle'
   }
   if (path.startsWith(APP_ROUTES.DOSYALAR)) return 'Doğrudan Temin'
+  if (path.startsWith(APP_ROUTES.BELGELERIM)) return 'Belgelerim & Şablonlar'
   if (path.startsWith(APP_ROUTES.PROJELER)) return 'Proje Yönetimi'
   if (path.startsWith(APP_ROUTES.FIRMALAR)) return 'Firmalar'
   if (path.startsWith(APP_ROUTES.PERSONEL)) return 'Personel Yönetimi'

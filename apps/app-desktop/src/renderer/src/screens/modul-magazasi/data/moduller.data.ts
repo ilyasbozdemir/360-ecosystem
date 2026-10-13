@@ -455,5 +455,34 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     belgeler: [
       { ad: 'Excel İçe Aktarım Doğrulama Raporu', kod: 'EX-01', aciklama: 'Aktarılan satır sayısı ve toplam maliyet teyit formu.', zorunluMu: false }
     ]
+  },
+  {
+    id: 'kutuphane-belgelerim',
+    kod: 'EXT-BELGELERIM',
+    paketTipi: 'extension',
+    baslik: 'Belgelerim & Şablon Kütüphanesi',
+    kisaAciklama:
+      'Kullanıcıya ait, serbestçe adlandırılıp gruplanan zengin metin belgeleri, dinamik yer tutucular ve koşullu bloklar stüdyosu.',
+    detayliAciklama:
+      'Sabit belge türü veya kategori dayatması olmaksızın; hiyerarşik grup ağacı, çoklu etiketleme, TipTap tabanlı A4 yazım alanı, yer tutucular, koşullu bloklar ve liste döngüleri, değişmez sürüm geçmişi ve JSON dışa/içe aktarma paketi sunan gelişmiş kütüphane eklentisi.',
+    mevzuat: 'Kullanıcı Özel Belge Yönetimi',
+    kategori: 'entegrasyon',
+    ikon: 'FolderGit2',
+    renk: 'emerald',
+    versiyon: 'v1.0.0',
+    surumAsamasi: 'Kararlı',
+    etiketler: ['Belgelerim', 'Yer Tutucu', 'Koşullu Blok', 'A4 Editör', 'Sürümleme', 'JSON Paket'],
+    removable: true,
+    silinebilir: true,
+    araclar: ['Kanonik TipTap Motoru', 'Güvenli Yer Tutucu Yeniden Adlandırma', 'Sürüm Karşılaştırma (Diff)', 'JSON Paket Doğrulayıcı'],
+    asamalar: [
+      { sira: 1, baslik: 'Serbest Gruplama & Belge Oluşturma', aciklama: 'İç içe klasörler ve etiketlerle belge alanını yapılandırma.' },
+      { sira: 2, baslik: 'A4 Editörde Yer Tutucu & Koşul Tanımlama', aciklama: 'Kanonik etiketlerle dinamik alanlar ve şartlı metin blokları yazma.' },
+      { sira: 3, baslik: 'Sürümleme & Değişmez Geçmiş', aciklama: 'Düzenlemeleri yeni sürümler olarak kaydetme ve karşılaştırma.' },
+      { sira: 4, baslik: 'Formdan Doldurma & Çıktı / Dışa Aktarma', aciklama: 'Değerleri girerek anında derleme veya JSON paketi olarak arşivleme.' }
+    ],
+    belgeler: [
+      { ad: 'Kullanıcı Özel Belgesi', kod: 'KB-01', aciklama: 'Kullanıcı tarafından oluşturulan dinamik içerikli belge.', zorunluMu: false }
+    ]
   }
 ]

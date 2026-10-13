@@ -49,6 +49,7 @@ export const APP_ROUTES = {
   PLAYGROUND: '/playground',
   HESAPLAMA_ARACLARI: '/hesaplama-araclari',
   EBYS: '/ebys',
+  BELGELERIM: '/belgelerim',
 
   // Dosya Alt Süreçleri (SubScreens)
   // Aşamalar

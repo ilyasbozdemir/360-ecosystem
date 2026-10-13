@@ -10,6 +10,7 @@ import { registerUpdaterIpcHandlers } from './updater.ipc'
 import { registerTestIpcHandlers } from './test.ipc'
 import { registerLoggerIpcHandlers } from '../logger'
 import { registerArchiveHandlers } from '../archive'
+import { registerKutuphaneIpc } from './kutuphane.ipc'
 
 export interface IpcRegistrationOptions {
   closeAllSecondaryWindows: () => void
@@ -38,4 +39,5 @@ export function registerAllIpcHandlers(options: IpcRegistrationOptions): void {
   safeRegister('Test', () => registerTestIpcHandlers())
   safeRegister('Logger', () => registerLoggerIpcHandlers())
   safeRegister('Archive', () => registerArchiveHandlers())
+  safeRegister('Kutuphane', () => registerKutuphaneIpc())
 }
