@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react'
-import type { ModulPaketi, ModulKategoriFiltresi } from '../modulMagazasi.types'
+import { isModulRemovable, type ModulPaketi, type ModulKategoriFiltresi } from '../modulMagazasi.types'
 import { RESMI_MODUL_PAKETLERI } from '../data/moduller.data'
 import { useModuleStore } from '@renderer/store/moduleStore'
 
@@ -46,6 +46,10 @@ export function useModulMagazasiLogic() {
   )
 
   const handlePromptUninstall = useCallback((modul: ModulPaketi) => {
+    if (!isModulRemovable(modul)) {
+      alert('4734 Doğrudan Temin çekirdek çalışma paketidir; sistem kararlılığı için kaldırılamaz.')
+      return
+    }
     setUninstallCandidate(modul)
   }, [])
 
