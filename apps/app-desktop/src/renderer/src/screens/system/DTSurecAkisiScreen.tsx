@@ -9,7 +9,9 @@ import { FirmalarTab } from './surec-akisi/components/tabs/FirmalarTab'
 import { KomisyonTab } from './surec-akisi/components/tabs/KomisyonTab'
 import { BelgelerTab } from './surec-akisi/components/tabs/BelgelerTab'
 import { SurecTab } from './surec-akisi/components/tabs/SurecTab'
+import { YeniNesilBelgeStudyosuTab } from './surec-akisi/components/YeniNesilBelgeStudyosuTab'
 import { APP_ROUTES } from '../../constants/routeConstants'
+import { Sparkles, LayoutGrid } from 'lucide-react'
 
 export default function SurecAkisiScreen(): React.JSX.Element {
   const navigate = useNavigate()
@@ -50,6 +52,7 @@ export default function SurecAkisiScreen(): React.JSX.Element {
 
   const tabs = [
     { id: 'ozet', label: 'Özet' },
+    { id: 'studyo', label: 'Yeni Nesil Belge & EBYS Stüdyosu' },
     { id: 'malzeme', label: 'Malzeme Listesi' },
     { id: 'firmalar', label: 'İstekli Firmalar' },
     { id: 'komisyon', label: 'Komisyon' },
@@ -104,6 +107,26 @@ export default function SurecAkisiScreen(): React.JSX.Element {
             stagesWithStatus={stagesWithStatus}
             komisyonlar={komisyonlar}
             onSelectTab={setSelectedTab}
+          />
+        )}
+
+        {selectedTab === 'studyo' && (
+          <YeniNesilBelgeStudyosuTab
+            dosya={dosya}
+            belgeler={belgeler.map((b: any) => ({
+              ...b,
+              id: String(b.kod || b.id),
+              zorunlu: Boolean(b.zorunlu || b.zorunluMu)
+            }))}
+            kalemler={kalemler}
+            firmalar={firmalar}
+            komisyonlar={komisyonlar}
+            toplamBedel={toplamBedel}
+            dosyaContext={dosyaContext}
+            onBelgeOlustur={async (b: any) => {
+              belgeOlustur(Number(b.id))
+            }}
+            onPreviewBelge={setPreviewBelge}
           />
         )}
 

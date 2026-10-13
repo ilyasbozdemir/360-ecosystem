@@ -44,6 +44,38 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     ]
   },
   {
+    id: 'ebys-resmi-yazisma-studyosu',
+    kod: 'EBYS-STD',
+    paketTipi: 'modul',
+    baslik: 'Türkçe EBYS Resmî Yazışma Şablonları & Stüdyosu',
+    kisaAciklama:
+      'Resmî Yazışmalarda Uygulanacak Usul ve Esaslar Hakkında Yönetmelik ve e-Yazışma Paketi (EYP 2.0) uyumlu şablon ve stüdyo paketi.',
+    detayliAciklama:
+      'Tüm kamu kurum ve kuruluşları, belediyeler ve üniversiteler için Resmî Yazışma Yönetmeliğine tam uyumlu üst yazı, iç yazışma, olur/onay, dağıtımlı yazılar ve rota motoru stüdyosu.',
+    mevzuat: 'Resmî Yazışma Yönetmeliği & EYP 2.0',
+    kategori: 'entegrasyon',
+    ikon: 'FileText',
+    renk: 'indigo',
+    versiyon: 'v1.0.0',
+    surumAsamasi: 'Kararlı',
+    etiketler: ['EBYS', 'Resmî Yazışma', 'Üst Yazı', 'Olur/Onay', 'EYP 2.0'],
+    removable: false,
+    silinebilir: false,
+    araclar: ['EYP 2.0 Doğrulayıcı', 'Dinamik Makam Hitap Üretici', 'EBYS Rota & Paraf Motoru'],
+    asamalar: [
+      { sira: 1, baslik: 'Taslak Hazırlama & Şablon Seçimi', aciklama: 'Resmî yazı tipine göre uygun EYP şablonunun seçilmesi.' },
+      { sira: 2, baslik: 'Muhatap & Dağıtım Belirleme', aciklama: 'Gereği ve bilgi muhataplarının ve hitap hiyerarşisinin belirlenmesi.' },
+      { sira: 3, baslik: 'Paraf & İmza Rotası', aciklama: 'Hazırlayan, kontrol eden ve imza makamı hiyerarşik onay adımları.' },
+      { sira: 4, baslik: 'Üretim & e-Yazışma Paketi', aciklama: 'Resmi antetli çıktının üretilmesi ve evrak doğrulama kodlaması.' }
+    ],
+    belgeler: [
+      { ad: 'Resmî Üst Yazı Şablonu', kod: 'EBYS-01', aciklama: 'Kurumlar arası giden evrak standart şablonu.', zorunluMu: true },
+      { ad: 'Birim İçi Olur / Onay Yazısı', kod: 'EBYS-02', aciklama: 'Makam onayına sunulan teklif ve olur belgesi.', zorunluMu: true },
+      { ad: 'Dağıtımlı Genelge / Duyuru Yazısı', kod: 'EBYS-03', aciklama: 'Çoklu birim veya dış idarelere hitap eden dağıtımlı yazı.', zorunluMu: false },
+      { ad: 'İç Yazışma / Müzekkere', kod: 'EBYS-04', aciklama: 'Birimler arası bilgi ve koordinasyon yazısı.', zorunluMu: false }
+    ]
+  },
+  {
     id: 'dik-devlet-ihale-2886',
     kod: 'DİK-2886',
     paketTipi: 'modul',

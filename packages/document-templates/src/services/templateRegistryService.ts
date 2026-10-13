@@ -1,4 +1,4 @@
-import { TEMPLATE_REGISTRY } from '../constants/template-registry'
+import { TEMPLATE_REGISTRY, resolveTemplateWorkflow } from '../constants/template-registry'
 import {
   CANONICAL_TEMPLATE_ALIASES,
   normalizeTemplateKey,
@@ -53,7 +53,12 @@ export class TemplateRegistryService {
    * Get TemplateWorkflow metadata by ID or alias
    */
   static getWorkflow(id: string) {
-    return this.getTemplateById(id)?.workflow
+    const template = this.getTemplateById(id)
+    if (!template) return undefined
+    if (template.workflow?.inheritsFrom) {
+      return resolveTemplateWorkflow(template.id, this.getAllTemplates())
+    }
+    return template.workflow
   }
 
   /**

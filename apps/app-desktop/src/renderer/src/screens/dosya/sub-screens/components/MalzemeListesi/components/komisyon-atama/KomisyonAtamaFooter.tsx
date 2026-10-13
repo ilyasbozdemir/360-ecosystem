@@ -1,5 +1,5 @@
 import React from 'react'
-import { Check, FileText, RefreshCw, Save, Users } from 'lucide-react'
+import { Check, FileText, History, RefreshCw, Save, Users } from 'lucide-react'
 import type { KomisyonType } from './types'
 
 interface KomisyonAtamaFooterProps {
@@ -10,6 +10,7 @@ interface KomisyonAtamaFooterProps {
   onOpenDoc: (targetDoc?: string) => void
   onSyncFromKomisyonYonetimi: () => void
   onSeedDefaultCommissions: () => void
+  onCopyFromLastDossier: () => void
   onSave: () => void
 }
 
@@ -21,6 +22,7 @@ export const KomisyonAtamaFooter: React.FC<KomisyonAtamaFooterProps> = ({
   onOpenDoc,
   onSyncFromKomisyonYonetimi,
   onSeedDefaultCommissions,
+  onCopyFromLastDossier,
   onSave
 }) => {
   return (
@@ -86,6 +88,17 @@ export const KomisyonAtamaFooter: React.FC<KomisyonAtamaFooterProps> = ({
       </div>
 
       <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={onCopyFromLastDossier}
+          disabled={loading || saving}
+          className="flex items-center gap-1.5 px-3 py-2 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 rounded-lg text-xs font-semibold transition-all cursor-pointer"
+          title="Bir önceki dosyada kullanılan komisyon kadrosunu bu dosyaya kopyala"
+        >
+          <History className="w-3.5 h-3.5" />
+          Önceki Dosyadan Kadro Al
+        </button>
+
         <button
           type="button"
           onClick={onSeedDefaultCommissions}

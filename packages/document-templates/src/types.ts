@@ -26,6 +26,11 @@ export interface TemplateCapabilities {
   supportsPersonnelList: boolean;
   supportsKalemListesi: boolean;
   supportsFirmaListesi: boolean;
+  supportsMuhatap?: boolean;
+  supportsIlgi?: boolean;
+  supportsEk?: boolean;
+  supportsDagitim?: boolean;
+  supportsRota?: boolean;
   roleVisibility?: Partial<Record<RoleCode, RoleVisibility>>;
   commissionRoleVisibility?: Record<string, RoleVisibility>;
 }
@@ -35,7 +40,7 @@ export type TemplateGroup = 'piyasa_arastirma' | 'muayene_kabul' | 'olur_onay';
 /**
  * Belgenin sunulacağı makam yönlendirme modu (Katman A)
  */
-export type RecipientMode = 'role' | 'commission' | 'unit' | 'none';
+export type RecipientMode = 'role' | 'commission' | 'unit' | 'none' | 'external' | 'firma';
 
 /**
  * İmza zorunluluğunun dayanak kaynağı
@@ -52,7 +57,19 @@ export type RequirementSource =
 export type ExplicitState =
   | 'explicit_defined'      // Tanımları bilinçli ve doğrulanmış olarak yapılmış
   | 'explicit_none'         // Makam/İmza olmadığı bilinçli olarak belirtilmiş
-  | 'unspecified_fallback'; // Henüz tanımlanmamış / varsayılan fallback durumu
+  | 'unspecified_fallback'  // Henüz tanımlanmamış / varsayılan fallback durumu
+  | 'from_profile';         // Arketip profilden türetilmiş (henüz elle doğrulanmamış)
+
+/**
+ * Arketip İş Akışı Profilleri
+ */
+export type WorkflowProfileName =
+  | 'olur_onay'
+  | 'komisyon_tutanagi'
+  | 'dis_yazi'
+  | 'ic_form'
+  | 'firma_belgesi'
+  | 'ek_belge';
 
 /**
  * Sunulacak Makam Yönlendirme Metadata'sı (Katman A)
@@ -69,7 +86,7 @@ export interface TemplateRouting {
  */
 export interface TemplateSignatureRule {
   role: RoleCode;
-  slotType: 'prepared_by' | 'checked_by' | 'approved_by' | 'member' | 'president';
+  slotType: 'prepared_by' | 'checked_by' | 'approved_by' | 'member' | 'president' | 'signatory';
   requirementSource: RequirementSource;
   labelOverride?: string;
 }
@@ -82,6 +99,7 @@ export interface TemplateWorkflow {
   signatures?: TemplateSignatureRule[];
   approvalRole?: RoleCode;
   explicitState?: ExplicitState;
+  inheritsFrom?: string;
 }
 
 export type TemplateType = {

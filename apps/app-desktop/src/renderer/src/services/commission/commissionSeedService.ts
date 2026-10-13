@@ -81,13 +81,105 @@ export async function markDossierAsDeliberatelyCleared(dosyaId: number): Promise
   }
 }
 
+export interface RawCommissionMember {
+  id?: number
+  temin_dosya_id?: number
+  komisyon_id?: number
+  personel_id?: number
+  ad_soyad?: string
+  unvan?: string | null
+  gorev?: string | null
+  gorev_adi?: string | null
+  rol?: string | null
+  komisyon_turu?: string | null
+  komisyon_adi?: string | null
+  belgede_goster?: number | boolean | null
+  vekalet_unvani?: string | null
+  baslangic_tarihi?: string | null
+  bitis_tarihi?: string | null
+  belge_kapsami?: string | null
+  hedef_belgeler?: string | null
+  asli_yedek?: string | null
+  asil_mi?: number
+  sira?: number
+  kaynak?: string | null
+}
+
 /**
- * Kurumsal varsayılan komisyon üyelerini dosyaya kontrollü ve atomik olarak aktarır.
+ * Bir önceki dosyadaki komisyon üyelerini tespit eder
+ * Kullanıcının açtığı doğrudan temin veya ilgili ihale dosyası için en son atanmış komisyonu bulur.
+ */
+export interface LastDossierCommissionData {
+  dosyaId: number
+  dosyaNo: string
+  members: RawCommissionMember[]
+}
+
+export async function getLastDossierCommissions(
+  currentDosyaId?: number | null
+): Promise<LastDossierCommissionData | null> {
+  try {
+    let ihaleUsulu: string | null = null
+    if (currentDosyaId) {
+      const curRes = await window.electron.ipcRenderer.invoke(
+        'db:query',
+        'SELECT ihale_usulu, alim_turu FROM DATA_TeminDosyasi WHERE id = ? LIMIT 1',
+        [currentDosyaId]
+      )
+      if (curRes?.success && curRes.data?.[0]) {
+        ihaleUsulu = curRes.data[0].ihale_usulu || null
+      }
+    }
+
+    const findSql = `
+      SELECT DISTINCT d.id, COALESCE(d.dosya_no, d.temin_no, '#' || d.id) as dosya_no
+      FROM DATA_TeminKomisyon tk
+      JOIN DATA_TeminDosyasi d ON tk.temin_dosya_id = d.id
+      WHERE tk.temin_dosya_id != ? AND COALESCE(d.is_deleted, 0) = 0
+      ORDER BY 
+        CASE WHEN ? IS NOT NULL AND d.ihale_usulu = ? THEN 0 ELSE 1 END,
+        tk.temin_dosya_id DESC
+      LIMIT 1
+    `
+    const findRes = await window.electron.ipcRenderer.invoke('db:query', findSql, [
+      currentDosyaId || 0,
+      ihaleUsulu,
+      ihaleUsulu
+    ])
+
+    if (!findRes?.success || !findRes.data?.[0]) {
+      return null
+    }
+
+    const prevDosya = findRes.data[0]
+    const membersRes = await window.electron.ipcRenderer.invoke(
+      'db:query',
+      'SELECT * FROM DATA_TeminKomisyon WHERE temin_dosya_id = ? ORDER BY id ASC',
+      [prevDosya.id]
+    )
+
+    if (!membersRes?.success || !Array.isArray(membersRes.data) || membersRes.data.length === 0) {
+      return null
+    }
+
+    return {
+      dosyaId: prevDosya.id,
+      dosyaNo: prevDosya.dosya_no,
+      members: membersRes.data as RawCommissionMember[]
+    }
+  } catch (err) {
+    console.warn('getLastDossierCommissions error:', err)
+    return null
+  }
+}
+
+/**
+ * Kurumsal veya bir önceki dosyadaki komisyon üyelerini dosyaya kontrollü ve atomik olarak aktarır.
  *
  * Güvenceler:
  * 1. Tekil 'db:transaction' içinde çalışır; kısmi hata durumunda otomatik rollback yapılır.
  * 2. Idempotent çalışır; aynı üyeler mükerrer eklenmez.
- * 3. Eski dosyaları (NULL) veya bilinçli boş bırakılmış dosyaları (2) 'force' olmadan ezmez.
+ * 3. Öncelik sırası: Bir önceki dosyanın kadrosu -> Kurumsal şablon tanımları.
  */
 export async function seedDossierCommission(
   dosyaId: number,
@@ -127,20 +219,36 @@ export async function seedDossierCommission(
       }
     }
 
-    // 2. Kurumsal komisyon tanımlarını ve üyelerini çek
-    const defRes = await (window as any).electron.ipcRenderer.invoke(
-      'db:query',
-      `SELECT u.*, p.ad_soyad, p.unvan, g.ad as gorev_adi, k.ad as komisyon_adi, k.tur as komisyon_tur_kodu
-       FROM TANIM_KomisyonUye u
-       JOIN TANIM_Personel p ON u.personel_id = p.id
-       JOIN TANIM_KomisyonGorevi g ON u.gorev_id = g.id
-       JOIN TANIM_Komisyon k ON u.komisyon_id = k.id
-       WHERE u.personel_id IS NOT NULL
-       ORDER BY u.komisyon_id ASC, u.sira ASC`
-    )
+    // 2. ÖNCELİK 1: Bir önceki dosyanın komisyon kadrosunu kontrol et
+    const prevCommissionData = await getLastDossierCommissions(dosyaId)
 
-    if (!defRes?.success || !Array.isArray(defRes.data) || defRes.data.length === 0) {
-      // Kurumsal üye tanımlanmamışsa bile dosyayı aktarılmış işaretle
+    let candidateMembers: any[] = []
+    let sourceOrigin: 'onceki_dosya' | 'kurumsal' = 'kurumsal'
+
+    if (prevCommissionData && prevCommissionData.members.length > 0) {
+      candidateMembers = prevCommissionData.members
+      sourceOrigin = 'onceki_dosya'
+    } else {
+      // ÖNCELİK 2: Kurumsal komisyon tanımlarını ve üyelerini çek
+      const defRes = await (window as any).electron.ipcRenderer.invoke(
+        'db:query',
+        `SELECT u.*, p.ad_soyad, p.unvan, g.ad as gorev_adi, k.ad as komisyon_adi, k.tur as komisyon_tur_kodu
+         FROM TANIM_KomisyonUye u
+         JOIN TANIM_Personel p ON u.personel_id = p.id
+         JOIN TANIM_KomisyonGorevi g ON u.gorev_id = g.id
+         JOIN TANIM_Komisyon k ON u.komisyon_id = k.id
+         WHERE u.personel_id IS NOT NULL
+         ORDER BY u.komisyon_id ASC, u.sira ASC`
+      )
+
+      if (defRes?.success && Array.isArray(defRes.data) && defRes.data.length > 0) {
+        candidateMembers = defRes.data
+        sourceOrigin = 'kurumsal'
+      }
+    }
+
+    if (candidateMembers.length === 0) {
+      // Ne önceki dosya ne de kurumsal üye tanımlanmamışsa dosyayı aktarılmış işaretle
       await (window as any).electron.ipcRenderer.invoke(
         'db:run',
         'UPDATE DATA_TeminDosyasi SET komisyon_seed_edildi = 1 WHERE id = ?',
@@ -148,8 +256,6 @@ export async function seedDossierCommission(
       )
       return { success: true, skipped: true, reason: 'no_default_members', seededCount: 0 }
     }
-
-    const defaultMembers: any[] = defRes.data
 
     // 3. Mevcut dosya üyelerini al (Mükerrerlik engeli)
     let existingMemberSet = new Set<string>()
@@ -177,43 +283,79 @@ export async function seedDossierCommission(
     }
 
     let insertCount = 0
-    for (const m of defaultMembers) {
-      const key = `${m.komisyon_id}_${m.personel_id}`
-      if (mode !== 'replace' && existingMemberSet.has(key)) {
-        continue // Mükerrer eklemeyi engelle
+
+    if (sourceOrigin === 'onceki_dosya') {
+      // Bir önceki dosyadaki DATA_TeminKomisyon kayıtlarını yeni dosyaya klonla
+      for (const m of candidateMembers) {
+        const key = `${m.komisyon_id}_${m.personel_id}`
+        if (mode !== 'replace' && existingMemberSet.has(key)) {
+          continue
+        }
+
+        txStatements.push({
+          sql: `INSERT INTO DATA_TeminKomisyon 
+                (temin_dosya_id, komisyon_id, personel_id, ad_soyad, unvan, gorev, rol, komisyon_turu, belgede_goster, vekalet_unvani, baslangic_tarihi, bitis_tarihi, belge_kapsami, hedef_belgeler, asli_yedek, kaynak)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'onceki_dosya')`,
+          params: [
+            dosyaId,
+            m.komisyon_id || 1,
+            m.personel_id,
+            m.ad_soyad,
+            m.unvan || null,
+            m.gorev || 'Üye',
+            m.rol || 'Üye',
+            m.komisyon_turu || 'Komisyon',
+            m.belgede_goster !== undefined ? m.belgede_goster : 1,
+            m.vekalet_unvani || null,
+            m.baslangic_tarihi || null,
+            m.bitis_tarihi || null,
+            m.belge_kapsami || 'tumu',
+            m.hedef_belgeler || '["*"]',
+            m.asli_yedek || 'Asil'
+          ]
+        })
+        insertCount++
       }
+    } else {
+      // Kurumsal şablon üyelerini aktar
+      for (const m of candidateMembers) {
+        const key = `${m.komisyon_id}_${m.personel_id}`
+        if (mode !== 'replace' && existingMemberSet.has(key)) {
+          continue
+        }
 
-      const rol =
-        m.asil_mi === 0
-          ? 'Yedek Üye'
-          : m.gorev_adi?.toLowerCase().includes('başkan') || m.gorev_adi?.toLowerCase().includes('baskan')
-            ? 'Başkan'
-            : 'Üye'
+        const rol =
+          m.asil_mi === 0
+            ? 'Yedek Üye'
+            : m.gorev_adi?.toLowerCase().includes('başkan') || m.gorev_adi?.toLowerCase().includes('baskan')
+              ? 'Başkan'
+              : 'Üye'
 
-      const isShow = m.belgede_goster !== 0 && m.belgede_goster !== false ? 1 : 0
-      const scope = m.belge_kapsami || 'tumu'
-      const hedefJson = m.hedef_belgeler || '["*"]'
+        const isShow = m.belgede_goster !== 0 && m.belgede_goster !== false ? 1 : 0
+        const scope = m.belge_kapsami || 'tumu'
+        const hedefJson = m.hedef_belgeler || '["*"]'
 
-      txStatements.push({
-        sql: `INSERT INTO DATA_TeminKomisyon 
-              (temin_dosya_id, komisyon_id, personel_id, ad_soyad, unvan, gorev, rol, komisyon_turu, belgede_goster, belge_kapsami, hedef_belgeler, asli_yedek, kaynak)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'kurumsal')`,
-        params: [
-          dosyaId,
-          m.komisyon_id,
-          m.personel_id,
-          m.ad_soyad,
-          m.unvan || null,
-          m.gorev_adi || 'Üye',
-          rol,
-          m.komisyon_adi || 'Komisyon',
-          isShow,
-          scope,
-          hedefJson,
-          m.asil_mi === 1 ? 'Asil' : 'Yedek'
-        ]
-      })
-      insertCount++
+        txStatements.push({
+          sql: `INSERT INTO DATA_TeminKomisyon 
+                (temin_dosya_id, komisyon_id, personel_id, ad_soyad, unvan, gorev, rol, komisyon_turu, belgede_goster, belge_kapsami, hedef_belgeler, asli_yedek, kaynak)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'kurumsal')`,
+          params: [
+            dosyaId,
+            m.komisyon_id,
+            m.personel_id,
+            m.ad_soyad,
+            m.unvan || null,
+            m.gorev_adi || 'Üye',
+            rol,
+            m.komisyon_adi || 'Komisyon',
+            isShow,
+            scope,
+            hedefJson,
+            m.asil_mi === 1 ? 'Asil' : 'Yedek'
+          ]
+        })
+        insertCount++
+      }
     }
 
     // Dosya bayrağını da aynı transaction içinde '1' yap

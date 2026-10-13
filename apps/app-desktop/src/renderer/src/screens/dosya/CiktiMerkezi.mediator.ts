@@ -178,7 +178,21 @@ export const TemplateFieldsMediator: Record<string, string[]> = {
 }
 
 // Mediator Helper: Belge yolunu/adını temizleyip ona uygun tiplemeyi döndürür
-export function filterContextForTemplate<T = any>(templatePath: string, rawContext: any): T {
+export function filterContextForTemplate<T = any>(arg1: any, arg2?: any): T {
+  let templatePath = ''
+  let rawContext: any = {}
+
+  if (typeof arg1 === 'string') {
+    templatePath = arg1
+    rawContext = arg2 || {}
+  } else if (typeof arg2 === 'string') {
+    templatePath = arg2
+    rawContext = arg1 || {}
+  } else {
+    templatePath = String(arg1 || '')
+    rawContext = arg2 || {}
+  }
+
   const cleanPath =
     templatePath
       .replace(/\.html$/, '')

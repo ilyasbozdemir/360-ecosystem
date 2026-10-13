@@ -9,7 +9,8 @@ export const ROLE = {
   TALEP_EDEN: 'talep_eden',
   ONAYLAYAN: 'onaylayan',
   KOMISYON_BASKANI: 'komisyon_baskani',
-  KOMISYON_UYESI: 'komisyon_uyesi'
+  KOMISYON_UYESI: 'komisyon_uyesi',
+  FIRMA_YETKILISI: 'firma_yetkilisi'
 } as const
 
 export type RoleCode = (typeof ROLE)[keyof typeof ROLE]
@@ -23,7 +24,8 @@ export const ROLE_META: Record<RoleCode, { label: string; defaultScope: Scope }>
   [ROLE.TALEP_EDEN]: { label: 'Talep Eden', defaultScope: 'piyasa_arastirma' },
   [ROLE.ONAYLAYAN]: { label: 'Onaylayan / Olur Makamı', defaultScope: 'olur_onay' },
   [ROLE.KOMISYON_BASKANI]: { label: 'Komisyon Başkanı', defaultScope: 'tumu' },
-  [ROLE.KOMISYON_UYESI]: { label: 'Komisyon Üyesi', defaultScope: 'tumu' }
+  [ROLE.KOMISYON_UYESI]: { label: 'Komisyon Üyesi', defaultScope: 'tumu' },
+  [ROLE.FIRMA_YETKILISI]: { label: 'Firma Yetkilisi / İstekli', defaultScope: 'ozel' }
 }
 
 /**
@@ -61,6 +63,7 @@ export function toRoleCode(roleName?: string | null): RoleCode {
   if (norm.includes('onaylayan') || norm.includes('olur makam')) return ROLE.ONAYLAYAN
   if (norm.includes('baskan')) return ROLE.KOMISYON_BASKANI
   if (norm.includes('uye')) return ROLE.KOMISYON_UYESI
+  if (norm.includes('firma') || norm.includes('istekli') || norm.includes('yuklenici')) return ROLE.FIRMA_YETKILISI
 
   if (norm === 'harcama_yetkilisi') return ROLE.HARCAMA_YETKILISI
   if (norm === 'ihale_yetkilisi') return ROLE.IHALE_YETKILISI
@@ -71,6 +74,7 @@ export function toRoleCode(roleName?: string | null): RoleCode {
   if (norm === 'onaylayan') return ROLE.ONAYLAYAN
   if (norm === 'komisyon_baskani') return ROLE.KOMISYON_BASKANI
   if (norm === 'komisyon_uyesi') return ROLE.KOMISYON_UYESI
+  if (norm === 'firma_yetkilisi') return ROLE.FIRMA_YETKILISI
 
   return ROLE.KOMISYON_UYESI
 }

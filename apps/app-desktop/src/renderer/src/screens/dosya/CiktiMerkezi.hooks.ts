@@ -66,8 +66,8 @@ export function useCiktiMerkeziData(activeDosyaId: number | null): UseCiktiMerke
               const path = stage.path
               const mapping = getDefaultMappingForProcess(path)
               pathContexts[path] = filterContextForTemplate(
-                d.dosyaContext,
-                mapping?.templateId || path
+                mapping?.templateId || path,
+                d.dosyaContext
               )
             }
             setContextsByPath(pathContexts)

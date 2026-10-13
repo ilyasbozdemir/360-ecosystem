@@ -67,6 +67,31 @@ export const TANIM_Roller = {
       rol_adi: 'Onaylayan Personel',
       rol_kodu: 'onaylayan',
       aciklama: 'Belgeleri onaylayan personel (Makam vb.)'
+    },
+    {
+      rol_adi: 'Gerçekleştirme Görevlisi',
+      rol_kodu: 'gerceklestirme_gorevlisi',
+      aciklama: 'Harcama sürecinde gerçekleştirme görevini yürüten personel'
+    },
+    {
+      rol_adi: 'Komisyon Başkanı',
+      rol_kodu: 'komisyon_baskani',
+      aciklama: 'Komisyona başkanlık eden asil üye'
+    },
+    {
+      rol_adi: 'Komisyon Üyesi',
+      rol_kodu: 'komisyon_uyesi',
+      aciklama: 'Komisyonda görevli asil üye'
+    },
+    {
+      rol_adi: 'Muhasebe Yetkilisi',
+      rol_kodu: 'muhasebe',
+      aciklama: 'Ödeme ve muhasebe işlemlerinden sorumlu yetkili'
+    },
+    {
+      rol_adi: 'Firma Yetkilisi',
+      rol_kodu: 'firma_yetkilisi',
+      aciklama: 'İstekli / Yüklenici firma imza yetkilisi'
     }
   ]
 }

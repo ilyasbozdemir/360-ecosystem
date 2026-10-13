@@ -31,6 +31,8 @@ export const KomisyonAtamaModal: React.FC<KomisyonAtamaModalProps> = ({
     saveSuccess,
     syncToGlobalCommission,
     setSyncToGlobalCommission,
+    sourceDossierInfo,
+    handleCopyFromLastDossier,
     handlePersonelChange,
     handleGorevChange,
     handleToggleBelgedeGoster,
@@ -58,6 +60,7 @@ export const KomisyonAtamaModal: React.FC<KomisyonAtamaModalProps> = ({
       onOpenDoc={handleOpenDoc}
       onSyncFromKomisyonYonetimi={handleSyncFromKomisyonYonetimi}
       onSeedDefaultCommissions={handleSeedDefaultCommissions}
+      onCopyFromLastDossier={handleCopyFromLastDossier}
       onSave={() => handleSave(activeTab)}
     />
   )
@@ -73,6 +76,17 @@ export const KomisyonAtamaModal: React.FC<KomisyonAtamaModalProps> = ({
     >
       <div className="space-y-3.5">
         <KurumInfoBar kurumInfo={kurumInfo} />
+
+        {sourceDossierInfo && (
+          <div className="flex items-center gap-2.5 p-3 rounded-xl bg-blue-50/90 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 text-xs text-blue-700 dark:text-blue-300 shadow-xs animate-in fade-in">
+            <span className="font-semibold shrink-0">💡 Otomatik Kadro Aktarımı:</span>
+            <span>
+              Bu dosyada henüz komisyon tanımlanmadığı için bir önceki dosyanız olan{' '}
+              <strong>{sourceDossierInfo.dosyaNo}</strong> komisyon kadrosu varsayılan olarak
+              yüklendi. Düzenleme yapabilir veya doğrudan &quot;Kaydet&quot; butonuna basabilirsiniz.
+            </span>
+          </div>
+        )}
 
         <KomisyonAtamaTabs activeTab={activeTab} onSelectTab={setActiveTab} />
 

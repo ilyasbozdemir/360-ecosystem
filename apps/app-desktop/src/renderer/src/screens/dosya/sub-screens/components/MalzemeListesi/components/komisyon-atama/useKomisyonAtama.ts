@@ -6,7 +6,8 @@ import type { KomisyonRow, KomisyonType, KurumInfo, PersonelItem } from './types
 import { resolveCommissionCategory, isTaskEligibleForMuayene } from '@temin360/document-templates'
 import {
   seedDossierCommission,
-  markDossierAsDeliberatelyCleared
+  markDossierAsDeliberatelyCleared,
+  getLastDossierCommissions
 } from '@renderer/services/commission/commissionSeedService'
 
 interface UseKomisyonAtamaParams {
@@ -53,6 +54,10 @@ export function useKomisyonAtama({
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [syncToGlobalCommission, setSyncToGlobalCommission] = useState(false)
   const [dataLoaded, setDataLoaded] = useState(false)
+  const [sourceDossierInfo, setSourceDossierInfo] = useState<{
+    dosyaId: number
+    dosyaNo: string
+  } | null>(null)
 
   useEffect(() => {
     if (initialType) {
@@ -183,6 +188,74 @@ export function useKomisyonAtama({
                     gorev: matched?.gorev || (idx === 0 ? 'Komisyon Başkanı' : 'Üye'),
                     personelId: matched?.personel_id || null,
                     belgedeGoster: hasBelgedeGoster ? matched.belgede_goster === 1 : true,
+                    vekaletUnvani: matched?.vekalet_unvani || '',
+                    baslangicTarihi: matched?.baslangic_tarihi || '',
+                    bitisTarihi: matched?.bitis_tarihi || '',
+                    belgeKapsami: matched?.belge_kapsami || 'tumu',
+                    hedefBelgeler: parsedHedefBelgeler
+                  }
+                })
+                setMuayeneRows(newMuayene)
+              }
+            }
+          } else if (isMounted) {
+            // Bu dosyada henüz komisyon atanmamış: Bir önceki dosyanın kadrosunu default olarak getir
+            const prevData = await getLastDossierCommissions(activeDosyaId)
+            if (prevData && prevData.members.length > 0 && isMounted) {
+              setSourceDossierInfo({ dosyaId: prevData.dosyaId, dosyaNo: prevData.dosyaNo })
+              const prevMList = prevData.members.filter(
+                (k: any) => resolveCommissionCategory(k) === 'maliyet'
+              )
+              const prevMuList = prevData.members.filter(
+                (k: any) => resolveCommissionCategory(k) === 'muayene' && isTaskEligibleForMuayene(k)
+              )
+
+              if (prevMList.length > 0) {
+                const newMaliyet = prevMList.map((matched: any, idx: number) => {
+                  let parsedHedefBelgeler: string[] = []
+                  if (matched?.hedef_belgeler) {
+                    try {
+                      parsedHedefBelgeler =
+                        typeof matched.hedef_belgeler === 'string'
+                          ? JSON.parse(matched.hedef_belgeler)
+                          : matched.hedef_belgeler
+                    } catch {
+                      parsedHedefBelgeler = []
+                    }
+                  }
+                  return {
+                    sira: idx + 1,
+                    gorev: matched?.gorev || 'Fiyat Araştırma Görevlisi',
+                    personelId: matched?.personel_id || null,
+                    belgedeGoster: matched?.belgede_goster !== 0,
+                    vekaletUnvani: matched?.vekalet_unvani || '',
+                    baslangicTarihi: matched?.baslangic_tarihi || '',
+                    bitisTarihi: matched?.bitis_tarihi || '',
+                    belgeKapsami: matched?.belge_kapsami || 'tumu',
+                    hedefBelgeler: parsedHedefBelgeler
+                  }
+                })
+                setMaliyetRows(newMaliyet)
+              }
+
+              if (prevMuList.length > 0) {
+                const newMuayene = prevMuList.map((matched: any, idx: number) => {
+                  let parsedHedefBelgeler: string[] = []
+                  if (matched?.hedef_belgeler) {
+                    try {
+                      parsedHedefBelgeler =
+                        typeof matched.hedef_belgeler === 'string'
+                          ? JSON.parse(matched.hedef_belgeler)
+                          : matched.hedef_belgeler
+                    } catch {
+                      parsedHedefBelgeler = []
+                    }
+                  }
+                  return {
+                    sira: idx + 1,
+                    gorev: matched?.gorev || (idx === 0 ? 'Komisyon Başkanı' : 'Üye'),
+                    personelId: matched?.personel_id || null,
+                    belgedeGoster: matched?.belgede_goster !== 0,
                     vekaletUnvani: matched?.vekalet_unvani || '',
                     baslangicTarihi: matched?.baslangic_tarihi || '',
                     bitisTarihi: matched?.bitis_tarihi || '',
@@ -729,6 +802,87 @@ export function useKomisyonAtama({
     }
   }
 
+  const handleCopyFromLastDossier = async () => {
+    try {
+      setLoading(true)
+      const prevData = await getLastDossierCommissions(activeDosyaId)
+      if (!prevData || prevData.members.length === 0) {
+        alert('Daha önce komisyon atanmış bir dosya bulunamadı.')
+        return
+      }
+
+      setSourceDossierInfo({ dosyaId: prevData.dosyaId, dosyaNo: prevData.dosyaNo })
+      const prevMList = prevData.members.filter(
+        (k: any) => resolveCommissionCategory(k) === 'maliyet'
+      )
+      const prevMuList = prevData.members.filter(
+        (k: any) => resolveCommissionCategory(k) === 'muayene' && isTaskEligibleForMuayene(k)
+      )
+
+      if (prevMList.length > 0) {
+        setMaliyetRows(
+          prevMList.map((matched: any, idx: number) => {
+            let parsedHedefBelgeler: string[] = []
+            if (matched?.hedef_belgeler) {
+              try {
+                parsedHedefBelgeler =
+                  typeof matched.hedef_belgeler === 'string'
+                    ? JSON.parse(matched.hedef_belgeler)
+                    : matched.hedef_belgeler
+              } catch {
+                parsedHedefBelgeler = []
+              }
+            }
+            return {
+              sira: idx + 1,
+              gorev: matched?.gorev || 'Fiyat Araştırma Görevlisi',
+              personelId: matched?.personel_id || null,
+              belgedeGoster: matched?.belgede_goster !== 0,
+              vekaletUnvani: matched?.vekalet_unvani || '',
+              baslangicTarihi: matched?.baslangic_tarihi || '',
+              bitisTarihi: matched?.bitis_tarihi || '',
+              belgeKapsami: matched?.belge_kapsami || 'tumu',
+              hedefBelgeler: parsedHedefBelgeler
+            }
+          })
+        )
+      }
+
+      if (prevMuList.length > 0) {
+        setMuayeneRows(
+          prevMuList.map((matched: any, idx: number) => {
+            let parsedHedefBelgeler: string[] = []
+            if (matched?.hedef_belgeler) {
+              try {
+                parsedHedefBelgeler =
+                  typeof matched.hedef_belgeler === 'string'
+                    ? JSON.parse(matched.hedef_belgeler)
+                    : matched.hedef_belgeler
+              } catch {
+                parsedHedefBelgeler = []
+              }
+            }
+            return {
+              sira: idx + 1,
+              gorev: matched?.gorev || (idx === 0 ? 'Komisyon Başkanı' : 'Üye'),
+              personelId: matched?.personel_id || null,
+              belgedeGoster: matched?.belgede_goster !== 0,
+              vekaletUnvani: matched?.vekalet_unvani || '',
+              baslangicTarihi: matched?.baslangic_tarihi || '',
+              bitisTarihi: matched?.bitis_tarihi || '',
+              belgeKapsami: matched?.belge_kapsami || 'tumu',
+              hedefBelgeler: parsedHedefBelgeler
+            }
+          })
+        )
+      }
+    } catch (err: any) {
+      alert('Önceki dosyadan aktarma hatası: ' + err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return {
     activeTab,
     setActiveTab,
@@ -741,6 +895,8 @@ export function useKomisyonAtama({
     saveSuccess,
     syncToGlobalCommission,
     setSyncToGlobalCommission,
+    sourceDossierInfo,
+    handleCopyFromLastDossier,
     handlePersonelChange,
     handleGorevChange,
     handleToggleBelgedeGoster,

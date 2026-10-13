@@ -1,4 +1,12 @@
-import { TemplateCapabilities, TemplateGroup, TemplateType, TemplateWorkflow } from "../types";
+import {
+  ExplicitState,
+  TemplateCapabilities,
+  TemplateGroup,
+  TemplateType,
+  TemplateWorkflow,
+  WorkflowProfileName,
+} from "../types";
+import { getWorkflowProfile } from "./workflowProfiles";
 
 const DEFAULT_CAPABILITIES: TemplateCapabilities = {
   supportsOlur: false,
@@ -7,6 +15,11 @@ const DEFAULT_CAPABILITIES: TemplateCapabilities = {
   supportsPersonnelList: true,
   supportsKalemListesi: true,
   supportsFirmaListesi: false,
+  supportsMuhatap: false,
+  supportsIlgi: false,
+  supportsEk: false,
+  supportsDagitim: false,
+  supportsRota: false,
 };
 
 export type TemplateInput = {
@@ -19,10 +32,61 @@ export type TemplateInput = {
   groups?: TemplateGroup[];
   capabilities?: Partial<TemplateCapabilities>;
   workflow?: TemplateWorkflow;
+  workflowProfile?: WorkflowProfileName;
+  workflowOverride?: Partial<TemplateWorkflow>;
+  inheritsFrom?: string;
 };
+
+/**
+ * Derin nesne birleştirme yardımcısı (Workflow birleştirme için)
+ */
+function deepMergeWorkflow(
+  base: TemplateWorkflow,
+  override?: Partial<TemplateWorkflow>
+): TemplateWorkflow {
+  if (!override) return base;
+
+  const result: TemplateWorkflow = {
+    ...base,
+    ...override,
+    routing: override.routing
+      ? { ...base.routing, ...override.routing } as any
+      : base.routing,
+    signatures: override.signatures
+      ? [...override.signatures]
+      : base.signatures ? [...base.signatures] : undefined,
+  };
+
+  return result;
+}
 
 export function defineTemplate(input: TemplateInput): TemplateType {
   const groups = input.groups ?? (input.group ? [input.group] : []);
+
+  // Workflow Çözümleme Önceliği:
+  // 1. Şablonun doğrudan tanımlı workflow'u (kendi workflow'u)
+  // 2. workflowOverride ile derin birleştirilmiş workflowProfile
+  // 3. inheritsFrom ile ana belgeden miras alma
+  let resolvedWorkflow: TemplateWorkflow | undefined = undefined;
+
+  if (input.workflow) {
+    resolvedWorkflow = {
+      ...input.workflow,
+      explicitState: input.workflow.explicitState ?? "explicit_defined",
+    };
+  } else if (input.inheritsFrom) {
+    resolvedWorkflow = {
+      inheritsFrom: input.inheritsFrom,
+      explicitState: "from_profile",
+      routing: { mode: "none" },
+      signatures: [],
+    };
+  } else if (input.workflowProfile) {
+    const profileWorkflow = getWorkflowProfile(input.workflowProfile);
+    resolvedWorkflow = deepMergeWorkflow(profileWorkflow, input.workflowOverride);
+    resolvedWorkflow.explicitState = "from_profile";
+  }
+
   return {
     id: input.id,
     name: input.name,
@@ -35,7 +99,7 @@ export function defineTemplate(input: TemplateInput): TemplateType {
       ...DEFAULT_CAPABILITIES,
       ...input.capabilities,
     },
-    workflow: input.workflow,
+    workflow: resolvedWorkflow,
   };
 }
 
@@ -46,6 +110,7 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
     title: "İhtiyaç Listesi",
     category: "1-ihtiyac-tespiti-ve-baslangic",
     description: "Alımı yapılacak mal/hizmet kalemlerinin detaylı ihtiyaç tablosu",
+    workflowProfile: "ic_form",
   }),
   defineTemplate({
     id: "ihtiyac-talep-formu",
@@ -53,6 +118,7 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
     title: "İhtiyaç Talep Formu",
     category: "1-ihtiyac-tespiti-ve-baslangic",
     description: "Birimlerin mal/hizmet taleplerini yetkili makama ilettiği resmi form",
+    workflowProfile: "ic_form",
   }),
   defineTemplate({
     id: "tasinir-kayit-yetkilisi-gorusu",
@@ -60,6 +126,7 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
     title: "Taşınır Kayıt Yetkilisi Görüşü",
     category: "1-ihtiyac-tespiti-ve-baslangic",
     description: "Stokta malzeme bulunup bulunmadığına ilişkin ambar yetkilisi görüşü",
+    workflowProfile: "ic_form",
   }),
   defineTemplate({
     id: "teknik-sartname",
@@ -67,6 +134,7 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
     title: "Teknik Şartname",
     category: "1-ihtiyac-tespiti-ve-baslangic",
     description: "İşin ve malzemelerin teknik kriterlerini belirleyen doküman",
+    workflowProfile: "ic_form",
   }),
   defineTemplate({
     id: "luzum-muzekkeresi",
@@ -74,7 +142,16 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
     title: "Lüzum Müzekkeresi",
     category: "1-ihtiyac-tespiti-ve-baslangic",
     description: "Harcama biriminin alım gerekliliğini onaylatan başlangıç müzekkeresi",
-    capabilities: { supportsOlur: true },
+    capabilities: {
+      supportsOlur: true,
+      supportsMuhatap: true,
+      supportsIlgi: true,
+      supportsEk: true,
+      supportsDagitim: false,
+      supportsRota: false,
+    },
+    // KARAR GEREKLİ: Lüzum müzekkeresi idari usulde 'ic_form' olarak mı yoksa Harcama Yetkilisi 'olur_onay' olarak mı çalışacak?
+    workflowProfile: "ic_form",
   }),
   defineTemplate({
     id: "luzum-muzekkeresi-onay-eki",
@@ -82,6 +159,7 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
     title: "Lüzum Müzekkeresi Onay Eki",
     category: "1-ihtiyac-tespiti-ve-baslangic",
     description: "Lüzum müzekkeresine eklenen kalem ve açıklama listesi",
+    inheritsFrom: "luzum-muzekkeresi",
   }),
   defineTemplate({
     id: "luzum-muzekkeresi-teslim-tesellum",
@@ -90,6 +168,7 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
     category: "1-ihtiyac-tespiti-ve-baslangic",
     group: "muayene_kabul",
     description: "Lüzum müzekkeresi teslim alma ve evrak devir tutanağı",
+    inheritsFrom: "luzum-muzekkeresi",
   }),
   defineTemplate({
     id: "harcama-talimati",
@@ -187,6 +266,7 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
         onaylayan: "show",
       },
     },
+    workflowProfile: "olur_onay",
   }),
   defineTemplate({
     id: "son-alim-fiyat-cetveli",
@@ -196,6 +276,8 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
     group: "piyasa_arastirma",
     description: "Geçmiş alımlara ait birim fiyat ve fatura karşılaştırma cetveli",
     capabilities: { supportsOlur: true },
+    // KARAR GEREKLİ: Son alım fiyat cetveli iç çalışma formu ('ic_form') mu yoksa yaklaşık maliyet/komisyon eki mi?
+    workflowProfile: "ic_form",
   }),
   defineTemplate({
     id: "fiyat-arastirma-mektubu",
@@ -205,6 +287,7 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
     group: "piyasa_arastirma",
     description: "Firmalara teklif sunmaları için gönderilen resmi davet yazısı",
     capabilities: { supportsFirmaListesi: true },
+    workflowProfile: "dis_yazi",
   }),
   defineTemplate({
     id: "birim-fiyat-teklif-mektubu",
@@ -222,6 +305,7 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
         hazirlayan: "hide",
       },
     },
+    workflowProfile: "firma_belgesi",
   }),
   defineTemplate({
     id: "birim-fiyat-teklif-cetveli",
@@ -239,6 +323,7 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
         hazirlayan: "hide",
       },
     },
+    workflowProfile: "firma_belgesi",
   }),
   defineTemplate({
     id: "arastirma-mektubu",
@@ -248,6 +333,7 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
     group: "piyasa_arastirma",
     description: "Piyasa araştırması kapsamında gönderilen bilgi ve teklif toplama yazısı",
     capabilities: { supportsFirmaListesi: true },
+    workflowProfile: "dis_yazi",
   }),
   defineTemplate({
     id: "yaklasik-maliyet-cetveli",
@@ -261,6 +347,7 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
       supportedCommissionTypes: ["piyasa_fiyat", "yaklasik_maliyet"],
       supportsFirmaListesi: true,
     },
+    workflowProfile: "komisyon_tutanagi",
   }),
   defineTemplate({
     id: "piyasa-fiyat-arastirma-tutanagi",
@@ -275,6 +362,7 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
       supportedCommissionTypes: ["piyasa_fiyat", "yaklasik_maliyet"],
       supportsFirmaListesi: true,
     },
+    workflowProfile: "komisyon_tutanagi",
   }),
   defineTemplate({
     id: "kabul-edilen-teklif",
@@ -284,6 +372,8 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
     group: "olur_onay",
     description: "En avantajlı teklifi veren firmaya yapılan alım kabul bildirimi",
     capabilities: { supportsFirmaListesi: true },
+    // KARAR GEREKLİ: Kabul edilen teklif bildirimi dış yazı ('dis_yazi') olarak mı yoksa firma teyit yazısı olarak mı çalışacak?
+    workflowProfile: "dis_yazi",
   }),
   defineTemplate({
     id: "dogrudan-temin-onay-belgesi",
@@ -295,7 +385,13 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
     capabilities: {
       supportsOlur: true,
       supportsFirmaListesi: true,
+      supportsMuhatap: true,
+      supportsIlgi: true,
+      supportsEk: true,
+      supportsDagitim: false,
+      supportsRota: false,
     },
+    workflowProfile: "olur_onay",
   }),
   defineTemplate({
     id: "butce-sorgusu",
@@ -304,6 +400,7 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
     category: "3-siparis-ve-sozlesme",
     group: "olur_onay",
     description: "Alım tutarının ilgili bütçe tertibinden karşılanabilirliğini gösteren form",
+    workflowProfile: "olur_onay",
   }),
   defineTemplate({
     id: "dogrudan-temin-sozlesmesi",
@@ -313,6 +410,8 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
     group: "olur_onay",
     description: "Yüklenici firma ile İdare arasında imzalanan matbu alım sözleşmesi",
     capabilities: { supportsFirmaListesi: true },
+    // KARAR GEREKLİ: Sözleşme iki taraflı (İdare + Firma) olduğundan firma_belgesi mi yoksa özel iki taraflı profil mi olmalı?
+    workflowProfile: "firma_belgesi",
   }),
   defineTemplate({
     id: "sozlesmeye-davet",
@@ -325,6 +424,7 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
       supportsKalemListesi: false,
       supportsFirmaListesi: true,
     },
+    workflowProfile: "dis_yazi",
   }),
   defineTemplate({
     id: "muayene-kabul-tutanagi",
@@ -339,6 +439,7 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
       supportedCommissionTypes: ["muayene_kabul"],
       supportsFirmaListesi: true,
     },
+    workflowProfile: "komisyon_tutanagi",
   }),
   defineTemplate({
     id: "muayene-kabul-komisyonu",
@@ -352,6 +453,7 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
       supportsCommission: true,
       supportedCommissionTypes: ["muayene_kabul"],
     },
+    workflowProfile: "komisyon_tutanagi",
   }),
   defineTemplate({
     id: "harcama-pusulasi",
@@ -366,6 +468,7 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
         onaylayan: "show",
       },
     },
+    workflowProfile: "komisyon_tutanagi",
   }),
   defineTemplate({
     id: "odeme-yazisi",
@@ -378,7 +481,13 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
       supportsOlur: true,
       supportsKalemListesi: false,
       supportsFirmaListesi: true,
+      supportsMuhatap: true,
+      supportsIlgi: true,
+      supportsEk: true,
+      supportsDagitim: false,
+      supportsRota: false,
     },
+    workflowProfile: "dis_yazi",
   }),
   defineTemplate({
     id: "dogrudan-temin-sonuc-onay-belgesi",
@@ -391,6 +500,7 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
       supportsOlur: true,
       supportsFirmaListesi: true,
     },
+    workflowProfile: "olur_onay",
   }),
   defineTemplate({
     id: "gorevlendirme-yazisi",
@@ -409,6 +519,7 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
         onaylayan: "show",
       },
     },
+    workflowProfile: "olur_onay",
   }),
   defineTemplate({
     id: "idare-onay-belgesi",
@@ -421,5 +532,79 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
       supportsOlur: true,
       supportsFirmaListesi: true,
     },
+    workflowProfile: "olur_onay",
   }),
 ];
+
+/**
+ * inheritsFrom zincirini çözümler ve döngüsel bağımlılıkları kontrol eder.
+ */
+export function resolveTemplateWorkflow(
+  templateId: string,
+  registry: TemplateType[] = TEMPLATE_REGISTRY
+): TemplateWorkflow | undefined {
+  const templateMap = new Map<string, TemplateType>();
+  registry.forEach((t) => templateMap.set(t.id, t));
+
+  const target = templateMap.get(templateId);
+  if (!target) return undefined;
+  if (!target.workflow) return undefined;
+
+  // Doğrudan tanımlı veya profile bağlıysa
+  if (!target.workflow.inheritsFrom) {
+    return target.workflow;
+  }
+
+  // inheritsFrom zinciri çözümleme & Cycle Detection
+  const visited = new Set<string>([templateId]);
+  let currentId: string | undefined = target.workflow.inheritsFrom;
+
+  while (currentId) {
+    if (visited.has(currentId)) {
+      throw new Error(
+        `Döngüsel şablon bağımlılığı tespit edildi: ${Array.from(visited).join(" -> ")} -> ${currentId}`
+      );
+    }
+    visited.add(currentId);
+
+    const parent = templateMap.get(currentId);
+    if (!parent) {
+      throw new Error(
+        `Miras alınacak şablon bulunamadı: "${currentId}" (referans veren: "${templateId}")`
+      );
+    }
+
+    if (!parent.workflow?.inheritsFrom) {
+      if (!parent.workflow) {
+        throw new Error(`Miras alınacak şablonun workflow tanımı yok: "${currentId}"`);
+      }
+      return {
+        ...parent.workflow,
+        explicitState: "from_profile",
+      };
+    }
+
+    currentId = parent.workflow.inheritsFrom;
+  }
+
+  return target.workflow;
+}
+
+/**
+ * 'from_profile' explicitState durumundaki tüm şablonları listeler.
+ */
+export function getFromProfileTemplates(
+  registry: TemplateType[] = TEMPLATE_REGISTRY
+): TemplateType[] {
+  return registry.filter((t) => t.workflow?.explicitState === "from_profile");
+}
+
+/**
+ * Belirli bir explicitState durumundaki şablonları filtreler.
+ */
+export function getTemplatesByExplicitState(
+  state: ExplicitState,
+  registry: TemplateType[] = TEMPLATE_REGISTRY
+): TemplateType[] {
+  return registry.filter((t) => t.workflow?.explicitState === state);
+}

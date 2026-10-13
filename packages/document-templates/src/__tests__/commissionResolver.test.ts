@@ -51,10 +51,10 @@ describe('Stage 7 — Commission Resolver & TemplateRegistryService Workflow Tes
       expect(approvalRole).toBe('harcama_yetkilisi');
     });
 
-    it('should return undefined for templates without workflow metadata', () => {
-      expect(TemplateRegistryService.getWorkflow('ihtiyac-listesi')).toBeUndefined();
-      expect(TemplateRegistryService.getRouting('ihtiyac-listesi')).toBeUndefined();
-      expect(TemplateRegistryService.getSignatureRules('ihtiyac-listesi')).toBeUndefined();
+    it('should return undefined for templates without workflow metadata or non-existent template', () => {
+      expect(TemplateRegistryService.getWorkflow('non-existent-template')).toBeUndefined();
+      expect(TemplateRegistryService.getRouting('non-existent-template')).toBeUndefined();
+      expect(TemplateRegistryService.getSignatureRules('non-existent-template')).toBeUndefined();
     });
   });
 });
