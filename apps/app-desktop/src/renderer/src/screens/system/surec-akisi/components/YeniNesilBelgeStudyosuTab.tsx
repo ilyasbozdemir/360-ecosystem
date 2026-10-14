@@ -10,10 +10,12 @@ import {
   Search,
   Send,
   Sparkles,
+  FileSignature,
 } from "lucide-react";
 import { BelgeAyarlariPaneli } from "./BelgeAyarlariPaneli";
 import { TopluAyarOnayModal } from "./TopluAyarOnayModal";
 import { ResmiUstYaziTab } from "../../../ebys/components/ResmiUstYaziTab";
+import IslakImzaliBelgeScreen from "../../../islak-imza/islak-imzali-belge.screen";
 import {
   mergeEvrakSettings,
   validateDocumentSettings,
@@ -196,7 +198,7 @@ export function YeniNesilBelgeStudyosuTab({
     }));
   }, [firmalar]);
 
-  const [activeSubView, setActiveSubView] = useState<'belgeler' | 'ust_yazi'>('belgeler');
+  const [activeSubView, setActiveSubView] = useState<'belgeler' | 'ust_yazi' | 'islak_imza'>('belgeler');
 
   return (
     <div
@@ -228,32 +230,45 @@ export function YeniNesilBelgeStudyosuTab({
         </div>
 
         {/* Eylemler: Görünüm Seçici & Tam Ekran */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 flex-wrap">
           <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
             <button
               type="button"
               onClick={() => setActiveSubView('belgeler')}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 activeSubView === 'belgeler'
                   ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
             >
               <FileText className="w-3.5 h-3.5" />
-              <span>Doğrudan Temin Belgeleri &amp; Ayarları</span>
+              <span>Doğrudan Temin Şablon Ayarları</span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveSubView('ust_yazi')}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 activeSubView === 'ust_yazi'
                   ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
             >
               <Send className="w-3.5 h-3.5" />
-              <span>Resmî Üst Yazı &amp; DETSİS Rota Motoru</span>
+              <span>EBYS Resmî Üst Yazı (v2)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveSubView('islak_imza')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                activeSubView === 'islak_imza'
+                  ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+              }`}
+            >
+              <FileSignature className="w-3.5 h-3.5" />
+              <span>Islak İmzalı Belge &amp; Takip</span>
             </button>
           </div>
 
@@ -269,7 +284,17 @@ export function YeniNesilBelgeStudyosuTab({
         </div>
       </div>
 
-      {activeSubView === 'ust_yazi' ? (
+      {activeSubView === 'islak_imza' ? (
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
+          <IslakImzaliBelgeScreen
+            isEmbedded={true}
+            initialBilgiler={{
+              konu: dosya?.konu || dosya?.ad || 'Doğrudan Temin Süreci Kapsamında Islak İmzalı Evrak',
+              belgeSayisi: dosya?.dosya_no ? `${dosya.dosya_no}/TEMİN` : '2026/TEMİN-0142',
+            }}
+          />
+        </div>
+      ) : activeSubView === 'ust_yazi' ? (
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
           <ResmiUstYaziTab />
         </div>

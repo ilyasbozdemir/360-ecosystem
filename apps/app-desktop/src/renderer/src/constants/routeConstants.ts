@@ -70,7 +70,8 @@ export const APP_ROUTES = {
   DT_SUREC_AKISI: '/surec-akisi',
   DOSYA_KUNYE: '/dosya/kunye',
   BELGE_ONIZLEME: '/dosya/belge-onizleme',
-  MODUL_MAGAZASI: '/modul-magazasi'
+  MODUL_MAGAZASI: '/modul-magazasi',
+  ISLAK_IMZA: '/islak-imza'
 } as const
 
 export type AppRoute = (typeof APP_ROUTES)[keyof typeof APP_ROUTES]

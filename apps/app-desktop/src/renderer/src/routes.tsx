@@ -537,6 +537,16 @@ const belgelerimRoute = createRoute({
   component: BelgelerimScreen,
 });
 
+const IslakImzaScreen = lazyRoute(() =>
+  import("./screens/islak-imza/islak-imzali-belge.screen")
+);
+
+const islakImzaRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: APP_ROUTES.ISLAK_IMZA,
+  component: IslakImzaScreen,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   harcamaMerkeziRoute,
@@ -598,6 +608,7 @@ const routeTree = rootRoute.addChildren([
   ebysRoute,
   modulMagazasiRoute,
   belgeOnizlemeRoute,
+  islakImzaRoute,
 ]);
 
 const hashHistory = createHashHistory();
