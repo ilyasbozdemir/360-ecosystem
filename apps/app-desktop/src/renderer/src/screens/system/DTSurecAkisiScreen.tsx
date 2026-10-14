@@ -49,14 +49,15 @@ export default function SurecAkisiScreen(): React.JSX.Element {
     filteredBelgeler
   } = useSurecAkisi()
 
+  const [isStudioOpen, setIsStudioOpen] = React.useState(false)
+
   const tabs = [
     { id: 'ozet', label: 'Özet' },
-    { id: 'studyo', label: 'Belge & Resmî Yazışma Stüdyosu' },
     { id: 'malzeme', label: 'Malzeme Listesi' },
     { id: 'firmalar', label: 'İstekli Firmalar' },
     { id: 'komisyon', label: 'Komisyon' },
-    { id: 'surec', label: 'Süreç Aşamaları' },
-    { id: 'belgeler', label: 'Evrak Arşivi' }
+    { id: 'belgeler', label: 'Belgeler' },
+    { id: 'surec', label: 'Süreç' }
   ]
 
   const handleNavigateCiktiMerkezi = () => navigate({ to: APP_ROUTES.CIKTI_MERKEZI_DASHBOARD as any })
@@ -88,6 +89,7 @@ export default function SurecAkisiScreen(): React.JSX.Element {
           komisyonlarCount={komisyonlar.length}
           stagesWithStatus={stagesWithStatus}
           onSelectTab={setSelectedTab}
+          onOpenStudio={() => setIsStudioOpen(true)}
         />
 
         {/* Tab Bar */}
@@ -121,20 +123,6 @@ export default function SurecAkisiScreen(): React.JSX.Element {
             stagesWithStatus={stagesWithStatus}
             komisyonlar={komisyonlar}
             onSelectTab={setSelectedTab}
-          />
-        )}
-
-        {selectedTab === 'studyo' && (
-          <YeniNesilBelgeStudyosuTab
-            dosya={dosya}
-            belgeler={normalizedBelgeler}
-            kalemler={kalemler}
-            firmalar={firmalar}
-            komisyonlar={komisyonlar}
-            toplamBedel={toplamBedel}
-            dosyaContext={dosyaContext}
-            onBelgeOlustur={handleBelgeOlustur}
-            onPreviewBelge={setPreviewBelge}
           />
         )}
 
@@ -222,6 +210,38 @@ export default function SurecAkisiScreen(): React.JSX.Element {
         onBelgeOlustur={belgeOlustur}
         onDosyalariEkle={dosyalariEkle}
       />
+
+      {/* Belge & Resmî Yazışma Stüdyosu - Özel Tam Ekran Stüdyo Modu */}
+      {isStudioOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex flex-col p-4 md:p-6 overflow-y-auto animate-in fade-in duration-200">
+          <div className="w-full max-w-7xl mx-auto flex items-center justify-between pb-3 mb-2 border-b border-slate-700/50">
+            <div className="text-white text-sm font-bold flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              Doğrudan Temin Belge &amp; Resmî Yazışma Stüdyosu
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsStudioOpen(false)}
+              className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-all cursor-pointer border border-slate-700 shadow-sm"
+            >
+              ✕ Stüdyoyu Kapat
+            </button>
+          </div>
+          <div className="w-full max-w-7xl mx-auto flex-1">
+            <YeniNesilBelgeStudyosuTab
+              dosya={dosya}
+              belgeler={normalizedBelgeler}
+              kalemler={kalemler}
+              firmalar={firmalar}
+              komisyonlar={komisyonlar}
+              toplamBedel={toplamBedel}
+              dosyaContext={dosyaContext}
+              onBelgeOlustur={handleBelgeOlustur}
+              onPreviewBelge={setPreviewBelge}
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
