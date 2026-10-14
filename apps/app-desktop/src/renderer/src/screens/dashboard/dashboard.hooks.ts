@@ -897,13 +897,13 @@ export function useSmartAlerts(
     if (!settings.kurumsalKod && !settings.harcamaBirimKodu && !settings.muhasebeBirimKodu) {
       newAlerts.push({
         id: 'missing_kurum_codes',
-        title: 'Birim Kodları Eksik',
+        title: 'Birim Kodları Hatırlatması',
         message:
-          'Muhasebat veya harcama birim kodları girilmemiş. Resmi yazışmalarda veya UYAP belgelerinde sorun yaşayabilirsiniz.',
+          'Muhasebat ve harcama birim kodlarınızı ekleyerek resmî yazışma ve evraklarınızın otomatik doldurulmasını sağlayabilirsiniz.',
         type: 'info',
         actionLink: '/mevzuat',
         actionSearch: { tab: 'mali' },
-        actionText: 'Kodları Gir'
+        actionText: 'Kodları Tanımla'
       })
     }
 
