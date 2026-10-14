@@ -87,6 +87,7 @@ import beta243 from "./versions/beta-201-300/beta.243";
 import beta244 from "./versions/beta-201-300/beta.244";
 import beta245 from "./versions/beta-201-300/beta.245";
 import beta246 from "./versions/beta-201-300/beta.246";
+import beta247 from "./versions/beta-201-300/beta.247";
 import betaCurrent from "./versions/beta.current";
 
 export const manifests: any[] = [
@@ -167,5 +168,6 @@ export const manifests: any[] = [
   beta243,
   beta244,
   beta245,
+  beta247,
   betaCurrent
 ];
