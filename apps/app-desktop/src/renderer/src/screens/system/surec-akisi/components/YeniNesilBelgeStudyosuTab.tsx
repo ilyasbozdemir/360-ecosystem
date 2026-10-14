@@ -1,9 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertCircle,
   CheckCircle2,
   Eye,
   FileText,
+  Maximize2,
+  Minimize2,
   Printer,
   Search,
   Send,
@@ -19,6 +21,8 @@ import {
 import type { DocumentEvrakSettings } from "../documentSettings.types";
 import { TemplateRegistryService } from "@temin360/document-templates";
 import { dosyaSablonVeriService } from "../../../../modules/dosya-sablon-veri";
+
+const EMPTY_SETTINGS: DocumentEvrakSettings = {};
 
 interface BelgeItem {
   id: string;
@@ -66,6 +70,7 @@ export function YeniNesilBelgeStudyosuTab({
   const [isTopluAyarModalOpen, setIsTopluAyarModalOpen] = useState(false);
   const [previewHtml, setPreviewHtml] = useState<string>("");
   const [loadingPreview, setLoadingPreview] = useState<boolean>(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
 
   // Seçili belgeyi al
   const selectedDoc = useMemo(() => {
@@ -74,7 +79,8 @@ export function YeniNesilBelgeStudyosuTab({
 
   // Aktif belgenin evrak ayarları
   const currentEvrakSettings = useMemo(() => {
-    return evrakSettingsMap[selectedDoc?.id] || {};
+    if (!selectedDoc?.id) return EMPTY_SETTINGS;
+    return evrakSettingsMap[selectedDoc.id] || EMPTY_SETTINGS;
   }, [evrakSettingsMap, selectedDoc?.id]);
 
   // Belge arama filtrelemesi
@@ -153,14 +159,19 @@ export function YeniNesilBelgeStudyosuTab({
   };
 
   // Önizleme HTML'i yükle
+  const onBelgeOlusturRef = useRef(onBelgeOlustur);
+  useEffect(() => {
+    onBelgeOlusturRef.current = onBelgeOlustur;
+  }, [onBelgeOlustur]);
+
   useEffect(() => {
     let isCancelled = false;
     async function loadPreview() {
       if (!selectedDoc) return;
       setLoadingPreview(true);
       try {
-        if (onBelgeOlustur) {
-          const res = await onBelgeOlustur(selectedDoc);
+        if (onBelgeOlusturRef.current) {
+          const res = await onBelgeOlusturRef.current(selectedDoc);
           if (!isCancelled && res) {
             setPreviewHtml(typeof res === "string" ? res : res.html || "");
           }
@@ -175,7 +186,7 @@ export function YeniNesilBelgeStudyosuTab({
     return () => {
       isCancelled = true;
     };
-  }, [selectedDoc, onBelgeOlustur, currentEvrakSettings]);
+  }, [selectedDoc?.id]);
 
   // Firma listesi
   const firmalarList = useMemo(() => {
@@ -188,7 +199,13 @@ export function YeniNesilBelgeStudyosuTab({
   const [activeSubView, setActiveSubView] = useState<'belgeler' | 'ust_yazi'>('belgeler');
 
   return (
-    <div className="w-full flex flex-col gap-4 animate-in fade-in duration-300">
+    <div
+      className={
+        isFullScreen
+          ? "fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-xl p-6 overflow-y-auto flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-200"
+          : "w-full flex flex-col gap-4 animate-in fade-in duration-300"
+      }
+    >
       {/* Üst Bilgi Rozeti & Görünüm Seçici */}
       <div className="bg-linear-to-r from-blue-600/10 via-indigo-600/10 to-transparent border border-blue-200 dark:border-blue-900/40 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
@@ -210,32 +227,44 @@ export function YeniNesilBelgeStudyosuTab({
           </div>
         </div>
 
-        {/* Görünüm Seçici Sekmeler */}
-        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 shrink-0">
-          <button
-            type="button"
-            onClick={() => setActiveSubView('belgeler')}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              activeSubView === 'belgeler'
-                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-            }`}
-          >
-            <FileText className="w-3.5 h-3.5" />
-            <span>Doğrudan Temin Belgeleri &amp; Ayarları</span>
-          </button>
+        {/* Eylemler: Görünüm Seçici & Tam Ekran */}
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
+            <button
+              type="button"
+              onClick={() => setActiveSubView('belgeler')}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                activeSubView === 'belgeler'
+                  ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+              }`}
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>Doğrudan Temin Belgeleri &amp; Ayarları</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveSubView('ust_yazi')}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                activeSubView === 'ust_yazi'
+                  ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+              }`}
+            >
+              <Send className="w-3.5 h-3.5" />
+              <span>Resmî Üst Yazı &amp; DETSİS Rota Motoru</span>
+            </button>
+          </div>
 
           <button
             type="button"
-            onClick={() => setActiveSubView('ust_yazi')}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              activeSubView === 'ust_yazi'
-                ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-            }`}
+            onClick={() => setIsFullScreen((prev) => !prev)}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/25 transition-all cursor-pointer shrink-0"
+            title={isFullScreen ? "Pencere Moduna Dön" : "Afilli Tam Ekran Stüdyoyu Başlat"}
           >
-            <Send className="w-3.5 h-3.5" />
-            <span>Resmî Üst Yazı &amp; DETSİS Rota Motoru</span>
+            {isFullScreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+            <span className="hidden sm:inline">{isFullScreen ? "Pencereye Dön" : "Afilli Tam Ekran"}</span>
           </button>
         </div>
       </div>
@@ -265,14 +294,14 @@ export function YeniNesilBelgeStudyosuTab({
 
           {/* Belge Kartları Listesi */}
           <div className="flex-1 overflow-y-auto p-2 space-y-1.5 max-h-[660px]">
-            {filteredBelgeler.map((belge) => {
+            {filteredBelgeler.map((belge, idx) => {
               const isSelected = belge.id === selectedDoc?.id;
               const validation = validationMap[belge.id];
               const hasWarnings = validation && !validation.isValid;
 
               return (
                 <div
-                  key={belge.id}
+                  key={`${belge.id}-${idx}`}
                   onClick={() => setSelectedDocId(belge.id)}
                   role="button"
                   tabIndex={0}

@@ -158,7 +158,7 @@ export const SUREC_STAGE_DEFINITIONS: SurecStageDefinition[] = [
     defaultDocs: [
       { kod: 'muayene-kabul-tutanagi', ad: 'Muayene Kabul Tutanağı' },
       { kod: 'muayene-kabul-komisyonu', ad: 'Muayene Kabul Komisyonu' },
-      { kod: 'tasinir-kayit-yetkilisi-gorusu', ad: 'Taşınır İşlem Fişi' }
+      { kod: 'tasinir-islem-fisi', ad: 'Taşınır İşlem Fişi' }
     ]
   },
   {

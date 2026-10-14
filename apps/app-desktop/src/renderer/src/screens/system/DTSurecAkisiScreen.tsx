@@ -63,6 +63,21 @@ export default function SurecAkisiScreen(): React.JSX.Element {
   const handleNavigateFirmalar = () => navigate({ to: APP_ROUTES.FIRMALAR as any })
   const handleNavigateKomisyonlar = () => navigate({ to: APP_ROUTES.KOMISYONLAR as any })
 
+  const handleBelgeOlustur = React.useCallback(
+    async (b: any) => {
+      belgeOlustur(Number(b.id))
+    },
+    [belgeOlustur]
+  )
+
+  const normalizedBelgeler = React.useMemo(() => {
+    return belgeler.map((b: any, idx: number) => ({
+      ...b,
+      id: String(b.kod || b.id || `doc-${idx}`),
+      zorunlu: Boolean(b.zorunlu || b.zorunluMu)
+    }))
+  }, [belgeler])
+
   return (
     <div className="w-full min-h-screen bg-slate-50 dark:bg-slate-900/60 p-6 animate-in fade-in duration-500 overflow-y-auto">
       <div className="w-full space-y-6">
@@ -112,19 +127,13 @@ export default function SurecAkisiScreen(): React.JSX.Element {
         {selectedTab === 'studyo' && (
           <YeniNesilBelgeStudyosuTab
             dosya={dosya}
-            belgeler={belgeler.map((b: any) => ({
-              ...b,
-              id: String(b.kod || b.id),
-              zorunlu: Boolean(b.zorunlu || b.zorunluMu)
-            }))}
+            belgeler={normalizedBelgeler}
             kalemler={kalemler}
             firmalar={firmalar}
             komisyonlar={komisyonlar}
             toplamBedel={toplamBedel}
             dosyaContext={dosyaContext}
-            onBelgeOlustur={async (b: any) => {
-              belgeOlustur(Number(b.id))
-            }}
+            onBelgeOlustur={handleBelgeOlustur}
             onPreviewBelge={setPreviewBelge}
           />
         )}
