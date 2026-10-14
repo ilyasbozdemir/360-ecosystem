@@ -10,9 +10,7 @@ import { KomisyonTab } from './surec-akisi/components/tabs/KomisyonTab'
 import { BelgelerTab } from './surec-akisi/components/tabs/BelgelerTab'
 import { SurecTab } from './surec-akisi/components/tabs/SurecTab'
 import { YeniNesilBelgeStudyosuTab } from './surec-akisi/components/YeniNesilBelgeStudyosuTab'
-import { DTEbysStudyosuTab } from './surec-akisi/components/DTEbysStudyosuTab'
 import { APP_ROUTES } from '../../constants/routeConstants'
-import { Sparkles, LayoutGrid } from 'lucide-react'
 
 export default function SurecAkisiScreen(): React.JSX.Element {
   const navigate = useNavigate()
@@ -53,8 +51,7 @@ export default function SurecAkisiScreen(): React.JSX.Element {
 
   const tabs = [
     { id: 'ozet', label: 'Özet' },
-    { id: 'studyo', label: 'Yeni Nesil Belge Stüdyosu' },
-    { id: 'studyo_v2', label: 'Süreç Akışı v2 (EBYS Resmî Yazışma)' },
+    { id: 'studyo', label: 'Süreç Akışı v2 (Belge & Üst Yazı Stüdyosu)' },
     { id: 'malzeme', label: 'Malzeme Listesi' },
     { id: 'firmalar', label: 'İstekli Firmalar' },
     { id: 'komisyon', label: 'Komisyon' },
@@ -129,17 +126,6 @@ export default function SurecAkisiScreen(): React.JSX.Element {
               belgeOlustur(Number(b.id))
             }}
             onPreviewBelge={setPreviewBelge}
-          />
-        )}
-
-        {selectedTab === 'studyo_v2' && (
-          <DTEbysStudyosuTab
-            dosya={dosya}
-            kalemler={kalemler}
-            firmalar={firmalar}
-            komisyonlar={komisyonlar}
-            toplamBedel={toplamBedel}
-            dosyaContext={dosyaContext}
           />
         )}
 

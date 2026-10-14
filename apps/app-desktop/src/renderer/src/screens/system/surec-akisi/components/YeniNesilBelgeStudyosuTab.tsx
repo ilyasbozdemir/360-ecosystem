@@ -1,46 +1,47 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  FileText,
-  Search,
-  CheckCircle2,
   AlertCircle,
+  CheckCircle2,
   Eye,
+  FileText,
   Printer,
-  ChevronRight,
-  Sparkles
-} from 'lucide-react'
-import { BelgeAyarlariPaneli } from './BelgeAyarlariPaneli'
-import { TopluAyarOnayModal } from './TopluAyarOnayModal'
+  Search,
+  Send,
+  Sparkles,
+} from "lucide-react";
+import { BelgeAyarlariPaneli } from "./BelgeAyarlariPaneli";
+import { TopluAyarOnayModal } from "./TopluAyarOnayModal";
+import { ResmiUstYaziTab } from "../../../ebys/components/ResmiUstYaziTab";
 import {
+  mergeEvrakSettings,
   validateDocumentSettings,
-  mergeEvrakSettings
-} from '../documentSettingsUtils'
-import type { DocumentEvrakSettings } from '../documentSettings.types'
-import { TemplateRegistryService } from '@temin360/document-templates'
-import { dosyaSablonVeriService } from '../../../../modules/dosya-sablon-veri'
+} from "../documentSettingsUtils";
+import type { DocumentEvrakSettings } from "../documentSettings.types";
+import { TemplateRegistryService } from "@temin360/document-templates";
+import { dosyaSablonVeriService } from "../../../../modules/dosya-sablon-veri";
 
 interface BelgeItem {
-  id: string
-  kod?: string
-  ad: string
-  zorunlu?: boolean
-  asamaNo?: number
-  asamaAdi?: string
-  tamamlandi?: boolean
-  pdfVar?: boolean
+  id: string;
+  kod?: string;
+  ad: string;
+  zorunlu?: boolean;
+  asamaNo?: number;
+  asamaAdi?: string;
+  tamamlandi?: boolean;
+  pdfVar?: boolean;
 }
 
 interface YeniNesilBelgeStudyosuTabProps {
-  dosya: any
-  belgeler: BelgeItem[]
-  kalemler: any[]
-  firmalar: any[]
-  komisyonlar: any[]
-  toplamBedel: number
-  dosyaContext?: any
-  onBelgeOlustur?: (belge: any) => Promise<any>
-  onPreviewBelge?: (belge: any) => void
-  onNavigateToV2?: () => void
+  dosya: any;
+  belgeler: BelgeItem[];
+  kalemler: any[];
+  firmalar: any[];
+  komisyonlar: any[];
+  toplamBedel: number;
+  dosyaContext?: any;
+  onBelgeOlustur?: (belge: any) => Promise<any>;
+  onPreviewBelge?: (belge: any) => void;
+  onNavigateToV2?: () => void;
 }
 
 export function YeniNesilBelgeStudyosuTab({
@@ -53,161 +54,199 @@ export function YeniNesilBelgeStudyosuTab({
   dosyaContext,
   onBelgeOlustur,
   onPreviewBelge,
-  onNavigateToV2
+  onNavigateToV2,
 }: YeniNesilBelgeStudyosuTabProps): React.JSX.Element {
   const [selectedDocId, setSelectedDocId] = useState<string>(
-    belgeler[0]?.id || 'luzum-muzekkeresi'
-  )
-  const [searchQuery, setSearchQuery] = useState('')
-  const [evrakSettingsMap, setEvrakSettingsMap] = useState<Record<string, DocumentEvrakSettings>>({})
-  const [isTopluAyarModalOpen, setIsTopluAyarModalOpen] = useState(false)
-  const [previewHtml, setPreviewHtml] = useState<string>('')
-  const [loadingPreview, setLoadingPreview] = useState<boolean>(false)
+    belgeler[0]?.id || "luzum-muzekkeresi",
+  );
+  const [searchQuery, setSearchQuery] = useState("");
+  const [evrakSettingsMap, setEvrakSettingsMap] = useState<
+    Record<string, DocumentEvrakSettings>
+  >({});
+  const [isTopluAyarModalOpen, setIsTopluAyarModalOpen] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState<string>("");
+  const [loadingPreview, setLoadingPreview] = useState<boolean>(false);
 
   // Seçili belgeyi al
   const selectedDoc = useMemo(() => {
-    return belgeler.find((b) => b.id === selectedDocId) || belgeler[0]
-  }, [belgeler, selectedDocId])
+    return belgeler.find((b) => b.id === selectedDocId) || belgeler[0];
+  }, [belgeler, selectedDocId]);
 
   // Aktif belgenin evrak ayarları
   const currentEvrakSettings = useMemo(() => {
-    return evrakSettingsMap[selectedDoc?.id] || {}
-  }, [evrakSettingsMap, selectedDoc?.id])
+    return evrakSettingsMap[selectedDoc?.id] || {};
+  }, [evrakSettingsMap, selectedDoc?.id]);
 
   // Belge arama filtrelemesi
   const filteredBelgeler = useMemo(() => {
-    if (!searchQuery.trim()) return belgeler
-    const q = searchQuery.toLowerCase()
+    if (!searchQuery.trim()) return belgeler;
+    const q = searchQuery.toLowerCase();
     return belgeler.filter(
       (b) =>
         b.ad.toLowerCase().includes(q) ||
         b.id.toLowerCase().includes(q) ||
-        (b.asamaAdi && b.asamaAdi.toLowerCase().includes(q))
-    )
-  }, [belgeler, searchQuery])
+        (b.asamaAdi && b.asamaAdi.toLowerCase().includes(q)),
+    );
+  }, [belgeler, searchQuery]);
 
   // Her belgenin eksiklik doğrulamasını yap
   const validationMap = useMemo(() => {
-    const result: Record<string, ReturnType<typeof validateDocumentSettings>> = {}
+    const result: Record<string, ReturnType<typeof validateDocumentSettings>> =
+      {};
     belgeler.forEach((b) => {
-      const template = TemplateRegistryService.getTemplateById(b.id)
-      const evrak = evrakSettingsMap[b.id]
-      result[b.id] = validateDocumentSettings(b.id, evrak, template)
-    })
-    return result
-  }, [belgeler, evrakSettingsMap])
+      const template = TemplateRegistryService.getTemplateById(b.id);
+      const evrak = evrakSettingsMap[b.id];
+      result[b.id] = validateDocumentSettings(b.id, evrak, template);
+    });
+    return result;
+  }, [belgeler, evrakSettingsMap]);
 
   // Debounced DB Kalıcılık: CQRS dosyaSablonVeriService üzerinden güncelleme
   const saveEvrakSettingsToDb = useCallback(
     async (docId: string, settings: DocumentEvrakSettings) => {
-      if (!dosya?.id) return
+      if (!dosya?.id) return;
       try {
         // CQRS Query ile mevcut veriyi çek
-        const existingData = await dosyaSablonVeriService.getVeri(dosya.id, docId)
-        const existingJson = existingData?.veri_json || '{}'
-        const updatedJson = mergeEvrakSettings(existingJson, settings)
+        const existingData = await dosyaSablonVeriService.getVeri(
+          dosya.id,
+          docId,
+        );
+        const existingJson = existingData?.veri_json || "{}";
+        const updatedJson = mergeEvrakSettings(existingJson, settings);
 
         // CQRS Command ile kaydet
-        await dosyaSablonVeriService.saveVeri(dosya.id, docId, updatedJson)
+        await dosyaSablonVeriService.saveVeri(dosya.id, docId, updatedJson);
       } catch (err) {
-        console.error('Evrak ayarları CQRS kaydı sırasında hata:', err)
+        console.error("Evrak ayarları CQRS kaydı sırasında hata:", err);
       }
     },
-    [dosya?.id]
-  )
+    [dosya?.id],
+  );
 
   // Evrak ayarı değiştiğinde state ve DB güncelle
   const handleEvrakSettingsChange = (updated: DocumentEvrakSettings) => {
     setEvrakSettingsMap((prev) => ({
       ...prev,
-      [selectedDoc.id]: updated
-    }))
+      [selectedDoc.id]: updated,
+    }));
     // DB kalıcılığı
-    saveEvrakSettingsToDb(selectedDoc.id, updated)
-  }
+    saveEvrakSettingsToDb(selectedDoc.id, updated);
+  };
 
   // Toplu Ayar Uygulama: Dosyadaki personel bilgilerini tüm belgelere senkronize et
   const handleConfirmTopluAyar = async () => {
-    const hazirlayanPersonel = dosya?.hazirlayan_personel_adi || 'Birim Görevlisi'
-    const onayPersonel = dosya?.onaylayan_personel_adi || 'Harcama Yetkilisi'
+    const hazirlayanPersonel = dosya?.hazirlayan_personel_adi ||
+      "Birim Görevlisi";
+    const onayPersonel = dosya?.onaylayan_personel_adi || "Harcama Yetkilisi";
 
-    const newMap = { ...evrakSettingsMap }
+    const newMap = { ...evrakSettingsMap };
     for (const b of belgeler) {
       newMap[b.id] = {
         ...newMap[b.id],
         rotaOnaylandi: true,
-        sonGuncelleme: new Date().toISOString()
-      }
-      await saveEvrakSettingsToDb(b.id, newMap[b.id])
+        sonGuncelleme: new Date().toISOString(),
+      };
+      await saveEvrakSettingsToDb(b.id, newMap[b.id]);
     }
-    setEvrakSettingsMap(newMap)
-    setIsTopluAyarModalOpen(false)
-  }
+    setEvrakSettingsMap(newMap);
+    setIsTopluAyarModalOpen(false);
+  };
 
   // Önizleme HTML'i yükle
   useEffect(() => {
-    let isCancelled = false
+    let isCancelled = false;
     async function loadPreview() {
-      if (!selectedDoc) return
-      setLoadingPreview(true)
+      if (!selectedDoc) return;
+      setLoadingPreview(true);
       try {
         if (onBelgeOlustur) {
-          const res = await onBelgeOlustur(selectedDoc)
+          const res = await onBelgeOlustur(selectedDoc);
           if (!isCancelled && res) {
-            setPreviewHtml(typeof res === 'string' ? res : res.html || '')
+            setPreviewHtml(typeof res === "string" ? res : res.html || "");
           }
         }
       } catch (err) {
-        console.error('Önizleme yüklenirken hata:', err)
+        console.error("Önizleme yüklenirken hata:", err);
       } finally {
-        if (!isCancelled) setLoadingPreview(false)
+        if (!isCancelled) setLoadingPreview(false);
       }
     }
-    loadPreview()
+    loadPreview();
     return () => {
-      isCancelled = true
-    }
-  }, [selectedDoc, onBelgeOlustur, currentEvrakSettings])
+      isCancelled = true;
+    };
+  }, [selectedDoc, onBelgeOlustur, currentEvrakSettings]);
 
   // Firma listesi
   const firmalarList = useMemo(() => {
     return firmalar.map((f, i) => ({
       id: f.id || i + 1,
-      unvan: f.unvan || f.firma_adi || `Firma ${i + 1}`
-    }))
-  }, [firmalar])
+      unvan: f.unvan || f.firma_adi || `Firma ${i + 1}`,
+    }));
+  }, [firmalar]);
+
+  const [activeSubView, setActiveSubView] = useState<'belgeler' | 'ust_yazi'>('belgeler');
 
   return (
     <div className="w-full flex flex-col gap-4 animate-in fade-in duration-300">
-      {/* Üst Bilgi Rozeti */}
-      <div className="bg-linear-to-r from-blue-600/10 via-indigo-600/10 to-transparent border border-blue-200 dark:border-blue-900/40 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+      {/* Üst Bilgi Rozeti & Görünüm Seçici */}
+      <div className="bg-linear-to-r from-blue-600/10 via-indigo-600/10 to-transparent border border-blue-200 dark:border-blue-900/40 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="p-2.5 bg-blue-600 text-white rounded-xl shadow-xs">
             <Sparkles className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-sm font-bold text-slate-850 dark:text-slate-100 flex items-center gap-2">
-              Yeni Nesil Doğrudan Temin Belge & EBYS Stüdyosu
-            </h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-bold text-slate-850 dark:text-slate-100">
+                Doğrudan Temin Süreç Akışı v2 (Belge &amp; Resmî Yazışma Stüdyosu)
+              </h2>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                EYP 2.0 &amp; Yönetmelik Uyumlu
+              </span>
+            </div>
             <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
-              3 Sütunlu Canlı Tasarım: Sol listeden belge seçin, sağ panelden EBYS ve resmî yazı ayarlarını yönetin.
+              Tüm belgelerin muhatap, ilgi, ekler, dağıtım ve imza/paraf rotasını tek merkezden yönetin.
             </p>
           </div>
         </div>
 
-        {onNavigateToV2 && (
+        {/* Görünüm Seçici Sekmeler */}
+        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 shrink-0">
           <button
             type="button"
-            onClick={onNavigateToV2}
-            className="flex items-center gap-2 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer shrink-0"
+            onClick={() => setActiveSubView('belgeler')}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              activeSubView === 'belgeler'
+                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+            }`}
           >
-            <Sparkles className="w-4 h-4" /> Süreç Akışı v2 (EBYS Stüdyosu)&apos;na Geç
+            <FileText className="w-3.5 h-3.5" />
+            <span>Doğrudan Temin Belgeleri &amp; Ayarları</span>
           </button>
-        )}
+
+          <button
+            type="button"
+            onClick={() => setActiveSubView('ust_yazi')}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              activeSubView === 'ust_yazi'
+                ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+            }`}
+          >
+            <Send className="w-3.5 h-3.5" />
+            <span>Resmî Üst Yazı &amp; DETSİS Rota Motoru</span>
+          </button>
+        </div>
       </div>
 
-      {/* 3 SÜTUNLU ANA ÇALIŞMA ALANI */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 min-h-[720px] items-stretch">
+      {activeSubView === 'ust_yazi' ? (
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
+          <ResmiUstYaziTab />
+        </div>
+      ) : (
+        /* 3 SÜTUNLU ANA ÇALIŞMA ALANI */
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 min-h-[720px] items-stretch">
         {/* SOL SÜTUN (3 Kolon): BELGE LİSTESİ */}
         <div className="lg:col-span-3 flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs overflow-hidden">
           {/* Arama Alanı */}
@@ -227,9 +266,9 @@ export function YeniNesilBelgeStudyosuTab({
           {/* Belge Kartları Listesi */}
           <div className="flex-1 overflow-y-auto p-2 space-y-1.5 max-h-[660px]">
             {filteredBelgeler.map((belge) => {
-              const isSelected = belge.id === selectedDoc?.id
-              const validation = validationMap[belge.id]
-              const hasWarnings = validation && !validation.isValid
+              const isSelected = belge.id === selectedDoc?.id;
+              const validation = validationMap[belge.id];
+              const hasWarnings = validation && !validation.isValid;
 
               return (
                 <div
@@ -238,15 +277,15 @@ export function YeniNesilBelgeStudyosuTab({
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault()
-                      setSelectedDocId(belge.id)
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setSelectedDocId(belge.id);
                     }
                   }}
                   className={`w-full text-left p-3 rounded-xl border transition-all cursor-pointer flex flex-col gap-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     isSelected
-                      ? 'bg-blue-50 dark:bg-blue-950/40 border-blue-500 dark:border-blue-700 shadow-2xs'
-                      : 'bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+                      ? "bg-blue-50 dark:bg-blue-950/40 border-blue-500 dark:border-blue-700 shadow-2xs"
+                      : "bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
@@ -254,8 +293,8 @@ export function YeniNesilBelgeStudyosuTab({
                       <FileText
                         className={`w-4 h-4 shrink-0 ${
                           isSelected
-                            ? 'text-blue-600 dark:text-blue-400'
-                            : 'text-slate-400 dark:text-slate-500'
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-slate-400 dark:text-slate-500"
                         }`}
                       />
                       <span className="text-xs font-semibold text-slate-800 dark:text-slate-100 line-clamp-1">
@@ -295,7 +334,7 @@ export function YeniNesilBelgeStudyosuTab({
                     )}
                   </div>
                 </div>
-              )
+              );
             })}
           </div>
         </div>
@@ -325,8 +364,10 @@ export function YeniNesilBelgeStudyosuTab({
               <button
                 type="button"
                 onClick={() => {
-                  const frame = document.getElementById('belge-preview-iframe') as HTMLIFrameElement
-                  frame?.contentWindow?.print()
+                  const frame = document.getElementById(
+                    "belge-preview-iframe",
+                  ) as HTMLIFrameElement;
+                  frame?.contentWindow?.print();
                 }}
                 className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors cursor-pointer"
               >
@@ -338,24 +379,29 @@ export function YeniNesilBelgeStudyosuTab({
 
           {/* Canlı Belge Çerçevesi */}
           <div className="flex-1 bg-slate-100 dark:bg-slate-950 p-4 flex items-center justify-center overflow-auto min-h-[550px]">
-            {loadingPreview ? (
-              <div className="flex flex-col items-center gap-2 text-slate-600 dark:text-slate-400 text-xs">
-                <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                Belge önizlemesi hazırlanıyor...
-              </div>
-            ) : previewHtml ? (
-              <iframe
-                id="belge-preview-iframe"
-                srcDoc={previewHtml}
-                title={selectedDoc?.ad || 'Belge Önizleme'}
-                className="w-full h-full min-h-[600px] bg-white rounded-xl shadow-md border border-slate-300 dark:border-slate-800"
-              />
-            ) : (
-              <div className="text-center p-6 text-slate-600 dark:text-slate-400 text-xs">
-                <FileText className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto mb-2" />
-                Bu belge için görsel önizleme oluşturulamadı veya veri bekleniyor.
-              </div>
-            )}
+            {loadingPreview
+              ? (
+                <div className="flex flex-col items-center gap-2 text-slate-600 dark:text-slate-400 text-xs">
+                  <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                  Belge önizlemesi hazırlanıyor...
+                </div>
+              )
+              : previewHtml
+              ? (
+                <iframe
+                  id="belge-preview-iframe"
+                  srcDoc={previewHtml}
+                  title={selectedDoc?.ad || "Belge Önizleme"}
+                  className="w-full h-full min-h-[600px] bg-white rounded-xl shadow-md border border-slate-300 dark:border-slate-800"
+                />
+              )
+              : (
+                <div className="text-center p-6 text-slate-600 dark:text-slate-400 text-xs">
+                  <FileText className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto mb-2" />
+                  Bu belge için görsel önizleme oluşturulamadı veya veri
+                  bekleniyor.
+                </div>
+              )}
           </div>
         </div>
 
@@ -372,6 +418,7 @@ export function YeniNesilBelgeStudyosuTab({
           />
         </div>
       </div>
+      )}
 
       {/* Toplu Ayar Onay Modali */}
       <TopluAyarOnayModal
@@ -384,5 +431,5 @@ export function YeniNesilBelgeStudyosuTab({
         onaylayanAd={dosya?.onaylayan_personel_adi}
       />
     </div>
-  )
+  );
 }
