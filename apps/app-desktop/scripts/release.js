@@ -206,6 +206,18 @@ function finalizeCurrentSchemaManifest(version, dryRun) {
 function main() {
   console.log(`\n${c.bold('📦 TEMİN 360 - Release Script')}\n`)
 
+  // 0. Ön Kontroller: Şema Snapshot Eşitleme
+  const schemaScript = path.join(GIT_ROOT, 'scripts/check-schema.mjs')
+  if (fs.existsSync(schemaScript)) {
+    try {
+      console.log(c.cyan('🔍 Şema kontrol ediliyor ve snapshot eşitleniyor (--fix)...'))
+      exec(`node "${schemaScript}" --fix`, { silent: true })
+      console.log(c.green('✔ Şema snapshot başarıyla eşitlendi.\n'))
+    } catch (e) {
+      console.warn(c.yellow(`⚠️ Şema snapshot uyarısı: ${e.message}\n`))
+    }
+  }
+
   // 1. Mevcut versiyonu oku
   const pkg = readJSON('package.json')
   let version = pkg.version

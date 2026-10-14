@@ -32,6 +32,19 @@
       "tasinir_kodu",
       "toplam_miktar"
     ],
+    "DATA_DosyaRevizyon": [
+      "baslik",
+      "belge_kodu",
+      "created_at",
+      "icerik_html",
+      "id",
+      "modul_adi",
+      "olusturan",
+      "surec_kodu",
+      "temin_dosya_id",
+      "veri_json",
+      "versiyon"
+    ],
     "DATA_DosyaSablonVeri": [
       "created_at",
       "dosya_id",
@@ -41,6 +54,46 @@
       "temin_dosya_id",
       "updated_at",
       "veri_json"
+    ],
+    "DATA_KutuphaneBelge": [
+      "ad",
+      "aktif_surum_id",
+      "arsiv_mi",
+      "etiketler",
+      "favori_mi",
+      "grup_id",
+      "id",
+      "silindi_at"
+    ],
+    "DATA_KutuphaneBelgeSurum": [
+      "belge_id",
+      "created_at",
+      "etiket",
+      "icerik_html",
+      "id",
+      "kosullar_json",
+      "not",
+      "surum_no"
+    ],
+    "DATA_KutuphaneGrup": [
+      "ad",
+      "id",
+      "ikon",
+      "parent_id",
+      "renk",
+      "sira"
+    ],
+    "DATA_KutuphaneYerTutucu": [
+      "anahtar",
+      "etiket",
+      "id",
+      "kapsam",
+      "kapsam_id",
+      "kaynak",
+      "secenekler_json",
+      "sira",
+      "tip",
+      "varsayilan"
     ],
     "DATA_NotVeGorev": [
       "baslik",
@@ -110,6 +163,7 @@
       "kesinti_karar_pulu",
       "kesinti_kdv_tevkifat",
       "kismi_teklif_verilecek_mi",
+      "komisyon_seed_edildi",
       "komisyon_takdiri",
       "konu",
       "mevzuat_id",
@@ -157,6 +211,7 @@
       "firma_id",
       "id",
       "ilgili_kisi",
+      "kazanan_mi",
       "kazandi_mi",
       "para_birimi",
       "teklif_durumu",
@@ -227,6 +282,7 @@
       "gorev",
       "hedef_belgeler",
       "id",
+      "kaynak",
       "komisyon_id",
       "komisyon_turu",
       "personel_id",
@@ -473,6 +529,7 @@
       "guncelleme_orani",
       "id",
       "kaynak",
+      "md21f_limit",
       "updated_at"
     ],
     "TANIM_KodSozlugu": [
@@ -490,6 +547,7 @@
       "aktif_mi",
       "created_at",
       "id",
+      "tur",
       "updated_at"
     ],
     "TANIM_KomisyonGorevi": [
@@ -498,6 +556,7 @@
       "aktif_mi",
       "created_at",
       "id",
+      "rol_kodu",
       "updated_at"
     ],
     "TANIM_KomisyonUye": [
@@ -524,6 +583,7 @@
     "TANIM_Kurum": [
       "adres",
       "alt_kurum_bizim",
+      "alt_kurum_bulunma",
       "alt_kurum_onlarin",
       "alt_kurum_onun",
       "alt_kurum_ozel_tanim",
@@ -554,10 +614,13 @@
       "logo_sag",
       "logo_sol",
       "makam_adi",
+      "makam_adi_custom",
       "muhasebe_birim_adi",
       "muhasebe_birim_kodu",
       "posta_kodu",
       "say2000i_kodu",
+      "sunulacak_kurum_adi",
+      "sunulacak_makam_secimi",
       "telefon",
       "ust_kurum_adi",
       "web_sitesi"
@@ -641,6 +704,20 @@
       "kaynak_tablo",
       "varsayilan",
       "veri_tipi"
+    ],
+    "TANIM_Poz": [
+      "aktif_mi",
+      "birim",
+      "birim_fiyat",
+      "created_at",
+      "id",
+      "kitabiyat",
+      "kurum_adi",
+      "poz_no",
+      "tanim",
+      "tipi",
+      "updated_at",
+      "yil"
     ],
     "TANIM_Proje": [
       "aciklama",
