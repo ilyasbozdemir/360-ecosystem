@@ -81,7 +81,7 @@ export function YeniNesilBelgeStudyosuTab({
   const currentEvrakSettings = useMemo(() => {
     if (!selectedDoc?.id) return EMPTY_SETTINGS;
     return evrakSettingsMap[selectedDoc.id] || EMPTY_SETTINGS;
-  }, [evrakSettingsMap, selectedDoc?.id]);
+  }, [evrakSettingsMap, selectedDoc]);
 
   // Belge arama filtrelemesi
   const filteredBelgeler = useMemo(() => {
@@ -126,7 +126,7 @@ export function YeniNesilBelgeStudyosuTab({
         console.error("Evrak ayarları CQRS kaydı sırasında hata:", err);
       }
     },
-    [dosya?.id],
+    [dosya],
   );
 
   // Evrak ayarı değiştiğinde state ve DB güncelle
@@ -186,7 +186,7 @@ export function YeniNesilBelgeStudyosuTab({
     return () => {
       isCancelled = true;
     };
-  }, [selectedDoc?.id]);
+  }, [selectedDoc]);
 
   // Firma listesi
   const firmalarList = useMemo(() => {
