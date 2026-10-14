@@ -62,7 +62,7 @@ export function TakipScreen(): React.JSX.Element {
           <div className="space-y-6">
             {/* TOP SECTION: 12-COL GRID FOR SUMMARY & ACTIONS/DATES */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-              {/* LEFT: ACTIVE FILE SUMMARY & PROCESS CARDS */}
+              {/* LEFT: ACTIVE FILE SUMMARY, PROCESS CARDS & STEPPER */}
               <div className="lg:col-span-8 space-y-6">
                 <TakipActiveDosyaSummary
                   activeDosya={activeDosya}
@@ -73,6 +73,13 @@ export function TakipScreen(): React.JSX.Element {
                   onSurecAkisiClick={handleSurecAkisi}
                   onOpenNewWindowClick={handleOpenInNewWindow}
                   onDeleteClick={handleDelete}
+                />
+
+                <TakipAsamaStepper
+                  stages={stages}
+                  currentAsamaSira={currentAsamaSira}
+                  stageRoutes={STAGE_ROUTES}
+                  stageShortLabels={STAGE_SHORT_LABELS}
                 />
               </div>
 
@@ -112,13 +119,6 @@ export function TakipScreen(): React.JSX.Element {
 
             {/* LOWER SECTIONS: FULL WIDTH */}
             <div className="space-y-6">
-              <TakipAsamaStepper
-                stages={stages}
-                currentAsamaSira={currentAsamaSira}
-                stageRoutes={STAGE_ROUTES}
-                stageShortLabels={STAGE_SHORT_LABELS}
-              />
-
               <TakipIsAkisiYonergesi />
 
               <TakipKalemlerVeFirmalarGrid
@@ -155,4 +155,3 @@ export function TakipScreen(): React.JSX.Element {
 }
 
 export default TakipScreen;
-
