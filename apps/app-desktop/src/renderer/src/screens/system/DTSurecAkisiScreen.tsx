@@ -213,7 +213,7 @@ export default function SurecAkisiScreen(): React.JSX.Element {
 
       {/* Belge & Resmî Yazışma Stüdyosu - Tam Ekran Stüdyo Modu */}
       {isStudioOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex flex-col p-3 md:p-6 overflow-y-auto animate-in fade-in duration-200">
+        <div className="dark fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex flex-col p-3 md:p-6 overflow-y-auto animate-in fade-in duration-200 text-slate-100">
           <div className="w-full max-w-7xl mx-auto flex-1">
             <YeniNesilBelgeStudyosuTab
               dosya={dosya}

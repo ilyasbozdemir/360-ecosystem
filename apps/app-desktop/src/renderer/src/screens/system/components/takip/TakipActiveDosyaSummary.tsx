@@ -16,6 +16,7 @@ import {
   MoreVertical,
   Printer,
   Trash2,
+  Zap,
 } from "lucide-react";
 
 interface TakipActiveDosyaSummaryProps {
@@ -352,52 +353,131 @@ export function TakipActiveDosyaSummary({
         </div>
 
         {/* Hızlı İşlemler & Ek Modüller */}
-        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/60 overflow-x-auto pb-1">
-          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 shrink-0 select-none">
-            Hızlı Araçlar:
-          </span>
-          <Link
-            to="/dosya/cikti-merkezi"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-blue-50 dark:hover:bg-blue-950/30 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 border border-slate-200 dark:border-slate-700/60 text-xs font-bold transition-all shrink-0 cursor-pointer"
-          >
-            <Printer className="w-3.5 h-3.5 text-blue-500" />
-            Dosya Çıktı Merkezi
-          </Link>
-          <Link
-            to="/dosya/klasor-ve-kapaklar"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/60 text-xs font-bold transition-all shrink-0 cursor-pointer"
-          >
-            <BookOpen className="w-3.5 h-3.5 text-amber-500" />
-            Klasör & Kapaklar
-          </Link>
-          <Link
-            to="/dosya/firmalar-maliyet/yaklasik"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/60 text-xs font-bold transition-all shrink-0 cursor-pointer"
-          >
-            <Calculator className="w-3.5 h-3.5 text-indigo-500" />
-            Yaklaşık Maliyet Cetveli
-          </Link>
-          <Link
-            to="/dosya/fatura-ve-irsaliye"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/60 text-xs font-bold transition-all shrink-0 cursor-pointer"
-          >
-            <ClipboardList className="w-3.5 h-3.5 text-emerald-500" />
-            Fatura & İrsaliye
-          </Link>
-          <Link
-            to="/dosya/imzali-belgeler"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/60 text-xs font-bold transition-all shrink-0 cursor-pointer"
-          >
-            <FileCheck className="w-3.5 h-3.5 text-purple-500" />
-            İmzalı Belgeler
-          </Link>
-          <Link
-            to="/notlar"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/60 text-xs font-bold transition-all shrink-0 cursor-pointer"
-          >
-            <CheckSquare className="w-3.5 h-3.5 text-blue-500" />
-            Notlar & To-Do
-          </Link>
+
+        <div className="mt-3 border-t border-slate-100 pt-3 dark:border-slate-800/60">
+          <div className="mb-3 flex items-center gap-2">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/40">
+              <Zap className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">
+                Hızlı Araçlar
+              </h3>
+              <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                Sık kullanılan işlemlere hızlı erişim
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            <Link
+              to="/dosya/cikti-merkezi"
+              className="group flex min-w-0 items-start gap-3 rounded-xl border border-slate-200/80 bg-white p-3 transition-colors duration-200 hover:border-blue-300 hover:bg-blue-50/60 dark:border-slate-700/70 dark:bg-slate-900/40 dark:hover:border-blue-800 dark:hover:bg-blue-950/20"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 transition-colors group-hover:bg-blue-100 dark:bg-blue-950/40 dark:group-hover:bg-blue-900/40">
+                <Printer className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs font-bold text-slate-800 dark:text-slate-100">
+                  Dosya Çıktı Merkezi
+                </div>
+                <p className="mt-1 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
+                  Belge çıktıları ve yazdırma işlemleri
+                </p>
+              </div>
+              <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-blue-500 dark:text-slate-600" />
+            </Link>
+
+            <Link
+              to="/dosya/klasor-ve-kapaklar"
+              className="group flex min-w-0 items-start gap-3 rounded-xl border border-slate-200/80 bg-white p-3 transition-colors duration-200 hover:border-amber-300 hover:bg-amber-50/60 dark:border-slate-700/70 dark:bg-slate-900/40 dark:hover:border-amber-800 dark:hover:bg-amber-950/20"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 transition-colors group-hover:bg-amber-100 dark:bg-amber-950/40 dark:group-hover:bg-amber-900/40">
+                <BookOpen className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs font-bold text-slate-800 dark:text-slate-100">
+                  Klasör & Kapaklar
+                </div>
+                <p className="mt-1 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
+                  Dosyalama ve kapak düzenleme işlemleri
+                </p>
+              </div>
+              <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-amber-500 dark:text-slate-600" />
+            </Link>
+
+            <Link
+              to="/dosya/firmalar-maliyet/yaklasik"
+              className="group flex min-w-0 items-start gap-3 rounded-xl border border-slate-200/80 bg-white p-3 transition-colors duration-200 hover:border-indigo-300 hover:bg-indigo-50/60 dark:border-slate-700/70 dark:bg-slate-900/40 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/20"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 transition-colors group-hover:bg-indigo-100 dark:bg-indigo-950/40 dark:group-hover:bg-indigo-900/40">
+                <Calculator className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs font-bold text-slate-800 dark:text-slate-100">
+                  Yaklaşık Maliyet Cetveli
+                </div>
+                <p className="mt-1 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
+                  Yaklaşık maliyet hesaplama ve inceleme
+                </p>
+              </div>
+              <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-indigo-500 dark:text-slate-600" />
+            </Link>
+
+            <Link
+              to="/dosya/fatura-ve-irsaliye"
+              className="group flex min-w-0 items-start gap-3 rounded-xl border border-slate-200/80 bg-white p-3 transition-colors duration-200 hover:border-emerald-300 hover:bg-emerald-50/60 dark:border-slate-700/70 dark:bg-slate-900/40 dark:hover:border-emerald-800 dark:hover:bg-emerald-950/20"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 transition-colors group-hover:bg-emerald-100 dark:bg-emerald-950/40 dark:group-hover:bg-emerald-900/40">
+                <ClipboardList className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs font-bold text-slate-800 dark:text-slate-100">
+                  Fatura & İrsaliye
+                </div>
+                <p className="mt-1 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
+                  Fatura ve irsaliye kayıtlarına erişim
+                </p>
+              </div>
+              <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-emerald-500 dark:text-slate-600" />
+            </Link>
+
+            <Link
+              to="/dosya/imzali-belgeler"
+              className="group flex min-w-0 items-start gap-3 rounded-xl border border-slate-200/80 bg-white p-3 transition-colors duration-200 hover:border-purple-300 hover:bg-purple-50/60 dark:border-slate-700/70 dark:bg-slate-900/40 dark:hover:border-purple-800 dark:hover:bg-purple-950/20"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-purple-50 transition-colors group-hover:bg-purple-100 dark:bg-purple-950/40 dark:group-hover:bg-purple-900/40">
+                <FileCheck className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs font-bold text-slate-800 dark:text-slate-100">
+                  İmzalı Belgeler
+                </div>
+                <p className="mt-1 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
+                  İmzalanmış belgelere hızlı erişim
+                </p>
+              </div>
+              <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-purple-500 dark:text-slate-600" />
+            </Link>
+
+            <Link
+              to="/notlar"
+              className="group flex min-w-0 items-start gap-3 rounded-xl border border-slate-200/80 bg-white p-3 transition-colors duration-200 hover:border-blue-300 hover:bg-blue-50/60 dark:border-slate-700/70 dark:bg-slate-900/40 dark:hover:border-blue-800 dark:hover:bg-blue-950/20"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 transition-colors group-hover:bg-blue-100 dark:bg-blue-950/40 dark:group-hover:bg-blue-900/40">
+                <CheckSquare className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs font-bold text-slate-800 dark:text-slate-100">
+                  Notlar & To-Do
+                </div>
+                <p className="mt-1 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
+                  Notlarını ve görevlerini takip et
+                </p>
+              </div>
+              <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-blue-500 dark:text-slate-600" />
+            </Link>
+          </div>
         </div>
       </div>
     </div>

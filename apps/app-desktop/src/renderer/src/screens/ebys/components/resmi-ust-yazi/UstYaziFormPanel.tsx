@@ -17,6 +17,8 @@ export function UstYaziFormPanel(props: FormProps): React.JSX.Element {
     templateKey,
     antet,
     setAntet,
+    solLogo,
+    sagLogo,
     detsis,
     setDetsis,
     yil,
@@ -131,11 +133,28 @@ export function UstYaziFormPanel(props: FormProps): React.JSX.Element {
                   className="w-full p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-mono"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-[11px] font-medium text-slate-500 mb-1">
-                    Sol Logo
-                  </label>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-medium text-slate-500">
+                      Sol Logo
+                    </label>
+                    {solLogo && (
+                      <span className="text-[9px] font-semibold text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                        Yüklü
+                      </span>
+                    )}
+                  </div>
+                  {solLogo && (
+                    <div className="flex items-center gap-2 p-1.5 bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+                      <img
+                        src={solLogo}
+                        alt="Sol Logo"
+                        className="w-8 h-8 object-contain rounded bg-white p-0.5 border border-slate-200 dark:border-slate-700"
+                      />
+                      <span className="text-[10px] text-slate-500 truncate">Kurum / Sol Logo</span>
+                    </div>
+                  )}
                   <input
                     type="file"
                     accept="image/*"
@@ -143,10 +162,27 @@ export function UstYaziFormPanel(props: FormProps): React.JSX.Element {
                     className="text-[10px] w-full file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:bg-slate-200 dark:file:bg-slate-800 file:text-slate-800 dark:file:text-slate-200"
                   />
                 </div>
-                <div>
-                  <label className="block text-[11px] font-medium text-slate-500 mb-1">
-                    Sağ Logo
-                  </label>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-medium text-slate-500">
+                      Sağ Logo
+                    </label>
+                    {sagLogo && (
+                      <span className="text-[9px] font-semibold text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                        Yüklü
+                      </span>
+                    )}
+                  </div>
+                  {sagLogo && (
+                    <div className="flex items-center gap-2 p-1.5 bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+                      <img
+                        src={sagLogo}
+                        alt="Sağ Logo"
+                        className="w-8 h-8 object-contain rounded bg-white p-0.5 border border-slate-200 dark:border-slate-700"
+                      />
+                      <span className="text-[10px] text-slate-500 truncate">Sağ Logo</span>
+                    </div>
+                  )}
                   <input
                     type="file"
                     accept="image/*"

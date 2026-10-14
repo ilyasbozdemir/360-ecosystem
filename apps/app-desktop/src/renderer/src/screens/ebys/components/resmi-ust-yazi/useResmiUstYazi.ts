@@ -1,20 +1,121 @@
-import { useState, useRef, useMemo } from 'react'
+import { useState, useRef, useMemo, useEffect } from 'react'
 import { BASE_DATA, PRESETS } from './constants'
 import { RotaAdimi } from './types'
+import { useSettingsStore } from '../../../../store/settingsStore'
 
-export function useResmiUstYazi() {
+export interface UseResmiUstYaziOptions {
+  dosya?: any
+  dosyaContext?: any
+  kalemler?: any[]
+  firmalar?: any[]
+  komisyonlar?: any[]
+}
+
+export function useResmiUstYazi(options?: UseResmiUstYaziOptions) {
+  const { dosya, dosyaContext, kalemler: initialKalemler, firmalar: initialFirmalar, komisyonlar: initialKomisyonlar } = options || {}
+
+  // Uygulamadaki dinamik kurum ayarları
+  const {
+    institutionName,
+    harcamaBirimAdi,
+    logoLeft,
+    logoRight,
+    institutionLogo,
+    detsisKodu,
+    adminName,
+    adminTitle
+  } = useSettingsStore()
+
+  // Dinamik antet: Dosya veya kurum ayarlarından beslenir
+  const initialAntet = useMemo(() => {
+    const kurum = dosyaContext?.idare_adi || dosya?.idare_adi || institutionName
+    const birim = dosyaContext?.birim_adi || dosya?.birim_adi || harcamaBirimAdi
+    if (kurum || birim) {
+      const lines = ['T.C.']
+      if (kurum) lines.push(kurum.toUpperCase())
+      if (birim) lines.push(birim)
+      return lines.join('\n')
+    }
+    return BASE_DATA.antet
+  }, [dosyaContext, dosya, institutionName, harcamaBirimAdi])
+
+  // Dinamik kalemler: Dosyadaki gerçek ihtiyaç kalemlerinden beslenir
+  const initialKalemlerText = useMemo(() => {
+    if (initialKalemler && initialKalemler.length > 0) {
+      return initialKalemler
+        .map((k) => {
+          const ad = k.kalem_adi || k.malzeme_adi || k.ad || ''
+          const aciklama = k.aciklama || k.ozellik || ''
+          const birim = k.birim || 'Adet'
+          const miktar = k.miktar || 1
+          return `${ad} | ${aciklama} | ${birim} | ${miktar}`
+        })
+        .join('\n')
+    }
+    return PRESETS.arastirma.kalemler
+  }, [initialKalemler])
+
+  // Dinamik rota adımları: Dosyadaki personel ve onaylayandan beslenir
+  const initialRota = useMemo<RotaAdimi[]>(() => {
+    const adimlar: RotaAdimi[] = []
+    // 1. Hazırlayan
+    adimlar.push({
+      t: 'Hazırlayan',
+      a: dosya?.hazirlayan_personel_adi || adminName || 'Birim Görevlisi',
+      u: dosya?.hazirlayan_personel_unvani || adminTitle || 'V.H.K.İ.'
+    })
+
+    // 2. Komisyon veya Şube Müdürü Paraf
+    if (initialKomisyonlar && initialKomisyonlar.length > 0) {
+      initialKomisyonlar.slice(0, 2).forEach((k) => {
+        adimlar.push({
+          t: 'Paraf',
+          a: k.ad || k.personel_adi || k.ad_soyad || '',
+          u: k.unvan || k.gorev || 'Komisyon Üyesi'
+        })
+      })
+    } else {
+      adimlar.push({
+        t: 'Paraf',
+        a: '',
+        u: 'Şube Müdürü'
+      })
+    }
+
+    // 3. Onaylayan / Harcama Yetkilisi
+    adimlar.push({
+      t: 'İmza',
+      a: dosya?.onaylayan_personel_adi || '',
+      u: dosya?.onaylayan_personel_unvani || 'Harcama Yetkilisi'
+    })
+
+    return adimlar
+  }, [dosya, adminName, adminTitle, initialKomisyonlar])
+
   const [templateKey, setTemplateKey] = useState<'arastirma' | 'bos'>('arastirma')
   const [activeRightTab, setActiveRightTab] = useState<'onizleme' | 'rota'>('onizleme')
 
-  // Form states
-  const [antet, setAntet] = useState(BASE_DATA.antet)
-  const [solLogo, setSolLogo] = useState<string>('')
-  const [sagLogo, setSagLogo] = useState<string>('')
-  const [detsis, setDetsis] = useState(BASE_DATA.detsis)
-  const [yil, setYil] = useState(BASE_DATA.yil)
-  const [sayisi, setSayisi] = useState(BASE_DATA.sayisi)
-  const [konu, setKonu] = useState(PRESETS.arastirma.konu)
+  // Form states (Gerçek uygulama verileri ile başlar)
+  const [antet, setAntet] = useState(initialAntet)
+  const [solLogo, setSolLogo] = useState<string>(logoLeft || institutionLogo || '')
+  const [sagLogo, setSagLogo] = useState<string>(logoRight || '')
+  const [detsis, setDetsis] = useState(detsisKodu || BASE_DATA.detsis)
+  const [yil, setYil] = useState(
+    dosya?.tarih ? String(new Date(dosya.tarih).getFullYear()) : BASE_DATA.yil
+  )
+  const [sayisi, setSayisi] = useState(dosya?.dosya_no || dosya?.dosyaNo || BASE_DATA.sayisi)
+  const [konu, setKonu] = useState(dosya?.konu || PRESETS.arastirma.konu)
   const [tarih, setTarih] = useState(() => {
+    if (dosya?.tarih) {
+      try {
+        const d = new Date(dosya.tarih)
+        if (!isNaN(d.getTime())) {
+          return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+        }
+      } catch {
+        // fallback
+      }
+    }
     const d = new Date()
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
   })
@@ -22,10 +123,14 @@ export function useResmiUstYazi() {
   const [muhatap, setMuhatap] = useState(PRESETS.arastirma.muhatap)
   const [ilgi, setIlgi] = useState(PRESETS.arastirma.ilgi)
   const [aciklama, setAciklama] = useState(PRESETS.arastirma.aciklama)
-  const [imzalar, setImzalar] = useState(PRESETS.arastirma.imzalar)
+  const [imzalar, setImzalar] = useState(
+    dosya?.onaylayan_personel_adi
+      ? `Harcama Yetkilisi | ${dosya.onaylayan_personel_adi} | ${dosya.onaylayan_personel_unvani || 'Harcama Yetkilisi'}`
+      : PRESETS.arastirma.imzalar
+  )
   const [eimza, setEimza] = useState(PRESETS.arastirma.eimza)
   const [kod, setKod] = useState('A1B2C3D4-E5F6-7890')
-  const [kalemler, setKalemler] = useState(PRESETS.arastirma.kalemler)
+  const [kalemler, setKalemler] = useState(initialKalemlerText)
   const [fiyat, setFiyat] = useState(PRESETS.arastirma.fiyat)
   const [firma, setFirma] = useState(PRESETS.arastirma.firma)
   const [ek, setEk] = useState(PRESETS.arastirma.ek)
@@ -36,19 +141,59 @@ export function useResmiUstYazi() {
   const [web, setWeb] = useState(BASE_DATA.web)
   const [eposta, setEposta] = useState(BASE_DATA.eposta)
   const [kep, setKep] = useState(BASE_DATA.kep)
-  const [hazad, setHazad] = useState(BASE_DATA.hazad)
-  const [hazun, setHazun] = useState(BASE_DATA.hazun)
+  const [hazad, setHazad] = useState(
+    dosya?.hazirlayan_personel_adi || adminName || BASE_DATA.hazad
+  )
+  const [hazun, setHazun] = useState(
+    dosya?.hazirlayan_personel_unvani || adminTitle || BASE_DATA.hazun
+  )
   const [haztel, setHaztel] = useState(BASE_DATA.haztel)
 
   const [copyToast, setCopyToast] = useState(false)
 
-  // Rota state
-  const [rota, setRota] = useState<RotaAdimi[]>([
-    { t: 'Hazırlayan', a: 'Ayşe Demir', u: 'V.H.K.İ.' },
-    { t: 'Paraf', a: '', u: 'Şube Müdürü' },
-    { t: 'Paraf', a: '', u: 'Daire Başkan Yardımcısı' },
-    { t: 'İmza', a: '', u: 'Daire Başkanı' }
-  ])
+  // Rota state (Dinamik personel ile başlar)
+  const [rota, setRota] = useState<RotaAdimi[]>(initialRota)
+
+  // Dosya veya kurum verisi sonradan yüklendiğinde formu senkronize et
+  useEffect(() => {
+    if (initialAntet && initialAntet !== BASE_DATA.antet) {
+      setAntet(initialAntet)
+    }
+  }, [initialAntet])
+
+  useEffect(() => {
+    if (logoLeft) setSolLogo(logoLeft)
+    else if (institutionLogo) setSolLogo(institutionLogo)
+    if (logoRight) setSagLogo(logoRight)
+  }, [logoLeft, logoRight, institutionLogo])
+
+  useEffect(() => {
+    if (detsisKodu) setDetsis(detsisKodu)
+  }, [detsisKodu])
+
+  useEffect(() => {
+    if (dosya?.dosya_no || dosya?.dosyaNo) {
+      setSayisi(dosya.dosya_no || dosya.dosyaNo)
+    }
+    if (dosya?.konu) {
+      setKonu(dosya.konu)
+    }
+    if (dosya?.hazirlayan_personel_adi) {
+      setHazad(dosya.hazirlayan_personel_adi)
+    }
+  }, [dosya])
+
+  useEffect(() => {
+    if (initialKalemler && initialKalemler.length > 0) {
+      setKalemler(initialKalemlerText)
+    }
+  }, [initialKalemlerText, initialKalemler])
+
+  useEffect(() => {
+    if (initialRota.length > 0) {
+      setRota(initialRota)
+    }
+  }, [initialRota])
 
   // Accordion active sections
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({

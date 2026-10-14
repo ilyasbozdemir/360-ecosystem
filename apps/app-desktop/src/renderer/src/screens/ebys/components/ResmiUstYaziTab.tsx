@@ -5,19 +5,27 @@ import { UstYaziFormPanel } from './resmi-ust-yazi/UstYaziFormPanel'
 import { UstYaziA4Preview } from './resmi-ust-yazi/UstYaziA4Preview'
 import { UstYaziRotaAkisi } from './resmi-ust-yazi/UstYaziRotaAkisi'
 
-export function ResmiUstYaziTab(): React.JSX.Element {
-  const ustYazi = useResmiUstYazi()
+export interface ResmiUstYaziTabProps {
+  dosya?: any
+  dosyaContext?: any
+  kalemler?: any[]
+  firmalar?: any[]
+  komisyonlar?: any[]
+}
+
+export function ResmiUstYaziTab(props: ResmiUstYaziTabProps = {}): React.JSX.Element {
+  const ustYazi = useResmiUstYazi(props)
   const { activeRightTab, setActiveRightTab } = ustYazi
 
   return (
-    <div className="flex-1 flex flex-col lg:flex-row overflow-hidden bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100">
+    <div className="flex-1 flex flex-col lg:flex-row overflow-hidden bg-slate-900 border border-slate-800 rounded-2xl text-slate-100 shadow-xl">
       {/* SOL: DÜZENLEME & FORM PANELİ */}
       <UstYaziFormPanel {...ustYazi} />
 
       {/* SAĞ: ÖNİZLEME & ROTA AKIŞI GÖRÜNÜMÜ */}
       <main className="flex-1 flex flex-col h-full overflow-hidden">
         {/* Görünüm Sekmeleri */}
-        <div className="px-6 py-3 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between shrink-0">
+        <div className="px-6 py-3 border-b border-slate-800 bg-slate-950/70 flex items-center justify-between shrink-0">
           <div className="flex bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold">
             <button
               type="button"
