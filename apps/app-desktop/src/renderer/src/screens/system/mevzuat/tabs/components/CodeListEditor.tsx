@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Plus, X, ListPlus } from 'lucide-react'
-import { Input } from '../../../../components/ui/Input'
-import { Button } from '../../../../components/ui/Button'
+import { Input } from '../../../../../components/ui/Input'
+import { Button } from '../../../../../components/ui/Button'
 
 export interface CodeItem {
   code: string

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { Building2, Save, CheckCircle2 } from 'lucide-react'
 import { CodeListEditor, CodeItem } from './components/CodeListEditor'
-import { useAyarlarHooks } from '../../ayarlar/ayarlar.hooks'
-import { useSettingsStore } from '../../../store/settingsStore'
-import { useBirimlerHooks } from '../../birimler/birimler.hooks'
-import { Button } from '../../../components/ui/Button'
-import { Input } from '../../../components/ui/Input'
-import { EKONOMIK_KODLAR, FONKSIYONEL_KODLAR } from '../../../constants/butce-kodlari'
+import { useAyarlarHooks } from '../../../ayarlar/ayarlar.hooks'
+import { useSettingsStore } from '../../../../store/settingsStore'
+import { useBirimlerHooks } from '../../../birimler/birimler.hooks'
+import { Button } from '../../../../components/ui/Button'
+import { Input } from '../../../../components/ui/Input'
+import { EKONOMIK_KODLAR, FONKSIYONEL_KODLAR } from '../../../../constants/butce-kodlari'
 
 export function MaliTab(): React.JSX.Element {
   const { settings, isLoadingSettings, saveSettings } = useAyarlarHooks()

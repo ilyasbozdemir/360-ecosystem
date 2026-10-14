@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { AlertTriangle, Edit2, Info, Plus } from "lucide-react";
-import { LimitDonemKaydi, useKikLimitDonemleri } from "./kik-limitleri.hooks";
-import { donemTarihAraligiUret } from "../../constants/madde-22d-donemler";
-import { useSettingsStore } from "../../store/settingsStore";
+import { LimitDonemKaydi, useKikLimitDonemleri } from "../kik-limitleri.hooks";
+import { donemTarihAraligiUret } from "../../../../constants/madde-22d-donemler";
+import { useSettingsStore } from "../../../../store/settingsStore";
 import { formatCurrency } from "@renderer/utils/formatters";
 
 export function KikLimitleriSection(): React.JSX.Element {

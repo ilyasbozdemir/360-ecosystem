@@ -1,8 +1,8 @@
 import React from 'react'
 import { Link } from '@tanstack/react-router'
 import { FileText, Eye, Printer, Download, ExternalLink, Star, Copy } from 'lucide-react'
-import { getStatusBadgeLightClass } from '../utils/statusUtils'
-import { Sablon } from '../../sablonlar/sablonlar.hooks'
+import { getStatusBadgeLightClass } from '../../utils/statusUtils'
+import { Sablon } from '../../../sablonlar/sablonlar.hooks'
 
 interface DocumentCardProps {
   sablon: Sablon | null | undefined

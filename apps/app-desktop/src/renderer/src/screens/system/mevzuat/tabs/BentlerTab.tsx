@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
 import { Info } from 'lucide-react'
-import { cn } from '../../../utils/cn'
+import { cn } from '../../../../utils/cn'
 import {
   MADDE_22_BENTLERI,
   MADDE_3_ISTISNA_BENTLERI,
   SIKKULLANILANLAR
-} from '../../../constants/madde-22-bentleri'
+} from '../../../../constants/madde-22-bentleri'
 
 export function BentlerTab(): React.JSX.Element {
   const [subTab, setSubTab] = useState<'madde22' | 'madde3'>('madde22')

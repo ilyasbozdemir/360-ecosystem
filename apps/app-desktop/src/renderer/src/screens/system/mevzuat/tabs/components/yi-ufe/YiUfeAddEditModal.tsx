@@ -1,6 +1,6 @@
 import React from 'react'
 import { TrendingUp, X } from 'lucide-react'
-import { AY_ISIMLERI } from '../../../../../services/yiUfeService'
+import { AY_ISIMLERI } from '../../../../../../services/yiUfeService'
 
 interface YiUfeAddEditModalProps {
   isOpen: boolean

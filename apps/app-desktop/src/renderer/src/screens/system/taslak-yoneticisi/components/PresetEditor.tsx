@@ -1,13 +1,12 @@
 import React from 'react'
-import { Link } from '@tanstack/react-router'
 import { Star } from 'lucide-react'
 import {
   getStatusBadgeLightClass,
   normalizeForMatch,
   parseStatusAndName,
   STAGES
-} from '../utils/statusUtils'
-import { Sablon } from '../../sablonlar/sablonlar.hooks'
+} from '../../utils/statusUtils'
+import { Sablon } from '../../../sablonlar/sablonlar.hooks'
 
 interface PresetEditorProps {
   presetName: string
@@ -85,7 +84,6 @@ export const PresetEditor: React.FC<PresetEditorProps> = ({
 
         <div className="space-y-2">
           {(groupedSablonlar[activeStage] || []).map((sablon) => {
-            const route = routeMap[sablon.ad]
             const { status, cleanName } = parseStatusAndName(sablon.ad, sablon.aciklama)
             const isStarred = starredList.some(
               (d) => d === sablon.dosya_adi || normalizeForMatch(d) === normalizeForMatch(cleanName)

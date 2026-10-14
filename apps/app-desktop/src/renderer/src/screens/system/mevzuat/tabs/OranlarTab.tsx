@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Calculator, CheckCircle2, Plus, Save, X } from 'lucide-react'
-import { useAyarlarHooks } from '../../ayarlar/ayarlar.hooks'
-import { useSettingsStore } from '../../../store/settingsStore'
+import { useAyarlarHooks } from '../../../ayarlar/ayarlar.hooks'
+import { useSettingsStore } from '../../../../store/settingsStore'
 
 type VergiOrani = {
   id: string

@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import { Calculator, Coins, Sparkles, TrendingUp } from 'lucide-react'
-import { AY_ISIMLERI, yiUfeService } from '../../../services/yiUfeService'
+import { AY_ISIMLERI, yiUfeService } from '../../../../services/yiUfeService'
 import {
   calculatePriceDifference,
   formatTutar,
   getAyarVergiOrani,
   PRICE_DIFF_CONFIG
-} from '../../../utils/hesaplamalar'
-import { useAyarlarHooks } from '../../ayarlar/ayarlar.hooks'
+} from '../../../../utils/hesaplamalar'
+import { useAyarlarHooks } from '../../../ayarlar/ayarlar.hooks'
 
 export function FiyatFarkiTab(): React.JSX.Element {
   const { settings } = useAyarlarHooks()

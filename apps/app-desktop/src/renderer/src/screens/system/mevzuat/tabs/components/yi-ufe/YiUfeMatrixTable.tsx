@@ -1,6 +1,6 @@
 import React from 'react'
 import { Calendar, Search } from 'lucide-react'
-import { AY_ISIMLERI, YearEndeksGroup } from '../../../../../services/yiUfeService'
+import { AY_ISIMLERI, YearEndeksGroup } from '../../../../../../services/yiUfeService'
 
 interface YiUfeMatrixTableProps {
   filteredGroups: YearEndeksGroup[]

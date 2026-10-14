@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link } from '@tanstack/react-router'
 import { Star, ChevronUp, ChevronDown } from 'lucide-react'
-import { parseStatusAndName, getStatusBadgeClass } from '../utils/statusUtils'
+import { parseStatusAndName, getStatusBadgeClass } from '../../utils/statusUtils'
 
 interface StarredListSorterProps {
   starredList: string[]

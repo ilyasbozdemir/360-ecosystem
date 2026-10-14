@@ -5,8 +5,8 @@ import {
   FONKSIYONEL_KODLAR,
   FINANSMAN_KODLARI,
   GELIR_KODLARI
-} from '../../../constants/butce-kodlari'
-import { copyToClipboard } from '../../../utils/copyToClipboard'
+} from '../../../../constants/butce-kodlari'
+import { copyToClipboard } from '../../../../utils/copyToClipboard'
 
 export function ButceKodlariTab(): React.JSX.Element {
   const [butceSearch, setButceSearch] = useState('')

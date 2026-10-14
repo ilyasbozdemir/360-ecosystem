@@ -14,8 +14,8 @@ import {
   Search,
   Sparkles
 } from 'lucide-react'
-import { MEVZUAT_KUTUPHANESI, MevzuatItem, MevzuatMadde } from '../data/mevzuat.data'
-import { cn } from '../../../utils/cn'
+import { MEVZUAT_KUTUPHANESI, MevzuatItem, MevzuatMadde } from '../../data/mevzuat.data'
+import { cn } from '../../../../utils/cn'
 
 export function MevzuatKutuphanesiTab(): React.JSX.Element {
   const [selectedKategori, setSelectedKategori] = useState<string>('Tümü')
