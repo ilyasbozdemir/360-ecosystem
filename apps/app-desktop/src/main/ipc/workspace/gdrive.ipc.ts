@@ -131,7 +131,13 @@ async function pruneOldBackups(token: string, folderId: string, maxVersions = 7)
   }
 }
 
+let cachedAppFolderId: string | null = null
+
 async function getOrCreateAppFolder(token: string): Promise<string> {
+  if (cachedAppFolderId) {
+    return cachedAppFolderId
+  }
+
   const folderName = 'TEMIN_360_YEDEKLER'
   const query = encodeURIComponent(
     `mimeType = 'application/vnd.google-apps.folder' and (name = 'TEMIN_360_YEDEKLER' or name = 'TEMIN_360_YEDEKLERİ') and trashed = false`
@@ -144,6 +150,7 @@ async function getOrCreateAppFolder(token: string): Promise<string> {
   )
 
   if (searchRes.status === 401) {
+    cachedAppFolderId = null
     throw new Error(
       'GDRIVE_TOKEN_EXPIRED: Google Drive erişim jetonu (access token) süresi dolmuş veya geçersiz. ' +
         'Lütfen Google OAuth Playground (developers.google.com/oauthplayground) adresinden yeni bir access_token alıp ' +
@@ -154,8 +161,9 @@ async function getOrCreateAppFolder(token: string): Promise<string> {
   if (searchRes.ok) {
     const data = (await searchRes.json()) as { files?: Array<{ id: string; name: string }> }
     if (data.files && data.files.length > 0) {
-      console.log(`[Google Drive] ${data.files[0].name} klasörü bulundu:`, data.files[0].id)
-      return data.files[0].id
+      cachedAppFolderId = data.files[0].id
+      console.log(`[Google Drive] ${data.files[0].name} klasörü bağlandı:`, cachedAppFolderId)
+      return cachedAppFolderId
     }
   } else {
     const errText = await searchRes.text()

@@ -1,8 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
   CheckCircle2,
   Eye,
+  FileSignature,
   FileText,
   Maximize2,
   Minimize2,
@@ -10,7 +11,7 @@ import {
   Search,
   Send,
   Sparkles,
-  FileSignature,
+  X,
 } from "lucide-react";
 import { BelgeAyarlariPaneli } from "./BelgeAyarlariPaneli";
 import { TopluAyarOnayModal } from "./TopluAyarOnayModal";
@@ -48,6 +49,7 @@ interface YeniNesilBelgeStudyosuTabProps {
   onBelgeOlustur?: (belge: any) => Promise<any>;
   onPreviewBelge?: (belge: any) => void;
   onNavigateToV2?: () => void;
+  onClose?: () => void;
 }
 
 export function YeniNesilBelgeStudyosuTab({
@@ -61,6 +63,7 @@ export function YeniNesilBelgeStudyosuTab({
   onBelgeOlustur,
   onPreviewBelge,
   onNavigateToV2,
+  onClose,
 }: YeniNesilBelgeStudyosuTabProps): React.JSX.Element {
   const [selectedDocId, setSelectedDocId] = useState<string>(
     belgeler[0]?.id || "luzum-muzekkeresi",
@@ -160,35 +163,38 @@ export function YeniNesilBelgeStudyosuTab({
     setIsTopluAyarModalOpen(false);
   };
 
-  // Önizleme HTML'i yükle
-  const onBelgeOlusturRef = useRef(onBelgeOlustur);
-  useEffect(() => {
-    onBelgeOlusturRef.current = onBelgeOlustur;
-  }, [onBelgeOlustur]);
-
+  // Seçili belge değiştiğinde veritabanından varsa kayıtlı evrak ayarlarını getir
   useEffect(() => {
     let isCancelled = false;
-    async function loadPreview() {
-      if (!selectedDoc) return;
-      setLoadingPreview(true);
+    async function loadSavedSettings() {
+      if (!dosya?.id || !selectedDoc?.id) return;
       try {
-        if (onBelgeOlusturRef.current) {
-          const res = await onBelgeOlusturRef.current(selectedDoc);
-          if (!isCancelled && res) {
-            setPreviewHtml(typeof res === "string" ? res : res.html || "");
+        const data = await dosyaSablonVeriService.getVeri(
+          dosya.id,
+          selectedDoc.id,
+        );
+        if (!isCancelled && data?.veri_json) {
+          try {
+            const parsed = JSON.parse(data.veri_json);
+            if (parsed.evrakSettings) {
+              setEvrakSettingsMap((prev) => ({
+                ...prev,
+                [selectedDoc.id]: parsed.evrakSettings,
+              }));
+            }
+          } catch {
+            // json parse ignore
           }
         }
       } catch (err) {
-        console.error("Önizleme yüklenirken hata:", err);
-      } finally {
-        if (!isCancelled) setLoadingPreview(false);
+        console.error("Evrak ayarları okunamadı:", err);
       }
     }
-    loadPreview();
+    loadSavedSettings();
     return () => {
       isCancelled = true;
     };
-  }, [selectedDoc]);
+  }, [dosya?.id, selectedDoc?.id]);
 
   // Firma listesi
   const firmalarList = useMemo(() => {
@@ -198,15 +204,15 @@ export function YeniNesilBelgeStudyosuTab({
     }));
   }, [firmalar]);
 
-  const [activeSubView, setActiveSubView] = useState<'belgeler' | 'ust_yazi' | 'islak_imza'>('belgeler');
+  const [activeSubView, setActiveSubView] = useState<
+    "belgeler" | "ust_yazi" | "islak_imza"
+  >("belgeler");
 
   return (
     <div
-      className={
-        isFullScreen
-          ? "fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-xl p-6 overflow-y-auto flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-200"
-          : "w-full flex flex-col gap-4 animate-in fade-in duration-300"
-      }
+      className={isFullScreen
+        ? "fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-xl p-6 overflow-y-auto flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-200"
+        : "w-full flex flex-col gap-4 animate-in fade-in duration-300"}
     >
       {/* Üst Bilgi Rozeti & Görünüm Seçici */}
       <div className="bg-linear-to-r from-blue-600/10 via-indigo-600/10 to-transparent border border-blue-200 dark:border-blue-900/40 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -224,7 +230,8 @@ export function YeniNesilBelgeStudyosuTab({
               </span>
             </div>
             <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
-              Tüm belgelerin muhatap, ilgi, ekler, dağıtım ve imza/paraf rotasını tek merkezden yönetin.
+              Tüm belgelerin muhatap, ilgi, ekler, dağıtım ve imza/paraf
+              rotasını tek merkezden yönetin.
             </p>
           </div>
         </div>
@@ -234,11 +241,11 @@ export function YeniNesilBelgeStudyosuTab({
           <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
             <button
               type="button"
-              onClick={() => setActiveSubView('belgeler')}
+              onClick={() => setActiveSubView("belgeler")}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                activeSubView === 'belgeler'
-                  ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                activeSubView === "belgeler"
+                  ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
               }`}
             >
               <FileText className="w-3.5 h-3.5" />
@@ -247,11 +254,11 @@ export function YeniNesilBelgeStudyosuTab({
 
             <button
               type="button"
-              onClick={() => setActiveSubView('ust_yazi')}
+              onClick={() => setActiveSubView("ust_yazi")}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                activeSubView === 'ust_yazi'
-                  ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                activeSubView === "ust_yazi"
+                  ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
               }`}
             >
               <Send className="w-3.5 h-3.5" />
@@ -260,11 +267,11 @@ export function YeniNesilBelgeStudyosuTab({
 
             <button
               type="button"
-              onClick={() => setActiveSubView('islak_imza')}
+              onClick={() => setActiveSubView("islak_imza")}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                activeSubView === 'islak_imza'
-                  ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                activeSubView === "islak_imza"
+                  ? "bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-xs"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
               }`}
             >
               <FileSignature className="w-3.5 h-3.5" />
@@ -278,201 +285,336 @@ export function YeniNesilBelgeStudyosuTab({
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/25 transition-all cursor-pointer shrink-0"
             title={isFullScreen ? "Pencere Moduna Dön" : "Tam Ekran Stüdyo"}
           >
-            {isFullScreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
-            <span className="hidden sm:inline">{isFullScreen ? "Pencereye Dön" : "Tam Ekran"}</span>
+            {isFullScreen
+              ? <Minimize2 className="w-3.5 h-3.5" />
+              : <Maximize2 className="w-3.5 h-3.5" />}
+            <span className="hidden sm:inline">
+              {isFullScreen ? "Pencereye Dön" : "Tam Ekran"}
+            </span>
           </button>
+
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-rose-600 text-slate-200 hover:text-white border border-slate-700 shadow-md transition-all cursor-pointer shrink-0"
+              title="Stüdyodan Çık"
+            >
+              <X className="w-3.5 h-3.5" />
+              <span>Stüdyoyu Kapat</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {activeSubView === 'islak_imza' ? (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
-          <IslakImzaliBelgeScreen
-            isEmbedded={true}
-            initialBilgiler={{
-              konu: dosya?.konu || dosya?.ad || 'Doğrudan Temin Süreci Kapsamında Islak İmzalı Evrak',
-              belgeSayisi: dosya?.dosya_no ? `${dosya.dosya_no}/TEMİN` : '2026/TEMİN-0142',
-            }}
-          />
-        </div>
-      ) : activeSubView === 'ust_yazi' ? (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
-          <ResmiUstYaziTab />
-        </div>
-      ) : (
-        /* 3 SÜTUNLU ANA ÇALIŞMA ALANI */
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 min-h-[720px] items-stretch">
-        {/* SOL SÜTUN (3 Kolon): BELGE LİSTESİ */}
-        <div className="lg:col-span-3 flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs overflow-hidden">
-          {/* Arama Alanı */}
-          <div className="p-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-850/50">
-            <div className="relative">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Belge veya aşama ara..."
-                className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      {activeSubView === "islak_imza"
+        ? (
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
+            <IslakImzaliBelgeScreen
+              isEmbedded={true}
+              initialBilgiler={{
+                konu: dosya?.konu || dosya?.ad ||
+                  "Doğrudan Temin Süreci Kapsamında Islak İmzalı Evrak",
+                belgeSayisi: dosya?.dosya_no
+                  ? `${dosya.dosya_no}/TEMİN`
+                  : "2026/TEMİN-0142",
+              }}
+            />
+          </div>
+        )
+        : activeSubView === "ust_yazi"
+        ? (
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
+            <ResmiUstYaziTab />
+          </div>
+        )
+        : (
+          /* 3 SÜTUNLU ANA ÇALIŞMA ALANI */
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 min-h-[720px] items-stretch">
+            {/* SOL SÜTUN (3 Kolon): BELGE LİSTESİ */}
+            <div className="lg:col-span-3 flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs overflow-hidden">
+              {/* Arama Alanı */}
+              <div className="p-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-850/50">
+                <div className="relative">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Belge veya aşama ara..."
+                    className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              {/* Belge Kartları Listesi */}
+              <div className="flex-1 overflow-y-auto p-2 space-y-1.5 max-h-[660px]">
+                {filteredBelgeler.map((belge, idx) => {
+                  const isSelected = belge.id === selectedDoc?.id;
+                  const validation = validationMap[belge.id];
+                  const hasWarnings = validation && !validation.isValid;
+
+                  return (
+                    <div
+                      key={`${belge.id}-${idx}`}
+                      onClick={() => setSelectedDocId(belge.id)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          setSelectedDocId(belge.id);
+                        }
+                      }}
+                      className={`w-full text-left p-3 rounded-xl border transition-all cursor-pointer flex flex-col gap-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        isSelected
+                          ? "bg-blue-50 dark:bg-blue-950/40 border-blue-500 dark:border-blue-700 shadow-2xs"
+                          : "bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <FileText
+                            className={`w-4 h-4 shrink-0 ${
+                              isSelected
+                                ? "text-blue-600 dark:text-blue-400"
+                                : "text-slate-400 dark:text-slate-500"
+                            }`}
+                          />
+                          <span className="text-xs font-semibold text-slate-800 dark:text-slate-100 line-clamp-1">
+                            {belge.ad}
+                          </span>
+                        </div>
+                        {belge.zorunlu && (
+                          <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-900/60 px-1.5 py-0.2 rounded-md shrink-0">
+                            Zorunlu
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Eksiklik Uyarısı Rozetleri */}
+                      <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                        {belge.asamaAdi && (
+                          <span className="text-[10px] text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md">
+                            {belge.asamaAdi}
+                          </span>
+                        )}
+
+                        {hasWarnings &&
+                          validation.warnings.map((warn, i) => (
+                            <span
+                              key={i}
+                              className="flex items-center gap-1 text-[10px] font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 px-1.5 py-0.5 rounded-md"
+                            >
+                              <AlertCircle className="w-2.5 h-2.5" />
+                              {warn}
+                            </span>
+                          ))}
+
+                        {validation?.isValid && (
+                          <span className="flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+                            <CheckCircle2 className="w-3 h-3" /> Hazır
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* ORTA SÜTUN (5 Kolon): CANLI ÖNİZLEME */}
+            <div className="lg:col-span-5 flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs overflow-hidden">
+              {/* Önizleme Üst Çubuğu */}
+              <div className="p-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-850/50 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  <span className="text-xs font-bold text-slate-800 dark:text-slate-100">
+                    Önizleme: {selectedDoc?.ad}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {onPreviewBelge && (
+                    <button
+                      type="button"
+                      onClick={() => onPreviewBelge(selectedDoc)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors cursor-pointer shadow-xs"
+                      title="Tam Ekran Resmi Önizleme & Düzenleme"
+                    >
+                      <Eye className="w-3.5 h-3.5 text-blue-500" />
+                      <span>Genişlet</span>
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (previewHtml) {
+                        const frame = document.getElementById(
+                          "belge-preview-iframe",
+                        ) as HTMLIFrameElement;
+                        frame?.contentWindow?.print();
+                      } else if (onPreviewBelge) {
+                        onPreviewBelge(selectedDoc);
+                      }
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors cursor-pointer shadow-xs"
+                    title="Yazdır veya PDF Oluştur"
+                  >
+                    <Printer className="w-3.5 h-3.5" />
+                    <span>Yazdır</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Canlı Belge Çerçevesi & A4 Taslak Görünümü */}
+              <div className="flex-1 bg-slate-100/70 dark:bg-slate-950/80 p-4 md:p-6 flex items-center justify-center overflow-auto min-h-[550px]">
+                {loadingPreview
+                  ? (
+                    <div className="flex flex-col items-center gap-3 text-slate-600 dark:text-slate-400 text-xs">
+                      <div className="w-7 h-7 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                      <span>Belge önizlemesi hazırlanıyor...</span>
+                    </div>
+                  )
+                  : previewHtml
+                  ? (
+                    <iframe
+                      id="belge-preview-iframe"
+                      srcDoc={previewHtml}
+                      title={selectedDoc?.ad || "Belge Önizleme"}
+                      className="w-full h-full min-h-[600px] bg-white rounded-xl shadow-md border border-slate-300 dark:border-slate-800"
+                    />
+                  )
+                  : (
+                    <div className="w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-lg p-6 flex flex-col gap-5 text-slate-800 dark:text-slate-100 animate-in fade-in zoom-in-98 duration-200">
+                      {/* Resmi Antet Taslağı */}
+                      <div className="text-center border-b border-slate-200 dark:border-slate-800 pb-4">
+                        <div className="text-[11px] font-bold tracking-wider text-slate-500 dark:text-slate-400 uppercase">
+                          T.C. İÇİŞLERİ BAKANLIĞI
+                        </div>
+                        <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 mt-0.5">
+                          {dosyaContext?.idare_adi || dosya?.idare_adi ||
+                            "Destek Hizmetleri Dairesi Başkanlığı"}
+                        </div>
+                        <h3 className="text-sm font-bold text-blue-600 dark:text-blue-400 uppercase mt-2 tracking-wide">
+                          {selectedDoc?.ad || "Resmî Belge"}
+                        </h3>
+                      </div>
+
+                      {/* Belge Künyesi */}
+                      <div className="grid grid-cols-2 gap-3 text-xs bg-slate-50 dark:bg-slate-850/60 p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800">
+                        <div>
+                          <span className="text-slate-500 dark:text-slate-400 block text-[10px]">
+                            Dosya / Referans:
+                          </span>
+                          <span className="font-bold">
+                            {dosya?.dosya_no || dosya?.dosyaNo || "2026/DT-001"}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 dark:text-slate-400 block text-[10px]">
+                            Tarih:
+                          </span>
+                          <span className="font-bold">
+                            {dosya?.tarih ||
+                              new Date().toLocaleDateString("tr-TR")}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 dark:text-slate-400 block text-[10px]">
+                            Aşama:
+                          </span>
+                          <span className="font-semibold text-indigo-600 dark:text-indigo-400">
+                            {selectedDoc?.asamaAdi || "Süreç Belgesi"}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 dark:text-slate-400 block text-[10px]">
+                            Zorunluluk:
+                          </span>
+                          <span
+                            className={`font-semibold ${
+                              selectedDoc?.zorunlu
+                                ? "text-rose-600 dark:text-rose-400"
+                                : "text-emerald-600 dark:text-emerald-400"
+                            }`}
+                          >
+                            {selectedDoc?.zorunlu
+                              ? "Zorunlu Belge"
+                              : "Opsiyonel"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Evrak Ayarları Özeti */}
+                      <div className="space-y-2 text-xs">
+                        <div className="flex items-center justify-between py-1.5 border-b border-slate-150 dark:border-slate-800">
+                          <span className="text-slate-500 dark:text-slate-400">
+                            Muhatap Kurum/Birim:
+                          </span>
+                          <span className="font-semibold text-slate-700 dark:text-slate-200 max-w-[200px] truncate text-right">
+                            {currentEvrakSettings?.muhatap?.hitap ||
+                              "Tanımlanmamış (Varsayılan)"}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between py-1.5 border-b border-slate-150 dark:border-slate-800">
+                          <span className="text-slate-500 dark:text-slate-400">
+                            İlgi ve Ekler:
+                          </span>
+                          <span className="font-semibold text-slate-700 dark:text-slate-200">
+                            {currentEvrakSettings?.ilgiListesi?.length || 0}
+                            {" "}
+                            İlgi, {currentEvrakSettings?.ekListesi?.length || 0}
+                            {" "}
+                            Ek
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between py-1.5 border-b border-slate-150 dark:border-slate-800">
+                          <span className="text-slate-500 dark:text-slate-400">
+                            İmza / Paraf Rotası:
+                          </span>
+                          <span className="font-semibold text-slate-700 dark:text-slate-200">
+                            {currentEvrakSettings?.rotaAdimlari?.length || 0}
+                            {" "}
+                            Görevli / Yetkili
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Eylem Butonu */}
+                      {onPreviewBelge && (
+                        <button
+                          type="button"
+                          onClick={() => onPreviewBelge(selectedDoc)}
+                          className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-600/20 transition-all cursor-pointer"
+                        >
+                          <Eye className="w-4 h-4" />
+                          <span>
+                            Canlı Belgeyi Tam Ekranda Önizle &amp; Yazdır
+                          </span>
+                        </button>
+                      )}
+                    </div>
+                  )}
+              </div>
+            </div>
+
+            {/* SAĞ SÜTUN (4 Kolon): BELGE AYARLARI PANELİ */}
+            <div className="lg:col-span-4 flex flex-col">
+              <BelgeAyarlariPaneli
+                selectedBelgeId={selectedDoc?.id}
+                belgeAdi={selectedDoc?.ad}
+                evrakSettings={currentEvrakSettings}
+                onChange={handleEvrakSettingsChange}
+                dosyaFirmalari={firmalarList}
+                oncekiBelgeler={belgeler.map((b) => ({
+                  id: b.id,
+                  baslik: b.ad,
+                }))}
+                onTopluUygulaClick={() => setIsTopluAyarModalOpen(true)}
               />
             </div>
           </div>
-
-          {/* Belge Kartları Listesi */}
-          <div className="flex-1 overflow-y-auto p-2 space-y-1.5 max-h-[660px]">
-            {filteredBelgeler.map((belge, idx) => {
-              const isSelected = belge.id === selectedDoc?.id;
-              const validation = validationMap[belge.id];
-              const hasWarnings = validation && !validation.isValid;
-
-              return (
-                <div
-                  key={`${belge.id}-${idx}`}
-                  onClick={() => setSelectedDocId(belge.id)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      setSelectedDocId(belge.id);
-                    }
-                  }}
-                  className={`w-full text-left p-3 rounded-xl border transition-all cursor-pointer flex flex-col gap-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    isSelected
-                      ? "bg-blue-50 dark:bg-blue-950/40 border-blue-500 dark:border-blue-700 shadow-2xs"
-                      : "bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <FileText
-                        className={`w-4 h-4 shrink-0 ${
-                          isSelected
-                            ? "text-blue-600 dark:text-blue-400"
-                            : "text-slate-400 dark:text-slate-500"
-                        }`}
-                      />
-                      <span className="text-xs font-semibold text-slate-800 dark:text-slate-100 line-clamp-1">
-                        {belge.ad}
-                      </span>
-                    </div>
-                    {belge.zorunlu && (
-                      <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-900/60 px-1.5 py-0.2 rounded-md shrink-0">
-                        Zorunlu
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Eksiklik Uyarısı Rozetleri */}
-                  <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                    {belge.asamaAdi && (
-                      <span className="text-[10px] text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md">
-                        {belge.asamaAdi}
-                      </span>
-                    )}
-
-                    {hasWarnings &&
-                      validation.warnings.map((warn, i) => (
-                        <span
-                          key={i}
-                          className="flex items-center gap-1 text-[10px] font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 px-1.5 py-0.5 rounded-md"
-                        >
-                          <AlertCircle className="w-2.5 h-2.5" />
-                          {warn}
-                        </span>
-                      ))}
-
-                    {validation?.isValid && (
-                      <span className="flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
-                        <CheckCircle2 className="w-3 h-3" /> Hazır
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* ORTA SÜTUN (5 Kolon): CANLI ÖNİZLEME */}
-        <div className="lg:col-span-5 flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs overflow-hidden">
-          {/* Önizleme Üst Çubuğu */}
-          <div className="p-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-850/50 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-100">
-                Önizleme: {selectedDoc?.ad}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              {onPreviewBelge && (
-                <button
-                  type="button"
-                  onClick={() => onPreviewBelge(selectedDoc)}
-                  className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors cursor-pointer"
-                  title="Tam Ekran Önizle"
-                >
-                  <Eye className="w-3.5 h-3.5" />
-                  Genişlet
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => {
-                  const frame = document.getElementById(
-                    "belge-preview-iframe",
-                  ) as HTMLIFrameElement;
-                  frame?.contentWindow?.print();
-                }}
-                className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors cursor-pointer"
-              >
-                <Printer className="w-3.5 h-3.5" />
-                Yazdır
-              </button>
-            </div>
-          </div>
-
-          {/* Canlı Belge Çerçevesi */}
-          <div className="flex-1 bg-slate-100 dark:bg-slate-950 p-4 flex items-center justify-center overflow-auto min-h-[550px]">
-            {loadingPreview
-              ? (
-                <div className="flex flex-col items-center gap-2 text-slate-600 dark:text-slate-400 text-xs">
-                  <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                  Belge önizlemesi hazırlanıyor...
-                </div>
-              )
-              : previewHtml
-              ? (
-                <iframe
-                  id="belge-preview-iframe"
-                  srcDoc={previewHtml}
-                  title={selectedDoc?.ad || "Belge Önizleme"}
-                  className="w-full h-full min-h-[600px] bg-white rounded-xl shadow-md border border-slate-300 dark:border-slate-800"
-                />
-              )
-              : (
-                <div className="text-center p-6 text-slate-600 dark:text-slate-400 text-xs">
-                  <FileText className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto mb-2" />
-                  Bu belge için görsel önizleme oluşturulamadı veya veri
-                  bekleniyor.
-                </div>
-              )}
-          </div>
-        </div>
-
-        {/* SAĞ SÜTUN (4 Kolon): BELGE AYARLARI PANELİ */}
-        <div className="lg:col-span-4 flex flex-col">
-          <BelgeAyarlariPaneli
-            selectedBelgeId={selectedDoc?.id}
-            belgeAdi={selectedDoc?.ad}
-            evrakSettings={currentEvrakSettings}
-            onChange={handleEvrakSettingsChange}
-            dosyaFirmalari={firmalarList}
-            oncekiBelgeler={belgeler.map((b) => ({ id: b.id, baslik: b.ad }))}
-            onTopluUygulaClick={() => setIsTopluAyarModalOpen(true)}
-          />
-        </div>
-      </div>
-      )}
+        )}
 
       {/* Toplu Ayar Onay Modali */}
       <TopluAyarOnayModal

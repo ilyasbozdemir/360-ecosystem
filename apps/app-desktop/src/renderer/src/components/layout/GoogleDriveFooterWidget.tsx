@@ -40,9 +40,12 @@ export function GoogleDriveFooterWidget(): React.JSX.Element | null {
   const [showUpdateModal, setShowUpdateModal] = useState(false)
   const [showPopover, setShowPopover] = useState(false)
   const popoverRef = useRef<HTMLDivElement>(null)
+  const isCheckingRef = useRef(false)
 
   const checkGoogleDriveUpdates = async (silent = false): Promise<void> => {
     if (!window.electron?.ipcRenderer) return
+    if (isCheckingRef.current) return
+    isCheckingRef.current = true
     if (!silent) setIsChecking(true)
 
     try {
@@ -55,6 +58,7 @@ export function GoogleDriveFooterWidget(): React.JSX.Element | null {
 
       if (!hasDrive) {
         setIsChecking(false)
+        isCheckingRef.current = false
         return
       }
 

@@ -211,22 +211,9 @@ export default function SurecAkisiScreen(): React.JSX.Element {
         onDosyalariEkle={dosyalariEkle}
       />
 
-      {/* Belge & Resmî Yazışma Stüdyosu - Özel Tam Ekran Stüdyo Modu */}
+      {/* Belge & Resmî Yazışma Stüdyosu - Tam Ekran Stüdyo Modu */}
       {isStudioOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex flex-col p-4 md:p-6 overflow-y-auto animate-in fade-in duration-200">
-          <div className="w-full max-w-7xl mx-auto flex items-center justify-between pb-3 mb-2 border-b border-slate-700/50">
-            <div className="text-white text-sm font-bold flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              Doğrudan Temin Belge &amp; Resmî Yazışma Stüdyosu
-            </div>
-            <button
-              type="button"
-              onClick={() => setIsStudioOpen(false)}
-              className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-all cursor-pointer border border-slate-700 shadow-sm"
-            >
-              ✕ Stüdyoyu Kapat
-            </button>
-          </div>
+        <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex flex-col p-3 md:p-6 overflow-y-auto animate-in fade-in duration-200">
           <div className="w-full max-w-7xl mx-auto flex-1">
             <YeniNesilBelgeStudyosuTab
               dosya={dosya}
@@ -238,6 +225,7 @@ export default function SurecAkisiScreen(): React.JSX.Element {
               dosyaContext={dosyaContext}
               onBelgeOlustur={handleBelgeOlustur}
               onPreviewBelge={setPreviewBelge}
+              onClose={() => setIsStudioOpen(false)}
             />
           </div>
         </div>

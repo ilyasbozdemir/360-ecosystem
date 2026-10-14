@@ -44,19 +44,17 @@ export function BelgeAyarlariPaneli({
   const [activeTab, setActiveTab] = useState<'muhatap' | 'ilgi' | 'ek' | 'dagitim' | 'rota'>('muhatap')
 
   const template = selectedBelgeId ? TemplateRegistryService.getTemplateById(selectedBelgeId) : undefined
-  const caps = template?.capabilities
+  const caps = template?.capabilities || {
+    supportsMuhatap: true,
+    supportsIlgi: true,
+    supportsEk: true,
+    supportsDagitim: true,
+    supportsRota: true
+  }
   const workflow = selectedBelgeId ? TemplateRegistryService.getWorkflow(selectedBelgeId) : undefined
 
-  // Yalnızca ilk sürüm şablonları kontrolü: luzum-muzekkeresi, dogrudan-temin-onay-belgesi, odeme-yazisi
-  const isSupportedV1 =
-    selectedBelgeId === 'luzum-muzekkeresi' ||
-    selectedBelgeId === 'dogrudan-temin-onay-belgesi' ||
-    selectedBelgeId === 'odeme-yazisi'
-
-  // Eğer şablonda ilgili yetenek bayrakları yoksa veya V1 dışındaysa boş durum göster
-  const hasAnyCapability =
-    isSupportedV1 &&
-    Boolean(caps?.supportsMuhatap || caps?.supportsIlgi || caps?.supportsEk || caps?.supportsDagitim || caps?.supportsRota)
+  // Tüm doğrudan temin belgeleri için ayar paneli aktif kabul edilir
+  const hasAnyCapability = true
 
   // Aktif sekmeyi geçerli ilk sekmeye ayarla
   useEffect(() => {
@@ -65,13 +63,13 @@ export function BelgeAyarlariPaneli({
     else if (caps?.supportsEk) setActiveTab('ek')
   }, [selectedBelgeId, caps?.supportsMuhatap, caps?.supportsIlgi, caps?.supportsEk])
 
-  if (!hasAnyCapability || !template) {
+  if (!selectedBelgeId) {
     return (
       <div className="h-full flex flex-col items-center justify-center p-6 text-center text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl">
         <Settings className="w-10 h-10 text-slate-300 dark:text-slate-600 mb-3" />
-        <h3 className="font-semibold text-slate-700 dark:text-slate-300 text-sm">Belge Ayarları Kullanılamaz</h3>
+        <h3 className="font-semibold text-slate-700 dark:text-slate-300 text-sm">Belge Seçiniz</h3>
         <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 max-w-xs">
-          Seçilen belge ({belgeAdi || selectedBelgeId || 'Yok'}) için ek Resmî Yazışma veya EBYS ayarı tanımlanmamıştır.
+          Resmî yazışma ve evrak ayarlarını düzenlemek için sol listeden bir belge seçin.
         </p>
       </div>
     )
