@@ -53,7 +53,8 @@ function parseChangelogFile(filePath: string): ChangelogSection[] | null {
 
 export function registerAppIpcHandlers(
   setForceQuit: () => void,
-  initialFilePath: string | null
+  initialFilePath: string | null,
+  safeExitApp?: () => void
 ): void {
   // Realtime multi-window / tab data event relay
   ipcMain.on('app:data-changed', (event, msg) => {
@@ -75,7 +76,15 @@ export function registerAppIpcHandlers(
 
   ipcMain.handle('app:force-quit', () => {
     setForceQuit()
-    app.quit()
+    if (safeExitApp) {
+      safeExitApp()
+    } else {
+      try {
+        app.quit()
+      } catch {
+        app.exit(0)
+      }
+    }
   })
 
   ipcMain.handle('app:get-recent-files', () => {

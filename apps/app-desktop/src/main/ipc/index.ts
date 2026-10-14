@@ -15,6 +15,7 @@ import { registerKutuphaneIpc } from './kutuphane.ipc'
 export interface IpcRegistrationOptions {
   closeAllSecondaryWindows: () => void
   setForceQuit: () => void
+  safeExitApp?: () => void
   initialFilePath: string | null
 }
 
@@ -32,7 +33,9 @@ export function registerAllIpcHandlers(options: IpcRegistrationOptions): void {
   safeRegister('Network', () => registerNetworkIpcHandlers())
   safeRegister('Document', () => registerDocumentIpcHandlers())
   safeRegister('Template', () => registerTemplateIpcHandlers())
-  safeRegister('App', () => registerAppIpcHandlers(options.setForceQuit, options.initialFilePath))
+  safeRegister('App', () =>
+    registerAppIpcHandlers(options.setForceQuit, options.initialFilePath, options.safeExitApp)
+  )
   safeRegister('Dialog', () => registerDialogIpcHandlers())
   safeRegister('Ai', () => registerAiIpcHandlers())
   safeRegister('Updater', () => registerUpdaterIpcHandlers())

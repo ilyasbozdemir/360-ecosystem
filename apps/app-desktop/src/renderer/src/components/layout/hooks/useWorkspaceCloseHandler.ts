@@ -57,6 +57,17 @@ export function useWorkspaceCloseHandler(
     return []
   }
 
+  const withTimeout = <T>(promise: Promise<T>, ms = 4000, fallbackVal?: T): Promise<T> => {
+    let timer: NodeJS.Timeout
+    const timeoutPromise = new Promise<T>((resolve, reject) => {
+      timer = setTimeout(() => {
+        if (fallbackVal !== undefined) resolve(fallbackVal)
+        else reject(new Error(`İşlem zaman aşımına uğradı (${ms / 1000}sn)`))
+      }, ms)
+    })
+    return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timer))
+  }
+
   const handleConfirmClose = async (
     types: CloseActionType[] | CloseActionType,
     forceQuit?: boolean
@@ -95,27 +106,39 @@ export function useWorkspaceCloseHandler(
       try {
         if (type === 'backup') {
           setShutdownStatusText('Farklı konuma yerel yedek alınıyor...')
-          const res = await window.electron.ipcRenderer.invoke('workspace:backup')
+          const res = await withTimeout(
+            window.electron.ipcRenderer.invoke('workspace:backup'),
+            4000
+          )
           if (!res.success && res.error !== 'Yedekleme iptal edildi') {
             throw new Error(`Yerel yedekleme hatası: ${res.error}`)
           }
         } else if (type === 'email') {
           setShutdownStatusText('Yedek dosyası e-posta ile gönderiliyor...')
-          const res = await window.electron.ipcRenderer.invoke('workspace:backup-email')
+          const res = await withTimeout(
+            window.electron.ipcRenderer.invoke('workspace:backup-email'),
+            4000
+          )
           if (!res.success) {
             throw new Error(`E-posta yedekleme hatası: ${res.error}`)
           }
         } else if (type === 'server') {
           setShutdownStatusText('Sunucuya senkronize ediliyor...')
-          const res = await window.electron.ipcRenderer.invoke('workspace:backup-server')
+          const res = await withTimeout(
+            window.electron.ipcRenderer.invoke('workspace:backup-server'),
+            4000
+          )
           if (!res?.success) {
             throw new Error(res?.error || 'Sunucuya yedekleme işlemi başarısız oldu.')
           }
         } else if (type === 'gdrive') {
           setShutdownStatusText('Google Drive bulutuna yükleniyor...')
-          const res = await window.electron.ipcRenderer.invoke('workspace:backup-gdrive', {
-            force: true
-          })
+          const res = await withTimeout(
+            window.electron.ipcRenderer.invoke('workspace:backup-gdrive', {
+              force: true
+            }),
+            5000
+          )
           if (res?.fileId) {
             localStorage.setItem('lastGdriveUploadedFileId', res.fileId)
           }
@@ -146,7 +169,9 @@ export function useWorkspaceCloseHandler(
     )
     setShutdownStatusText('Çalışma dosyası kapatılıyor...')
 
-    await closeWorkspace()
+    try {
+      await withTimeout(closeWorkspace(), 2000, undefined)
+    } catch {}
     queryClient.clear()
 
     setShutdownSteps((prev) =>
@@ -154,7 +179,7 @@ export function useWorkspaceCloseHandler(
     )
     setShutdownStatusText('İşlemler tamamlandı, çıkış yapılıyor...')
 
-    await new Promise((resolve) => setTimeout(resolve, 400))
+    await new Promise((resolve) => setTimeout(resolve, 200))
 
     const shouldQuit = forceQuit !== undefined ? forceQuit : isQuittingApp
     if (shouldQuit) {
@@ -193,25 +218,49 @@ export function useWorkspaceCloseHandler(
       setIsQuittingApp(true)
       window.electron?.ipcRenderer.send('app:cancel-quit-timeout')
       try {
-        const s = await window.electron?.ipcRenderer?.invoke('db:get-settings')
-        if (
-          s?.closeActionRemember === 'true' &&
-          s?.closeActionPreference &&
-          s.closeActionPreference !== 'ask'
-        ) {
-          const actions = parseSavedClosePreferences(s.closeActionPreference)
-          if (actions.length > 0 && !actions.includes('none')) {
-            await handleConfirmClose(actions, true)
-            return
-          } else if (actions.includes('none')) {
-            await handleConfirmClose([], true)
-            return
+        const s = await withTimeout(
+          window.electron?.ipcRenderer?.invoke('db:get-settings'),
+          1000,
+          null
+        )
+        const changesRes = await withTimeout(
+          window.electron?.ipcRenderer?.invoke('workspace:check-changes'),
+          1000,
+          null
+        )
+
+        let actionsToRun: CloseActionType[] = []
+
+        // 1. Kullanıcının kaydedilmiş bir yedekleme tercihi var mı?
+        if (s?.closeActionRemember === 'true' && s?.closeActionPreference) {
+          if (s.closeActionPreference !== 'ask') {
+            const parsed = parseSavedClosePreferences(s.closeActionPreference)
+            actionsToRun = parsed.filter((x) => x !== 'none')
+          }
+        } else {
+          // 2. Otomatik Google Drive yedekleme ayarlanmış ve değişiklik var mı?
+          const isDriveConfigured =
+            !!s?.gdriveAccessToken ||
+            !!s?.gdriveRefreshToken ||
+            (!!s?.gdriveClientId && !!s?.gdriveClientSecret)
+          if (isDriveConfigured && changesRes?.hasGdriveChanges) {
+            actionsToRun = ['gdrive']
           }
         }
+
+        // Eğer çalışacak bir yedekleme varsa:
+        if (actionsToRun.length > 0) {
+          await handleConfirmClose(actionsToRun, true)
+          return
+        }
+
+        // Eğer yedekleme kapalı veya seçilmemişse: hiç bekletmeden ANINDA kapat!
+        await handleConfirmClose([], true)
+        return
       } catch (err) {
-        console.error('Error handling remembered close preference:', err)
+        console.error('Error handling quit request, forcing exit:', err)
+        await window.electron?.ipcRenderer?.invoke('app:force-quit')
       }
-      setIsCloseModalOpen(true)
     }
 
     const handleCloseRequest = async () => {

@@ -1,9 +1,34 @@
-    GNU AFFERO GENERAL PUBLIC LICENSE
-       Version 3, 19 November 2007
+================================================================================
+TEMİN 360 - DUAL LICENSING NOTICE / ÇİFT LİSANSLAMA BİLDİRİMİ
+================================================================================
 
-Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/> Everyone is
-permitted to copy and distribute verbatim copies of this license document, but
-changing it is not allowed.
+TEMİN 360 is distributed under a dual-licensing model:
+
+1. Open Source License (GNU AGPLv3):
+   For individuals, open-source developers, academic research, and community
+   contributions, this software is licensed under the terms of the GNU Affero
+   General Public License version 3 (AGPLv3) as published by the Free Software
+   Foundation (the full text is provided below).
+
+2. Commercial & Public Sector Enterprise License:
+   For public institutions (Ministries, Municipalities, Special Budget Agencies,
+   Universities), enterprises, and commercial contractors who require closed-source
+   intranet deployment, customized workflows, proprietary integrations, SLA
+   maintenance, or exemption from the copyleft/source-disclosure obligations
+   of the AGPLv3, a separate commercial license is available.
+
+For commercial licensing, enterprise deployment, and procurement inquiries:
+- Contact: iletisim@ilyasbozdemir.dev
+- Website: https://temin360.ilyasbozdemir.dev
+
+================================================================================
+GNU AFFERO GENERAL PUBLIC LICENSE
+Version 3, 19 November 2007
+================================================================================
+
+Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+Everyone is permitted to copy and distribute verbatim copies of this license
+document, but changing it is not allowed.
 
     Preamble
 
@@ -584,7 +609,7 @@ them to the start of each source file to most effectively state the exclusion of
 warranty; and each file should have at least the "copyright" line and a pointer
 to where the full notice is found.
 
-    hakim-pro-app - Kamu Harcama, İhale ve Hakediş Yönetim Sistemi
+    temin-360-app - Kamu Harcama, İhale, Doğrudan Temin ve Hakediş Yönetim Sistemi
     Copyright (C) 2026  İlyas Bozdemir
 
     This program is free software: you can redistribute it and/or modify

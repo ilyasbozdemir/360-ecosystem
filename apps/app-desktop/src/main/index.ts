@@ -192,13 +192,49 @@ function closeAllSecondaryWindows(): void {
   dosyaWindows.clear()
 }
 
-// Uygulama tamamen kapanırken (Quit) aktif dosyayı/lock'u temizle ve buluta son verileri aktar
-app.on('will-quit', () => {
+// Güvenli, deterministik ve donmayı önleyen çıkış fonksiyonu
+function safeExitApp(): void {
+  isForceQuitting = true
+  writeLog('INFO', 'Executing safeExitApp shutdown sequence')
   try {
-    performAutoCloudSync()
-  } catch {
-    // ignore
-  }
+    closeAllSecondaryWindows()
+  } catch {}
+  try {
+    if (workspaceManager.isDirty()) {
+      workspaceManager.save()
+    }
+    workspaceManager.close()
+  } catch {}
+  try {
+    stopServer()
+  } catch {}
+  try {
+    stopExpressServer()
+  } catch {}
+  try {
+    disconnectFromServer()
+  } catch {}
+
+  try {
+    const windows = BrowserWindow.getAllWindows()
+    for (const win of windows) {
+      if (!win.isDestroyed()) {
+        win.destroy()
+      }
+    }
+  } catch {}
+
+  setTimeout(() => {
+    try {
+      app.exit(0)
+    } catch {
+      process.exit(0)
+    }
+  }, 100)
+}
+
+// Uygulama tamamen kapanırken (Quit) aktif dosyayı/lock'u temizle
+app.on('will-quit', () => {
   try {
     closeAllSecondaryWindows()
     workspaceManager.close()
@@ -295,15 +331,12 @@ function createWindow(): void {
       event.preventDefault()
       mainWindow.webContents.send('app:quit-request')
 
-      // Güvenlik: Kullanıcının modalı görmesi ve bulut yüklemesinin tamamlanması için 5 dakika (300sn) güvenlik süresi
+      // Güvenlik: Kullanıcının yedekleme adımlarını tamamlaması için 5 saniye zaman sınırı (donmayı önler)
       if (quitRequestTimeout) clearTimeout(quitRequestTimeout)
       quitRequestTimeout = setTimeout(() => {
-        writeLog('WARN', 'Renderer quit response timed out, forcing window close')
-        isForceQuitting = true
-        if (!mainWindow.isDestroyed()) {
-          mainWindow.close()
-        }
-      }, 300000)
+        writeLog('WARN', 'Renderer quit response timed out, forcing safe exit')
+        safeExitApp()
+      }, 5000)
     }
   })
 
@@ -633,6 +666,7 @@ if (!gotTheLock && !isMultiInstance) {
       setForceQuit: () => {
         isForceQuitting = true
       },
+      safeExitApp,
       initialFilePath
     })
 
@@ -653,7 +687,7 @@ if (!gotTheLock && !isMultiInstance) {
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
-    app.quit()
+    safeExitApp()
   }
 })
 
