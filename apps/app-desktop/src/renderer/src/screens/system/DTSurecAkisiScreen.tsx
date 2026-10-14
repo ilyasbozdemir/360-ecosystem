@@ -51,12 +51,12 @@ export default function SurecAkisiScreen(): React.JSX.Element {
 
   const tabs = [
     { id: 'ozet', label: 'Özet' },
-    { id: 'studyo', label: 'Süreç Akışı v2 (Belge & Üst Yazı Stüdyosu)' },
+    { id: 'studyo', label: 'Belge & Resmî Yazışma Stüdyosu' },
     { id: 'malzeme', label: 'Malzeme Listesi' },
     { id: 'firmalar', label: 'İstekli Firmalar' },
     { id: 'komisyon', label: 'Komisyon' },
-    { id: 'belgeler', label: 'Belgeler' },
-    { id: 'surec', label: 'Süreç' }
+    { id: 'surec', label: 'Süreç Aşamaları' },
+    { id: 'belgeler', label: 'Evrak Arşivi' }
   ]
 
   const handleNavigateCiktiMerkezi = () => navigate({ to: APP_ROUTES.CIKTI_MERKEZI_DASHBOARD as any })

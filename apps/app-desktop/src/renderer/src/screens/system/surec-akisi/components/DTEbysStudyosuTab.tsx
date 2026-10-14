@@ -84,8 +84,8 @@ export function DTEbysStudyosuTab({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100">
-                Doğrudan Temin Süreç Akışı v2: EBYS Resmî Yazışma Stüdyosu
+              <h2 className="text-sm font-bold text-slate-850 dark:text-slate-100">
+                Doğrudan Temin Resmî Yazışma Stüdyosu
               </h2>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
                 EYP 2.0 & Yönetmelik Uyumlu

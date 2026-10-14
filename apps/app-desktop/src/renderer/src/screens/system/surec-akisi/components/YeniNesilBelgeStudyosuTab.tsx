@@ -215,7 +215,7 @@ export function YeniNesilBelgeStudyosuTab({
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-sm font-bold text-slate-850 dark:text-slate-100">
-                Doğrudan Temin Süreç Akışı v2 (Belge &amp; Resmî Yazışma Stüdyosu)
+                Doğrudan Temin Belge &amp; Resmî Yazışma Stüdyosu
               </h2>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
                 EYP 2.0 &amp; Yönetmelik Uyumlu
@@ -261,10 +261,10 @@ export function YeniNesilBelgeStudyosuTab({
             type="button"
             onClick={() => setIsFullScreen((prev) => !prev)}
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/25 transition-all cursor-pointer shrink-0"
-            title={isFullScreen ? "Pencere Moduna Dön" : "Afilli Tam Ekran Stüdyoyu Başlat"}
+            title={isFullScreen ? "Pencere Moduna Dön" : "Tam Ekran Stüdyo"}
           >
             {isFullScreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
-            <span className="hidden sm:inline">{isFullScreen ? "Pencereye Dön" : "Afilli Tam Ekran"}</span>
+            <span className="hidden sm:inline">{isFullScreen ? "Pencereye Dön" : "Tam Ekran"}</span>
           </button>
         </div>
       </div>
