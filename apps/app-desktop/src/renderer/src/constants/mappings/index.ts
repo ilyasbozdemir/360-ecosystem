@@ -78,6 +78,10 @@ export const processMappingRegistry: Record<string, ProcessMapping> = {
   'hizmet-isleri-kabul-tutanagi': allOther.HizmetIsleriKabulTutanagiMapping,
   'gunluk-calisma-puantaj-cizelgesi': allOther.HizmetIsleriKabulTutanagiMapping,
   'muayene-kabul-tutanagi': allOther.MuayeneKabulTutanagiMapping,
+  'kik048-yapim-gecici-kabul-teklif': allOther.Kik048YapimGeciciKabulTeklifMapping,
+  'kik049-yapim-gecici-kabul-tutanagi': allOther.Kik049YapimGeciciKabulTutanagiMapping,
+  'kik050-yapim-kesin-kabul-teklif': allOther.Kik050YapimKesinKabulTeklifMapping,
+  'kik051-yapim-kesin-kabul-tutanagi': allOther.Kik051YapimKesinKabulTutanagiMapping,
   'odeme-emri-belgesi': allOther.OdemeEmriBelgesiMapping,
   'odeme-yazisi': allOther.OdemeYazisiMapping,
   'tasinir-islem-fisi': allOther.TasinirIslemFisiMapping,
@@ -221,6 +225,18 @@ export function getDefaultMappingForProcess(processPath: string): ProcessMapping
       return allOther.HizmetIsleriKabulTutanagiMapping
     case 'muayene-kabul-tutanagi':
       return allOther.MuayeneKabulTutanagiMapping
+    case 'kik048-yapim-gecici-kabul-teklif':
+    case 'kik048':
+      return allOther.Kik048YapimGeciciKabulTeklifMapping
+    case 'kik049-yapim-gecici-kabul-tutanagi':
+    case 'kik049':
+      return allOther.Kik049YapimGeciciKabulTutanagiMapping
+    case 'kik050-yapim-kesin-kabul-teklif':
+    case 'kik050':
+      return allOther.Kik050YapimKesinKabulTeklifMapping
+    case 'kik051-yapim-kesin-kabul-tutanagi':
+    case 'kik051':
+      return allOther.Kik051YapimKesinKabulTutanagiMapping
     case 'odeme-emri-belgesi':
       return allOther.OdemeEmriBelgesiMapping
     case 'odeme-yazisi':

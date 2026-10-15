@@ -34,6 +34,11 @@ export const TeknikSartnameSchema = z.object({
   onaylayanPersonelUnvan: z.any().optional(),
   solLogo: z.any().optional(),
   sagLogo: z.any().optional(),
+  // KİK / Standart Form Bilgileri (İsteğe Bağlı)
+  kikKodu: z.string().optional(),
+  kikAdi: z.string().optional(),
+  standartFormKodu: z.string().optional(),
+  standartFormAdi: z.string().optional(),
 }).catchall(z.any());
 
 export type TeknikSartnameType = z.infer<typeof TeknikSartnameSchema>;

@@ -22,9 +22,9 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     etiketler: ['Doğrudan Temin', '22/d', 'Piyasa Araştırması', 'Resmi Onay'],
     yeniMi: true,
     altMetinOzeti: 'Lüzum kağıdı · onay belgesi · teklif mektupları · piyasa fiyat araştırma -...',
-    routePath: '/surec-studyosu',
-    removable: false,
-    silinebilir: false,
+    routePath: '/surec-studyosu?modulId=kik-dogrudan-temin-22d',
+    removable: true,
+    silinebilir: true,
     araclar: ['KİK Parasal Limit Denetleyicisi', 'KDV Tevkifat Hesaplama', 'EKAP Yasaklılık Kontrol'],
     asamalar: [
       { sira: 1, baslik: 'İhtiyaç Tespiti & Talep', aciklama: 'Birim talep fişi ve ihtiyaç gerekçesinin oluşturulması.' },
@@ -36,14 +36,78 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
       { sira: 7, baslik: 'Ödeme Emri & Muhasebe', aciklama: 'Fatura tahakkuk müzekkeresi ve harcama evraklarının teslimi.' }
     ],
     belgeler: [
-      { ad: 'İhtiyaç ve Talep Müzekkeresi', kod: 'DT-01', aciklama: 'Alımı yapacak servis tarafından düzenlenen gerekçeli talep formu.', zorunluMu: true },
-      { ad: 'Doğrudan Temin Onay Belgesi (Standart Form)', kod: 'DT-02', aciklama: 'Harcama yetkilisinden alınan resmi harcama talimatı.', zorunluMu: true },
-      { ad: 'Piyasa Fiyat Araştırması Teklif Mektubu', kod: 'DT-03', aciklama: 'Firmalardan kaşeli/imzalı teklif almak için gönderilen mektup.', zorunluMu: true },
-      { ad: 'Piyasa Fiyat Araştırması Tutanağı', kod: 'DT-04', aciklama: 'Fiyatların kıyaslandığı ve en uygun teklifin açıklandığı tutanak.', zorunluMu: true },
-      { ad: 'Muayene ve Kabul Komisyonu Tutanağı', kod: 'DT-05', aciklama: 'Teslim edilen mal veya hizmetin şartlara uygunluğunu tescil eden evrak.', zorunluMu: true },
-      { ad: 'Doğrudan Temin Tip Sözleşmesi', kod: 'DT-06', aciklama: 'Gerektiğinde firma ile idare arasında imzalanan taahhüt sözleşmesi.', zorunluMu: false },
-      { ad: 'Sipariş ve Bildirim Mektubu', kod: 'DT-07', aciklama: 'Yüklenici firmaya işin verildiğini bildiren resmi tebligat.', zorunluMu: false },
-      { ad: 'Harcama Pusulası / Dizi Pusulası', kod: 'DT-08', aciklama: 'Dosyadaki tüm evrakların sırasını gösteren klasör kapak fihristi.', zorunluMu: false }
+      {
+        ad: 'Standart Form: İhtiyaç Belgesi ve Harcama Talep Müzekkeresi (4734 Sayılı KİK m.22 / MYHBY m.4/e)',
+        kod: 'KİK-İHTİYAÇ / MYHBY-4/e',
+        aciklama: '4734 Sayılı Kanun ve MYHBY m.4/e uyarınca harcama birimi tarafından düzenlenen gerekçeli talep ve alım başlatma belgesi.',
+        zorunluMu: true
+      },
+      {
+        ad: 'Standart Form-KİK024.0/M: Doğrudan Temin Onay Belgesi (Harcama Talimatı)',
+        kod: 'Standart Form-KİK024.0/M',
+        aciklama: '4734 Sayılı KİK m.22 gereğince harcama yetkilisinden alınan bütçe ödeneği bloke ve resmi harcama talimatı.',
+        zorunluMu: true
+      },
+      {
+        ad: 'Standart Form-KİK027.0/M: Birim Fiyat Teklif Mektubu ve Fiyat İsteme Formu',
+        kod: 'Standart Form-KİK027.0/M',
+        aciklama: '4734 Sayılı KİK m.22 kapsamında isteklilerden kaşeli/imzalı teklif almak için gönderilen resmi mektup.',
+        zorunluMu: true
+      },
+      {
+        ad: 'Standart Form (MYHBY Örnek No: 2): Piyasa Fiyat Araştırması Tutanağı',
+        kod: 'MYHBY-Örnek:2 (KİK m.22)',
+        aciklama: 'Fiyatların kıyaslandığı, en avantajlı teklifin ve görevlendirilen piyasa araştırma görevlilerinin imzalarının yer aldığı tutanak.',
+        zorunluMu: true
+      },
+      {
+        ad: 'Standart Form-KİK054.0/M: Mal Alımları Muayene ve Kabul Komisyonu Tutanağı',
+        kod: 'Standart Form-KİK054.0/M',
+        aciklama: 'Mal Alımları Denetim Muayene ve Kabul İşlemlerine Dair Yönetmelik uyarınca kabulü tescil eden resmi tutanak.',
+        zorunluMu: true
+      },
+      {
+        ad: 'Standart Form-KİK048.0/Y: Yapım İşleri Geçici Kabul Teklif Belgesi',
+        kod: 'Standart Form-KİK048.0/Y',
+        aciklama: 'Doğrudan temin yapım işlerinde geçici kabul ön inceleme teklif belgesi.',
+        zorunluMu: false
+      },
+      {
+        ad: 'Standart Form-KİK049.0/Y: Yapım İşleri Geçici Kabul Tutanağı',
+        kod: 'Standart Form-KİK049.0/Y',
+        aciklama: 'Doğrudan temin yapım işlerinde geçici kabul komisyonu tutanağı.',
+        zorunluMu: false
+      },
+      {
+        ad: 'Standart Form-KİK050.0/Y: Yapım İşleri Kesin Kabul Teklif Belgesi',
+        kod: 'Standart Form-KİK050.0/Y',
+        aciklama: 'Doğrudan temin yapım işlerinde kesin kabul teklif belgesi.',
+        zorunluMu: false
+      },
+      {
+        ad: 'Standart Form-KİK051.0/Y: Yapım İşleri Kesin Kabul Tutanağı',
+        kod: 'Standart Form-KİK051.0/Y',
+        aciklama: 'Doğrudan temin yapım işlerinde kesin kabul komisyonu tutanağı.',
+        zorunluMu: false
+      },
+      {
+        ad: 'Standart Form-KİK: Doğrudan Temin Mal / Hizmet Tip Sözleşmesi',
+        kod: 'KİK-TİP-SÖZ',
+        aciklama: '4734 Sayılı Kanun tip sözleşme esaslarına uygun olarak idare ile yüklenici arasında imzalanan taahhüt sözleşmesi.',
+        zorunluMu: false
+      },
+      {
+        ad: 'Standart Form (KİK Tebliği m.22): Sipariş ve İş Bildirim / Tebligat Mektubu',
+        kod: 'KİK-TEBLİGAT',
+        aciklama: 'Sözleşme yapılmayan hallerde yüklenici firmaya işin verildiğini bildiren resmi tebligat.',
+        zorunluMu: false
+      },
+      {
+        ad: 'Standart Form (MYHBY Örnek No: 3): Harcama Pusulası ve Klasör Dizi Fihristi',
+        kod: 'MYHBY-Örnek:3',
+        aciklama: 'Ödeme belgesine bağlanan harcama ve ihale evraklarının sırasını gösteren resmi dizi fihristi.',
+        zorunluMu: false
+      }
     ]
   },
   {
@@ -87,51 +151,53 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     id: 'idareci-pano',
     kod: 'PANO-PRO',
     paketTipi: 'modul',
-    baslik: 'İdareci Pano (Canlı Yönetim & Kokpit)',
+    baslik: 'Harcama Yetkilisi & İdareci Pano (Canlı Yönetim Kokpiti)',
     kisaAciklama:
-      'Bilgisayarınızda açık kalan canlı yönetim ekranı: kaçıncı ders, nöbetçiler, bekleyen doğrudan temin ve onaylar...',
+      'İdareciler ve harcama yetkilileri için masaüstü canlı yönetim kokpiti: bekleyen 22/d onayları, KİK limit durumu, ihale takvimi ve imza süreçleri.',
     detayliAciklama:
-      'İdareciler için masaüstünde tam ekran açık kalan; KİK 22/d limit harcamalarını, nöbetçi personeli, bekleyen imzaları ve onayları anlık gösteren canlı takip kokpiti.',
-    mevzuat: '5018 & 4734 İdare Takip Standartları',
+      'Kamu idarelerinde harcama yetkilileri ve birim amirleri için masaüstünde tam ekran açık kalan; KİK 22/d parasal limit harcamalarını, bekleyen satın alma onaylarını, sözleşme teslim vadelerini ve komisyon görevlerini anlık gösteren canlı takip kokpiti.',
+    mevzuat: '5018 Sayılı Kamu Mali Yönetimi & 4734 Sayılı Kanun',
     kategori: 'entegrasyon',
     ikon: 'Clock',
     renk: 'blue',
     versiyon: 'v2.1.0',
     surumAsamasi: 'Kararlı',
-    etiketler: ['Canlı Pano', 'İdareci Kokpiti', 'Nöbetçi Takip', 'Limit Durumu', 'YENİ'],
+    etiketler: ['Canlı Pano', 'İdareci Kokpiti', 'Harcama Yetkilisi', 'Limit Takibi', 'Onay Masası'],
     kartStili: 'navy_gradient',
     videoAnlatim: true,
     yeniMi: true,
-    altMetinOzeti: 'Bilgisayarınızda açık kalan canlı yönetim ekranı: kaçıncı ders, nöbetçiler, bekleyen alımlar...',
-    araclar: ['Masaüstü Canlı Widget', 'KİK Limit Barı', 'Nöbetçi Çizelgesi'],
+    altMetinOzeti: 'Masaüstü canlı yönetim kokpiti: bekleyen satın alma onayları, 22/d bütçe tavanı ve imza masası.',
+    routePath: '/harcama-merkezi',
+    araclar: ['Masaüstü Canlı Widget', 'KİK 22/d Limit Barı', 'Harcama Onay Masası'],
     asamalar: [
-      { sira: 1, baslik: 'Sabah Yoklama & Nöbetçi Tespiti', aciklama: 'Günün nöbetçi öğretmen ve görevli listesi.' },
-      { sira: 2, baslik: 'Bekleyen Satınalma Onayları', aciklama: 'İmzalanacak 22/d onay ve piyasa tutanakları.' }
+      { sira: 1, baslik: 'Günün Satın Alma & Onay Akışı', aciklama: 'İmzalanacak 22/d harcama talimatları ve piyasa fiyat araştırma tutanakları.' },
+      { sira: 2, baslik: '22/d Parasal Limit ve Ödenek Kontrolü', aciklama: 'Yıllık doğrudan temin harcama tavanı ve bloke edilen bütçe bakiyesi.' }
     ],
     belgeler: [
-      { ad: 'Günlük Nöbet Çizelgesi', kod: 'PNO-01', aciklama: 'Günün görevli nöbetçi personeli listesi.', zorunluMu: false },
-      { ad: 'Bekleyen İdareci İmzaları Raporu', kod: 'PNO-02', aciklama: 'Onay bekleyen evraklar listesi.', zorunluMu: false }
+      { ad: 'Bekleyen İdareci İmzaları & Onay Listesi', kod: 'PNO-01', aciklama: 'Harcama yetkilisi onayında bekleyen doğrudan temin evrakları.', zorunluMu: false },
+      { ad: 'Günlük Satın Alma İcmal Raporu', kod: 'PNO-02', aciklama: 'Günün onaylanan ve tahakkuka giden alımları icmali.', zorunluMu: false }
     ]
   },
   {
-    id: 'ek-ders-kik-limit',
+    id: 'kik-butce-limit-denetleyici',
     kod: 'LİMİT-KONTROL',
     paketTipi: 'modul',
-    baslik: 'Ek Ders & KİK Parasal Limit Denetleyicisi',
+    baslik: 'Bütçe & KİK Parasal Limit Denetleyicisi',
     kisaAciklama:
-      'e-Okul ders programından otomatik puantaj, 4734 m.22/d KİK parasal limit kontrolü ve kurum bütçe tavanı denetleyicisi.',
+      'Kurum bütçesi harcama tavanı denetleyicisi, 4734 m.22/d KİK parasal limit kontrolü ve kısımlara bölme önleyici.',
     detayliAciklama:
-      'Sayıştay denetimlerinde en çok ceza kesilen alımların kısımlara bölünerek doğrudan temin yapılması riskini önleyen; kurum harcama tavanını ve ek ders puantaj kontrollerini yürüten denetim aracı.',
+      'Sayıştay denetimlerinde en çok ceza kesilen alımların kısımlara bölünerek doğrudan temin yapılması riskini önleyen; kurum harcama tavanı ve parasal limit kontrollerini yürüten denetim aracı.',
     mevzuat: '4734 Sayılı Kanun m.22/d & Sayıştay Teamülleri',
     kategori: 'alim_ihale',
     ikon: 'TrendingUp',
     renk: 'rose',
     versiyon: 'v2.0.0',
     surumAsamasi: 'Kararlı',
-    etiketler: ['KİK Limit', 'Kısımlara Bölme Riski', 'Bütçe Kontrol', 'Sayıştay', 'YENİ'],
+    etiketler: ['KİK Limit', 'Kısımlara Bölme Riski', 'Bütçe Kontrol', 'Sayıştay'],
     kartStili: 'solid_red',
     yeniMi: true,
-    altMetinOzeti: 'e-Okul ders programından otomatik ek ders puantajı: kadrolu, görevlendirme ve KİK limit uyarısı.',
+    altMetinOzeti: 'Kurum bütçe tavanı ve 4734 m.22/d KİK doğrudan temin parasal limit uyarısı.',
+    routePath: '/hesaplama-araclari?tab=butce',
     araclar: ['KİK Parasal Limit Denetleyicisi', 'Bütçe Bloke Formülü'],
     asamalar: [
       { sira: 1, baslik: 'Bütçe Tavanı Kontrolü', aciklama: 'Yıllık 22/d limitinin aşılıp aşılmadığı denetimi.' },
@@ -142,43 +208,44 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     ]
   },
   {
-    id: 'dilimizin-zenginlikleri-kamu',
-    kod: 'MEB-EYLEM',
+    id: 'kamu-stratejik-eylem-plani',
+    kod: 'STR-EYLEM',
     paketTipi: 'modul',
-    baslik: 'Dilimizin Zenginlikleri & İdari Eylem Planı (2026-2027)',
+    baslik: 'Kamu İdareleri Stratejik Eylem & Satınalma Planı',
     kisaAciklama:
-      'Eylem planları ay ay: okul öncesi, ilkokul, ortaokul, lise ve idari faaliyet sorumlulukları.',
+      'Yıllık ve çeyrek bazında kamu idareleri stratejik eylem planları, yatırım ve satın alma faaliyet takvimi.',
     detayliAciklama:
-      'MEB ve kamu kurumları için ay ay hazırlanması gereken eylem planları, kulüp ve komisyon faaliyetleri, satın alma lüzum kağıtları ve resmi raporlama paketi.',
-    mevzuat: 'MEB Projeleri & Resmi Eylem Planı Kılavuzu',
+      'Kamu idareleri (belediyeler, üniversiteler, bakanlıklar ve il müdürlükleri) için 5018 sayılı Kanun kapsamında periyodik hazırlanan stratejik eylem planları, satın alma lüzum planları ve resmi performans raporlama paketi.',
+    mevzuat: '5018 Sayılı Kanun & Kamu Stratejik Planlama Kılavuzu',
     kategori: 'entegrasyon',
     ikon: 'FileText',
     renk: 'purple',
     versiyon: 'v1.5.0',
     surumAsamasi: 'Kararlı',
-    etiketler: ['MEB Projesi', 'Eylem Planı', 'Dilimizin Zenginlikleri', 'Faaliyetler'],
+    etiketler: ['Stratejik Plan', 'Eylem Planı', 'Performans Programı', 'İdari İşler'],
     kartStili: 'burgundy',
     yeniMi: true,
-    ozelRozet: 'MEB PROJESİ - 4 KADEME',
-    altMetinOzeti: 'Eylem planları ay ay: okul öncesi, ilkokul, ortaokul, lise; faaliyete sorumlu birimler.',
-    araclar: ['Aylık Eylem Matrisi', 'Faaliyet Raporlayıcı'],
+    ozelRozet: 'STRATEJİK PLAN',
+    altMetinOzeti: 'Kurumsal eylem planları çeyrek ve dönem bazında: idari birimler ve satın alma hedefleri.',
+    routePath: '/surec-studyosu?modulId=kamu-stratejik-eylem-plani',
+    araclar: ['Dönemsel Eylem Matrisi', 'Performans & Faaliyet Raporlayıcı'],
     asamalar: [
-      { sira: 1, baslik: 'Aylık Eylem Planı Hazırlığı', aciklama: 'Okul kademesine göre eylem planı oluşturma.' },
-      { sira: 2, baslik: 'Faaliyet & Malzeme İhtiyacı', aciklama: 'Faaliyet için lüzum kağıdı ve temin evrakı bağlama.' }
+      { sira: 1, baslik: 'Dönemsel Eylem ve Yatırım Planlaması', aciklama: 'Harcama birimlerine göre dönemsel satın alma ve yatırım hedefleri oluşturma.' },
+      { sira: 2, baslik: 'Faaliyet & Malzeme İhtiyacı Eşleme', aciklama: 'Stratejik hedefler ile doğrudan temin ve ihale lüzum belgelerini bağlama.' }
     ],
     belgeler: [
-      { ad: 'Aylık Proje Eylem Planı Formu', kod: 'DZ-01', aciklama: 'Aylık hedefler ve sorumlu öğretmen tablosu.', zorunluMu: true }
+      { ad: 'Dönemsel Kurumsal Eylem & Satınalma Planı Formu', kod: 'STR-01', aciklama: 'Dönemlik hedefler, bütçe tertipleri ve sorumlu birim tablosu.', zorunluMu: true }
     ]
   },
   {
     id: 'yapay-zeka-sartname',
     kod: 'AI-ŞARTNAME',
     paketTipi: 'utils',
-    baslik: 'Ders Dağıtım & Yapay Zekâ Şartname Robotu',
+    baslik: 'Komisyon Görev Dağıtım & Yapay Zekâ Şartname Robotu',
     kisaAciklama:
-      'Yapay zekâ destekli, çakışmasız piyasa rayiç analizi, teknik şartname hazırlama ve adil ders/görev dağıtımı.',
+      'Yapay zekâ destekli KİK uyumlu piyasa rayiç analizi, teknik şartname hazırlama ve ihale komisyon görev taksimi.',
     detayliAciklama:
-      'Kamu kurumları için teknik şartnamelerin KİK mevzuatına göre tarafsız hazırlanması ve okullarda adil, çakışmasız ders ve nöbet dağıtım algoritması.',
+      'Kamu kurumları için teknik şartnamelerin 4734 sayılı Kanun m.12 ilkelerine uygun ve rekabeti engellemeyecek şekilde hazırlanması ve ihale komisyonlarında adil, çakışmasız görev taksim robotu.',
     mevzuat: 'KİK m.12 Teknik Şartname Esasları',
     kategori: 'finans_hesap',
     ikon: 'Cpu',
@@ -188,14 +255,16 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     etiketler: ['Yapay Zeka', 'Şartname Robotu', 'Adil Dağıtım', 'Rayiç Analizi'],
     kartStili: 'warm_orange',
     videoAnlatim: true,
-    altMetinOzeti: 'Yapay zekâ destekli, çakışmasız ve adil ders dağıtımı. (Zerdali & Temin360 Soft)',
+    altMetinOzeti: 'Yapay zekâ destekli KİK teknik şartname oluşturucu ve çakışmasız komisyon görev taksimi.',
+    routePath: '/komisyonlar?tab=gorev_dagilimi',
     araclar: ['AI Şartname Üretici', 'Çakışmasız Dağıtım Motoru'],
     asamalar: [
-      { sira: 1, baslik: 'Girdi Bilgilerini Tanımlama', aciklama: 'Dersler, öğretmenler veya malzeme şartname kriterleri.' },
-      { sira: 2, baslik: 'Yapay Zekâ Optimizasyonu', aciklama: 'Çakışmasız ve adil dağıtım motorunun çalıştırılması.' }
+      { sira: 1, baslik: 'Girdi ve Kriter Tanımlama', aciklama: 'Mal/hizmet teknik özellikleri, standartlar veya komisyon görev kriterleri.' },
+      { sira: 2, baslik: 'Yapay Zekâ Optimizasyonu & Şartname Üretimi', aciklama: 'KİK mevzuatına uygun şartname maddelerinin ve görev çizelgesinin üretilmesi.' }
     ],
     belgeler: [
-      { ad: 'Çakışmasız Haftalık Dağıtım Çizelgesi', kod: 'AI-01', aciklama: 'Öğretmen ve sınıf bazlı haftalık program.', zorunluMu: true }
+      { ad: 'KİK Uyumlu Teknik Şartname Taslağı', kod: 'AI-01', aciklama: 'Yapay zekâ tarafından oluşturulan resmi teknik şartname metni.', zorunluMu: true },
+      { ad: 'Komisyon & Görev Taksim Çizelgesi', kod: 'AI-02', aciklama: 'Birim ve personel bazlı görev programı.', zorunluMu: false }
     ]
   },
   {
@@ -204,10 +273,10 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     paketTipi: 'modul',
     baslik: 'Aylık Yönetim & Satınalma Akışı',
     kisaAciklama:
-      'Eylülden Hazirana, her ay yapılması gereken idari iş ve satın alma işlemleri.',
+      'Ocak ayından Aralık ayına, kamu mali yılı boyunca her ay yapılması gereken satın alma, ödenek ve kabul işlemleri.',
     detayliAciklama:
-      'Eğitim öğretim ve kamu mali yılı boyunca (Eylül-Haziran) her ay yapılması gereken kurul-komisyon toplantıları, sayım işlemleri, ödenek kontrolleri ve doğrudan temin alımları kontrol listesi.',
-    mevzuat: 'Milli Eğitim ve Mali Takvim Esasları',
+      'Kamu mali yılı boyunca (12 ay) her ay yapılması gereken doğrudan temin alımları, piyasa araştırmaları, ödenek aktarma kontrolleri, muayene kabul ve ambar sayım işlemleri kontrol listesi.',
+    mevzuat: 'Kamu Mali Takvimi ve Harcama Esasları',
     kategori: 'entegrasyon',
     ikon: 'Clock',
     renk: 'blue',
@@ -215,7 +284,8 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     surumAsamasi: 'Kararlı',
     etiketler: ['Aylık Akış', 'İdari Takvim', 'Satınalma Zamanı'],
     videoAnlatim: true,
-    altMetinOzeti: 'Eylülden Hazirana, her ay yapılması gereken idari iş ve işlemler.',
+    altMetinOzeti: '12 aylık kamu mali takvimi: harcama birimleri için periyodik satın alma, ödenek ve kabul takvimi.',
+    routePath: '/takip',
     araclar: ['Aylık Takvim Hatırlatıcısı', 'İşlem Kontrol Listesi'],
     asamalar: [
       { sira: 1, baslik: 'Ay Başı Görevleri', aciklama: 'Ödenek talebi ve maaş/puantaj bildirimleri.' },
@@ -231,25 +301,25 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     paketTipi: 'modul',
     baslik: 'Planlama İşleri & Kurumsal Görev Dağılım Matrisi',
     kisaAciklama:
-      'Kurul-komisyonlar, nöbet çizelgeleri, resmî tören & belirli günler, çalışma grupları ve adaletli görev dağılım havuzu.',
+      'İhale komisyonları, muayene kabul heyetleri, piyasa araştırma görevlileri ve kurum içi personel görev dağılım matrisi.',
     detayliAciklama:
-      'Tüm kamu kurumlarında (belediyeler, il/ilçe müdürlükleri, üniversiteler, hastaneler ve idareler) görev yapan personelin üzerinde bulunan kurul/komisyon, nöbet, tören ve proje sorumluluklarını tek havuzda toplayan; izin ve devir durumlarıyla entegre adaletli görev dağılım ve iş yükü dengeleme stüdyosu.',
+      'Tüm kamu kurumlarında (belediyeler, il/ilçe müdürlükleri, üniversiteler, hastaneler ve idareler) görev yapan personelin üzerinde bulunan ihale komisyonu, muayene kabul, piyasa araştırması ve proje sorumluluklarını tek havuzda toplayan; izin ve yetki devirleriyle entegre adil görev dağılım ve iş yükü dengeleme stüdyosu.',
     mevzuat: '5018 Kamu Mali Yönetimi & Kurum İçi Görev Standartları',
     kategori: 'entegrasyon',
     ikon: 'FileCheck',
     renk: 'emerald',
     versiyon: 'v2.0.0',
     surumAsamasi: 'Kararlı',
-    etiketler: ['Komisyonlar', 'Görev Dağılımı', 'Nöbet Havuzu', 'İş Yükü Dengeleme'],
+    etiketler: ['Komisyonlar', 'Görev Dağılımı', 'Heyet & Kurullar', 'İş Yükü Dengeleme'],
     videoAnlatim: true,
-    altMetinOzeti: 'Kurul-komisyonlar, belirli günler, idari nöbet ve adaletli personel görev dağılımı.',
+    altMetinOzeti: 'İhale komisyonları, muayene kabul heyetleri ve kurum içi personel görev dağılımı.',
     routePath: '/komisyonlar?tab=gorev_dagilimi',
     removable: true,
     silinebilir: true,
     araclar: ['Personel Görev Yükü Dengeleyici', 'Makam Onaylı Görev Dağılım Çizelgesi', 'Tebliğ-Tebellüğ Belgesi Üretici'],
     asamalar: [
       { sira: 1, baslik: 'Personel Görev Havuzu Oluşturma', aciklama: 'Kayıtlı personelin mevcut görevlerinin taranması.' },
-      { sira: 2, baslik: 'İş Yükü Dengeleme & Atama', aciklama: 'Komisyon, nöbet ve tören görevlerinin adil dağıtımı.' },
+      { sira: 2, baslik: 'İş Yükü Dengeleme & Atama', aciklama: 'İhale komisyonu, muayene kabul ve piyasa araştırma görevlerinin adil dağıtımı.' },
       { sira: 3, baslik: 'Makam Onayı & Tebligat', aciklama: 'Resmi görev dağılım çizelgesi ve tebellüğ imzaları.' }
     ],
     belgeler: [
@@ -275,9 +345,9 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     etiketler: ['EBYS', 'Resmî Yazışma', 'Üst Yazı', 'Olur/Onay', 'EYP 2.0'],
     yeniMi: true,
     altMetinOzeti: '62 hazır resmî yazı — tebliğler, personel yazıları ve Doğrudan Temin evrakları...',
-    routePath: '/surec-studyosu',
-    removable: false,
-    silinebilir: false,
+    routePath: '/ebys',
+    removable: true,
+    silinebilir: true,
     araclar: ['EYP 2.0 Doğrulayıcı', 'Dinamik Makam Hitap Üretici', 'EBYS Rota & Paraf Motoru'],
     asamalar: [
       { sira: 1, baslik: 'Taslak Hazırlama & Şablon Seçimi', aciklama: 'Resmî yazı tipine göre uygun EYP şablonunun seçilmesi.' },
@@ -290,6 +360,41 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
       { ad: 'Birim İçi Olur / Onay Yazısı', kod: 'EBYS-02', aciklama: 'Makam onayına sunulan teklif ve olur belgesi.', zorunluMu: true },
       { ad: 'Dağıtımlı Genelge / Duyuru Yazısı', kod: 'EBYS-03', aciklama: 'Çoklu birim veya dış idarelere hitap eden dağıtımlı yazı.', zorunluMu: false },
       { ad: 'İç Yazışma / Müzekkere', kod: 'EBYS-04', aciklama: 'Birimler arası bilgi ve koordinasyon yazısı.', zorunluMu: false }
+    ]
+  },
+  {
+    id: 'tutanak-studyosu',
+    kod: 'TTN-STD',
+    paketTipi: 'modul',
+    baslik: 'Resmî Tutanak, Teslim & Sayım Stüdyosu',
+    kisaAciklama:
+      'Muayene kabul, hasar tespit, teslim-tesellüm, sayım ve olay tutanakları için çok imzalı resmi tutanak motoru.',
+    detayliAciklama:
+      'Kamu kurum ve idareleri için muayene kabul, ambar teslim tesellüm, hasar tespit ve olay zabıtlarını mevzuata uygun çok imzalı A4 formatında üreten resmi tutanak ve tespit paketi.',
+    mevzuat: 'Mali Mevzuat & İdare Hukuku Teamülleri',
+    kategori: 'entegrasyon',
+    ikon: 'FileCheck',
+    renk: 'emerald',
+    versiyon: 'v1.5.0',
+    surumAsamasi: 'Kararlı',
+    etiketler: ['Tutanak', 'Muayene Kabul', 'Teslim Tesellüm', 'Hasar Tespit', 'Sayım'],
+    yeniMi: true,
+    altMetinOzeti: 'Muayene kabul, teslim-tesellüm, hasar tespit ve olay tutanakları stüdyosu.',
+    routePath: '/surec-studyosu?modulId=tutanak-studyosu',
+    removable: true,
+    silinebilir: true,
+    araclar: ['Çok İmzalı Tutanak Motoru', 'Fotoğraflı Hasar Tespit Eki', 'Canlı A4 Baskı Çıktısı'],
+    asamalar: [
+      { sira: 1, baslik: 'Olay & Tespit Mahalli', aciklama: 'Tutanak konusu fiili durum, tarih, saat ve mahallin belirlenmesi.' },
+      { sira: 2, baslik: 'Heyet & Komisyon Teşkili', aciklama: 'En az iki resmi görevli personelin tutanak heyeti olarak tespiti.' },
+      { sira: 3, baslik: 'Zabıt Metni & İmzalar', aciklama: 'Müşterek zabıt metninin yazılması ve ıslak/elektronik imza altına alınması.' }
+    ],
+    belgeler: [
+      { ad: 'Mal Teslim - Tesellüm Tutanağı', kod: 'TTN-01', aciklama: 'Satın alınan mal veya demirbaşın ambar veya yetkili personele teslim edildiğini gösteren tutanak.', zorunluMu: true },
+      { ad: 'Muayene & Kabul Komisyonu İnceleme Tutanağı', kod: 'TTN-02', aciklama: 'Ürünün numunelere, faturaya ve teknik şartnameye uygunluğunun tescil edildiği tutanak.', zorunluMu: true },
+      { ad: 'Hasar / Eksik Malzeme Tespit Tutanağı', kod: 'TTN-03', aciklama: 'Kargo veya sevkiyat esnasında kırık, hasarlı veya eksik çıkan malzemelerin zabıt altına alınması.', zorunluMu: false },
+      { ad: 'Standart Form-KİK049.0/Y: Yapım İşleri Geçici Kabul Tutanağı', kod: 'Standart Form-KİK049.0/Y', aciklama: 'Yapım işleri geçici kabul komisyonu muayene ve onay tutanağı.', zorunluMu: true },
+      { ad: 'Standart Form-KİK051.0/Y: Yapım İşleri Kesin Kabul Tutanağı', kod: 'Standart Form-KİK051.0/Y', aciklama: 'Yapım işleri kesin kabul komisyonu ve yüklenici katılımıyla tanzim edilen kesin kabul tutanağı.', zorunluMu: true }
     ]
   },
   {
@@ -308,6 +413,7 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     versiyon: 'v2.1.0',
     surumAsamasi: 'Alfa',
     etiketler: ['2886', 'Gelir İhalesi', 'Taşınmaz Satışı', 'Kira', 'Encümen'],
+    routePath: '/devlet-ihale-2886',
     araclar: ['Muhammen Bedel & %3 Geçici Teminat Hesabı', 'Yİ-ÜFE Kira Artış Robotu', 'İhale Usul Karar Matrisi'],
     asamalar: [
       { sira: 1, baslik: 'Taşınmaz Tespiti & Tapu Kaydı', aciklama: 'Ada, parsel, yüzölçümü ve mülkiyet bilgilerinin tescili.' },
@@ -344,6 +450,7 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     versiyon: 'v3.0.0',
     surumAsamasi: 'Alfa',
     etiketler: ['Açık İhale', 'Pazarlık 21/b', 'EKAP', 'Komisyon Kararı', 'İdari Şartname'],
+    routePath: '/surec-studyosu?modulId=kik-acik-ihale-19-21',
     araclar: ['Sınır Değer & R Katsayısı Hesaplayıcı', 'Kesin Teminat Oranı Takvimi', 'EKAP Form Eşleştirici'],
     asamalar: [
       { sira: 1, baslik: 'İhale İhtiyacı & Teknik Şartname', aciklama: 'Teknik şartname hazırlığı ve birim onay süreci.' },
@@ -356,15 +463,15 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
       { sira: 8, baslik: 'Kesinleşme Tebligatı & Sözleşme', aciklama: 'İtiraz süreleri (10 gün) sonrası kesin teminat alımı ve tescil.' }
     ],
     belgeler: [
-      { ad: 'KİK İhale Onay Belgesi (Standart Form KİK001)', kod: 'KIK-01', aciklama: 'İhale yetkilisinden alınan ana ihale onay formu.', zorunluMu: true },
-      { ad: 'İdari Şartname Taslağı (KİK Standart Form)', kod: 'KIK-02', aciklama: 'İhaleye katılım ve yeterlik kurallarını içeren şartname.', zorunluMu: true },
-      { ad: 'Fiyatlı Yaklaşık Maliyet Hesap Cetveli', kod: 'KIK-03', aciklama: 'Gizli zarfta tutulan detaylı maliyet dökümü.', zorunluMu: true },
-      { ad: 'İhale Komisyonu Atama ve Görevlendirme Kararı', kod: 'KIK-04', aciklama: 'Uzman üyeler ve muhasebe yetkilisi görev tebliği.', zorunluMu: true },
-      { ad: 'Zarf Açma ve İstekli Yoklama Tutanağı', kod: 'KIK-05', aciklama: '1. Oturumda teklif zarflarının kontrolü ve tutanağı.', zorunluMu: true },
-      { ad: 'Sınır Değer ve Aşırı Düşük Teklif Hesap Tablosu', kod: 'KIK-06', aciklama: 'Kanuni formüle göre sınır değer tespiti.', zorunluMu: true },
-      { ad: 'Gerekçeli İhale Komisyon Kararı', kod: 'KIK-07', aciklama: 'Ekonomik açıdan en avantajlı teklifi bildiren resmi karar.', zorunluMu: true },
-      { ad: 'Kesinleşen İhale Kararı Tebligat Mektubu', kod: 'KIK-08', aciklama: 'Tüm isteklilere gönderilen resmi sonuç bildirimi.', zorunluMu: true },
-      { ad: 'Sözleşmeye Davet Mektubu & Sözleşme Tasarısı', kod: 'KIK-09', aciklama: 'Kesin teminat yatırma çağrısı ve sözleşme metni.', zorunluMu: true }
+      { ad: 'Standart Form-KİK001.0/M: İhale Onay Belgesi (Harcama Talimatı)', kod: 'Standart Form-KİK001.0/M', aciklama: 'İhale yetkilisinden alınan ana ihale onay formu ve harcama talimatı.', zorunluMu: true },
+      { ad: 'Standart Form-KİK: İdari Şartname Taslağı', kod: 'KİK-İDŞAR', aciklama: 'İhaleye katılım ve yeterlik kurallarını içeren tip şartname.', zorunluMu: true },
+      { ad: 'Standart Form-KİK002.0/M: Yaklaşık Maliyet Hesap Cetveli', kod: 'Standart Form-KİK002.0/M', aciklama: 'Gizli zarfta tutulan detaylı yaklaşık maliyet döküm cetveli.', zorunluMu: true },
+      { ad: 'Standart Form: İhale Komisyonu Görevlendirme Kararı', kod: 'KİK-KOMİSYON', aciklama: 'Uzman üyeler ve muhasebe yetkilisi komisyon görevlendirme tebliği.', zorunluMu: true },
+      { ad: 'Standart Form-KİK009.0/M: Zarf Açma ve Belge Kontrol Tutanağı', kod: 'Standart Form-KİK009.0/M', aciklama: '1. Oturumda teklif zarflarının kontrolü ve açılması tutanağı.', zorunluMu: true },
+      { ad: 'Standart Form-KİK: Sınır Değer ve Aşırı Düşük Teklif Hesap Tablosu', kod: 'KİK-SINIR', aciklama: 'Kamu İhale Kanunu ve tebliğ esaslarına göre sınır değer tespiti cetveli.', zorunluMu: true },
+      { ad: 'Standart Form-KİK018.0/M: İhale Komisyonu Kararı', kod: 'Standart Form-KİK018.0/M', aciklama: 'Ekonomik açıdan en avantajlı teklifi belirleyen gerekçeli ihale komisyon kararı.', zorunluMu: true },
+      { ad: 'Standart Form-KİK021.0/M: Kesinleşen İhale Kararının Bildirilmesi Mektubu', kod: 'Standart Form-KİK021.0/M', aciklama: 'Tüm isteklilere gönderilen kesinleşen ihale kararı bildirim mektubu.', zorunluMu: true },
+      { ad: 'Standart Form-KİK023.0/M: Sözleşmeye Davet Mektubu', kod: 'Standart Form-KİK023.0/M', aciklama: 'Kesin teminat yatırma çağrısı ve sözleşmeye davet mektubu.', zorunluMu: true }
     ]
   },
   {
@@ -383,6 +490,7 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     versiyon: 'v1.8.0',
     surumAsamasi: 'Alfa',
     etiketler: ['Tek Satıcı', 'Yedek Parça', 'Lisans', 'Taşınmaz Kiralama', 'Müelliflik'],
+    routePath: '/surec-studyosu?modulId=kik-istisnalar-22-abc',
     araclar: ['Tek Satıcılık Belgesi Doğrulama', 'Ekspertiz Kira Bedel Tespit Formülü'],
     asamalar: [
       { sira: 1, baslik: 'Gerekçe ve İstisna Tespiti', aciklama: 'Alımın neden 22/a, b veya c kapsamına girdiğine dair teknik rapor.' },
@@ -412,6 +520,7 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     versiyon: 'v2.0.0',
     surumAsamasi: 'Alfa',
     etiketler: ['Hakediş', 'Yeşil Defter', 'Metraj', 'Ataşman', 'Yer Teslimi', 'Geçici Kabul'],
+    routePath: '/projeler',
     araclar: ['Yapım Fiyat Farkı (Bakanlar Kurulu Kararı)', 'KDV & Stopaj Kesinti Robotu', 'Metraj Çarpım Tablosu'],
     asamalar: [
       { sira: 1, baslik: 'Yer Teslimi & İş Programı', aciklama: 'Şantiyenin yükleniciye teslimi ve haftalık/aylık iş planı onayı.' },
@@ -420,12 +529,15 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
       { sira: 4, baslik: 'Geçici & Kesin Kabul', aciklama: 'Teknik heyet kabul tutanakları ve teminat iadesi süreci.' }
     ],
     belgeler: [
-      { ad: 'Yer Teslim Tutanağı (Şantiye Açılışı)', kod: 'HKD-01', aciklama: 'İşe başlama tarihini resmi olarak başlatan tutanak.', zorunluMu: true },
-      { ad: 'İmalat Metraj ve Ataşman Cetveli', kod: 'HKD-02', aciklama: 'Yapılan imalat miktarlarının sahada tutulan ölçüm kaydı.', zorunluMu: true },
-      { ad: 'Yeşil Defter (Hakediş İcmali)', kod: 'HKD-03', aciklama: 'Birim fiyatlarla yapılan imalatların parasal dökümü.', zorunluMu: true },
-      { ad: 'Hakediş Arka Kapağı ve Kesintiler Cetveli', kod: 'HKD-04', aciklama: 'Stopaj, avans, gecikme cezası ve net ödenecek tutar özeti.', zorunluMu: true },
-      { ad: 'Geçici Kabul Komisyonu Tutanağı', kod: 'HKD-05', aciklama: 'İşin bitiminde oluşturulan kontrol heyeti kabul tutanağı.', zorunluMu: true },
-      { ad: 'Kesin Kabul ve Teminat İade Yazısı', kod: 'HKD-06', aciklama: 'Teminat süresi sonunda teminatın çözülmesi yazısı.', zorunluMu: false }
+      { ad: 'Standart Form (YİGŞ m.6): İşyeri Teslim Tutanağı', kod: 'YİGŞ-İşyeriTeslim', aciklama: 'İşe başlama tarihini resmi olarak başlatan şantiye ve işyeri teslim tutanağı.', zorunluMu: true },
+      { ad: 'Standart Form: İmalat Metraj ve Ataşman Cetveli', kod: 'HKD-METRAJ', aciklama: 'Yapılan imalat miktarlarının sahada tutulan rölöve ve ataşman ölçüm kaydı.', zorunluMu: true },
+      { ad: 'Standart Form: Yeşil Defter (Hakediş İcmali)', kod: 'HKD-YEŞİLDEFTER', aciklama: 'Sözleşme birim fiyatlarıyla yapılan imalatların kümülatif parasal dökümü.', zorunluMu: true },
+      { ad: 'Standart Form (MYHBY Örnek No: 4): Hakediş Raporu ve İcmal Cetveli', kod: 'MYHBY-Örnek:4', aciklama: 'Stopaj, avans, teminat, gecikme cezası kesintileri ve net tahakkuk cetveli.', zorunluMu: true },
+      { ad: 'Standart Form-KİK048.0/Y: Yapım İşleri Geçici Kabul Teklif Belgesi', kod: 'Standart Form-KİK048.0/Y', aciklama: 'Yapım işinin bitirildiğine ilişkin yüklenici dilekçesi sonrası ön inceleme teklif belgesi.', zorunluMu: true },
+      { ad: 'Standart Form-KİK049.0/Y: Yapım İşleri Geçici Kabul Tutanağı', kod: 'Standart Form-KİK049.0/Y', aciklama: 'Yapım işleri geçici kabul komisyonu muayene ve onay tutanağı.', zorunluMu: true },
+      { ad: 'Standart Form-KİK050.0/Y: Yapım İşleri Kesin Kabul Teklif Belgesi', kod: 'Standart Form-KİK050.0/Y', aciklama: 'Teminat süresi sonunda kesin kabul muayenesinin yapılmasını talep eden teklif belgesi.', zorunluMu: true },
+      { ad: 'Standart Form-KİK051.0/Y: Yapım İşleri Kesin Kabul Tutanağı', kod: 'Standart Form-KİK051.0/Y', aciklama: 'Kesin kabul komisyonu ve yüklenici katılımıyla tanzim edilen kesin kabul tutanağı.', zorunluMu: true },
+      { ad: 'Standart Form (YİGŞ m.45): Kesin Kabul ve Teminat İade Müzekkeresi', kod: 'YİGŞ-Teminatİade', aciklama: 'Teminat süresi ve kesin kabulün tamamlanmasıyla nakit veya mektup teminatın iade yazısı.', zorunluMu: false }
     ]
   },
 
@@ -448,6 +560,7 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     versiyon: 'v2.2.0',
     surumAsamasi: 'Kararlı',
     etiketler: ['KDV Tevkifat', 'Damga Vergisi', 'Stopaj', 'Tahakkuk', 'Net-Brüt'],
+    routePath: '/hesaplama-araclari?tab=vergi',
     araclar: ['Tevkifat Matrah Motoru', 'Binde 9.48 ve Binde 5.69 Kesinti Tablosu', 'Ödeme Emri Net Tutar Dağıtıcısı'],
     asamalar: [
       { sira: 1, baslik: 'Fatura / Hakediş Matrah Girişi', aciklama: 'KDV hariç veya dahil tutarın Decimal duyarlılıkla girilmesi.' },
@@ -475,6 +588,7 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     versiyon: 'v1.9.0',
     surumAsamasi: 'Alfa',
     etiketler: ['Fiyat Farkı', 'TÜİK Endeks', 'Yİ-ÜFE', 'Pn Katsayısı', 'Akaryakıt'],
+    routePath: '/hesaplama-araclari?tab=fiyatFarki',
     araclar: ['Ağırlık Oranları (a,b,c,d) Matrisi', 'Akaryakıt & Çimento Katsayıları', 'Kümülatif Fark Çıktısı'],
     asamalar: [
       { sira: 1, baslik: 'Temel Endeks Belirleme (Po)', aciklama: 'İhale veya teklif tarihinin ait olduğu ayın Yİ-ÜFE genel/özel endeksi.' },
@@ -502,6 +616,7 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     versiyon: 'v1.5.0',
     surumAsamasi: 'Alfa',
     etiketler: ['Gecikme Cezası', 'Yasal Faiz', 'Temerrüt', 'Onbinde 5', 'Sözleşme Feshi'],
+    routePath: '/hesaplama-araclari?tab=ceza',
     araclar: ['Günlük Ceza Oranı Çarpımı', 'TCMB Avans/Temerrüt Faiz Oranları', 'Hakedişten Mahsup Çizelgesi'],
     asamalar: [
       { sira: 1, baslik: 'Sözleşme Bitiş & Teslim Tarihi', aciklama: 'İşin bitirilmesi gereken gün ile fiili teslim günü arasındaki fark.' },
@@ -529,6 +644,7 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     versiyon: 'v2.0.0',
     surumAsamasi: 'Kararlı',
     etiketler: ['Yazıyla Tutar', 'Kuruş Formatlama', 'Çift Yönlü', 'Sözleşme Metni'],
+    routePath: '/hesaplama-araclari?tab=yazi',
     araclar: ['Decimal.js Yüksek Hassasiyet', 'Çift Yönlü Algılama', 'Standart Banka / Çek İbaresi'],
     asamalar: [
       { sira: 1, baslik: 'Sayı veya Yazı Girişi', aciklama: 'Rakamla tutar girildiğinde anında metne; metin girildiğinde sayıya dönüştürür.' },
@@ -554,6 +670,7 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     versiyon: 'v1.4.0',
     surumAsamasi: 'Alfa',
     etiketler: ['%10 Bütçe Tavanı', '62/ı Maddesi', 'KİK İzin', 'Ödenek Takibi'],
+    routePath: '/hesaplama-araclari?tab=butce',
     araclar: ['Yıllık Kümülatif Limit Grafiği', 'Kalan Güvenli Limit Uyarısı', 'Kurul İzni Başvuru Rehberi'],
     asamalar: [
       { sira: 1, baslik: 'Kurum Yıllık Mal/Hizmet Ödeneği', aciklama: 'Bütçe kanunu veya belediye meclisi onaylı yıllık başlangıç ödeneği.' },
@@ -580,6 +697,7 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     versiyon: 'v1.6.0',
     surumAsamasi: 'Alfa',
     etiketler: ['Formül Motoru', 'Birim Çevirici', 'Metraj', 'Yoğunluk', 'Katsayı'],
+    routePath: '/hesaplama-araclari?tab=formul',
     araclar: ['Ölçü Birimleri Matrisi', 'Özel Değişken Tanımlayıcı', 'Formül Kütüphanesi'],
     asamalar: [
       { sira: 1, baslik: 'Formül ve Parametre Tanımı', aciklama: 'Örn: Asfalt ton hesabı = Boy x En x Kalınlık x 2.4 yoğunluk katsayısı.' },
@@ -609,6 +727,7 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     versiyon: 'v2.5.0',
     surumAsamasi: 'Alfa',
     etiketler: ['EKAP', 'İKN', 'Yasaklılık Sorgusu', 'e-İhale', 'Vergi Kimlik No'],
+    routePath: '/dosyalar',
     araclar: ['Otomatik Yasaklılık Kontrolü', 'EKAP İKN Senkronizasyonu', 'e-Tebligat Takibi'],
     asamalar: [
       { sira: 1, baslik: 'VKN/TCKN ile Yasaklılık Sorgusu', aciklama: 'KİK resmi yasaklılık veri tabanından anlık teyit alma.' },
@@ -636,6 +755,7 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     versiyon: 'v1.7.0',
     surumAsamasi: 'Alfa',
     etiketler: ['Sayıştay', 'İç Denetim', 'Dizi Pusulası', 'Risk Taraması', 'Müfettiş Klasörü'],
+    routePath: '/raporlar',
     araclar: ['Eksik Evrak Erken Uyarı Sistemi', '5018 Harcama Kontrol Matrisi', 'Müfettiş Dizi Pusulası Çıktısı'],
     asamalar: [
       { sira: 1, baslik: 'Dosya Evrak Eksiklik Taraması', aciklama: 'Zorunlu tutanak ve onayların varlık kontrolü.' },
@@ -663,6 +783,7 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     versiyon: 'v2.1.0',
     surumAsamasi: 'Beta',
     etiketler: ['Excel Aktarımı', 'Pano Yapıştırma', 'Tablo Ayrıştırıcı', 'PDF Dönüştürücü'],
+    routePath: '/hesaplama-araclari?tab=pano',
     araclar: ['Clipboard Akıllı Parser', 'Sütun Otomatik Eşleştirici', 'Word/PDF Çıktı Motoru'],
     asamalar: [
       { sira: 1, baslik: 'Excel veya Pano Verisi Yapıştırma', aciklama: 'Ctrl+V ile tablonun panodan okunması.' },

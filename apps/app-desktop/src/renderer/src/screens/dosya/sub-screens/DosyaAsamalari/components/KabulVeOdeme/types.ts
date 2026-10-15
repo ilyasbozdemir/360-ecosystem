@@ -49,4 +49,6 @@ export interface KabulTutanakItem {
   notlar?: string
   kalemler?: MalKalemiItem[]
   created_at?: string
+  tutanakTuru?: 'gecici_kabul' | 'kesin_kabul' | 'gecici_teklif' | 'kesin_teklif' | 'standart'
+  sablonKodu?: string
 }

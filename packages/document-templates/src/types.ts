@@ -112,6 +112,10 @@ export type TemplateType = {
   description?: string;
   capabilities: TemplateCapabilities;
   workflow?: TemplateWorkflow;
+  kikKodu?: string;
+  kikAdi?: string;
+  standartFormKodu?: string;
+  standartFormAdi?: string;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

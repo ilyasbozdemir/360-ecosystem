@@ -1,8 +1,9 @@
 import { useState, useMemo, useCallback } from 'react'
 import { EBYS_TEMPLATES } from '../data/ebysTemplates.data'
 import { EbysCategory, EbysTemplateVariables } from '../ebys.types'
+import { useEbysStudioStore } from '../store/ebysStudioStore'
 
-export type StudioTab = 'preview' | 'resmi_yazi' | 'html' | 'css' | 'mevzuat'
+export type StudioTab = 'preview' | 'resmi_yazi' | 'editor' | 'html' | 'css' | 'mevzuat'
 
 export function useEbysStudio() {
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('ust_yazi_standart')
@@ -13,9 +14,16 @@ export function useEbysStudio() {
   const [copyStatus, setCopyStatus] = useState<string | null>(null)
   const [sidebarTab, setSidebarTab] = useState<'templates' | 'variables'>('templates')
 
+  const customTemplates = useEbysStudioStore((state) => state.customTemplates)
+  const getCustomTemplatesAsEbys = useEbysStudioStore((state) => state.getCustomTemplatesAsEbys)
+
+  const allTemplates = useMemo(() => {
+    return [...getCustomTemplatesAsEbys(), ...EBYS_TEMPLATES]
+  }, [getCustomTemplatesAsEbys, customTemplates])
+
   const selectedTemplate = useMemo(() => {
-    return EBYS_TEMPLATES.find((t) => t.id === selectedTemplateId) || EBYS_TEMPLATES[0]
-  }, [selectedTemplateId])
+    return allTemplates.find((t) => t.id === selectedTemplateId) || allTemplates[0] || EBYS_TEMPLATES[0]
+  }, [allTemplates, selectedTemplateId])
 
   const [variables, setVariables] = useState<EbysTemplateVariables>(() => {
     return { ...selectedTemplate.defaultVariables }
@@ -23,12 +31,12 @@ export function useEbysStudio() {
 
   // Şablon değiştiğinde değişkenleri yeni şablonun varsayılanlarına eşitle
   const handleSelectTemplate = useCallback((id: string) => {
-    const target = EBYS_TEMPLATES.find((t) => t.id === id)
+    const target = allTemplates.find((t) => t.id === id)
     if (target) {
       setSelectedTemplateId(id)
       setVariables({ ...target.defaultVariables })
     }
-  }, [])
+  }, [allTemplates])
 
   const handleVariableChange = useCallback((field: keyof EbysTemplateVariables, value: any) => {
     setVariables((prev) => ({
@@ -42,7 +50,7 @@ export function useEbysStudio() {
   }, [selectedTemplate])
 
   const filteredTemplates = useMemo(() => {
-    return EBYS_TEMPLATES.filter((tpl) => {
+    return allTemplates.filter((tpl) => {
       const matchesCategory = activeCategory === 'hepsi' || tpl.category === activeCategory
       const query = searchQuery.trim().toLowerCase()
       const matchesSearch =
@@ -52,7 +60,7 @@ export function useEbysStudio() {
         tpl.categoryLabel.toLowerCase().includes(query)
       return matchesCategory && matchesSearch
     })
-  }, [activeCategory, searchQuery])
+  }, [allTemplates, activeCategory, searchQuery])
 
   const currentHtml = useMemo(() => {
     return selectedTemplate.generateHtml(variables)

@@ -70,6 +70,7 @@ export function KabulTutanakModal({
   const [tutar, setTutar] = useState('')
   const [notlar, setNotlar] = useState('')
   const [kalemler, setKalemler] = useState<MalKalemiItem[]>([])
+  const [yapimSablonKodu, setYapimSablonKodu] = useState<string>('kik049-yapim-gecici-kabul-tutanagi')
 
   const normalizedAlimTuru = (alimTuru || '').toLowerCase()
   const isYapim =
@@ -81,13 +82,25 @@ export function KabulTutanakModal({
     (normalizedAlimTuru.includes('hizmet') || normalizedAlimTuru.includes('danismanlik'))
 
   const turAdi = isYapim
-    ? 'Yapım İşi Geçici Kabul Tutanağı'
+    ? yapimSablonKodu === 'kik051-yapim-kesin-kabul-tutanagi'
+      ? 'Standart Form-KİK051.0/Y: Yapım İşleri Kesin Kabul Tutanağı'
+      : yapimSablonKodu === 'kik048-yapim-gecici-kabul-teklif'
+        ? 'Standart Form-KİK048.0/Y: Yapım İşleri Geçici Kabul Teklif Belgesi'
+        : yapimSablonKodu === 'kik050-yapim-kesin-kabul-teklif'
+          ? 'Standart Form-KİK050.0/Y: Yapım İşleri Kesin Kabul Teklif Belgesi'
+          : 'Standart Form-KİK049.0/Y: Yapım İşleri Geçici Kabul Tutanağı'
     : isHizmet
       ? 'Hizmet İşleri Muayene ve Kabul Tutanağı'
       : 'Muayene ve Kabul Tutanağı'
 
   useEffect(() => {
     if (!isOpen) return
+
+    if (initialTutanak?.sablonKodu) {
+      setYapimSablonKodu(initialTutanak.sablonKodu)
+    } else {
+      setYapimSablonKodu('kik049-yapim-gecici-kabul-tutanagi')
+    }
 
     const previousAcceptedMap: Record<number, number> = {}
     if (existingTutanaklar && existingTutanaklar.length > 0) {
@@ -249,7 +262,17 @@ export function KabulTutanakModal({
       tutar: tutar ? Number(tutar) : undefined,
       notlar: notlar.trim() || undefined,
       kalemler: kalemler,
-      created_at: initialTutanak?.created_at || new Date().toISOString()
+      created_at: initialTutanak?.created_at || new Date().toISOString(),
+      sablonKodu: isYapim ? yapimSablonKodu : undefined,
+      tutanakTuru: isYapim
+        ? yapimSablonKodu.includes('kesin-kabul-tutanagi')
+          ? 'kesin_kabul'
+          : yapimSablonKodu.includes('kesin-kabul-teklif')
+            ? 'kesin_teklif'
+            : yapimSablonKodu.includes('gecici-kabul-teklif')
+              ? 'gecici_teklif'
+              : 'gecici_kabul'
+        : 'standart'
     }
 
     onSave(item)
@@ -269,12 +292,69 @@ export function KabulTutanakModal({
           <div>
             <strong>{turAdi} Kaydı:</strong>{' '}
             {isYapim
-              ? 'Yapım işi hakediş, geçici kabul, imalat tespit ve komisyon onay kararlarını kaydedebilirsiniz.'
+              ? 'Yapım işi hakediş, geçici kabul, kesin kabul, imalat tespit ve komisyon onay kararlarını kaydedebilirsiniz.'
               : isHizmet
                 ? 'İfa edilen hizmet, danışmanlık veya bakım-onarım kabul tutanağı ve komisyon kararlarını kaydedebilirsiniz.'
                 : 'Kısmi teslimatlar, irsaliye/fatura numaraları ve ambar teslim yeri bilgilerini girebilir, muayene komisyonu onay kararlarını kaydedebilirsiniz.'}
           </div>
         </div>
+
+        {isYapim && (
+          <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+            <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-2">
+              Yapım İşi Kabul Belgesi Türü
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {[
+                {
+                  id: 'kik049-yapim-gecici-kabul-tutanagi',
+                  kod: 'Standart Form-KİK049.0/Y',
+                  baslik: 'Geçici Kabul Tutanağı (Ek-2)',
+                  aciklama: 'İşin bitiminde komisyonca düzenlenen resmi kabul tutanağı'
+                },
+                {
+                  id: 'kik048-yapim-gecici-kabul-teklif',
+                  kod: 'Standart Form-KİK048.0/Y',
+                  baslik: 'Geçici Kabul Teklif Belgesi (Ek-1)',
+                  aciklama: 'Yüklenici dilekçesi sonrası ön inceleme ve teklif belgesi'
+                },
+                {
+                  id: 'kik051-yapim-kesin-kabul-tutanagi',
+                  kod: 'Standart Form-KİK051.0/Y',
+                  baslik: 'Yapım İşleri Kesin Kabul Tutanağı (Ek-4)',
+                  aciklama: 'Teminat süresi bitiminde kesin kabul komisyonu tutanağı'
+                },
+                {
+                  id: 'kik050-yapim-kesin-kabul-teklif',
+                  kod: 'Standart Form-KİK050.0/Y',
+                  baslik: 'Kesin Kabul Teklif Belgesi (Ek-3)',
+                  aciklama: 'Kesin kabul zamanı gelen işin inceleme ve teklif belgesi'
+                }
+              ].map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setYapimSablonKodu(opt.id)}
+                  className={`p-2.5 rounded-lg border text-left transition-all cursor-pointer flex flex-col gap-0.5 ${
+                    yapimSablonKodu === opt.id
+                      ? 'border-blue-600 bg-blue-50/70 dark:bg-blue-950/40 text-blue-900 dark:text-blue-200 shadow-xs ring-1 ring-blue-500'
+                      : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="font-bold text-xs">{opt.baslik}</span>
+                    <span className="text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                      {opt.kod}
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                    {opt.aciklama}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <div>

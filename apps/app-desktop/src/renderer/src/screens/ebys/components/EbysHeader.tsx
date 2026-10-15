@@ -8,7 +8,8 @@ import {
   Eye,
   ZoomIn,
   ZoomOut,
-  RotateCcw
+  RotateCcw,
+  PenTool
 } from 'lucide-react'
 import { StudioTab } from '../hooks/useEbysStudio'
 
@@ -61,6 +62,20 @@ export const EbysHeader: React.FC<EbysHeaderProps> = ({
       <div className="flex flex-wrap items-center gap-2">
         {/* Görünüm Sekmeleri */}
         <div className="bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-1">
+          <button
+            onClick={() => setActiveTab('editor')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              activeTab === 'editor'
+                ? 'bg-purple-600 text-white shadow-xs font-bold'
+                : 'text-purple-600 dark:text-purple-400 hover:text-purple-700 hover:bg-purple-50 dark:hover:bg-purple-950/40'
+            }`}
+          >
+            <PenTool className="w-3.5 h-3.5" />
+            Canlı TipTap Editörü
+            <span className="text-[9px] font-black uppercase px-1 py-0.2 rounded bg-purple-200 dark:bg-purple-900 text-purple-800 dark:text-purple-200">
+              A4
+            </span>
+          </button>
           <button
             onClick={() => setActiveTab('resmi_yazi')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${

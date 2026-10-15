@@ -309,17 +309,35 @@ export function useKabulVeOdemeData() {
 
   const stageSablons = allStageSablons.filter((s) => {
     const key = String(s.dosya_adi || s.id || '').toLowerCase()
+    if (isYapim) {
+      return (
+        !key.includes('tasinir-islem-fisi') &&
+        !key.includes('hizmet-isleri') &&
+        !key.includes('muayene-kabul-tutanagi') &&
+        !key.includes('muayene-kabul-komisyonu')
+      )
+    }
     if (isHizmet) {
       return (
         !key.includes('muayene-kabul-tutanagi') &&
         !key.includes('muayene-kabul-komisyonu') &&
-        !key.includes('tasinir-islem-fisi')
+        !key.includes('tasinir-islem-fisi') &&
+        !key.includes('yapim') &&
+        !key.includes('kik048') &&
+        !key.includes('kik049') &&
+        !key.includes('kik050') &&
+        !key.includes('kik051')
       )
     } else {
       return (
         !key.includes('hizmet-isleri') &&
         !key.includes('hakedis-raporu') &&
-        !key.includes('puantaj')
+        !key.includes('puantaj') &&
+        !key.includes('yapim') &&
+        !key.includes('kik048') &&
+        !key.includes('kik049') &&
+        !key.includes('kik050') &&
+        !key.includes('kik051')
       )
     }
   })
@@ -351,20 +369,37 @@ export function useKabulVeOdemeData() {
         evrakSayisi: tutanakItem.tutanakNo,
         dosyaTarihi: tutanakItem.tutanakTarihi,
         kabulTarihi: tutanakItem.tutanakTarihi,
+        tutanakTarihi: tutanakItem.tutanakTarihi,
         // Fatura / irsaliye
         faturaNo: tutanakItem.faturaNo,
         faturaTarihi: tutanakItem.faturaTarihi,
         irsaliyeNo: tutanakItem.irsaliyeNo,
         irsaliyeTarihi: tutanakItem.irsaliyeTarihi,
-        // Firma
+        // Firma / Yüklenici
         yukleniciFirma: kazananFirmaUnvan,
+        yukleniciAdi: kazananFirmaUnvan,
+        yukleniciUnvani: kazananFirmaUnvan,
         // Tutarlar
         genelToplam: fmt(tutanakItem.tutar),
         kdvDahilToplam: fmt(tutanakItem.tutar),
         tutar: fmt(tutanakItem.tutar),
         kabulEdilenTutar: fmt(tutanakItem.tutar),
         tutanakNo: tutanakItem.tutanakNo,
-        tutanakTarihi: tutanakItem.tutanakTarihi,
+        // Yapım Kabul Özel Alanları (KİK048, KİK049, KİK050, KİK051)
+        isinAdi: dosyaContext?.is_adi || dosyaContext?.konu || dosyaContext?.ad || 'Yapım İşi',
+        sozlesmeTarihi: dosyaContext?.sozlesme_tarihi || dosyaContext?.karar_tarihi || tutanakItem.tutanakTarihi,
+        sozlesmeBedeli: fmt(tutanakItem.tutar || firmaStats?.teklifToplami),
+        isinSuresi: dosyaContext?.isin_suresi || dosyaContext?.teslim_suresi || '30 Takvim Günü',
+        isinBitirilmesiGerekenTarih: dosyaContext?.bitis_tarihi || dosyaContext?.teslim_tarihi || tutanakItem.tutanakTarihi,
+        varsaSureUzatimlari: dosyaContext?.sure_uzatimi || 'Bulunmamaktadır.',
+        sureUzatimiDahilBitisTarihi: dosyaContext?.sure_uzatimi_bitis || dosyaContext?.bitis_tarihi || tutanakItem.tutanakTarihi,
+        isinBitirildigiTarih: tutanakItem.tutanakTarihi,
+        geciciKabulItibarTarihi: tutanakItem.tutanakTarihi,
+        geciciKabulTarihi: tutanakItem.tutanakTarihi,
+        kesinKabulTarihi: tutanakItem.tutanakTarihi,
+        teminatSuresi: dosyaContext?.teminat_suresi || '12 Ay',
+        kusurVeNoksanlar: tutanakItem.notlar || '',
+        onayTarihi: tutanakItem.onayTarihi || tutanakItem.tutanakTarihi,
         // Teslim
         teslimYeri: tutanakItem.teslimYeri,
         // Notlar
@@ -385,6 +420,13 @@ export function useKabulVeOdemeData() {
           teslimYeri: tutanakItem.teslimYeri
         })),
         // Komisyon heyeti
+        komisyonUyeleri: komisyonUyeleri.map((u) => ({
+          gorev: u.gorev || 'Üye',
+          gorevi: u.gorev || 'Üye',
+          adSoyad: u.ad_soyad,
+          ad_soyad: u.ad_soyad,
+          unvan: u.unvan || ''
+        })),
         muayeneKomisyonu: komisyonUyeleri.map((u) => ({
           gorevi: u.gorev || 'Üye',
           adSoyad: u.ad_soyad,

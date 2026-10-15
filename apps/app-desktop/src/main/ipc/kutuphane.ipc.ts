@@ -160,7 +160,7 @@ export function registerKutuphaneIpc(): void {
         // 2. İlk sürümü (v1) oluştur
         const surumInfo = db
           .prepare(
-            `INSERT INTO DATA_KutuphaneBelgeSurum (belge_id, surum_no, etiket, not, icerik_html, kosullar_json)
+            `INSERT INTO DATA_KutuphaneBelgeSurum (belge_id, surum_no, etiket, "not", icerik_html, kosullar_json)
              VALUES (?, 1, 'v1.0', 'İlk Sürüm', ?, ?)`
           )
           .run(belgeId, icerik_html, typeof kosullar_json === 'string' ? kosullar_json : JSON.stringify(kosullar_json))
@@ -199,7 +199,7 @@ export function registerKutuphaneIpc(): void {
         // Yeni sürüm kaydet (Eski sürüm değişmez, append-only)
         const surumInfo = db
           .prepare(
-            `INSERT INTO DATA_KutuphaneBelgeSurum (belge_id, surum_no, etiket, not, icerik_html, kosullar_json)
+            `INSERT INTO DATA_KutuphaneBelgeSurum (belge_id, surum_no, etiket, "not", icerik_html, kosullar_json)
              VALUES (?, ?, ?, ?, ?, ?)`
           )
           .run(
@@ -498,7 +498,7 @@ export function registerKutuphaneIpc(): void {
               const nextNo = Number(belge.surum_no || 1) + 1
               const sInfo = db
                 .prepare(
-                  `INSERT INTO DATA_KutuphaneBelgeSurum (belge_id, surum_no, etiket, not, icerik_html, kosullar_json)
+                  `INSERT INTO DATA_KutuphaneBelgeSurum (belge_id, surum_no, etiket, "not", icerik_html, kosullar_json)
                    VALUES (?, ?, ?, ?, ?, ?)`
                 )
                 .run(

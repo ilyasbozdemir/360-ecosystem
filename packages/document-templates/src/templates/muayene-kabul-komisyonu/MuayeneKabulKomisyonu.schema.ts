@@ -17,6 +17,12 @@ export const MuayeneKabulKomisyonuSchema = z.object({
   sayisi: z.union([z.string(), z.number()]).optional(),
   evrakSayisi: z.string().optional(),
   dosyaKonusu: z.string().optional(),
+
+  // KİK & Standart Form Bilgileri (İsteğe Bağlı)
+  kikKodu: z.string().optional(),
+  kikAdi: z.string().optional(),
+  standartFormKodu: z.string().optional(),
+  standartFormAdi: z.string().optional(),
   onayBelgesiTarihi: z.string().optional(),
   onayBelgesiNo: z.union([z.string(), z.number()]).optional(),
   onayBelgesiYili: z.union([z.string(), z.number()]).optional(),

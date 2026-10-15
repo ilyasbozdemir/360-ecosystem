@@ -5,6 +5,12 @@ export const FiyatArastirmaMektubuSchema = z.object({
   sunulacakMakam: z.string().optional(),
   idareHitapMetni: z.string().optional(),
   isinAdi: z.string().optional(),
+
+  // KİK & Standart Form Bilgileri (İsteğe Bağlı)
+  kikKodu: z.string().optional(),
+  kikAdi: z.string().optional(),
+  standartFormKodu: z.string().optional(),
+  standartFormAdi: z.string().optional(),
   gunSayisi: z.string().optional(),
   gunSayisiYazi: z.string().optional(),
   teklifSahibi: z.string().optional(),

@@ -95,10 +95,6 @@ export const useModuleStore = create<ModuleStoreState>()(
       },
 
       trashModule: (id: string, customRetentionDays?: number) => {
-        if (id === 'kik-dogrudan-temin-22d') {
-          console.warn('4734 Doğrudan Temin çekirdek sistem modülüdür ve kaldırılamaz.')
-          return
-        }
         const days = customRetentionDays || get().defaultRetentionDays || DEFAULT_RETENTION_DAYS
         set((state) => {
           const trashedAtDate = new Date()
@@ -137,10 +133,6 @@ export const useModuleStore = create<ModuleStoreState>()(
       },
 
       permanentlyDeleteModule: (id: string) => {
-        if (id === 'kik-dogrudan-temin-22d') {
-          console.warn('4734 Doğrudan Temin çekirdek sistem modülüdür ve silinemez.')
-          return
-        }
         set((state) => {
           const nextTrashed = { ...state.trashedModules }
           delete nextTrashed[id]

@@ -2,6 +2,11 @@ import { z } from 'zod';
 
 export const IhtiyacTalepFormuSchema = z.object({
   antetSatirlari: z.any().optional(),
+  // KİK & Standart Form Bilgileri (İsteğe Bağlı)
+  kikKodu: z.string().optional(),
+  kikAdi: z.string().optional(),
+  standartFormKodu: z.string().optional(),
+  standartFormAdi: z.string().optional(),
   evrakSayisi: z.any().optional(),
   dosyaKonusu: z.any().optional(),
   maddeNo: z.any().optional(),

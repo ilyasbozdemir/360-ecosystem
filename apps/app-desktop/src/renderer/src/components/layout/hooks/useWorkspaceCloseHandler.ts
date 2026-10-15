@@ -108,7 +108,7 @@ export function useWorkspaceCloseHandler(
           setShutdownStatusText('Farklı konuma yerel yedek alınıyor...')
           const res = await withTimeout(
             window.electron.ipcRenderer.invoke('workspace:backup'),
-            4000
+            6000
           )
           if (!res.success && res.error !== 'Yedekleme iptal edildi') {
             throw new Error(`Yerel yedekleme hatası: ${res.error}`)
@@ -117,7 +117,7 @@ export function useWorkspaceCloseHandler(
           setShutdownStatusText('Yedek dosyası e-posta ile gönderiliyor...')
           const res = await withTimeout(
             window.electron.ipcRenderer.invoke('workspace:backup-email'),
-            4000
+            8000
           )
           if (!res.success) {
             throw new Error(`E-posta yedekleme hatası: ${res.error}`)
@@ -126,7 +126,7 @@ export function useWorkspaceCloseHandler(
           setShutdownStatusText('Sunucuya senkronize ediliyor...')
           const res = await withTimeout(
             window.electron.ipcRenderer.invoke('workspace:backup-server'),
-            4000
+            8000
           )
           if (!res?.success) {
             throw new Error(res?.error || 'Sunucuya yedekleme işlemi başarısız oldu.')
@@ -137,7 +137,7 @@ export function useWorkspaceCloseHandler(
             window.electron.ipcRenderer.invoke('workspace:backup-gdrive', {
               force: true
             }),
-            5000
+            15000
           )
           if (res?.fileId) {
             localStorage.setItem('lastGdriveUploadedFileId', res.fileId)
@@ -159,7 +159,7 @@ export function useWorkspaceCloseHandler(
             s.id === type ? { ...s, status: 'error', errorDetails: err?.message || String(err) } : s
           )
         )
-        console.error(`[Shutdown] Error on ${type}:`, err)
+        console.warn(`[Shutdown] Uyarı (${type}):`, err?.message || err)
       }
     }
 

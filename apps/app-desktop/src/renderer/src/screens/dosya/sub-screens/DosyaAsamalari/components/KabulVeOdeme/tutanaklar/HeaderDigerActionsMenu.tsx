@@ -1,15 +1,17 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { CreditCard, FileText, MoreHorizontal, PackageCheck, ShieldCheck } from 'lucide-react'
+import { CreditCard, FileCheck, FileText, MoreHorizontal, PackageCheck, ShieldCheck } from 'lucide-react'
 
 interface HeaderDigerActionsMenuProps {
   isMal: boolean
+  isYapim?: boolean
   onOpenPreview?: (sablonKey: string) => void
   onOpenTifModal?: () => void
 }
 
 export function HeaderDigerActionsMenu({
   isMal,
+  isYapim = false,
   onOpenPreview,
   onOpenTifModal
 }: HeaderDigerActionsMenuProps): React.JSX.Element {
@@ -21,12 +23,12 @@ export function HeaderDigerActionsMenu({
   const updateCoords = useCallback(() => {
     if (buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect()
-      const menuWidth = 240
+      const menuWidth = 260
       let left = rect.right - menuWidth
       if (left < 10) left = 10
       let top = rect.bottom + 4
-      if (top + 260 > window.innerHeight) {
-        top = Math.max(10, rect.top - 260 - 4)
+      if (top + 340 > window.innerHeight) {
+        top = Math.max(10, rect.top - 340 - 4)
       }
       setCoords({ top, left })
     }
@@ -83,22 +85,88 @@ export function HeaderDigerActionsMenu({
           <div
             ref={menuRef}
             style={{ top: `${coords.top}px`, left: `${coords.left}px` }}
-            className="fixed z-[9999] w-60 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-2xl py-1 animate-in fade-in zoom-in-95 duration-150"
+            className="fixed z-[9999] w-64 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-2xl py-1 animate-in fade-in zoom-in-95 duration-150"
           >
+            {isYapim ? (
+              <>
+                <div className="px-3 py-1.5 text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-700/60">
+                  Yapım İşleri Kabul Belgeleri
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false)
+                    onOpenPreview?.('kik049-yapim-gecici-kabul-tutanagi')
+                  }}
+                  className="w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 flex items-center gap-2 cursor-pointer"
+                >
+                  <FileText className="w-3.5 h-3.5 text-blue-500" />
+                  <span>KİK049: Geçici Kabul Tutanağı</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false)
+                    onOpenPreview?.('kik048-yapim-gecici-kabul-teklif')
+                  }}
+                  className="w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 flex items-center gap-2 cursor-pointer"
+                >
+                  <FileText className="w-3.5 h-3.5 text-indigo-500" />
+                  <span>KİK048: Geçici Kabul Teklif Belgesi</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false)
+                    onOpenPreview?.('kik051-yapim-kesin-kabul-tutanagi')
+                  }}
+                  className="w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 flex items-center gap-2 cursor-pointer"
+                >
+                  <FileCheck className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>KİK051: Kesin Kabul Tutanağı</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false)
+                    onOpenPreview?.('kik050-yapim-kesin-kabul-teklif')
+                  }}
+                  className="w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 flex items-center gap-2 cursor-pointer"
+                >
+                  <FileCheck className="w-3.5 h-3.5 text-teal-500" />
+                  <span>KİK050: Kesin Kabul Teklif Belgesi</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false)
+                    onOpenPreview?.('hakedis-raporu')
+                  }}
+                  className="w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 flex items-center gap-2 cursor-pointer"
+                >
+                  <FileText className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Hakediş Raporu</span>
+                </button>
+                <div className="border-t border-slate-100 dark:border-slate-700/60 my-1" />
+              </>
+            ) : null}
+
             <div className="px-3 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-700/60">
               Genel Dosya Çıktıları (Tüm Süreç)
             </div>
-            <button
-              type="button"
-              onClick={() => {
-                setOpen(false)
-                onOpenPreview?.('muayene-kabul-komisyonu')
-              }}
-              className="w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 flex items-center gap-2 cursor-pointer"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />
-              <span>Komisyon Kararı Belgesi</span>
-            </button>
+            {!isYapim && (
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false)
+                  onOpenPreview?.('muayene-kabul-komisyonu')
+                }}
+                className="w-full px-3 py-2 text-left text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 flex items-center gap-2 cursor-pointer"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />
+                <span>Komisyon Kararı Belgesi</span>
+              </button>
+            )}
             <button
               type="button"
               onClick={() => {

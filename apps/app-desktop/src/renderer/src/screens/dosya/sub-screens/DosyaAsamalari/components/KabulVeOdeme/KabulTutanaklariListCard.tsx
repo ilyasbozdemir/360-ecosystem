@@ -136,7 +136,7 @@ export function KabulTutanaklariListCard({
         ? baslangicTutanaklari.length
         : 1
 
-  const handleOpenFallbackForm = () => {
+  const handleOpenFallbackForm = (): void => {
     setFormTipi(isYapim ? 'yapim' : isHizmet ? 'hizmet' : 'mal')
   }
 
@@ -202,6 +202,7 @@ export function KabulTutanaklariListCard({
           irsaliyeTarihi={irsaliyeTarihi}
           primarySablonKey={primarySablonKey}
           isMal={isMal}
+          isYapim={isYapim}
           hasKomisyon={hasKomisyon}
           komisyonUyeleri={komisyonUyeleri}
           formatDate={formatDate}

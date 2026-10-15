@@ -34,9 +34,27 @@ export default function PersonelScreen({
     }
   }, [fetchKurum, isSubComponent])
 
-  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
-  const initialTab = searchParams?.get('tab') === 'izinler' ? 'izinler' : 'kadro'
-  const [activeMainTab, setActiveMainTab] = useState<'kadro' | 'izinler'>(initialTab)
+  const getPersonelTabFromLocation = (): 'kadro' | 'izinler' => {
+    if (typeof window === 'undefined') return 'kadro'
+    const hash = window.location.hash || ''
+    const hashIdx = hash.indexOf('?')
+    const hashParams = hashIdx !== -1 ? new URLSearchParams(hash.substring(hashIdx)) : null
+    const searchParams = new URLSearchParams(window.location.search)
+    return (hashParams?.get('tab') || searchParams.get('tab')) === 'izinler' ? 'izinler' : 'kadro'
+  }
+  const [activeMainTab, setActiveMainTab] = useState<'kadro' | 'izinler'>(getPersonelTabFromLocation())
+
+  useEffect(() => {
+    const handleLocationChange = () => {
+      setActiveMainTab(getPersonelTabFromLocation())
+    }
+    window.addEventListener('hashchange', handleLocationChange)
+    window.addEventListener('popstate', handleLocationChange)
+    return () => {
+      window.removeEventListener('hashchange', handleLocationChange)
+      window.removeEventListener('popstate', handleLocationChange)
+    }
+  }, [])
 
   const [screenState, setScreenState] = useState<ScreenState>('list')
   const [dataViewMode, setDataViewMode] = useState<DataViewMode>('grid')

@@ -21,7 +21,8 @@ import {
   Archive,
   RotateCcw,
   Lock,
-  Sparkles
+  Sparkles,
+  FolderOpen
 } from 'lucide-react'
 import { useNavigate } from '@tanstack/react-router'
 import { cn } from '../../../utils/cn'
@@ -128,6 +129,17 @@ export const ModulCard: React.FC<ModulCardProps> = ({
   onOpenDetail
 }) => {
   const navigate = useNavigate()
+  const handleOpenModul = (routePath?: string) => {
+    if (!routePath) return
+    const [pathname, searchStr] = routePath.split('?')
+    if (searchStr) {
+      const searchParams = Object.fromEntries(new URLSearchParams(searchStr).entries())
+      navigate({ to: pathname as string, search: searchParams as never })
+    } else {
+      navigate({ to: pathname as string })
+    }
+  }
+
   const isNavyGradient = modul.kartStili === 'navy_gradient'
   const isSolidRed = modul.kartStili === 'solid_red'
   const isBurgundy = modul.kartStili === 'burgundy'
@@ -139,7 +151,7 @@ export const ModulCard: React.FC<ModulCardProps> = ({
   const surum = getSurumAsamasiMeta(modul.surumAsamasi)
 
   const cardBgClasses = isNavyGradient
-    ? 'bg-gradient-to-br from-[#0c1f44] via-[#091b3e] to-[#040f26] text-white border-blue-900/50 shadow-xl'
+    ? 'bg-linear-to-br from-[#0c1f44] via-[#091b3e] to-[#040f26] text-white border-blue-900/50 shadow-xl'
     : isSolidRed
       ? 'bg-[#d32f2f] text-white border-red-700/50 shadow-xl'
       : isBurgundy
@@ -152,12 +164,6 @@ export const ModulCard: React.FC<ModulCardProps> = ({
     <div
       className={`relative group flex flex-col justify-between rounded-2xl ${cardBgClasses} p-5 md:p-6 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1.5 overflow-hidden`}
     >
-      {/* Özel Tema Rozet Şeritleri (Örn: Burgundy MEB Şeridi) */}
-      {isBurgundy && (
-        <div className="absolute -right-12 top-6 bg-amber-400 text-amber-950 font-black text-[9px] uppercase tracking-widest px-12 py-1 rotate-45 shadow-md">
-          YENİ
-        </div>
-      )}
 
       {/* Arka plan yumuşak renk geçişi (Varsayılan kartlar için) */}
       {!isSpecialThemed && (
@@ -369,16 +375,35 @@ export const ModulCard: React.FC<ModulCardProps> = ({
           </div>
         ) : isInstalled ? (
           <div className="flex items-center gap-1.5">
-            {modul.routePath && (
+            {modul.id === 'kik-dogrudan-temin-22d' ? (
+              <>
+                <button
+                  onClick={() => handleOpenModul('/surec-studyosu?modulId=kik-dogrudan-temin-22d')}
+                  className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-xs transition-all cursor-pointer"
+                  title="Canlı Süreç ve Evrak Stüdyosunu Aç (KİK Formları & Dilekçeler)"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Canlı Stüdyo
+                </button>
+                <button
+                  onClick={() => handleOpenModul('/dosyalar')}
+                  className="flex items-center justify-center gap-1 px-2.5 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs transition-all cursor-pointer"
+                  title="Doğrudan Temin Dosyaları Listesi"
+                >
+                  <FolderOpen className="w-3.5 h-3.5" />
+                  Dosyalar
+                </button>
+              </>
+            ) : modul.routePath ? (
               <button
-                onClick={() => navigate({ to: modul.routePath as string })}
+                onClick={() => handleOpenModul(modul.routePath)}
                 className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs transition-all cursor-pointer"
                 title="Modülü / Eklentiyi Aç"
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 Aç
               </button>
-            )}
+            ) : null}
             {isModulRemovable(modul) ? (
               <button
                 onClick={() => onPromptUninstall(modul)}

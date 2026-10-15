@@ -516,8 +516,10 @@ export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void):
 
           const uploadedFile = (await res.json()) as any
 
-          // Prune older backups: keep only last 7 versions
-          await pruneOldBackups(cleanToken, folderId, 7)
+          // Prune older backups asynchronously: keep only last 7 versions
+          pruneOldBackups(cleanToken, folderId, 7).catch((err) =>
+            console.warn('[Google Drive] Eski yedekleri temizleme uyarısı:', err)
+          )
 
           // Track backup history in SQLite database
           try {

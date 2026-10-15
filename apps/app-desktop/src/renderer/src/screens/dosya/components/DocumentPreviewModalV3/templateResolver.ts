@@ -13,6 +13,10 @@ export interface TemplateOptionItem {
   category: string
   categoryLabel: string
   description?: string
+  kikKodu?: string
+  kikAdi?: string
+  standartFormKodu?: string
+  standartFormAdi?: string
 }
 
 export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
@@ -20,7 +24,7 @@ export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
   {
     id: 'ihtiyac-listesi',
     name: 'IhtiyacListesi',
-    title: 'İhtiyaç Listesi (Malzeme / Hizmet)',
+    title: 'Standart Form (MYHBY m.4/e): İhtiyaç Listesi Cetveli',
     category: '1-ihtiyac-tespiti-ve-baslangic',
     categoryLabel: 'Hazırlık & İhtiyaç',
     description: 'Alımı yapılacak kalemlerin teknik özellikleri ve adetleri'
@@ -28,7 +32,7 @@ export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
   {
     id: 'son-alim-fiyat-cetveli',
     name: 'SonAlimFiyatCetveli',
-    title: 'Son Alım Fiyat Cetveli',
+    title: 'Standart Form: Son Alım Fiyat Araştırma ve Mukayese Cetveli',
     category: '1-ihtiyac-tespiti-ve-baslangic',
     categoryLabel: 'Hazırlık & İhtiyaç',
     description: 'Belirtilen kalemlerin geçmiş alım fiyatları ve yaklaşık maliyet araştırma cetveli'
@@ -36,7 +40,7 @@ export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
   {
     id: 'ihtiyac-talep-formu',
     name: 'IhtiyacTalepFormu',
-    title: 'İhtiyaç Talep Formu',
+    title: 'Standart Form (MYHBY m.4/e - 4734 KİK m.22): İhtiyaç Belgesi ve Harcama Talep Müzekkeresi',
     category: '1-ihtiyac-tespiti-ve-baslangic',
     categoryLabel: 'Hazırlık & İhtiyaç',
     description: 'Birimlerin ihtiyaç talebini resmi olarak ilettiği form'
@@ -44,7 +48,7 @@ export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
   {
     id: 'tasinir-kayit-yetkilisi-gorusu',
     name: 'TasinirKayitYetkilisiGorusu',
-    title: 'Taşınır Kayıt Yetkilisi Görüşü',
+    title: 'Standart Form: Taşınır Kayıt ve Kontrol Yetkilisi Görüş Belgesi',
     category: '1-ihtiyac-tespiti-ve-baslangic',
     categoryLabel: 'Hazırlık & İhtiyaç',
     description: 'Ambar stok durumu ve taşınır malzeme ihtiyacı değerlendirme görüşü'
@@ -52,7 +56,7 @@ export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
   {
     id: 'teknik-sartname',
     name: 'TeknikSartname',
-    title: 'Teknik Şartname (Mal / Hizmet / Yapım)',
+    title: 'Standart Form-KİK: Teknik Şartname Belgesi (Mal / Hizmet / Yapım)',
     category: '1-ihtiyac-tespiti-ve-baslangic',
     categoryLabel: 'Hazırlık & İhtiyaç',
     description: 'Alım türüne göre dinamik şekillenen teknik şartname formu'
@@ -60,7 +64,7 @@ export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
   {
     id: 'luzum-muzekkeresi',
     name: 'LuzumMuzekkeresi',
-    title: 'Lüzum Müzekkeresi',
+    title: 'Standart Form (MYHBY m.4/e): Lüzum Müzekkeresi',
     category: '1-ihtiyac-tespiti-ve-baslangic',
     categoryLabel: 'Hazırlık & İhtiyaç',
     description: 'İhtiyacın gerekçesini ve alım kararını belirten müzekkere'
@@ -68,7 +72,7 @@ export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
   {
     id: 'luzum-muzekkeresi-onay-eki',
     name: 'LuzumMuzekkeresiOnayEki',
-    title: 'Lüzum Müzekkeresi Onay Eki',
+    title: 'Standart Form: Lüzum Müzekkeresi Onay Eki',
     category: '1-ihtiyac-tespiti-ve-baslangic',
     categoryLabel: 'Hazırlık & İhtiyaç',
     description: 'Müzekkereye eklenen harcama yetkilisi onay formu'
@@ -76,7 +80,7 @@ export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
   {
     id: 'luzum-muzekkeresi-teslim-tesellum',
     name: 'LuzumMuzekkeresiTeslimTesellum',
-    title: 'Lüzum Müzekkeresi Teslim Tesellüm',
+    title: 'Standart Form: Lüzum Müzekkeresi Teslim Tesellüm Tutanağı',
     category: '1-ihtiyac-tespiti-ve-baslangic',
     categoryLabel: 'Hazırlık & İhtiyaç',
     description: 'Alınan malzemelerin ilgili birime teslim tutanağı'
@@ -84,7 +88,7 @@ export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
   {
     id: 'harcama-talimati',
     name: 'HarcamaTalimati',
-    title: 'Harcama Talimatı / İhale Onay Belgesi',
+    title: 'Standart Form-KİK024.0/M: Doğrudan Temin Onay Belgesi (Harcama Talimatı)',
     category: '1-ihtiyac-tespiti-ve-baslangic',
     categoryLabel: 'Hazırlık & İhtiyaç',
     description: 'Harcama yetkilisinden alınan ihale/harcama onay belgesi'
@@ -92,7 +96,7 @@ export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
   {
     id: 'dogrudan-temin-onay-belgesi',
     name: 'DogrudanTeminOnayBelgesi',
-    title: 'Doğrudan Temin Onay Belgesi',
+    title: 'Standart Form-KİK024.0/M: Doğrudan Temin Onay Belgesi (Harcama Talimatı)',
     category: '1-ihtiyac-tespiti-ve-baslangic',
     categoryLabel: 'Hazırlık & İhtiyaç',
     description: '4734 Sayılı Kanun 22. madde uyarınca Doğrudan Temin Onay Belgesi'
@@ -100,7 +104,7 @@ export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
   {
     id: 'komisyon-gorevlendirme-onayi',
     name: 'KomisyonGorevlendirmeOnayi',
-    title: 'Komisyon Görevlendirme Onayı',
+    title: 'Standart Form (4734 KİK m.22): Piyasa Fiyat Araştırması ve Muayene Kabul Görevlendirme Onayı',
     category: '1-ihtiyac-tespiti-ve-baslangic',
     categoryLabel: 'Hazırlık & İhtiyaç',
     description: 'Piyasa fiyat araştırması yapacak personellerin atama yazısı'
@@ -108,7 +112,7 @@ export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
   {
     id: 'komisyon-gorevlendirme-onayi-eki',
     name: 'KomisyonGorevlendirmeOnayiEki',
-    title: 'Komisyon Görevlendirme Onayı Eki',
+    title: 'Standart Form: Görevlendirilen Komisyon ve Personel Listesi Eki',
     category: '1-ihtiyac-tespiti-ve-baslangic',
     categoryLabel: 'Hazırlık & İhtiyaç',
     description: 'Görevlendirilen personellerin liste eki'
@@ -116,7 +120,7 @@ export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
   {
     id: 'piyasa-fiyat-arastirma-gorevlendirmesi',
     name: 'PiyasaFiyatArastirmaGorevlendirmesi',
-    title: 'Piyasa Fiyat Araştırma Görevlendirmesi',
+    title: 'Standart Form (4734 KİK m.22): Piyasa Fiyat Araştırma Görevlendirme Onayı',
     category: '1-ihtiyac-tespiti-ve-baslangic',
     categoryLabel: 'Hazırlık & İhtiyaç',
     description: 'Fiyat araştırması görevlendirme yazısı'
@@ -126,7 +130,7 @@ export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
   {
     id: 'fiyat-arastirma-mektubu',
     name: 'FiyatArastirmaMektubu',
-    title: 'Fiyat Araştırma Mektubu',
+    title: 'Standart Form-KİK027.0/M: Birim Fiyat Teklif Mektubu ve Fiyat İsteme Formu',
     category: '2-piyasa-fiyat-arastirmasi',
     categoryLabel: 'Teklifler & Piyasa',
     description: 'Firmalardan fiyat teklifi talep mektubu'
@@ -134,7 +138,7 @@ export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
   {
     id: 'birim-fiyat-teklif-mektubu',
     name: 'BirimFiyatTeklifMektubu',
-    title: 'Birim Fiyat Teklif Mektubu',
+    title: 'Standart Form-KİK015.1/M: Birim Fiyat Teklif Mektubu',
     category: '2-piyasa-fiyat-arastirmasi',
     categoryLabel: 'Teklifler & Piyasa',
     description: 'İsteklilerin kaşe/imza ile verdiği teklif cetveli'
@@ -142,7 +146,7 @@ export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
   {
     id: 'arastirma-mektubu',
     name: 'ArastirmaMektubu',
-    title: 'Piyasa Araştırma Mektubu (Resmi)',
+    title: 'Standart Form-KİK027.0/M: Piyasa Fiyat Araştırma ve Teklif İsteme Mektubu',
     category: '2-piyasa-fiyat-arastirmasi',
     categoryLabel: 'Teklifler & Piyasa',
     description: 'Resmi kurumlardan veya esnaftan teklif isteme mektubu'
@@ -150,7 +154,7 @@ export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
   {
     id: 'piyasa-fiyat-arastirma-tutanagi',
     name: 'PiyasaFiyatArastirmaTutanagi',
-    title: 'Piyasa Fiyat Araştırma Tutanağı',
+    title: 'Standart Form (MYHBY Örnek No: 2): Piyasa Fiyat Araştırması Tutanağı',
     category: '2-piyasa-fiyat-arastirmasi',
     categoryLabel: 'Teklifler & Piyasa',
     description: 'Tüm tekliflerin karşılaştırıldığı ve en avantajlı teklifin belirlendiği tutanak'
@@ -158,7 +162,7 @@ export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
   {
     id: 'yaklasik-maliyet-cetveli',
     name: 'YaklasikMaliyetCetveli',
-    title: 'Yaklaşık Maliyet Cetveli',
+    title: 'Standart Form-KİK002.0/M: Yaklaşık Maliyet Hesap Cetveli',
     category: '2-piyasa-fiyat-arastirmasi',
     categoryLabel: 'Teklifler & Piyasa',
     description: 'Alımın tahmini yaklaşık maliyet hesap tablosu'
@@ -168,7 +172,7 @@ export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
   {
     id: 'dogrudan-temin-sonuc-onay-belgesi',
     name: 'DogrudanTeminSonucOnayBelgesi',
-    title: 'Piyasa Fiyat Araştırması Sonuç Onay Belgesi',
+    title: 'Standart Form (4734 KİK m.22): Piyasa Fiyat Araştırması Sonuç Onay Belgesi',
     category: '3-siparis-ve-sozlesme',
     categoryLabel: 'Sipariş & Sözleşme',
     description: 'Piyasa araştırması sonucunda alımın onaylandığı sonuç belgesi'
@@ -176,7 +180,7 @@ export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
   {
     id: 'butce-sorgusu',
     name: 'ButceSorgusu',
-    title: 'Bütçe Sorgusu / Ödenek Uygunluk Belgesi',
+    title: 'Standart Form: Bütçe Ödenek Kontrol ve Bloke Belgesi',
     category: '3-siparis-ve-sozlesme',
     categoryLabel: 'Sipariş & Sözleşme',
     description: 'Mali Hizmetler / Muhasebe Bütçe ve Ödenek Kontrol Formu'
@@ -184,7 +188,7 @@ export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
   {
     id: 'kabul-edilen-teklif',
     name: 'KabulEdilenTeklif',
-    title: 'Kabul Edilen Teklif Mektubu / Sipariş Formu',
+    title: 'Standart Form (KİK Tebliği m.22): Sipariş Mektubu ve Tebliğ-Tebellüğ Belgesi',
     category: '3-siparis-ve-sozlesme',
     categoryLabel: 'Sipariş & Sözleşme',
     description: 'Kazanan firmaya sipariş ve kabul tebliğ yazısı'
@@ -192,7 +196,7 @@ export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
   {
     id: 'dogrudan-temin-sozlesmesi',
     name: 'DogrudanTeminSozlesmesi',
-    title: 'Doğrudan Temin Alım Sözleşmesi',
+    title: 'Standart Form-KİK: Doğrudan Temin Mal / Hizmet Alımı Tip Sözleşmesi',
     category: '3-siparis-ve-sozlesme',
     categoryLabel: 'Sipariş & Sözleşme',
     description: 'İdare ile yüklenici arasında imzalanan alım sözleşmesi'
@@ -200,7 +204,7 @@ export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
   {
     id: 'sozlesmeye-davet',
     name: 'SozlesmeyeDavet',
-    title: 'Sözleşmeye Davet Yazısı',
+    title: 'Standart Form-KİK023.0/M: Sözleşmeye Davet Mektubu',
     category: '3-siparis-ve-sozlesme',
     categoryLabel: 'Sipariş & Sözleşme',
     description: 'Kazanan firmanın sözleşme imzalamaya davet edildiği resmi yazı'
@@ -208,7 +212,7 @@ export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
   {
     id: 'ihale-komisyon-karari',
     name: 'IhaleKomisyonKarari',
-    title: 'İhale Komisyon Kararı',
+    title: 'Standart Form-KİK018.0/M: İhale Komisyonu Kararı',
     category: '3-siparis-ve-sozlesme',
     categoryLabel: 'Sipariş & Sözleşme',
     description: 'İhale komisyonu tarafından alınan nihai karar tutanağı'
@@ -218,7 +222,7 @@ export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
   {
     id: 'harcama-pusulasi',
     name: 'HarcamaPusulasi',
-    title: 'Harcama Pusulası',
+    title: 'Standart Form (MYHBY Örnek No: 3): Harcama Pusulası ve Klasör Dizi Fihristi',
     category: '4-kabul-ve-odeme-islemleri',
     categoryLabel: 'Muayene & Kabul & Ödeme',
     description: 'Ödeme ve harcama pusulası belgesi'
@@ -226,7 +230,7 @@ export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
   {
     id: 'muayene-kabul-komisyonu',
     name: 'MuayeneKabulKomisyonu',
-    title: 'Muayene ve Kabul Komisyonu',
+    title: 'Standart Form-KİK054.0/M: Muayene ve Kabul Komisyon Kararı',
     category: '4-kabul-ve-odeme-islemleri',
     categoryLabel: 'Muayene & Kabul & Ödeme',
     description: 'Muayene ve kabul işlemlerini yürütecek komisyon görevlendirme belgesi'
@@ -234,7 +238,7 @@ export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
   {
     id: 'muayene-kabul-tutanagi',
     name: 'MuayeneKabulTutanagi',
-    title: 'Muayene ve Kabul Tutanağı (Mal Alımı)',
+    title: 'Standart Form-KİK054.0/M: Mal Alımları Muayene ve Kabul Komisyonu Tutanağı',
     category: '4-kabul-ve-odeme-islemleri',
     categoryLabel: 'Muayene & Kabul & Ödeme',
     description: 'Mal alımı teslimat ve muayene kabul tutanağı'
@@ -242,7 +246,7 @@ export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
   {
     id: 'hizmet-isleri-kabul-tutanagi',
     name: 'HizmetIsleriKabulTutanagi',
-    title: 'Hizmet İşleri Kabul Tutanağı',
+    title: 'Standart Form-KİK048.0/H: Hizmet İşleri Kabul Tutanağı',
     category: '4-kabul-ve-odeme-islemleri',
     categoryLabel: 'Muayene & Kabul & Ödeme',
     description: 'Hizmet alımı iş bitimi ve komisyon kabul tutanağı'
@@ -250,16 +254,48 @@ export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
   {
     id: 'hizmet-isleri-kabul-teklif-belgesi',
     name: 'HizmetIsleriKabulTeklifBelgesi',
-    title: 'Hizmet İşleri Kabul Teklif Belgesi',
+    title: 'Standart Form-KİK047.0/H: Hizmet İşleri Kabul Teklif Belgesi',
     category: '4-kabul-ve-odeme-islemleri',
     categoryLabel: 'Muayene & Kabul & Ödeme',
     description:
       'Hizmet alımı yüklenici iş bitirme dilekçesi sonrası ön inceleme ve kabul teklif belgesi'
   },
   {
+    id: 'kik048-yapim-gecici-kabul-teklif',
+    name: 'Kik048YapimGeciciKabulTeklif',
+    title: 'Standart Form-KİK048.0/Y: Yapım İşleri Geçici Kabul Teklif Belgesi',
+    category: '4-kabul-ve-odeme-islemleri',
+    categoryLabel: 'Muayene & Kabul & Ödeme',
+    description: 'Yapım işleri yüklenici iş bitirme dilekçesi sonrası ön inceleme ve geçici kabul teklif belgesi'
+  },
+  {
+    id: 'kik049-yapim-gecici-kabul-tutanagi',
+    name: 'Kik049YapimGeciciKabulTutanagi',
+    title: 'Standart Form-KİK049.0/Y: Yapım İşleri Geçici Kabul Tutanağı',
+    category: '4-kabul-ve-odeme-islemleri',
+    categoryLabel: 'Muayene & Kabul & Ödeme',
+    description: 'Yapım işleri geçici kabul komisyonu heyeti ve yüklenici inceleme tutanağı'
+  },
+  {
+    id: 'kik050-yapim-kesin-kabul-teklif',
+    name: 'Kik050YapimKesinKabulTeklif',
+    title: 'Standart Form-KİK050.0/Y: Yapım İşleri Kesin Kabul Teklif Belgesi',
+    category: '4-kabul-ve-odeme-islemleri',
+    categoryLabel: 'Muayene & Kabul & Ödeme',
+    description: 'Yapım işleri teminat süresi sonu kesin kabul heyeti teşkili teklif belgesi'
+  },
+  {
+    id: 'kik051-yapim-kesin-kabul-tutanagi',
+    name: 'Kik051YapimKesinKabulTutanagi',
+    title: 'Standart Form-KİK051.0/Y: Yapım İşleri Kesin Kabul Tutanağı',
+    category: '4-kabul-ve-odeme-islemleri',
+    categoryLabel: 'Muayene & Kabul & Ödeme',
+    description: 'Yapım işleri kesin kabul komisyonu heyeti ve yüklenici kesin kabul onay tutanağı'
+  },
+  {
     id: 'hakedis-raporu',
     name: 'HakedisRaporu',
-    title: 'Hakediş Raporu',
+    title: 'Standart Form (MYHBY Örnek No: 4): Hakediş Raporu ve İcmal Cetveli',
     category: '4-kabul-ve-odeme-islemleri',
     categoryLabel: 'Muayene & Kabul & Ödeme',
     description: 'Fiyat farkı, kesinti ve damga vergisi dahil hakediş raporu'
@@ -267,7 +303,7 @@ export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
   {
     id: 'tasinir-islem-fisi',
     name: 'TasinirIslemFisi',
-    title: 'Taşınır İşlem Fişi (TİF)',
+    title: 'Standart Form (TKKY Örnek No: 5): Taşınır İşlem Fişi (TİF)',
     category: '4-kabul-ve-odeme-islemleri',
     categoryLabel: 'Muayene & Kabul & Ödeme',
     description: 'Ambara malzeme giriş ve taşınır işlem fişi'
@@ -275,7 +311,7 @@ export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
   {
     id: 'odeme-emri-belgesi',
     name: 'OdemeEmriBelgesi',
-    title: 'Ödeme Emri Belgesi (MIF)',
+    title: 'Standart Form (MYHBY Örnek No: 1): Ödeme Emri Belgesi (MYS/MİF)',
     category: '4-kabul-ve-odeme-islemleri',
     categoryLabel: 'Muayene & Kabul & Ödeme',
     description: 'Muhasebe birimine iletilen resmi ödeme emri belgesi'
@@ -283,7 +319,7 @@ export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
   {
     id: 'odeme-yazisi',
     name: 'OdemeYazisi',
-    title: 'Ödeme Yazısı',
+    title: 'Standart Form: Muhasebe / Malmüdürlüğü Ödeme Gönderme Müzekkeresi',
     category: '4-kabul-ve-odeme-islemleri',
     categoryLabel: 'Muayene & Kabul & Ödeme',
     description: 'Mali hizmetler / muhasebe müdürlüğüne yazılan ödeme üst yazısı'
@@ -488,6 +524,53 @@ export const TEMPLATE_ALIASES: Record<string, string> = {
   'hakedis-raporu': 'hakedis-raporu',
   hakedisraporu: 'hakedis-raporu',
   hakedis: 'hakedis-raporu',
+
+  // Yapım İşleri Kabul Belgeleri (KİK Standart Formları)
+  'kik048-yapim-gecici-kabul-teklif': 'kik048-yapim-gecici-kabul-teklif',
+  kik048: 'kik048-yapim-gecici-kabul-teklif',
+  'kik-048': 'kik048-yapim-gecici-kabul-teklif',
+  'kik048-0-y': 'kik048-yapim-gecici-kabul-teklif',
+  'standart-form-kik048-0-y': 'kik048-yapim-gecici-kabul-teklif',
+  'tandart-form-kik048-0-y': 'kik048-yapim-gecici-kabul-teklif',
+  'yapim-isleri-gecici-kabul-teklif-belgesi': 'kik048-yapim-gecici-kabul-teklif',
+  'yapim-gecici-kabul-teklif-belgesi': 'kik048-yapim-gecici-kabul-teklif',
+  'yapim-gecici-kabul-teklif': 'kik048-yapim-gecici-kabul-teklif',
+  'gecici-kabul-teklif-belgesi': 'kik048-yapim-gecici-kabul-teklif',
+  'gecici-kabul-teklif': 'kik048-yapim-gecici-kabul-teklif',
+
+  'kik049-yapim-gecici-kabul-tutanagi': 'kik049-yapim-gecici-kabul-tutanagi',
+  kik049: 'kik049-yapim-gecici-kabul-tutanagi',
+  'kik-049': 'kik049-yapim-gecici-kabul-tutanagi',
+  'kik049-0-y': 'kik049-yapim-gecici-kabul-tutanagi',
+  'standart-form-kik049-0-y': 'kik049-yapim-gecici-kabul-tutanagi',
+  'tandart-form-kik049-0-y': 'kik049-yapim-gecici-kabul-tutanagi',
+  'yapim-isleri-gecici-kabul-tutanagi': 'kik049-yapim-gecici-kabul-tutanagi',
+  'yapim-gecici-kabul-tutanagi': 'kik049-yapim-gecici-kabul-tutanagi',
+  'gecici-kabul-tutanagi': 'kik049-yapim-gecici-kabul-tutanagi',
+  gecicikabultutanagi: 'kik049-yapim-gecici-kabul-tutanagi',
+
+  'kik050-yapim-kesin-kabul-teklif': 'kik050-yapim-kesin-kabul-teklif',
+  kik050: 'kik050-yapim-kesin-kabul-teklif',
+  'kik-050': 'kik050-yapim-kesin-kabul-teklif',
+  'kik050-0-y': 'kik050-yapim-kesin-kabul-teklif',
+  'standart-form-kik050-0-y': 'kik050-yapim-kesin-kabul-teklif',
+  'tandart-form-kik050-0-y': 'kik050-yapim-kesin-kabul-teklif',
+  'yapim-isleri-kesin-kabul-teklif-belgesi': 'kik050-yapim-kesin-kabul-teklif',
+  'yapim-kesin-kabul-teklif-belgesi': 'kik050-yapim-kesin-kabul-teklif',
+  'yapim-kesin-kabul-teklif': 'kik050-yapim-kesin-kabul-teklif',
+  'kesin-kabul-teklif-belgesi': 'kik050-yapim-kesin-kabul-teklif',
+  'kesin-kabul-teklif': 'kik050-yapim-kesin-kabul-teklif',
+
+  'kik051-yapim-kesin-kabul-tutanagi': 'kik051-yapim-kesin-kabul-tutanagi',
+  kik051: 'kik051-yapim-kesin-kabul-tutanagi',
+  'kik-051': 'kik051-yapim-kesin-kabul-tutanagi',
+  'kik051-0-y': 'kik051-yapim-kesin-kabul-tutanagi',
+  'standart-form-kik051-0-y': 'kik051-yapim-kesin-kabul-tutanagi',
+  'tandart-form-kik051-0-y': 'kik051-yapim-kesin-kabul-tutanagi',
+  'yapim-isleri-kesin-kabul-tutanagi': 'kik051-yapim-kesin-kabul-tutanagi',
+  'yapim-kesin-kabul-tutanagi': 'kik051-yapim-kesin-kabul-tutanagi',
+  'kesin-kabul-tutanagi': 'kik051-yapim-kesin-kabul-tutanagi',
+  kesinkabultutanagi: 'kik051-yapim-kesin-kabul-tutanagi',
 
   // Klasör & Kapak
   'klasor-sirtligi-3cm': 'ihtiyac-listesi',

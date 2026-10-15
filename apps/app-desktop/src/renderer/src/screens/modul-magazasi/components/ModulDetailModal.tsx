@@ -13,6 +13,8 @@ import {
   X,
   Lock,
   Sparkles,
+  ArrowRight,
+  FolderOpen
 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { cn } from "../../../utils/cn";
@@ -41,6 +43,108 @@ export const ModulDetailModal: React.FC<ModulDetailModalProps> = ({
 }) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>("belgeler");
+
+  const handleOpenModul = (routePath?: string): void => {
+    if (!routePath) return;
+    onClose();
+    const [pathname, searchStr] = routePath.split('?');
+    if (searchStr) {
+      const searchParams = Object.fromEntries(new URLSearchParams(searchStr).entries());
+      navigate({ to: pathname as string, search: searchParams as never });
+    } else {
+      navigate({ to: pathname as string });
+    }
+  };
+
+  const handleOpenBelge = (belge: { ad: string; kod: string }) => {
+    if (!modul) return;
+    onClose();
+    const kodUpper = (belge.kod || '').toUpperCase();
+    const adUpper = (belge.ad || '').toUpperCase();
+
+    // 1. Doğrudan Temin Süreç & Belge Stüdyosu eşleşmeleri
+    if (
+      modul.id === 'kik-dogrudan-temin-22d' ||
+      kodUpper.includes('DT-') ||
+      kodUpper.includes('KİK') ||
+      kodUpper.includes('MYHBY')
+    ) {
+      let targetTab = 'nedir';
+      if (
+        kodUpper.includes('İHTİYAÇ') ||
+        kodUpper.includes('DT-01') ||
+        adUpper.includes('İHTİYAÇ') ||
+        adUpper.includes('TALEP')
+      ) {
+        targetTab = 'luzum_kagidi';
+      } else if (kodUpper.includes('KİK024') || kodUpper.includes('DT-02') || adUpper.includes('ONAY')) {
+        targetTab = 'onay_belgesi';
+      } else if (
+        kodUpper.includes('KİK027') ||
+        kodUpper.includes('DT-03') ||
+        adUpper.includes('TEKLİF')
+      ) {
+        targetTab = 'teklif_mektuplari';
+      } else if (
+        kodUpper.includes('MYHBY-ÖRNEK:2') ||
+        kodUpper.includes('DT-04') ||
+        adUpper.includes('PİYASA')
+      ) {
+        targetTab = 'piyasa_arastirma';
+      } else if (kodUpper.includes('KİK023') || adUpper.includes('YAKLAŞIK MALİYET')) {
+        targetTab = 'yaklasik_maliyet';
+      } else if (
+        kodUpper.includes('KİK054') ||
+        kodUpper.includes('KİK048') ||
+        kodUpper.includes('KİK049') ||
+        kodUpper.includes('KİK050') ||
+        kodUpper.includes('KİK051') ||
+        kodUpper.includes('DT-05') ||
+        adUpper.includes('MUAYENE') ||
+        adUpper.includes('KABUL')
+      ) {
+        targetTab = 'muayene_kabul';
+      } else if (kodUpper.includes('TİP') || kodUpper.includes('DT-06') || adUpper.includes('SÖZLEŞME')) {
+        targetTab = 'dilekce';
+      } else if (
+        kodUpper.includes('TEBLİGAT') ||
+        kodUpper.includes('DT-07') ||
+        adUpper.includes('SİPARİŞ')
+      ) {
+        targetTab = 'teklif_mektuplari';
+      } else if (
+        kodUpper.includes('MYHBY-ÖRNEK:3') ||
+        kodUpper.includes('DT-08') ||
+        adUpper.includes('DİZİ') ||
+        adUpper.includes('PUSULA')
+      ) {
+        targetTab = 'hakedis_raporu';
+      }
+
+      navigate({
+        to: APP_ROUTES.SUREC_STUDYOSU,
+        search: { modulId: 'kik-dogrudan-temin-22d', tab: targetTab } as never,
+      });
+      return;
+    }
+
+    // 2. Personel & İzin Merkezi
+    if (modul.id === 'modul-personel-izin' || kodUpper.includes('İZN-')) {
+      navigate({ to: APP_ROUTES.PERSONEL, search: { tab: 'izinler' } as never });
+      return;
+    }
+
+    // 3. EBYS & Şablonlar
+    if (modul.id === 'modul-ebys-sablon' || kodUpper.includes('EBYS')) {
+      navigate({ to: APP_ROUTES.EBYS, search: { tab: 'editor' } as never });
+      return;
+    }
+
+    // 4. Varsayılan modül routePath'i
+    if (modul.routePath) {
+      handleOpenModul(modul.routePath);
+    }
+  };
 
   if (!modul) return null;
 
@@ -166,30 +270,36 @@ export const ModulDetailModal: React.FC<ModulDetailModalProps> = ({
                 {modul.belgeler.map((belge, idx) => (
                   <div
                     key={idx}
-                    className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 hover:border-indigo-400/50 dark:hover:border-indigo-500/40 transition-all space-y-1.5"
+                    onClick={() => handleOpenBelge(belge)}
+                    className="group p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 hover:border-indigo-500 hover:shadow-md hover:bg-white dark:hover:bg-slate-850 transition-all space-y-2 cursor-pointer"
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-300 border border-slate-200 dark:border-slate-700">
                         {belge.kod}
                       </span>
-                      {belge.zorunluMu
-                        ? (
-                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/30 flex items-center gap-1">
-                            <BadgeAlert className="w-3 h-3" />
-                            Zorunlu Belge
-                          </span>
-                        )
-                        : (
-                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200/70 dark:bg-slate-700/50 text-slate-600 dark:text-slate-400">
-                            Seçimlik
-                          </span>
-                        )}
+                      {belge.zorunluMu ? (
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/30 flex items-center gap-1">
+                          <BadgeAlert className="w-3 h-3" />
+                          Zorunlu Belge
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-200/70 dark:bg-slate-700/50 text-slate-600 dark:text-slate-400">
+                          Seçimlik
+                        </span>
+                      )}
                     </div>
-                    <div className="text-xs font-bold text-slate-900 dark:text-white line-clamp-1">
+                    <div className="text-xs font-bold text-slate-900 dark:text-white line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                       {belge.ad}
                     </div>
                     <div className="text-[11px] text-slate-600 dark:text-slate-400 leading-snug line-clamp-2">
                       {belge.aciklama}
+                    </div>
+                    <div className="pt-2 border-t border-slate-200/70 dark:border-slate-700/50 flex items-center justify-between text-[11px] font-bold text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-700 dark:group-hover:text-indigo-300">
+                      <span className="flex items-center gap-1">
+                        <Sparkles className="w-3.5 h-3.5" />
+                        Belgeyi Canlı Aç & Düzenle
+                      </span>
+                      <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
                     </div>
                   </div>
                 ))}
@@ -294,8 +404,8 @@ export const ModulDetailModal: React.FC<ModulDetailModalProps> = ({
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => {
-                    onClose();
-                    navigate({ to: APP_ROUTES.SUREC_STUDYOSU });
+                    onClose()
+                    navigate({ to: APP_ROUTES.SUREC_STUDYOSU, search: { modulId: modul.id } as never })
                   }}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-600/20 transition-all cursor-pointer"
                   title="Evrak kontrol listesi, canlı dilekçe/tutanak ve hazır metin kalıpları stüdyosunu aç"
@@ -303,18 +413,27 @@ export const ModulDetailModal: React.FC<ModulDetailModalProps> = ({
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>Süreç & Belge Stüdyosu</span>
                 </button>
-                {modul.routePath && (
+                {modul.id === 'kik-dogrudan-temin-22d' ? (
                   <button
                     onClick={() => {
                       onClose();
-                      navigate({ to: modul.routePath as string });
+                      navigate({ to: APP_ROUTES.DOSYALAR });
                     }}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
+                    title="Doğrudan Temin Dosyaları Listesi"
+                  >
+                    <FolderOpen className="w-3.5 h-3.5" />
+                    <span>Doğrudan Temin Dosyaları</span>
+                  </button>
+                ) : modul.routePath ? (
+                  <button
+                    onClick={() => handleOpenModul(modul.routePath)}
                     className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
                   >
                     <Sparkles className="w-3.5 h-3.5" />
                     {modul.paketTipi === 'extension' ? 'Eklentiyi Aç & Kullan' : 'Modülü Aç'}
                   </button>
-                )}
+                ) : null}
                 {isModulRemovable(modul) ? (
                   <button
                     onClick={() => onPromptUninstall(modul)}

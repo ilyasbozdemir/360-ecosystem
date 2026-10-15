@@ -52,6 +52,26 @@ export interface ModulAsama {
   aciklama: string
 }
 
+export interface HazirMetinKalibi {
+  id: string
+  kategori: string
+  baslik: string
+  kisaAciklama: string
+  varsayilanHitap: string
+  varsayilanKonu: string
+  tamMetin: string
+  rehberNotu: string
+  etiket: string
+  formTipi: 'dilekce' | 'tutanak' | 'ust_yazi' | 'onay_belgesi'
+  onayMakamSeviyesi?: string
+}
+
+export interface RehberMaddesi {
+  baslik: string
+  icerik: string
+  tip: 'onemli' | 'ipucu' | 'mevzuat'
+}
+
 export interface ModulPaketi {
   id: string
   kod: string
@@ -69,6 +89,8 @@ export interface ModulPaketi {
   belgeler: ModulBelge[]
   asamalar: ModulAsama[]
   araclar: string[]
+  hazirMetinler?: HazirMetinKalibi[]
+  rehberMaddeleri?: RehberMaddesi[]
   routePath?: string
   /** Modül kartı görsel şablonu (Screenshot 1 stili kartlar için) */
   kartStili?: 'default' | 'navy_gradient' | 'solid_red' | 'burgundy' | 'warm_orange'
@@ -76,7 +98,7 @@ export interface ModulPaketi {
   videoAnlatim?: boolean
   /** Yeni rozeti gösterilsin mi? */
   yeniMi?: boolean
-  /** Özel rozet (örn: 'MEB PROJESİ - 4 KADEME' veya '4734 / 22-d') */
+  /** Özel rozet (örn: 'STRATEJİK PLAN' veya '4734 / 22-d') */
   ozelRozet?: string
   /** Alt özet (örn: 'Lüzum kağıdı · onay belgesi · teklif mektupları...') */
   altMetinOzeti?: string
@@ -85,13 +107,9 @@ export interface ModulPaketi {
   silinebilir?: boolean
 }
 
-/** Modülün kaldırılabilir olup olmadığını belirleyen kontrol */
+/** Modülün kaldırılabilir olup olmadığını belirleyen kontrol - Tüm modüller kullanıcı tercihine göre kaldırılabilir */
 export const isModulRemovable = (modul?: ModulPaketi | null): boolean => {
-  if (!modul) return false
-  if (modul.id === 'kik-dogrudan-temin-22d') return false
-  if (modul.removable === false) return false
-  if (modul.silinebilir === false) return false
-  return true
+  return Boolean(modul || true)
 }
 
 export type ModulKategoriFiltresi =

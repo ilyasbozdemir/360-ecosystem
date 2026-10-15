@@ -31,14 +31,25 @@ export function KabulAsamalariTimeline({
   onOpenKomisyonModal,
   onOpenPreview
 }: KabulAsamalariTimelineProps): React.JSX.Element {
-  const isHizmet = alimTuru === 'hizmet'
-  const primarySablonKey = isHizmet ? 'hizmet-isleri-kabul-tutanagi' : 'muayene-kabul-tutanagi'
+  const isYapim =
+    alimTuru === 'yapim' ||
+    alimTuru?.toLowerCase().includes('yapim') ||
+    alimTuru?.toLowerCase().includes('inşaat') ||
+    alimTuru?.toLowerCase().includes('insaat')
+  const isHizmet = !isYapim && alimTuru === 'hizmet'
+  const primarySablonKey = isYapim
+    ? 'kik049-yapim-gecici-kabul-tutanagi'
+    : isHizmet
+      ? 'hizmet-isleri-kabul-tutanagi'
+      : 'muayene-kabul-tutanagi'
 
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
       <h4 className="text-xs font-black text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2">
         <Clock className="w-4 h-4 text-slate-400" />
-        Muayene &amp; Kabul &amp; Ödeme Aşamaları
+        {isYapim
+          ? 'Yapım İşleri Kabul & Hakediş / Ödeme Aşamaları'
+          : 'Muayene & Kabul & Ödeme Aşamaları'}
       </h4>
 
       <div className="flex flex-col gap-5 relative">
@@ -64,24 +75,36 @@ export function KabulAsamalariTimeline({
                     : 'text-blue-700 dark:text-blue-400'
                 }`}
               >
-                1. Mal/Hizmet Teslimi
+                {isYapim ? '1. İşin Bitirilmesi & Başvuru' : '1. Mal/Hizmet Teslimi'}
               </h5>
               {onOpenPreview && (
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => onOpenPreview('kabul-edilen-teklif')}
+                  onClick={() =>
+                    onOpenPreview(isYapim ? 'kik048-yapim-gecici-kabul-teklif' : 'kabul-edilen-teklif')
+                  }
                   className="h-6 text-[10px] px-2 gap-1 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
-                  title="Sipariş / Kabul Mektubunu İncele"
+                  title={isYapim ? 'Geçici Kabul Teklif Belgesi (KİK048)' : 'Sipariş / Kabul Mektubunu İncele'}
                 >
-                  <ShoppingCart className="w-3 h-3 text-blue-500" /> Sipariş Yazısı
+                  {isYapim ? (
+                    <>
+                      <FileText className="w-3 h-3 text-amber-500" /> KİK048 Teklif
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingCart className="w-3 h-3 text-blue-500" /> Sipariş Yazısı
+                    </>
+                  )}
                 </Button>
               )}
             </div>
             <p className="text-[10px] text-slate-500 mt-0.5">
               {firmaStats?.teslimTarihi
                 ? `Teslim Edildi (${new Date(firmaStats.teslimTarihi).toLocaleDateString('tr-TR')})`
-                : 'Tedarikçi teslimatı bekleniyor.'}
+                : isYapim
+                  ? 'Yüklenicinin işi bitirdiğine dair bildirimi bekleniyor.'
+                  : 'Tedarikçi teslimatı bekleniyor.'}
             </p>
           </div>
         </div>
@@ -112,19 +135,34 @@ export function KabulAsamalariTimeline({
                       : 'text-blue-700 dark:text-blue-400'
                 }`}
               >
-                2. Muayene &amp; Kabul İşlemi
+                {isYapim ? '2. Kabul Heyeti & Tutanaklar' : '2. Muayene & Kabul İşlemi'}
               </h5>
               <div className="flex items-center gap-1.5 flex-wrap">
                 {onOpenPreview && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => onOpenPreview(primarySablonKey)}
-                    className="h-6 text-[10px] px-2 gap-1 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800/60 bg-blue-50/50 dark:bg-blue-950/30 hover:bg-blue-100"
-                    title="Kabul Tutanağını Görüntüle"
-                  >
-                    <FileCheck className="w-3 h-3 text-blue-600" /> Tutanağı Aç
-                  </Button>
+                  <>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => onOpenPreview(primarySablonKey)}
+                      className="h-6 text-[10px] px-2 gap-1 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800/60 bg-blue-50/50 dark:bg-blue-950/30 hover:bg-blue-100"
+                      title={isYapim ? 'KİK049.0/Y Geçici Kabul Tutanağı' : 'Kabul Tutanağını Görüntüle'}
+                    >
+                      <FileCheck className="w-3 h-3 text-blue-600" />
+                      {isYapim ? 'Geçici Kabul (KİK049)' : 'Tutanağı Aç'}
+                    </Button>
+                    {isYapim && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => onOpenPreview('kik051-yapim-kesin-kabul-tutanagi')}
+                        className="h-6 text-[10px] px-2 gap-1 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800/60 bg-indigo-50/50 dark:bg-indigo-950/30 hover:bg-indigo-100"
+                        title="KİK051.0/Y Kesin Kabul Tutanağı"
+                      >
+                        <FileCheck className="w-3 h-3 text-indigo-600" />
+                        Kesin Kabul (KİK051)
+                      </Button>
+                    )}
+                  </>
                 )}
                 {onOpenKomisyonModal && (
                   <Button
@@ -141,15 +179,15 @@ export function KabulAsamalariTimeline({
             </div>
             <p className="text-[10px] text-slate-500 mt-0.5">
               {!firmaStats?.teslimTarihi
-                ? 'Kabul işlemleri beklemede.'
+                ? isYapim ? 'Kabul heyeti incelemesi beklemede.' : 'Kabul işlemleri beklemede.'
                 : faturaNo
-                  ? 'Kabul Edildi (Komisyon Onaylı)'
-                  : 'Komisyon tarafından ürünler inceleniyor.'}
+                  ? isYapim ? 'Kabul Tamamlandı (Komisyon ve Makam Onaylı)' : 'Kabul Edildi (Komisyon Onaylı)'
+                  : isYapim ? 'Heyet tarafından yerinde inceleme yapılıyor.' : 'Komisyon tarafından ürünler inceleniyor.'}
             </p>
           </div>
         </div>
 
-        {/* 3. TİF & Fatura Kaydı */}
+        {/* 3. TİF / Hakediş & Fatura Kaydı */}
         <div className="flex gap-3">
           {!faturaNo ? (
             <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 flex items-center justify-center shrink-0 mt-0.5">
@@ -175,32 +213,52 @@ export function KabulAsamalariTimeline({
                       : 'text-blue-700 dark:text-blue-400'
                 }`}
               >
-                3. TİF &amp; Fatura Kaydı
+                {isYapim ? '3. Hakediş Raporu & Kesin Hesap' : '3. TİF & Fatura Kaydı'}
               </h5>
               <div className="flex items-center gap-1.5 flex-wrap">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={onOpenTifModal}
-                  className="h-6 text-[10px] px-2 gap-1 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30 hover:bg-emerald-100"
-                >
-                  <PackageCheck className="w-3 h-3" /> TİF Aktar
-                </Button>
-                {onOpenPreview && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => onOpenPreview('tasinir-islem-fisi')}
-                    className="h-6 text-[10px] px-2 gap-1 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
-                    title="Taşınır İşlem Fişini Aç"
-                  >
-                    <FileText className="w-3 h-3 text-slate-500" /> Fiş
-                  </Button>
+                {isYapim ? (
+                  onOpenPreview && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => onOpenPreview('hakedis-raporu')}
+                      className="h-6 text-[10px] px-2 gap-1 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30 hover:bg-emerald-100"
+                      title="Hakediş Raporunu Aç"
+                    >
+                      <CreditCard className="w-3 h-3 text-emerald-600" /> Hakediş Raporu
+                    </Button>
+                  )
+                ) : (
+                  <>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={onOpenTifModal}
+                      className="h-6 text-[10px] px-2 gap-1 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/30 hover:bg-emerald-100"
+                    >
+                      <PackageCheck className="w-3 h-3" /> TİF Aktar
+                    </Button>
+                    {onOpenPreview && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => onOpenPreview('tasinir-islem-fisi')}
+                        className="h-6 text-[10px] px-2 gap-1 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
+                        title="Taşınır İşlem Fişini Aç"
+                      >
+                        <FileText className="w-3 h-3 text-slate-500" /> Fiş
+                      </Button>
+                    )}
+                  </>
                 )}
               </div>
             </div>
             <p className="text-[10px] text-slate-500 mt-0.5">
-              {!faturaNo ? 'Kabul sonrası fatura ve taşınır işlemi.' : `Fatura No: ${faturaNo}`}
+              {!faturaNo
+                ? isYapim
+                  ? 'Kabul sonrası hakediş ve fatura/istihkak düzenlenmesi.'
+                  : 'Kabul sonrası fatura ve taşınır işlemi.'
+                : `Fatura No: ${faturaNo}`}
             </p>
           </div>
         </div>

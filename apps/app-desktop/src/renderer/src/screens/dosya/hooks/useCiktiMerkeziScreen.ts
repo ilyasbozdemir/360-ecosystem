@@ -96,13 +96,27 @@ export function useCiktiMerkeziScreen() {
     }
   }
 
-  const handleSavePreset = (): void => {
+  const handleSavePreset = (customName?: string): void => {
     if (selectedIds.size === 0) {
       showToast('Lütfen paket oluşturmak için önce en az bir belge seçin.', 'warning')
       return
     }
-    const name = prompt('Lütfen bu belge paketi taslağı için bir isim girin:')
-    if (!name || name.trim() === '') return
+
+    const defaultName = `Özel Paket #${presets.length + 1} (${new Date().toLocaleDateString('tr-TR')})`
+    let name: string = defaultName
+    if (customName && customName.trim()) {
+      name = customName.trim()
+    } else {
+      try {
+        const isElectron = typeof window !== 'undefined' && (window as any).electron
+        if (!isElectron) {
+          const res = window.prompt('Lütfen bu belge paketi taslağı için bir isim girin:', defaultName)
+          if (res && res.trim()) name = res.trim()
+        }
+      } catch {
+        name = defaultName
+      }
+    }
 
     const selectedDocs = sablons.filter((s) => selectedIds.has(s.id)).map((s) => s.ad)
     const newPreset: DocumentPreset = {

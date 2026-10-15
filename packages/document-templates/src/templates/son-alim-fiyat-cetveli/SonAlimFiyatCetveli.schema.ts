@@ -53,6 +53,11 @@ export const SonAlimFiyatCetveliSchema = z.object({
   yiUfeHedefYil: z.any().optional(),
   yiUfeHedefAy: z.any().optional(),
   yiUfeEkiAciklama: z.any().optional(),
+  // KİK / Standart Form Bilgileri (İsteğe Bağlı)
+  kikKodu: z.string().optional(),
+  kikAdi: z.string().optional(),
+  standartFormKodu: z.string().optional(),
+  standartFormAdi: z.string().optional(),
 }).catchall(z.any());
 
 export type SonAlimFiyatCetveliType = z.infer<typeof SonAlimFiyatCetveliSchema>;

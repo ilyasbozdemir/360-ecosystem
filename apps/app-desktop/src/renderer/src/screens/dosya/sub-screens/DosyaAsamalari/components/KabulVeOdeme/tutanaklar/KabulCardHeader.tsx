@@ -137,6 +137,7 @@ export function KabulCardHeader({
         {/* Diğer İşlemler / Belgeler (...) Dropdown Menu */}
         <HeaderDigerActionsMenu
           isMal={isMal}
+          isYapim={isYapim}
           onOpenPreview={onOpenPreview}
           onOpenTifModal={onOpenTifModal}
         />

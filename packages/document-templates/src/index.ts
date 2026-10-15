@@ -39,6 +39,10 @@ export * from "./templates/odeme-yazisi";
 export * from "./templates/son-alim-fiyat-cetveli";
 export * from "./templates/tasinir-kayit-yetkilisi-gorusu";
 export * from "./templates/teknik-sartname";
+export * from "./templates/kik048-yapim-gecici-kabul-teklif";
+export * from "./templates/kik049-yapim-gecici-kabul-tutanagi";
+export * from "./templates/kik050-yapim-kesin-kabul-teklif";
+export * from "./templates/kik051-yapim-kesin-kabul-tutanagi";
 
 // Mapping Resolver
 export * from "./resolver/types";

@@ -59,6 +59,11 @@ export const PiyasaFiyatArastirmaGorevlendirmesiSchema = z.object({
   kurumWeb: z.string().optional(),
   kurumEposta: z.string().optional(),
   kurumKep: z.string().optional(),
+  // KİK / Standart Form Bilgileri (İsteğe Bağlı)
+  kikKodu: z.string().optional(),
+  kikAdi: z.string().optional(),
+  standartFormKodu: z.string().optional(),
+  standartFormAdi: z.string().optional(),
 });
 
 export type PiyasaFiyatArastirmaGorevlendirmesiData = z.infer<

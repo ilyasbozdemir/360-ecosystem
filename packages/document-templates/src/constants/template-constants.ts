@@ -197,7 +197,54 @@ export const CANONICAL_TEMPLATE_ALIASES: Record<string, string> = {
   'tif': 'tasinir-islem-fisi',
   'hakedis-raporu': 'hakedis-raporu',
   'hakedisraporu': 'hakedis-raporu',
-  'hakedis': 'hakedis-raporu'
+  'hakedis': 'hakedis-raporu',
+
+  // Yapım İşleri Kabul Belgeleri (KİK Standart Formları)
+  'kik048-yapim-gecici-kabul-teklif': 'kik048-yapim-gecici-kabul-teklif',
+  'kik048': 'kik048-yapim-gecici-kabul-teklif',
+  'kik-048': 'kik048-yapim-gecici-kabul-teklif',
+  'kik048-0-y': 'kik048-yapim-gecici-kabul-teklif',
+  'standart-form-kik048-0-y': 'kik048-yapim-gecici-kabul-teklif',
+  'tandart-form-kik048-0-y': 'kik048-yapim-gecici-kabul-teklif',
+  'yapim-isleri-gecici-kabul-teklif-belgesi': 'kik048-yapim-gecici-kabul-teklif',
+  'yapim-gecici-kabul-teklif-belgesi': 'kik048-yapim-gecici-kabul-teklif',
+  'yapim-gecici-kabul-teklif': 'kik048-yapim-gecici-kabul-teklif',
+  'gecici-kabul-teklif-belgesi': 'kik048-yapim-gecici-kabul-teklif',
+  'gecici-kabul-teklif': 'kik048-yapim-gecici-kabul-teklif',
+
+  'kik049-yapim-gecici-kabul-tutanagi': 'kik049-yapim-gecici-kabul-tutanagi',
+  'kik049': 'kik049-yapim-gecici-kabul-tutanagi',
+  'kik-049': 'kik049-yapim-gecici-kabul-tutanagi',
+  'kik049-0-y': 'kik049-yapim-gecici-kabul-tutanagi',
+  'standart-form-kik049-0-y': 'kik049-yapim-gecici-kabul-tutanagi',
+  'tandart-form-kik049-0-y': 'kik049-yapim-gecici-kabul-tutanagi',
+  'yapim-isleri-gecici-kabul-tutanagi': 'kik049-yapim-gecici-kabul-tutanagi',
+  'yapim-gecici-kabul-tutanagi': 'kik049-yapim-gecici-kabul-tutanagi',
+  'gecici-kabul-tutanagi': 'kik049-yapim-gecici-kabul-tutanagi',
+  'gecicikabultutanagi': 'kik049-yapim-gecici-kabul-tutanagi',
+
+  'kik050-yapim-kesin-kabul-teklif': 'kik050-yapim-kesin-kabul-teklif',
+  'kik050': 'kik050-yapim-kesin-kabul-teklif',
+  'kik-050': 'kik050-yapim-kesin-kabul-teklif',
+  'kik050-0-y': 'kik050-yapim-kesin-kabul-teklif',
+  'standart-form-kik050-0-y': 'kik050-yapim-kesin-kabul-teklif',
+  'tandart-form-kik050-0-y': 'kik050-yapim-kesin-kabul-teklif',
+  'yapim-isleri-kesin-kabul-teklif-belgesi': 'kik050-yapim-kesin-kabul-teklif',
+  'yapim-kesin-kabul-teklif-belgesi': 'kik050-yapim-kesin-kabul-teklif',
+  'yapim-kesin-kabul-teklif': 'kik050-yapim-kesin-kabul-teklif',
+  'kesin-kabul-teklif-belgesi': 'kik050-yapim-kesin-kabul-teklif',
+  'kesin-kabul-teklif': 'kik050-yapim-kesin-kabul-teklif',
+
+  'kik051-yapim-kesin-kabul-tutanagi': 'kik051-yapim-kesin-kabul-tutanagi',
+  'kik051': 'kik051-yapim-kesin-kabul-tutanagi',
+  'kik-051': 'kik051-yapim-kesin-kabul-tutanagi',
+  'kik051-0-y': 'kik051-yapim-kesin-kabul-tutanagi',
+  'standart-form-kik051-0-y': 'kik051-yapim-kesin-kabul-tutanagi',
+  'tandart-form-kik051-0-y': 'kik051-yapim-kesin-kabul-tutanagi',
+  'yapim-isleri-kesin-kabul-tutanagi': 'kik051-yapim-kesin-kabul-tutanagi',
+  'yapim-kesin-kabul-tutanagi': 'kik051-yapim-kesin-kabul-tutanagi',
+  'kesin-kabul-tutanagi': 'kik051-yapim-kesin-kabul-tutanagi',
+  'kesinkabultutanagi': 'kik051-yapim-kesin-kabul-tutanagi'
 }
 
 export function normalizeTemplateKey(str: string | null | undefined): string {

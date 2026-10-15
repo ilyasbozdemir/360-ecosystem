@@ -2,6 +2,11 @@ import { z } from "zod";
 
 export const ArastirmaMektubuSchema = z.object({
   evrakSayisi: z.string().optional(),
+  // KİK & Standart Form Bilgileri (İsteğe Bağlı)
+  kikKodu: z.string().optional(),
+  kikAdi: z.string().optional(),
+  standartFormKodu: z.string().optional(),
+  standartFormAdi: z.string().optional(),
   detsisNo: z.string().optional(),
   dosyaNumarasi: z.string().optional(),
   dosyaKonusu: z.string().optional(),

@@ -35,6 +35,10 @@ export type TemplateInput = {
   workflowProfile?: WorkflowProfileName;
   workflowOverride?: Partial<TemplateWorkflow>;
   inheritsFrom?: string;
+  kikKodu?: string;
+  kikAdi?: string;
+  standartFormKodu?: string;
+  standartFormAdi?: string;
 };
 
 /**
@@ -100,6 +104,10 @@ export function defineTemplate(input: TemplateInput): TemplateType {
       ...input.capabilities,
     },
     workflow: resolvedWorkflow,
+    kikKodu: input.kikKodu,
+    kikAdi: input.kikAdi,
+    standartFormKodu: input.standartFormKodu ?? input.kikKodu,
+    standartFormAdi: input.standartFormAdi ?? input.kikAdi,
   };
 }
 
@@ -107,39 +115,45 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
   defineTemplate({
     id: "ihtiyac-listesi",
     name: "IhtiyacListesi",
-    title: "İhtiyaç Listesi",
+    title: "Standart Form (MYHBY m.4/e): İhtiyaç Listesi Cetveli",
     category: "1-ihtiyac-tespiti-ve-baslangic",
     description: "Alımı yapılacak mal/hizmet kalemlerinin detaylı ihtiyaç tablosu",
     workflowProfile: "ic_form",
+    standartFormKodu: "MYHBY m.4/e",
+    standartFormAdi: "İhtiyaç Listesi Cetveli",
   }),
   defineTemplate({
     id: "ihtiyac-talep-formu",
     name: "IhtiyacTalepFormu",
-    title: "İhtiyaç Talep Formu",
+    title: "Standart Form (MYHBY m.4/e - 4734 KİK m.22): İhtiyaç Belgesi ve Harcama Talep Müzekkeresi",
     category: "1-ihtiyac-tespiti-ve-baslangic",
     description: "Birimlerin mal/hizmet taleplerini yetkili makama ilettiği resmi form",
     workflowProfile: "ic_form",
+    standartFormKodu: "MYHBY m.4/e - 4734 KİK m.22",
+    standartFormAdi: "İhtiyaç Belgesi ve Harcama Talep Müzekkeresi",
   }),
   defineTemplate({
     id: "tasinir-kayit-yetkilisi-gorusu",
     name: "TasinirKayitYetkilisiGorusu",
-    title: "Taşınır Kayıt Yetkilisi Görüşü",
+    title: "Standart Form: Taşınır Kayıt ve Kontrol Yetkilisi Görüş Belgesi",
     category: "1-ihtiyac-tespiti-ve-baslangic",
     description: "Stokta malzeme bulunup bulunmadığına ilişkin ambar yetkilisi görüşü",
     workflowProfile: "ic_form",
+    standartFormAdi: "Taşınır Kayıt ve Kontrol Yetkilisi Görüş Belgesi",
   }),
   defineTemplate({
     id: "teknik-sartname",
     name: "TeknikSartname",
-    title: "Teknik Şartname",
+    title: "Standart Form-KİK: Teknik Şartname Belgesi",
     category: "1-ihtiyac-tespiti-ve-baslangic",
     description: "İşin ve malzemelerin teknik kriterlerini belirleyen doküman",
     workflowProfile: "ic_form",
+    standartFormAdi: "Teknik Şartname Belgesi",
   }),
   defineTemplate({
     id: "luzum-muzekkeresi",
     name: "LuzumMuzekkeresi",
-    title: "Lüzum Müzekkeresi",
+    title: "Standart Form (MYHBY m.4/e): Lüzum Müzekkeresi",
     category: "1-ihtiyac-tespiti-ve-baslangic",
     description: "Harcama biriminin alım gerekliliğini onaylatan başlangıç müzekkeresi",
     capabilities: {
@@ -152,32 +166,38 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
     },
     // KARAR GEREKLİ: Lüzum müzekkeresi idari usulde 'ic_form' olarak mı yoksa Harcama Yetkilisi 'olur_onay' olarak mı çalışacak?
     workflowProfile: "ic_form",
+    standartFormKodu: "MYHBY m.4/e",
+    standartFormAdi: "Lüzum Müzekkeresi",
   }),
   defineTemplate({
     id: "luzum-muzekkeresi-onay-eki",
     name: "LuzumMuzekkeresiOnayEki",
-    title: "Lüzum Müzekkeresi Onay Eki",
+    title: "Standart Form: Lüzum Müzekkeresi Onay Eki",
     category: "1-ihtiyac-tespiti-ve-baslangic",
     description: "Lüzum müzekkeresine eklenen kalem ve açıklama listesi",
     inheritsFrom: "luzum-muzekkeresi",
+    standartFormAdi: "Lüzum Müzekkeresi Onay Eki",
   }),
   defineTemplate({
     id: "luzum-muzekkeresi-teslim-tesellum",
     name: "LuzumMuzekkeresiTeslimTesellum",
-    title: "Lüzum Müzekkeresi Teslim Tesellüm",
+    title: "Standart Form: Lüzum Müzekkeresi Teslim Tesellüm Tutanağı",
     category: "1-ihtiyac-tespiti-ve-baslangic",
     group: "muayene_kabul",
     description: "Lüzum müzekkeresi teslim alma ve evrak devir tutanağı",
     inheritsFrom: "luzum-muzekkeresi",
+    standartFormAdi: "Lüzum Müzekkeresi Teslim Tesellüm Tutanağı",
   }),
   defineTemplate({
     id: "harcama-talimati",
     name: "HarcamaTalimati",
-    title: "Harcama Talimatı",
+    title: "Standart Form-KİK024.0/M: Doğrudan Temin Onay Belgesi (Harcama Talimatı)",
     category: "1-ihtiyac-tespiti-ve-baslangic",
     group: "olur_onay",
     description: "Harcama Yetkilisi tarafından imzalanan alım ve ihale başlatma oluru",
     capabilities: { supportsOlur: true },
+    kikKodu: "KİK024.0/M",
+    kikAdi: "Doğrudan Temin Onay Belgesi (Harcama Talimatı)",
     workflow: {
       routing: {
         mode: "role",
@@ -196,10 +216,12 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
   defineTemplate({
     id: "komisyon-gorevlendirme-onayi",
     name: "KomisyonGorevlendirmeOnayi",
-    title: "Komisyon Görevlendirme Onayı",
+    title: "Standart Form (4734 KİK m.22): Piyasa Fiyat Araştırması ve Muayene Kabul Görevlendirme Onayı",
     category: "1-ihtiyac-tespiti-ve-baslangic",
     groups: ["piyasa_arastirma", "muayene_kabul", "olur_onay"],
     description: "Piyasa Araştırma veya Muayene Kabul Komisyon üyelerinin görevlendirme oluru",
+    standartFormKodu: "4734 KİK m.22",
+    standartFormAdi: "Piyasa Fiyat Araştırması ve Muayene Kabul Görevlendirme Onayı",
     capabilities: {
       supportsOlur: true,
       supportsCommission: true,
@@ -227,10 +249,11 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
   defineTemplate({
     id: "komisyon-gorevlendirme-onayi-eki",
     name: "KomisyonGorevlendirmeOnayiEki",
-    title: "Komisyon Görevlendirme Onayı Eki",
+    title: "Standart Form: Görevlendirilen Komisyon ve Personel Listesi Eki",
     category: "1-ihtiyac-tespiti-ve-baslangic",
     groups: ["piyasa_arastirma", "muayene_kabul", "olur_onay"],
     description: "Görevlendirilen komisyon üyelerinin detaylı görev dağılım listesi",
+    standartFormAdi: "Görevlendirilen Komisyon ve Personel Listesi Eki",
     capabilities: {
       supportsCommission: true,
       supportedCommissionTypes: ["piyasa_fiyat", "muayene_kabul", "yaklasik_maliyet", "ihale_komisyonu", "all"],
@@ -252,10 +275,12 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
   defineTemplate({
     id: "piyasa-fiyat-arastirma-gorevlendirmesi",
     name: "PiyasaFiyatArastirmaGorevlendirmesi",
-    title: "Piyasa Fiyat Araştırma Görevlendirmesi",
+    title: "Standart Form (4734 KİK m.22): Piyasa Fiyat Araştırma Görevlendirme Onayı",
     category: "1-ihtiyac-tespiti-ve-baslangic",
     group: "piyasa_arastirma",
     description: "Piyasa fiyat araştırmasını yapmak üzere görevlendirilen personelin olur belgesi",
+    standartFormKodu: "4734 KİK m.22",
+    standartFormAdi: "Piyasa Fiyat Araştırma Görevlendirme Onayı",
     capabilities: {
       supportsOlur: true,
       supportsCommission: true,
@@ -271,10 +296,11 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
   defineTemplate({
     id: "son-alim-fiyat-cetveli",
     name: "SonAlimFiyatCetveli",
-    title: "Son Alım Fiyat Cetveli",
+    title: "Standart Form: Son Alım Fiyat Araştırma ve Mukayese Cetveli",
     category: "1-ihtiyac-tespiti-ve-baslangic",
     group: "piyasa_arastirma",
     description: "Geçmiş alımlara ait birim fiyat ve fatura karşılaştırma cetveli",
+    standartFormAdi: "Son Alım Fiyat Araştırma ve Mukayese Cetveli",
     capabilities: { supportsOlur: true },
     // KARAR GEREKLİ: Son alım fiyat cetveli iç çalışma formu ('ic_form') mu yoksa yaklaşık maliyet/komisyon eki mi?
     workflowProfile: "ic_form",
@@ -282,20 +308,24 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
   defineTemplate({
     id: "fiyat-arastirma-mektubu",
     name: "FiyatArastirmaMektubu",
-    title: "Fiyat Araştırma Mektubu",
+    title: "Standart Form-KİK027.0/M: Birim Fiyat Teklif Mektubu ve Fiyat İsteme Formu",
     category: "2-piyasa-fiyat-arastirmasi",
     group: "piyasa_arastirma",
     description: "Firmalara teklif sunmaları için gönderilen resmi davet yazısı",
+    kikKodu: "KİK027.0/M",
+    kikAdi: "Birim Fiyat Teklif Mektubu ve Fiyat İsteme Formu",
     capabilities: { supportsFirmaListesi: true },
     workflowProfile: "dis_yazi",
   }),
   defineTemplate({
     id: "birim-fiyat-teklif-mektubu",
     name: "BirimFiyatTeklifMektubu",
-    title: "Birim Fiyat Teklif Mektubu",
+    title: "Standart Form-KİK015.1/M: Birim Fiyat Teklif Mektubu",
     category: "2-piyasa-fiyat-arastirmasi",
     group: "piyasa_arastirma",
     description: "Firmaların birim fiyatlarını doldurarak imzaladığı teklif mektubu",
+    kikKodu: "KİK015.1/M",
+    kikAdi: "Birim Fiyat Teklif Mektubu",
     capabilities: {
       supportsPersonnelList: false,
       supportsFirmaListesi: true,
@@ -310,10 +340,12 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
   defineTemplate({
     id: "birim-fiyat-teklif-cetveli",
     name: "BirimFiyatTeklifCetveli",
-    title: "Birim Fiyat Teklif Cetveli",
+    title: "Standart Form-KİK015.2/M: Birim Fiyat Teklif Cetveli",
     category: "2-piyasa-fiyat-arastirmasi",
     group: "piyasa_arastirma",
     description: "İsteklilerin kalem bazlı birim fiyatlarını sunduğu detaylı cetvel",
+    kikKodu: "KİK015.2/M",
+    kikAdi: "Birim Fiyat Teklif Cetveli",
     capabilities: {
       supportsPersonnelList: false,
       supportsFirmaListesi: true,
@@ -328,20 +360,24 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
   defineTemplate({
     id: "arastirma-mektubu",
     name: "ArastirmaMektubu",
-    title: "Araştırma Mektubu",
+    title: "Standart Form-KİK027.0/M: Piyasa Fiyat Araştırma ve Teklif İsteme Mektubu",
     category: "2-piyasa-fiyat-arastirmasi",
     group: "piyasa_arastirma",
     description: "Piyasa araştırması kapsamında gönderilen bilgi ve teklif toplama yazısı",
+    kikKodu: "KİK027.0/M",
+    kikAdi: "Piyasa Fiyat Araştırma ve Teklif İsteme Mektubu",
     capabilities: { supportsFirmaListesi: true },
     workflowProfile: "dis_yazi",
   }),
   defineTemplate({
     id: "yaklasik-maliyet-cetveli",
     name: "YaklasikMaliyetCetveli",
-    title: "Yaklaşık Maliyet Cetveli",
+    title: "Standart Form-KİK002.0/M: Yaklaşık Maliyet Hesap Cetveli",
     category: "2-piyasa-fiyat-arastirmasi",
     group: "piyasa_arastirma",
     description: "Toplanan tekliflerden alımın yaklaşık maliyetinin hesaplandığı cetvel",
+    kikKodu: "KİK002.0/M",
+    kikAdi: "Yaklaşık Maliyet Hesap Cetveli",
     capabilities: {
       supportsCommission: true,
       supportedCommissionTypes: ["piyasa_fiyat", "yaklasik_maliyet"],
@@ -352,10 +388,12 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
   defineTemplate({
     id: "piyasa-fiyat-arastirma-tutanagi",
     name: "PiyasaFiyatArastirmaTutanagi",
-    title: "Piyasa Fiyat Araştırma Tutanağı",
+    title: "Standart Form (MYHBY Örnek No: 2): Piyasa Fiyat Araştırması Tutanağı",
     category: "2-piyasa-fiyat-arastirmasi",
     group: "piyasa_arastirma",
     description: "Piyasa fiyat araştırması görevlilerinin teklifleri değerlendirdiği ana tutanak",
+    standartFormKodu: "MYHBY Örnek No: 2",
+    standartFormAdi: "Piyasa Fiyat Araştırması Tutanağı",
     capabilities: {
       supportsOlur: true,
       supportsCommission: true,
@@ -367,10 +405,12 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
   defineTemplate({
     id: "kabul-edilen-teklif",
     name: "KabulEdilenTeklif",
-    title: "Kabul Edilen Teklif Bildirimi",
+    title: "Standart Form (KİK Tebliği m.22): Sipariş Mektubu ve Tebliğ-Tebellüğ Belgesi",
     category: "3-siparis-ve-sozlesme",
     group: "olur_onay",
     description: "En avantajlı teklifi veren firmaya yapılan alım kabul bildirimi",
+    standartFormKodu: "KİK Tebliği m.22",
+    standartFormAdi: "Sipariş Mektubu ve Tebliğ-Tebellüğ Belgesi",
     capabilities: { supportsFirmaListesi: true },
     // KARAR GEREKLİ: Kabul edilen teklif bildirimi dış yazı ('dis_yazi') olarak mı yoksa firma teyit yazısı olarak mı çalışacak?
     workflowProfile: "dis_yazi",
@@ -378,10 +418,12 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
   defineTemplate({
     id: "dogrudan-temin-onay-belgesi",
     name: "DogrudanTeminOnayBelgesi",
-    title: "Doğrudan Temin Onay Belgesi",
+    title: "Standart Form-KİK024.0/M: Doğrudan Temin Onay Belgesi (Harcama Talimatı)",
     category: "3-siparis-ve-sozlesme",
     group: "olur_onay",
     description: "Karara bağlanan alımın yetkili makam onay belgesi",
+    kikKodu: "KİK024.0/M",
+    kikAdi: "Doğrudan Temin Onay Belgesi (Harcama Talimatı)",
     capabilities: {
       supportsOlur: true,
       supportsFirmaListesi: true,
@@ -396,19 +438,22 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
   defineTemplate({
     id: "butce-sorgusu",
     name: "ButceSorgusu",
-    title: "Bütçe Sorgusu ve Ödenek Belgesi",
+    title: "Standart Form: Bütçe Ödenek Kontrol ve Bloke Belgesi",
     category: "3-siparis-ve-sozlesme",
     group: "olur_onay",
     description: "Alım tutarının ilgili bütçe tertibinden karşılanabilirliğini gösteren form",
+    standartFormAdi: "Bütçe Ödenek Kontrol ve Bloke Belgesi",
     workflowProfile: "olur_onay",
   }),
   defineTemplate({
     id: "dogrudan-temin-sozlesmesi",
     name: "DogrudanTeminSozlesmesi",
-    title: "Doğrudan Temin Sözleşmesi",
+    title: "Standart Form-KİK: Doğrudan Temin Mal / Hizmet Alımı Tip Sözleşmesi",
     category: "3-siparis-ve-sozlesme",
     group: "olur_onay",
     description: "Yüklenici firma ile İdare arasında imzalanan matbu alım sözleşmesi",
+    kikKodu: "KİK",
+    kikAdi: "Doğrudan Temin Mal / Hizmet Alımı Tip Sözleşmesi",
     capabilities: { supportsFirmaListesi: true },
     // KARAR GEREKLİ: Sözleşme iki taraflı (İdare + Firma) olduğundan firma_belgesi mi yoksa özel iki taraflı profil mi olmalı?
     workflowProfile: "firma_belgesi",
@@ -416,10 +461,12 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
   defineTemplate({
     id: "sozlesmeye-davet",
     name: "SozlesmeyeDavet",
-    title: "Sözleşmeye Davet Yazısı",
+    title: "Standart Form-KİK023.0/M: Sözleşmeye Davet Mektubu",
     category: "3-siparis-ve-sozlesme",
     group: "olur_onay",
     description: "Kazanan yükleniciye sözleşme imzalaması için iletilen davet yazısı",
+    kikKodu: "KİK023.0/M",
+    kikAdi: "Sözleşmeye Davet Mektubu",
     capabilities: {
       supportsKalemListesi: false,
       supportsFirmaListesi: true,
@@ -429,10 +476,12 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
   defineTemplate({
     id: "muayene-kabul-tutanagi",
     name: "MuayeneKabulTutanagi",
-    title: "Muayene ve Kabul Tutanağı",
+    title: "Standart Form-KİK054.0/M: Mal Alımları Muayene ve Kabul Komisyonu Tutanağı",
     category: "4-kabul-ve-odeme-islemleri",
     group: "muayene_kabul",
     description: "Teslim alınan mal veya hizmetin muayene ve kabul tutanağı cetveli",
+    kikKodu: "KİK054.0/M",
+    kikAdi: "Mal Alımları Muayene ve Kabul Komisyonu Tutanağı",
     capabilities: {
       supportsOlur: true,
       supportsCommission: true,
@@ -444,10 +493,12 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
   defineTemplate({
     id: "muayene-kabul-komisyonu",
     name: "MuayeneKabulKomisyonu",
-    title: "Muayene ve Kabul Komisyon Kararı",
+    title: "Standart Form-KİK054.0/M: Muayene ve Kabul Komisyon Kararı",
     category: "4-kabul-ve-odeme-islemleri",
     group: "muayene_kabul",
     description: "Teslim alınan mal veya hizmetin muayene kabul komisyonunca onaylanma kararı",
+    kikKodu: "KİK054.0/M",
+    kikAdi: "Muayene ve Kabul Komisyon Kararı",
     capabilities: {
       supportsOlur: true,
       supportsCommission: true,
@@ -456,12 +507,82 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
     workflowProfile: "komisyon_tutanagi",
   }),
   defineTemplate({
+    id: "kik048-yapim-gecici-kabul-teklif",
+    name: "Kik048YapimGeciciKabulTeklif",
+    title: "Standart Form-KİK048.0/Y: Yapım İşleri Geçici Kabul Teklif Belgesi",
+    category: "4-kabul-ve-odeme-islemleri",
+    group: "muayene_kabul",
+    description: "Yapım işleri yüklenici iş bitirme dilekçesi sonrası ön inceleme ve geçici kabul teklif belgesi",
+    kikKodu: "KİK048.0/Y",
+    kikAdi: "Yapım İşleri Geçici Kabul Teklif Belgesi",
+    capabilities: {
+      supportsOlur: false,
+      supportsCommission: true,
+      supportedCommissionTypes: ["muayene_kabul"],
+      supportsFirmaListesi: true,
+    },
+    workflowProfile: "komisyon_tutanagi",
+  }),
+  defineTemplate({
+    id: "kik049-yapim-gecici-kabul-tutanagi",
+    name: "Kik049YapimGeciciKabulTutanagi",
+    title: "Standart Form-KİK049.0/Y: Yapım İşleri Geçici Kabul Tutanağı",
+    category: "4-kabul-ve-odeme-islemleri",
+    group: "muayene_kabul",
+    description: "Yapım işleri geçici kabul komisyonu heyeti ve yüklenici inceleme tutanağı",
+    kikKodu: "KİK049.0/Y",
+    kikAdi: "Yapım İşleri Geçici Kabul Tutanağı",
+    capabilities: {
+      supportsOlur: true,
+      supportsCommission: true,
+      supportedCommissionTypes: ["muayene_kabul"],
+      supportsFirmaListesi: true,
+    },
+    workflowProfile: "komisyon_tutanagi",
+  }),
+  defineTemplate({
+    id: "kik050-yapim-kesin-kabul-teklif",
+    name: "Kik050YapimKesinKabulTeklif",
+    title: "Standart Form-KİK050.0/Y: Yapım İşleri Kesin Kabul Teklif Belgesi",
+    category: "4-kabul-ve-odeme-islemleri",
+    group: "muayene_kabul",
+    description: "Yapım işleri teminat süresi sonu kesin kabul heyeti teşkili teklif belgesi",
+    kikKodu: "KİK050.0/Y",
+    kikAdi: "Yapım İşleri Kesin Kabul Teklif Belgesi",
+    capabilities: {
+      supportsOlur: false,
+      supportsCommission: true,
+      supportedCommissionTypes: ["muayene_kabul"],
+      supportsFirmaListesi: true,
+    },
+    workflowProfile: "komisyon_tutanagi",
+  }),
+  defineTemplate({
+    id: "kik051-yapim-kesin-kabul-tutanagi",
+    name: "Kik051YapimKesinKabulTutanagi",
+    title: "Standart Form-KİK051.0/Y: Yapım İşleri Kesin Kabul Tutanağı",
+    category: "4-kabul-ve-odeme-islemleri",
+    group: "muayene_kabul",
+    description: "Yapım işleri kesin kabul komisyonu heyeti ve yüklenici kesin kabul onay tutanağı",
+    kikKodu: "KİK051.0/Y",
+    kikAdi: "Yapım İşleri Kesin Kabul Tutanağı",
+    capabilities: {
+      supportsOlur: true,
+      supportsCommission: true,
+      supportedCommissionTypes: ["muayene_kabul"],
+      supportsFirmaListesi: true,
+    },
+    workflowProfile: "komisyon_tutanagi",
+  }),
+  defineTemplate({
     id: "harcama-pusulasi",
     name: "HarcamaPusulasi",
-    title: "Harcama Pusulası",
+    title: "Standart Form (MYHBY Örnek No: 3): Harcama Pusulası ve Klasör Dizi Fihristi",
     category: "4-kabul-ve-odeme-islemleri",
     group: "muayene_kabul",
     description: "Fatura kesme yükümlülüğü olmayan gerçek kişilerden yapılan alımların tutanağı",
+    standartFormKodu: "MYHBY Örnek No: 3",
+    standartFormAdi: "Harcama Pusulası ve Klasör Dizi Fihristi",
     capabilities: {
       roleVisibility: {
         harcama_yetkilisi: "show",
@@ -473,10 +594,11 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
   defineTemplate({
     id: "odeme-yazisi",
     name: "OdemeYazisi",
-    title: "Ödeme Yazısı",
+    title: "Standart Form: Muhasebe / Malmüdürlüğü Ödeme Gönderme Müzekkeresi",
     category: "4-kabul-ve-odeme-islemleri",
     group: "olur_onay",
     description: "Mali hizmetler / muhasebe müdürlüğüne yazılan ödeme üst yazısı",
+    standartFormAdi: "Muhasebe / Malmüdürlüğü Ödeme Gönderme Müzekkeresi",
     capabilities: {
       supportsOlur: true,
       supportsKalemListesi: false,
@@ -492,10 +614,12 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
   defineTemplate({
     id: "dogrudan-temin-sonuc-onay-belgesi",
     name: "DogrudanTeminSonucOnayBelgesi",
-    title: "Doğrudan Temin Sonuç Onay Belgesi",
+    title: "Standart Form (4734 KİK m.22): Piyasa Fiyat Araştırması Sonuç Onay Belgesi",
     category: "3-siparis-ve-sozlesme",
     group: "olur_onay",
     description: "Alım sonucunun yetkili makam onay belgesi",
+    standartFormKodu: "4734 KİK m.22",
+    standartFormAdi: "Piyasa Fiyat Araştırması Sonuç Onay Belgesi",
     capabilities: {
       supportsOlur: true,
       supportsFirmaListesi: true,
@@ -505,10 +629,12 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
   defineTemplate({
     id: "gorevlendirme-yazisi",
     name: "GorevlendirmeYazisi",
-    title: "Görevlendirme Yazısı",
+    title: "Standart Form (4734 KİK m.22): Piyasa Fiyat Araştırma Görevlendirme Onayı",
     category: "2-piyasa-fiyat-arastirmasi",
     group: "piyasa_arastirma",
     description: "Piyasa fiyat araştırması görevlendirme yazısı",
+    standartFormKodu: "4734 KİK m.22",
+    standartFormAdi: "Piyasa Fiyat Araştırma Görevlendirme Onayı",
     capabilities: {
       supportsOlur: true,
       supportsCommission: true,
@@ -524,10 +650,12 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
   defineTemplate({
     id: "idare-onay-belgesi",
     name: "IdareOnayBelgesi",
-    title: "İdare Onay Belgesi",
+    title: "Standart Form-KİK001.0/M: İhale Onay Belgesi (Harcama Talimatı)",
     category: "3-siparis-ve-sozlesme",
     group: "olur_onay",
     description: "İdare onay ve karar belgesi",
+    kikKodu: "KİK001.0/M",
+    kikAdi: "İhale Onay Belgesi (Harcama Talimatı)",
     capabilities: {
       supportsOlur: true,
       supportsFirmaListesi: true,

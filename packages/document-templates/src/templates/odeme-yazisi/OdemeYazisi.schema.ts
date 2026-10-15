@@ -58,6 +58,12 @@ export const OdemeYazisiSchema = z.object({
       ])
     )
     .optional(),
+
+  // KİK / Standart Form Bilgileri (İsteğe Bağlı)
+  kikKodu: z.string().optional(),
+  kikAdi: z.string().optional(),
+  standartFormKodu: z.string().optional(),
+  standartFormAdi: z.string().optional(),
 });
 
 export type OdemeYazisiData = z.infer<typeof OdemeYazisiSchema>;

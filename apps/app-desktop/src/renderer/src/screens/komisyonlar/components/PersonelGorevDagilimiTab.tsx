@@ -22,6 +22,7 @@ import {
 } from 'lucide-react'
 import { Button } from '../../../components/ui/Button'
 import { Input } from '../../../components/ui/Input'
+import { useSettingsStore } from '../../../store/settingsStore'
 
 export interface DigerGorevKaydi {
   id: string
@@ -258,6 +259,11 @@ const MOCK_PERSONEL_GOREVLER: PersonelGorevItem[] = [
 ]
 
 export const PersonelGorevDagilimiTab: React.FC = () => {
+  const institutionName = useSettingsStore((s) => s.institutionName)
+  const adminName = useSettingsStore((s) => s.adminName)
+  const aktifKurumAdi = institutionName || 'T.C. İDARE BAŞKANLIĞI / DESTEK VE MALİ HİZMETLER'
+  const aktifHarcamaYetkilisi = adminName || 'Harcama Yetkilisi / Birim Amiri'
+
   const [subTab, setSubTab] = useState<'matris' | 'diger_gorevler'>('matris')
   const [searchTerm, setSearchTerm] = useState('')
   const [filterDurum, setFilterDurum] = useState<
@@ -1072,7 +1078,7 @@ export const PersonelGorevDagilimiTab: React.FC = () => {
               <div className="text-center space-y-1 border-b pb-4">
                 <div className="font-bold text-sm tracking-widest uppercase">T.C.</div>
                 <div className="font-extrabold text-xs uppercase">
-                  ANKARA ÇANKAYA İLÇE MİLLİ EĞİTİM MÜDÜRLÜĞÜ / KURUM BAŞKANLIĞI
+                  {aktifKurumAdi}
                 </div>
                 <div className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
                   2026-2027 İDARİ VE MALİ DÖNEMİ PERSONEL GÖREV, KOMİSYON VE NÖBET DAĞILIM ÇİZELGESİ
@@ -1143,9 +1149,9 @@ export const PersonelGorevDagilimiTab: React.FC = () => {
                 <div className="text-[10px] text-slate-500">
                   {new Date().toLocaleDateString('tr-TR')}
                 </div>
-                <div className="pt-6 font-bold text-xs">İlyas BOZDEMİR</div>
+                <div className="pt-6 font-bold text-xs">{aktifHarcamaYetkilisi}</div>
                 <div className="text-[10px] text-slate-500 font-sans">
-                  Harcama Yetkilisi / Kurum Müdürü (Mühür ve İmza)
+                  Harcama Yetkilisi / Birim Amiri (Mühür ve İmza)
                 </div>
               </div>
             </div>

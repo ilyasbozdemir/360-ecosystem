@@ -16,7 +16,8 @@ import {
   Sparkles,
   Edit,
   FolderTree,
-  AlertTriangle
+  AlertTriangle,
+  X
 } from 'lucide-react'
 import {
   kutuphaneService,
@@ -51,6 +52,12 @@ export default function BelgelerimScreen(): React.JSX.Element {
     renk: 'blue'
   })
 
+  // Yeni Belge Oluşturma Modal Durumu
+  const [showNewBelgeModal, setShowNewBelgeModal] = useState(false)
+  const [newBelgeAd, setNewBelgeAd] = useState('Yeni Belge')
+  const [newBelgeGrupId, setNewBelgeGrupId] = useState<number | null>(null)
+  const [isSubmittingBelge, setIsSubmittingBelge] = useState(false)
+
   const loadData = async () => {
     setLoading(true)
     try {
@@ -84,23 +91,33 @@ export default function BelgelerimScreen(): React.JSX.Element {
     loadData()
   }, [selectedGrupId, activeFilter, searchQuery])
 
-  // Yeni Belge Oluştur
-  const handleCreateBelge = async () => {
-    const title = prompt('Yeni Belge Adı:', 'Yeni Belge')
-    if (!title || !title.trim()) return
+  // Yeni Belge Oluştur (Modalı Aç)
+  const handleCreateBelge = (): void => {
+    setNewBelgeAd('Yeni Belge')
+    setNewBelgeGrupId(typeof selectedGrupId === 'number' ? selectedGrupId : null)
+    setShowNewBelgeModal(true)
+  }
+
+  // Yeni Belgeyi Kaydet ve Editörü Aç
+  const handleConfirmCreateBelge = async (e?: React.FormEvent): Promise<void> => {
+    if (e) e.preventDefault()
+    if (!newBelgeAd || !newBelgeAd.trim()) return
 
     try {
-      const initialGrupId = typeof selectedGrupId === 'number' ? selectedGrupId : null
+      setIsSubmittingBelge(true)
       const res = await kutuphaneService.createBelge({
-        ad: title.trim(),
-        grup_id: initialGrupId,
-        icerik_html: '<h1>' + title.trim() + '</h1><p>Belge içeriğini buraya yazabilirsiniz...</p>'
+        ad: newBelgeAd.trim(),
+        grup_id: newBelgeGrupId,
+        icerik_html: '<h1>' + newBelgeAd.trim() + '</h1><p>Belge içeriğini buraya yazabilirsiniz...</p>'
       })
+      setShowNewBelgeModal(false)
       await loadData()
       setActiveBelgeId(res.belgeId)
       setIsEditorOpen(true)
     } catch (err: any) {
       alert('Belge oluşturulamadı: ' + err.message)
+    } finally {
+      setIsSubmittingBelge(false)
     }
   }
 
@@ -657,6 +674,93 @@ export default function BelgelerimScreen(): React.JSX.Element {
         onClose={() => setIsImportModalOpen(false)}
         onSuccess={loadData}
       />
+
+      {/* Yeni Belge Oluşturma Modalı */}
+      {showNewBelgeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-150">
+          <form
+            onSubmit={handleConfirmCreateBelge}
+            className="bg-white dark:bg-slate-900 rounded-2xl p-6 max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4"
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-blue-50 dark:bg-blue-950/60 rounded-xl text-blue-600 dark:text-blue-400">
+                  <FileText className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">
+                    Yeni Belge Oluştur
+                  </h3>
+                  <p className="text-[11px] text-slate-500">
+                    EBYS ve Kamu İhale uyumlu serbest metin veya şablon belgesi
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowNewBelgeModal(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3 pt-1">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  Belge Adı / Başlığı <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  autoFocus
+                  value={newBelgeAd}
+                  onChange={(e) => setNewBelgeAd(e.target.value)}
+                  placeholder="örn: İhtiyaç ve Piyasa Fiyat Araştırma Tutanağı"
+                  className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  Klasör / Kategori
+                </label>
+                <select
+                  value={newBelgeGrupId === null ? '' : newBelgeGrupId}
+                  onChange={(e) =>
+                    setNewBelgeGrupId(e.target.value === '' ? null : Number(e.target.value))
+                  }
+                  className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500"
+                >
+                  <option value="">📁 Klasörsüz (Kök Dizin)</option>
+                  {gruplar.map((g) => (
+                    <option key={g.id} value={g.id}>
+                      📂 {g.ad}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="flex gap-2.5 pt-3">
+              <button
+                type="button"
+                onClick={() => setShowNewBelgeModal(false)}
+                className="flex-1 py-2 px-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-medium transition-colors"
+              >
+                Vazgeç
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmittingBelge || !newBelgeAd.trim()}
+                className="flex-1 py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors flex items-center justify-center gap-1.5"
+              >
+                {isSubmittingBelge ? 'Oluşturuluyor...' : 'Oluştur ve Düzenle'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {/* Grup Oluştur / Düzenle Modalı */}
       {showGrupModal && (

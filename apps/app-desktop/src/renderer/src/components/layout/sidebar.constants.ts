@@ -67,7 +67,7 @@ export function getSidebarMenuGroups(
   const isDtOzelBelgelerActive = isInstalled('ext-dt-ozel-belgeler')
   const isDtActive = isInstalled('kik-dogrudan-temin-22d') || isInstalled('dogrudan-temin')
   const isPersonelIzinActive = isInstalled('modul-personel-izin') || isInstalled('personel')
-  const isEkDersActive = isInstalled('ek-ders-kik-limit') || isInstalled('modul-ek-ders')
+  const isKikLimitActive = isInstalled('kik-butce-limit-denetleyici') || isInstalled('ek-ders-kik-limit')
   const isEbysActive = isInstalled('modul-ebys-sablon') || isInstalled('ebys')
   const isTasinirActive = isInstalled('modul-tasinir-tif') || isInstalled('tasinir')
 
@@ -365,14 +365,14 @@ export function getSidebarMenuGroups(
     ]
   }
 
-  // İdare & Genel Yönetim (Varsayılan Modüler Görünüm)
+  // Genel Yönetim (Varsayılan Modüler Görünüm)
   return [
     {
-      title: 'İdare & Genel Bakış',
+      title: 'Genel Bakış',
       items: [
         { name: 'Gösterge Paneli', path: APP_ROUTES.DASHBOARD, icon: Home },
         {
-          name: 'İdareci & Modül Mağazası',
+          name: 'Modül Mağazası',
           path: APP_ROUTES.MODUL_MAGAZASI,
           icon: Store,
           badge: 'YENİ'
@@ -448,13 +448,13 @@ export function getSidebarMenuGroups(
               }
             ]
           : []),
-        ...(isEkDersActive
+        ...(isKikLimitActive
           ? [
               {
-                name: 'Ek Ders & Puantaj Takip',
-                path: APP_ROUTES.HESAPLAMA_ARACLARI,
+                name: 'Bütçe & KİK Limit Denetleyici',
+                path: `${APP_ROUTES.HESAPLAMA_ARACLARI}?tab=butce`,
                 icon: Calculator,
-                badge: 'KBS'
+                badge: 'KİK'
               }
             ]
           : []),
@@ -492,97 +492,102 @@ export function getSidebarMenuGroups(
         ...(isDtOzelBelgelerActive ? [dtOzelBelgelerMenuItem] : [])
       ]
     },
-    {
-      title: 'Süreç Yönetimi',
-      items: [
-        ...(activeDosyaId
-          ? [
+    // Yalnızca aktif modüller varsa Süreç Yönetimi gösterilir
+    ...(isDtActive
+      ? [
+          {
+            title: 'Doğrudan Temin Süreçleri',
+            items: [
+              ...(activeDosyaId
+                ? [
+                    {
+                      name: 'Aktif Dosya (Süreç Takip)',
+                      path: APP_ROUTES.TAKIP,
+                      icon: FolderOpen,
+                      badge: 'AÇIK'
+                    },
+                    {
+                      name: 'Süreç Akış Haritası',
+                      path: APP_ROUTES.SUREC_AKISI,
+                      icon: Layers,
+                      badge: 'BETA'
+                    }
+                  ]
+                : []),
               {
-                name: 'Aktif Dosya (Süreç Takip)',
-                path: APP_ROUTES.TAKIP,
-                icon: FolderOpen,
-                badge: 'AÇIK'
+                name: 'Doğrudan Temin Dosyaları',
+                path: APP_ROUTES.DOSYALAR,
+                icon: FileText
               },
               {
-                name: 'Süreç Akış Haritası',
-                path: APP_ROUTES.SUREC_AKISI,
-                icon: Layers,
-                badge: 'BETA'
+                name: 'Hakediş & Harcama İşlemleri',
+                path: APP_ROUTES.HAKEDIS,
+                icon: Hammer
+              },
+              {
+                name: 'İhale & Hesaplama Araçları',
+                path: APP_ROUTES.HESAPLAMA_ARACLARI,
+                icon: Calculator,
+                badge: '4734/2886'
+              },
+              {
+                name: 'Proje Yönetimi & Yatırımlar',
+                path: APP_ROUTES.PROJELER,
+                icon: FolderKanban,
+                badge: 'YENİ'
               }
             ]
-          : []),
-        {
-          name: 'Doğrudan Temin Dosyaları',
-          path: APP_ROUTES.DOSYALAR,
-          icon: FileText
-        },
-        {
-          name: 'Proje Yönetimi & Yatırımlar',
-          path: APP_ROUTES.PROJELER,
-          icon: FolderKanban,
-          badge: 'YENİ'
-        },
-        {
-          name: 'Hızlı Dosya Ekle / Güncelle',
-          path: APP_ROUTES.HIZLI_DOSYA_EKLE,
-          icon: Database
-        },
-        {
-          name: 'Süreç Akış Haritası',
-          path: APP_ROUTES.SUREC_AKISI,
-          icon: Layers,
-          badge: 'BETA'
-        },
-        {
-          name: 'Hakediş & Harcama İşlemleri',
-          path: APP_ROUTES.HAKEDIS,
-          icon: Hammer
-        },
-        {
-          name: 'İhale & Hesaplama Araçları',
-          path: APP_ROUTES.HESAPLAMA_ARACLARI,
-          icon: Calculator,
-          badge: '4734/2886'
-        }
-      ]
-    },
+          }
+        ]
+      : []),
+
+    // Kurumsal Tanımlar (Yalnızca ilgili modüller kuruluysa alt elemanları görünür)
     {
-      title: 'Kayıtlar & Tanımlar',
+      title: 'Kurumsal Kayıtlar',
       items: [
         {
-          name: 'Kurum Yönetimi',
+          name: 'İdare & Teşkilat Yapısı',
           icon: Building2,
           children: [
             { name: 'Kurum Bilgileri', path: APP_ROUTES.KURUM, icon: Building2 },
             { name: 'Birim Yönetimi', path: APP_ROUTES.BIRIMLER, icon: LayoutGrid },
-            { name: 'Personel Yönetimi', path: APP_ROUTES.PERSONEL, icon: Users },
-            { name: 'Ambar & Stok Yönetimi', path: APP_ROUTES.AMBAR, icon: Boxes },
-            { name: 'Proje Yönetimi & Yatırımlar', path: APP_ROUTES.PROJELER, icon: FolderKanban },
-            { name: 'Komisyon Yönetimi', path: APP_ROUTES.KOMISYONLAR, icon: Users },
-            {
-              name: 'Görev Tanımları',
-              path: APP_ROUTES.KOMISYON_GOREVLERI,
-              icon: Settings
-            }
+            ...(isPersonelIzinActive
+              ? [
+                  { name: 'Personel Yönetimi', path: APP_ROUTES.PERSONEL, icon: Users },
+                  { name: 'Komisyon & Kurullar', path: APP_ROUTES.KOMISYONLAR, icon: Users },
+                  {
+                    name: 'Görev Tanımları',
+                    path: APP_ROUTES.KOMISYON_GOREVLERI,
+                    icon: Settings
+                  }
+                ]
+              : []),
+            ...(isTasinirActive
+              ? [{ name: 'Ambar & Stok Yönetimi', path: APP_ROUTES.AMBAR, icon: Boxes }]
+              : [])
           ]
         },
-        { name: 'İstekli Firma Yönetimi', path: APP_ROUTES.FIRMALAR, icon: Building2 },
-        {
-          name: 'Malzeme & Kodlar',
-          icon: PackageSearch,
-          children: [
-            {
-              name: 'Mal, Hizmet & Yapım Kataloğu',
-              path: APP_ROUTES.MALZEMELER,
-              icon: PackageSearch
-            },
-            { name: 'Taşınır Kodları', path: APP_ROUTES.TASINIR_KOD, icon: FolderTree },
-            { name: 'OKAS Kodları', path: APP_ROUTES.OKAS_KOD, icon: Tag },
-            { name: 'Bütçe Kodları (4 Düzey)', path: APP_ROUTES.BUTCE_KOD, icon: Coins },
-            { name: 'Birim Fiyat Pozları', path: APP_ROUTES.POZLAR, icon: BookOpen },
-            { name: 'Ölçü Birimleri', path: APP_ROUTES.OLCU_BIRIMLERI, icon: Ruler }
-          ]
-        }
+        ...(isDtActive
+          ? [
+              { name: 'İstekli Firma Yönetimi', path: APP_ROUTES.FIRMALAR, icon: Building2 },
+              {
+                name: 'Malzeme & Kodlar',
+                icon: PackageSearch,
+                children: [
+                  {
+                    name: 'Mal, Hizmet & Yapım Kataloğu',
+                    path: APP_ROUTES.MALZEMELER,
+                    icon: PackageSearch
+                  },
+                  { name: 'Taşınır Kodları', path: APP_ROUTES.TASINIR_KOD, icon: FolderTree },
+                  { name: 'OKAS Kodları', path: APP_ROUTES.OKAS_KOD, icon: Tag },
+                  { name: 'Bütçe Kodları (4 Düzey)', path: APP_ROUTES.BUTCE_KOD, icon: Coins },
+                  { name: 'Birim Fiyat Pozları', path: APP_ROUTES.POZLAR, icon: BookOpen },
+                  { name: 'Ölçü Birimleri', path: APP_ROUTES.OLCU_BIRIMLERI, icon: Ruler }
+                ]
+              }
+            ]
+          : [])
       ]
     },
     {

@@ -6,6 +6,7 @@ import { EbysPreview } from './components/EbysPreview'
 import { EbysCodeViewer } from './components/EbysCodeViewer'
 import { EbysMevzuatGuide } from './components/EbysMevzuatGuide'
 import { ResmiUstYaziTab } from './components/ResmiUstYaziTab'
+import { EbysTipTapEditorTab } from './components/tiptap-editor/EbysTipTapEditorTab'
 
 export default function EbysScreen(): React.JSX.Element {
   const {
@@ -51,7 +52,12 @@ export default function EbysScreen(): React.JSX.Element {
       />
 
       {/* 2. ANA ÇALIŞMA ALANI */}
-      {activeTab === 'resmi_yazi' ? (
+      {activeTab === 'editor' ? (
+        <EbysTipTapEditorTab
+          selectedTemplate={selectedTemplate}
+          currentTemplateHtml={currentHtml}
+        />
+      ) : activeTab === 'resmi_yazi' ? (
         <ResmiUstYaziTab />
       ) : (
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden">

@@ -24,6 +24,11 @@ export const BaseTemplateSchema = z.object({
   solLogo: z.string().url().optional(),
   sagLogo: z.string().url().optional(),
   evrakSayisi: z.string().optional(),
+  // KİK & Standart Form Destek Alanları (İsteğe Bağlı)
+  kikKodu: z.string().optional(),
+  kikAdi: z.string().optional(),
+  standartFormKodu: z.string().optional(),
+  standartFormAdi: z.string().optional(),
   dosyaKonusu: z.string().optional(),
   isAdi: z.string().optional(),
   isinAdi: z.string().optional(),

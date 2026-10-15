@@ -31,6 +31,7 @@ interface KabulTableViewProps {
   irsaliyeTarihi?: string
   primarySablonKey: string
   isMal: boolean
+  isYapim?: boolean
   hasKomisyon: boolean
   komisyonUyeleri: KomisyonUye[]
   formatDate: (dateStr: string | null) => string
@@ -60,6 +61,7 @@ export function KabulTableView({
   irsaliyeTarihi = '',
   primarySablonKey,
   isMal,
+  isYapim = false,
   hasKomisyon,
   komisyonUyeleri,
   formatDate,
@@ -237,6 +239,7 @@ export function KabulTableView({
                         tut={tut}
                         primarySablonKey={primarySablonKey}
                         isMal={isMal}
+                        isYapim={isYapim}
                         onOpenPreview={onOpenPreview}
                         onToggleApproveTutanak={onToggleApproveTutanak}
                         onEditTutanak={onEditTutanak}

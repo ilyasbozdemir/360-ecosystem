@@ -7,6 +7,11 @@ export const YaklasikMaliyetCetveliSchema = z.object({
   mudurluk: z.string().optional(),
   isAdi: z.string().optional(),
   tarih: z.string().optional(),
+  // KİK & Standart Form Bilgileri (İsteğe Bağlı)
+  kikKodu: z.string().optional(),
+  kikAdi: z.string().optional(),
+  standartFormKodu: z.string().optional(),
+  standartFormAdi: z.string().optional(),
   firmalarColspan: z.number().optional(),
   firmalar: z
     .array(

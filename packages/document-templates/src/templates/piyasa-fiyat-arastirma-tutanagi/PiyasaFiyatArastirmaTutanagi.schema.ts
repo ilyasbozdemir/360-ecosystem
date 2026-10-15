@@ -12,6 +12,11 @@ export const PiyasaFiyatArastirmaTutanagiSchema = z.object({
   dosyaTarihi: z.string().optional(),
   evrakSayisi: z.string().optional(),
   tarih: z.string().optional(),
+  // KİK & Standart Form Bilgileri (İsteğe Bağlı)
+  kikKodu: z.string().optional(),
+  kikAdi: z.string().optional(),
+  standartFormKodu: z.string().optional(),
+  standartFormAdi: z.string().optional(),
   firmalar: z
     .array(
       z.object({

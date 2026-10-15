@@ -1,21 +1,17 @@
 import React, { useState, useMemo } from 'react'
 import {
-  Calendar,
   Clock,
   FileCheck2,
-  FileText,
   Printer,
   Sparkles,
-  UserCheck,
-  ShieldAlert,
   Info,
   Scale,
   PlusCircle,
   CheckCircle2,
-  Building,
-  User
+  Download
 } from 'lucide-react'
 import { Personel } from '../personel.hooks'
+import { useSettingsStore } from '../../../store/settingsStore'
 
 interface PersonelIzinMerkeziViewProps {
   personelList: Personel[]
@@ -48,6 +44,63 @@ interface IzinKaydi {
   aciklama: string
 }
 
+const HAZIR_MATBU_IZIN_FORMLARI = [
+  {
+    id: 'f-657-yillik',
+    ad: '657 Yıllık İzin Talep Dilekçesi',
+    tur: 'yillik' as IzinTuru,
+    rejim: '657_memur' as const,
+    gun: 10,
+    aciklama: '657 Sayılı Kanun m.102 gereğince yıllık izin talebi',
+    ipucu: '657 DMK m.102: Hizmeti 1-10 yıl olanlara 20, 10 yıldan fazla olanlara 30 takvim günü verilir. Hafta sonu izin süresine dahildir.'
+  },
+  {
+    id: 'f-4857-ucretli',
+    ad: '4857 İşçi Ücretli İzin Cetveli',
+    tur: 'yillik' as IzinTuru,
+    rejim: '4857_isci' as const,
+    gun: 14,
+    aciklama: '4857 Sayılı İş Kanunu m.53 gereğince yıllık ücretli izin',
+    ipucu: '4857 İş Kanunu m.53: Kıdem 1-5 yıl: 14, 5-15 yıl: 20, 15+ yıl: 26 iş günüdür. Hafta tatili (Pazar) ve akdi tatiller düşülmez.'
+  },
+  {
+    id: 'f-mazeret-evlilik',
+    ad: 'Evlilik / Düğün Mazeret İzni',
+    tur: 'mazeret_evlilik' as IzinTuru,
+    rejim: '657_memur' as const,
+    gun: 7,
+    aciklama: 'Memurun kendisinin veya çocuğunun evlenmesi halinde mazeret izni',
+    ipucu: '657 DMK m.104/B: Memura kendisinin veya çocuğunun evlenmesi halinde 7 gün mazeret izni verilir. 4857 SK için 3 iş günüdür.'
+  },
+  {
+    id: 'f-mazeret-vefat',
+    ad: 'Ölüm / Taziye Mazeret İzni',
+    tur: 'mazeret_vefat' as IzinTuru,
+    rejim: '657_memur' as const,
+    gun: 7,
+    aciklama: 'Birinci derece yakının vefatı nedeniyle mazeret izni',
+    ipucu: '657 DMK m.104/A: Eş, çocuk, anne, baba, kardeş vefatında 7 takvim günü izin verilir.'
+  },
+  {
+    id: 'f-saglik-rapor',
+    ad: 'Tek Hekim İstirahat Raporu İntikal Yazısı',
+    tur: 'saglik_tek_hekim' as IzinTuru,
+    rejim: '657_memur' as const,
+    gun: 5,
+    aciklama: 'Aile hekimi veya uzman hekim istirahat raporunun izne çevrilmesi',
+    ipucu: '657 DMK m.105: Tek hekim tek seferde en çok 10 gün rapor verebilir; rapordan itibaren en geç ertesi gün kuruma intikal ettirilmelidir.'
+  },
+  {
+    id: 'f-vekalet-onay',
+    ad: 'Görev Devir-Teslim ve Vekalet Onayı',
+    tur: 'idari_izin' as IzinTuru,
+    rejim: '657_memur' as const,
+    gun: 1,
+    aciklama: 'İzin süresince imza ve birim sorumluluğunun devri',
+    ipucu: 'Kamu idarelerinde amir veya şef izinli iken harcama ve resmi evrak işlemlerinin aksamaması için vekil personel belirlenir.'
+  }
+]
+
 const MOCK_IZINLER: IzinKaydi[] = [
   {
     id: 'IZN-001',
@@ -59,7 +112,7 @@ const MOCK_IZINLER: IzinKaydi[] = [
     baslangicTarihi: '2026-10-18',
     bitisTarihi: '2026-10-25',
     gunSayisi: 8,
-    vekilPersonel: 'Mehmet Demir (Memur)',
+    vekilPersonel: 'Mehmet Demir (Şef)',
     onayDurumu: 'onaylandi',
     aciklama: 'Yıllık izin hakkının 1. dilimi'
   },
@@ -67,13 +120,13 @@ const MOCK_IZINLER: IzinKaydi[] = [
     id: 'IZN-002',
     personelId: 2,
     personelAdi: 'Mustafa Kaya',
-    unvan: 'Sürekli İşçi (4857)',
+    unvan: 'Sürekli İşçi (Teknisyen - 4857)',
     rejim: '4857_isci',
     izinTuru: 'yillik',
     baslangicTarihi: '2026-10-20',
     bitisTarihi: '2026-10-27',
     gunSayisi: 6, // İş günü
-    vekilPersonel: 'Ali Çelik (İşçi)',
+    vekilPersonel: 'Ali Çelik (Sürekli İşçi)',
     onayDurumu: 'onaylandi',
     aciklama: 'Yıllık ücretli izin (Pazar ve Cumartesi akdi tatil düşülmüştür)'
   },
@@ -81,7 +134,7 @@ const MOCK_IZINLER: IzinKaydi[] = [
     id: 'IZN-003',
     personelId: 3,
     personelAdi: 'Zeynep Şahin',
-    unvan: 'Öğretmen (657 DMK)',
+    unvan: 'Mühendis (Teknik Hizmetler - 657 DMK)',
     rejim: '657_memur',
     izinTuru: 'saglik_tek_hekim',
     baslangicTarihi: '2026-10-14',
@@ -89,15 +142,22 @@ const MOCK_IZINLER: IzinKaydi[] = [
     gunSayisi: 4,
     vekilPersonel: 'Derya Korkmaz',
     onayDurumu: 'onaylandi',
-    aciklama: 'Ankara Şehir Hastanesi Tek Hekim İstirahat Raporu'
+    aciklama: 'Tek Hekim İstirahat Raporu İntikali'
   }
 ]
 
 export const PersonelIzinMerkeziView: React.FC<PersonelIzinMerkeziViewProps> = ({
   personelList,
-  kurumAdi = 'T.C. ANKARA ÇANKAYA İLÇE MİLLİ EĞİTİM MÜDÜRLÜĞÜ',
-  harcamaYetkilisiAdi = 'İlyas Bozdemir'
+  kurumAdi,
+  harcamaYetkilisiAdi
 }) => {
+  const storeInstitutionName = useSettingsStore((s) => s.institutionName)
+  const storeAdminName = useSettingsStore((s) => s.adminName)
+  const aktifKurumAdi =
+    kurumAdi || storeInstitutionName || 'T.C. KAMU İDARESİ BAŞKANLIĞI'
+  const aktifHarcamaYetkilisi =
+    harcamaYetkilisiAdi || storeAdminName || 'Harcama Yetkilisi / Kurum Amiri'
+
   const [activeRejimTab, setActiveRejimTab] = useState<'hepsi' | '657_memur' | '4857_isci'>(
     'hepsi'
   )
@@ -108,20 +168,23 @@ export const PersonelIzinMerkeziView: React.FC<PersonelIzinMerkeziViewProps> = (
   const [baslangicTarihi, setBaslangicTarihi] = useState('2026-10-20')
   const [gunSayisi, setGunSayisi] = useState(5)
   const [vekilPersonel, setVekilPersonel] = useState('Mehmet Demir')
-  const [gorevYeriAdresi, setGorevYeriAdresi] = useState('Ankara / Çankaya')
+  const [gorevYeriAdresi, setGorevYeriAdresi] = useState('İkametgah Adresi')
   const [aciklama, setAciklama] = useState('Yıllık izin talebi')
   const [kayitlar, setKayitlar] = useState<IzinKaydi[]>(MOCK_IZINLER)
   const [showSuccessToast, setShowSuccessToast] = useState(false)
+  const [seciliFormIpucu, setSeciliFormIpucu] = useState<string | null>(null)
 
   // Seçilen personel bilgisi
   const seciliPersonel = useMemo(() => {
-    return personelList.find((p) => p.id === Number(seciliPersonelId)) || {
-      id: Number(seciliPersonelId) || 1,
-      ad_soyad: 'Ahmet Yılmaz',
-      unvan: 'V.H.K.İ.',
-      sicil_no: 'TR-884920',
-      birim: 'İdari ve Mali İşler Şubesi'
-    }
+    return (
+      personelList.find((p) => p.id === Number(seciliPersonelId)) || {
+        id: Number(seciliPersonelId) || 1,
+        ad_soyad: 'Ahmet Yılmaz',
+        unvan: 'V.H.K.İ. (Veri Hazırlama)',
+        sicil_no: 'TR-884920',
+        birim: 'İdari ve Mali İşler Şubesi'
+      }
+    )
   }, [personelList, seciliPersonelId])
 
   // Rejim tespiti (unvan içinde 'işçi' veya 'sürekli' geçiyorsa 4857, yoksa 657)
@@ -154,7 +217,7 @@ export const PersonelIzinMerkeziView: React.FC<PersonelIzinMerkeziViewProps> = (
   }, [personelRejimi])
 
   // İzin Başvurusu Ekle
-  const handleIzinKaydet = (e: React.FormEvent) => {
+  const handleIzinKaydet = (e: React.FormEvent): void => {
     e.preventDefault()
     const yeniKayit: IzinKaydi = {
       id: `IZN-${String(kayitlar.length + 1).padStart(3, '0')}`,
@@ -260,6 +323,74 @@ export const PersonelIzinMerkeziView: React.FC<PersonelIzinMerkeziViewProps> = (
             <div className="text-[11px] text-indigo-800 dark:text-indigo-300 leading-snug">
               📌 <strong>Mazeretler:</strong> {hakEdisBilgisi.mazeretler}
             </div>
+          </div>
+
+          {/* Hızlı Matbu İzin Formları & Kalıpları (Referans Tasarıma Göre Chip Butonlar) */}
+          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200">
+                <Sparkles className="w-4 h-4 text-amber-500" />
+                <span>Kurumsal Matbu İzin Şablonları & Hızlı Doldurma</span>
+              </div>
+              <span className="text-[10px] text-slate-400 font-semibold">Tıklayarak formu doldurun</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {HAZIR_MATBU_IZIN_FORMLARI.map((form) => {
+                const isActive = form.tur === izinTuru
+                return (
+                  <div
+                    key={form.id}
+                    className={`inline-flex items-center rounded-xl border transition-all p-1 shadow-xs group ${
+                      isActive
+                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300'
+                        : 'border-slate-200 dark:border-slate-700 bg-slate-50 hover:bg-indigo-50/70 dark:bg-slate-800/80 dark:hover:bg-indigo-950/40 text-slate-700 dark:text-slate-200'
+                    }`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIzinTuru(form.tur)
+                        setGunSayisi(form.gun)
+                        setAciklama(form.aciklama)
+                        setSeciliFormIpucu(form.ipucu)
+                      }}
+                      className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold cursor-pointer"
+                    >
+                      <Download className={`w-3.5 h-3.5 ${isActive ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-500'}`} />
+                      <span>{form.ad}</span>
+                    </button>
+                    <button
+                      type="button"
+                      title="Mevzuat Bilgisini Göster"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setSeciliFormIpucu(seciliFormIpucu === form.ipucu ? null : form.ipucu)
+                      }}
+                      className="px-1.5 py-1 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-white dark:hover:bg-slate-700 cursor-pointer"
+                    >
+                      <Info className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+            {seciliFormIpucu && (
+              <div className="mt-2 p-2.5 rounded-xl bg-blue-50/90 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 text-[11px] text-blue-900 dark:text-blue-300 flex items-start justify-between gap-2 animate-in fade-in">
+                <div className="flex items-start gap-2">
+                  <Info className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold">Mevzuat Uyarısı: </span>
+                    <span>{seciliFormIpucu}</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSeciliFormIpucu(null)}
+                  className="text-blue-400 hover:text-blue-700 text-xs font-bold px-1 cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
           </div>
 
           {/* İzin Formu */}
@@ -496,7 +627,7 @@ export const PersonelIzinMerkeziView: React.FC<PersonelIzinMerkeziViewProps> = (
             {/* T.C. Antet */}
             <div className="text-center space-y-1 border-b pb-4">
               <div className="font-bold text-sm tracking-widest uppercase">T.C.</div>
-              <div className="font-extrabold text-xs uppercase">{kurumAdi}</div>
+              <div className="font-extrabold text-xs uppercase">{aktifKurumAdi}</div>
               <div className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
                 {personelRejimi === '657_memur'
                   ? '657 SAYILI KANUN GEREĞİNCE RESMÎ İZİN FORMU'
@@ -516,7 +647,7 @@ export const PersonelIzinMerkeziView: React.FC<PersonelIzinMerkeziViewProps> = (
 
             {/* İlgili Makam */}
             <div className="text-center font-bold text-sm uppercase py-2">
-              {kurumAdi} MÜDÜRLÜĞÜNE / HARCAMA YETKİLİSİNE
+              {aktifKurumAdi} MÜDÜRLÜĞÜNE / HARCAMA YETKİLİSİNE
             </div>
 
             {/* Personel Bilgi Tablosu */}
@@ -607,9 +738,9 @@ export const PersonelIzinMerkeziView: React.FC<PersonelIzinMerkeziViewProps> = (
                 UYGUNDUR
               </div>
               <div className="text-[10px] text-slate-500">{new Date().toLocaleDateString('tr-TR')}</div>
-              <div className="pt-6 font-bold text-xs">{harcamaYetkilisiAdi}</div>
+              <div className="pt-6 font-bold text-xs">{aktifHarcamaYetkilisi}</div>
               <div className="text-[10px] text-slate-500 font-sans">
-                Harcama Yetkilisi / Okul Müdürü (Mühür ve İmza)
+                Harcama Yetkilisi / Kurum Amiri (Mühür ve İmza)
               </div>
             </div>
           </div>

@@ -33,6 +33,12 @@ export const MuayeneKabulTutanagiSchema = z.object({
   isinAdi: z.string().optional(),
   dosyaKonusu: z.string().optional(),
 
+  // KİK & Standart Form Bilgileri (İsteğe Bağlı)
+  kikKodu: z.string().optional(),
+  kikAdi: z.string().optional(),
+  standartFormKodu: z.string().optional(),
+  standartFormAdi: z.string().optional(),
+
   // Kalemler
   ihtiyacKalemleri: z.array(MuayeneKabulTutanagiItemSchema).optional(),
 

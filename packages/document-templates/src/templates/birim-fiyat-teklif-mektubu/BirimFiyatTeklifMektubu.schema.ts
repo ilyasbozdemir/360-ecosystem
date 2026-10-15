@@ -3,6 +3,12 @@ import { z } from "zod";
 export const BirimFiyatTeklifMektubuSchema = z.object({
   idareAdi: z.string().optional(),
   isinAdi: z.string().optional(),
+
+  // KİK & Standart Form Bilgileri (İsteğe Bağlı)
+  kikKodu: z.string().optional(),
+  kikAdi: z.string().optional(),
+  standartFormKodu: z.string().optional(),
+  standartFormAdi: z.string().optional(),
   hitap: z.string().optional(),
   teklifSahibi: z.string().optional(),
   uyrugu: z.string().optional(),

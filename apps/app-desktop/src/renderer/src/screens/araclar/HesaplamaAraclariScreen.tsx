@@ -57,7 +57,32 @@ const TABS: { id: TabType; label: string; icon: React.ComponentType<{ size?: num
 ]
 
 export default function HesaplamaAraclariScreen(): React.JSX.Element {
-  const [activeTab, setActiveTab] = useState<TabType>('hesap')
+  const getTabFromUrl = (): TabType => {
+    if (typeof window === 'undefined') return 'hesap'
+    const hash = window.location.hash || ''
+    const hashIdx = hash.indexOf('?')
+    const hashParams = hashIdx !== -1 ? new URLSearchParams(hash.substring(hashIdx)) : null
+    const searchParams = new URLSearchParams(window.location.search)
+    const rawTab = hashParams?.get('tab') || searchParams.get('tab')
+    if (rawTab && TABS.some((t) => t.id === rawTab)) {
+      return rawTab as TabType
+    }
+    return 'hesap'
+  }
+
+  const [activeTab, setActiveTab] = useState<TabType>(getTabFromUrl())
+
+  React.useEffect(() => {
+    const handleLocationChange = () => {
+      setActiveTab(getTabFromUrl())
+    }
+    window.addEventListener('hashchange', handleLocationChange)
+    window.addEventListener('popstate', handleLocationChange)
+    return () => {
+      window.removeEventListener('hashchange', handleLocationChange)
+      window.removeEventListener('popstate', handleLocationChange)
+    }
+  }, [])
 
   return (
     <div className="p-4 md:p-6 w-full space-y-6 animate-in fade-in duration-200">

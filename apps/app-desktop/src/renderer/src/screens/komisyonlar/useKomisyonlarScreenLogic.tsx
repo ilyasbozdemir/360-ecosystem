@@ -25,12 +25,33 @@ export function useKomisyonlarScreenLogic() {
   const queryClient = useQueryClient()
 
   // Ana Sekme Değişimi: 'sablonlar' | 'dosya_komisyonlari' | 'gorev_dagilimi'
-  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
-  const initialTab =
-    searchParams?.get('tab') === 'gorev_dagilimi' ? 'gorev_dagilimi' : 'sablonlar'
+  const getKomisyonTabFromLocation = (): 'sablonlar' | 'dosya_komisyonlari' | 'gorev_dagilimi' => {
+    if (typeof window === 'undefined') return 'sablonlar'
+    const hash = window.location.hash || ''
+    const hashIdx = hash.indexOf('?')
+    const hashParams = hashIdx !== -1 ? new URLSearchParams(hash.substring(hashIdx)) : null
+    const searchParams = new URLSearchParams(window.location.search)
+    const rawTab = hashParams?.get('tab') || searchParams.get('tab')
+    if (rawTab === 'gorev_dagilimi' || rawTab === 'dosya_komisyonlari' || rawTab === 'sablonlar') {
+      return rawTab
+    }
+    return 'sablonlar'
+  }
   const [activeMainTab, setActiveMainTab] = useState<
     'sablonlar' | 'dosya_komisyonlari' | 'gorev_dagilimi'
-  >(initialTab)
+  >(getKomisyonTabFromLocation())
+
+  React.useEffect(() => {
+    const handleLocationChange = () => {
+      setActiveMainTab(getKomisyonTabFromLocation())
+    }
+    window.addEventListener('hashchange', handleLocationChange)
+    window.addEventListener('popstate', handleLocationChange)
+    return () => {
+      window.removeEventListener('hashchange', handleLocationChange)
+      window.removeEventListener('popstate', handleLocationChange)
+    }
+  }, [])
 
   const [searchTerm, setSearchTerm] = useState('')
   const [dosyaKomisyonSearch, setDosyaKomisyonSearch] = useState('')

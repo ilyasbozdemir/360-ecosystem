@@ -1125,3 +1125,46 @@ export const KlasorSirtligi75cmMapping: ProcessMapping = {
   yil: { tablo: 'DATA_TeminDosyasi', sutun: 'butce_yili', aciklama: 'Bütçe Yılı' },
   konu: { tablo: 'DATA_TeminDosyasi', sutun: 'konu', aciklama: 'İşin Adı' }
 }
+
+// ===========================================================
+// 36. Standart Form-KİK048.0/Y: Yapım İşleri Geçici Kabul Teklif Belgesi
+// ===========================================================
+export const Kik048YapimGeciciKabulTeklifMapping: ProcessMapping = {
+  isinAdi: { tablo: 'DATA_TeminDosyasi', sutun: 'konu', aciklama: 'İşin Adı' },
+  dosyaKonusu: { tablo: 'DATA_TeminDosyasi', sutun: 'konu', aciklama: 'Dosya Konusu' },
+  sozlesmeTarihi: { tablo: 'DATA_TeminDosyasi', sutun: 'sozlesme_tarihi', aciklama: 'Sözleşme Tarihi' },
+  sozlesmeBedeli: { tablo: 'DATA_TeminDosyasi', sutun: 'sozlesme_bedeli', aciklama: 'Sözleşme Bedeli' },
+  sozlesmeyeGoreBitisTarihi: { tablo: 'DATA_TeminDosyasi', sutun: 'teslim_tarihi', aciklama: 'Sözleşmeye Göre Bitiş Tarihi' }
+}
+
+// ===========================================================
+// 37. Standart Form-KİK049.0/Y: Yapım İşleri Geçici Kabul Tutanağı
+// ===========================================================
+export const Kik049YapimGeciciKabulTutanagiMapping: ProcessMapping = {
+  isinAdi: { tablo: 'DATA_TeminDosyasi', sutun: 'konu', aciklama: 'İşin Adı' },
+  dosyaKonusu: { tablo: 'DATA_TeminDosyasi', sutun: 'konu', aciklama: 'Dosya Konusu' },
+  kurumAdi: { tablo: 'TANIM_Kurum', sutun: 'kurum_adi', aciklama: 'Kurum Adı' },
+  sozlesmeTarihi: { tablo: 'DATA_TeminDosyasi', sutun: 'sozlesme_tarihi', aciklama: 'Sözleşme Tarihi' },
+  sozlesmeBedeli: { tablo: 'DATA_TeminDosyasi', sutun: 'sozlesme_bedeli', aciklama: 'Sözleşme Bedeli' }
+}
+
+// ===========================================================
+// 38. Standart Form-KİK050.0/Y: Yapım İşleri Kesin Kabul Teklif Belgesi
+// ===========================================================
+export const Kik050YapimKesinKabulTeklifMapping: ProcessMapping = {
+  isinAdi: { tablo: 'DATA_TeminDosyasi', sutun: 'konu', aciklama: 'İşin Adı' },
+  dosyaKonusu: { tablo: 'DATA_TeminDosyasi', sutun: 'konu', aciklama: 'Dosya Konusu' },
+  sozlesmeTarihi: { tablo: 'DATA_TeminDosyasi', sutun: 'sozlesme_tarihi', aciklama: 'Sözleşme Tarihi' },
+  sozlesmeBedeli: { tablo: 'DATA_TeminDosyasi', sutun: 'sozlesme_bedeli', aciklama: 'Sözleşme Bedeli' }
+}
+
+// ===========================================================
+// 39. Standart Form-KİK051.0/Y: Yapım İşleri Kesin Kabul Tutanağı
+// ===========================================================
+export const Kik051YapimKesinKabulTutanagiMapping: ProcessMapping = {
+  isinAdi: { tablo: 'DATA_TeminDosyasi', sutun: 'konu', aciklama: 'İşin Adı' },
+  dosyaKonusu: { tablo: 'DATA_TeminDosyasi', sutun: 'konu', aciklama: 'Dosya Konusu' },
+  kurumAdi: { tablo: 'TANIM_Kurum', sutun: 'kurum_adi', aciklama: 'Kurum Adı' },
+  sozlesmeTarihi: { tablo: 'DATA_TeminDosyasi', sutun: 'sozlesme_tarihi', aciklama: 'Sözleşme Tarihi' },
+  sozlesmeBedeli: { tablo: 'DATA_TeminDosyasi', sutun: 'sozlesme_bedeli', aciklama: 'Sözleşme Bedeli' }
+}

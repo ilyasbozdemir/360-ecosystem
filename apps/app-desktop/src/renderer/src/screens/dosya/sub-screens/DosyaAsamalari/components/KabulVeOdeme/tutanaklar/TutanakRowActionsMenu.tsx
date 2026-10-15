@@ -17,6 +17,7 @@ interface TutanakRowActionsMenuProps {
   tut: KabulTutanakItem
   primarySablonKey: string
   isMal: boolean
+  isYapim?: boolean
   onOpenPreview?: (sablonKey: string, tutanak?: KabulTutanakItem) => void
   onToggleApproveTutanak?: (id: string) => void
   onEditTutanak?: (tutanak: KabulTutanakItem) => void
@@ -28,6 +29,7 @@ export function TutanakRowActionsMenu({
   tut,
   primarySablonKey,
   isMal,
+  isYapim = false,
   onOpenPreview,
   onToggleApproveTutanak,
   onEditTutanak,
@@ -39,13 +41,22 @@ export function TutanakRowActionsMenu({
   const menuRef = useRef<HTMLDivElement>(null)
   const [coords, setCoords] = useState<{ top: number; left: number } | null>(null)
 
+  const effectiveIsYapim =
+    isYapim ||
+    tut.sablonKodu?.includes('yapim') ||
+    tut.sablonKodu?.includes('kik0') ||
+    tut.tutanakTuru === 'gecici_kabul' ||
+    tut.tutanakTuru === 'kesin_kabul' ||
+    tut.tutanakTuru === 'gecici_teklif' ||
+    tut.tutanakTuru === 'kesin_teklif'
+
   const updateCoords = useCallback(() => {
     if (buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect()
-      const menuWidth = 220
+      const menuWidth = 240
       let left = rect.right - menuWidth
       if (left < 10) left = 10
-      const menuHeight = 320
+      const menuHeight = 380
       let top = rect.bottom + 4
       if (top + menuHeight > window.innerHeight) {
         top = Math.max(10, rect.top - menuHeight - 4)
@@ -105,7 +116,7 @@ export function TutanakRowActionsMenu({
           <div
             ref={menuRef}
             style={{ top: `${coords.top}px`, left: `${coords.left}px` }}
-            className="fixed z-[9999] w-52 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-2xl py-1 text-left animate-in fade-in zoom-in-95 duration-150"
+            className="fixed z-[9999] w-64 max-h-[85vh] overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-2xl py-1 text-left animate-in fade-in zoom-in-95 duration-150"
           >
             {onToggleApproveTutanak && (
               <button
@@ -144,29 +155,98 @@ export function TutanakRowActionsMenu({
               </button>
             )}
 
-            <button
-              type="button"
-              onClick={() => {
-                setOpen(false)
-                onOpenPreview?.(primarySablonKey, tut)
-              }}
-              className="w-full px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 cursor-pointer"
-            >
-              <FileText size={13} className="text-blue-500" />
-              <span>Kabul Tutanağı Belgesi</span>
-            </button>
+            {effectiveIsYapim ? (
+              <>
+                <div className="px-3 py-1 text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50/60 dark:bg-amber-950/20 border-y border-amber-100 dark:border-amber-900/30">
+                  Yapım İşleri Kabul Belgeleri
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false)
+                    onOpenPreview?.(tut.sablonKodu || 'kik049-yapim-gecici-kabul-tutanagi', tut)
+                  }}
+                  className="w-full px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 cursor-pointer"
+                >
+                  <FileText size={13} className="text-amber-600" />
+                  <span>KİK049.0/Y Geçici Kabul Tutanağı</span>
+                </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                setOpen(false)
-                onOpenPreview?.('muayene-kabul-komisyonu', tut)
-              }}
-              className="w-full px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 cursor-pointer"
-            >
-              <ShieldCheck size={13} className="text-indigo-500" />
-              <span>Komisyon Kararı Belgesi</span>
-            </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false)
+                    onOpenPreview?.('kik048-yapim-gecici-kabul-teklif', tut)
+                  }}
+                  className="w-full px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 cursor-pointer"
+                >
+                  <FileText size={13} className="text-amber-500" />
+                  <span>KİK048.0/Y Geçici Kabul Teklif</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false)
+                    onOpenPreview?.('kik051-yapim-kesin-kabul-tutanagi', tut)
+                  }}
+                  className="w-full px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 cursor-pointer"
+                >
+                  <ShieldCheck size={13} className="text-blue-600" />
+                  <span>KİK051.0/Y Kesin Kabul Tutanağı</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false)
+                    onOpenPreview?.('kik050-yapim-kesin-kabul-teklif', tut)
+                  }}
+                  className="w-full px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 cursor-pointer"
+                >
+                  <FileText size={13} className="text-blue-500" />
+                  <span>KİK050.0/Y Kesin Kabul Teklif</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false)
+                    onOpenPreview?.('hakedis-raporu', tut)
+                  }}
+                  className="w-full px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 cursor-pointer border-t border-slate-100 dark:border-slate-700/60"
+                >
+                  <CreditCard size={13} className="text-emerald-500" />
+                  <span>Hakediş Raporu / Ödeme</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false)
+                    onOpenPreview?.(primarySablonKey, tut)
+                  }}
+                  className="w-full px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 cursor-pointer"
+                >
+                  <FileText size={13} className="text-blue-500" />
+                  <span>Kabul Tutanağı Belgesi</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false)
+                    onOpenPreview?.('muayene-kabul-komisyonu', tut)
+                  }}
+                  className="w-full px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 cursor-pointer"
+                >
+                  <ShieldCheck size={13} className="text-indigo-500" />
+                  <span>Komisyon Kararı Belgesi</span>
+                </button>
+              </>
+            )}
 
             <button
               type="button"
@@ -174,7 +254,7 @@ export function TutanakRowActionsMenu({
                 setOpen(false)
                 onOpenPreview?.('odeme-yazisi', tut)
               }}
-              className="w-full px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 cursor-pointer"
+              className="w-full px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 cursor-pointer border-t border-slate-100 dark:border-slate-700/60"
             >
               <FileText size={13} className="text-emerald-500" />
               <span>Ödeme Yazısı Al</span>
@@ -192,17 +272,19 @@ export function TutanakRowActionsMenu({
               <span>Ödeme Emri (MİF) Al</span>
             </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                setOpen(false)
-                onOpenPreview?.('kabul-edilen-teklif', tut)
-              }}
-              className="w-full px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 cursor-pointer"
-            >
-              <FileCheck size={13} className="text-violet-500" />
-              <span>Ödeme Onay Yazısı (Kabul)</span>
-            </button>
+            {!effectiveIsYapim && (
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false)
+                  onOpenPreview?.('kabul-edilen-teklif', tut)
+                }}
+                className="w-full px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2 cursor-pointer"
+              >
+                <FileCheck size={13} className="text-violet-500" />
+                <span>Ödeme Onay Yazısı (Kabul)</span>
+              </button>
+            )}
 
             {isMal && onOpenTifModal && (
               <button

@@ -141,6 +141,11 @@ export const EbysSidebar: React.FC<EbysSidebarProps> = ({
                       {tpl.description}
                     </p>
                     <div className="flex items-center gap-1.5 flex-wrap">
+                      {tpl.id.startsWith('custom_') && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/40 font-bold">
+                          ÖZEL ŞABLON
+                        </span>
+                      )}
                       <span className="text-[10px] px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium">
                         {tpl.categoryLabel}
                       </span>

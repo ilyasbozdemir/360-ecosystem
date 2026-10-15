@@ -83,7 +83,23 @@ export const V2_TEMPLATES_NAMES = [
   'sozlesmeye-davet',
   'sozlesmedavet',
   'muayene-kabul-komisyonu',
-  'muayenekabulkomisyonu'
+  'muayenekabulkomisyonu',
+  'kik048-yapim-gecici-kabul-teklif',
+  'kik048',
+  'kik-048',
+  'kik049-yapim-gecici-kabul-tutanagi',
+  'kik049',
+  'kik-049',
+  'kik050-yapim-kesin-kabul-teklif',
+  'kik050',
+  'kik-050',
+  'kik051-yapim-kesin-kabul-tutanagi',
+  'kik051',
+  'kik-051',
+  'yapim-isleri-gecici-kabul-teklif-belgesi',
+  'yapim-isleri-gecici-kabul-tutanagi',
+  'yapim-isleri-kesin-kabul-teklif-belgesi',
+  'yapim-isleri-kesin-kabul-tutanagi'
 ]
 
 export function isV2Template(dosyaAdiOrTitle?: string | null): boolean {

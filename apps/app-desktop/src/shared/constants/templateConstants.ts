@@ -20,56 +20,60 @@ export interface TemplateGroup {
  * Tüm HTML şablonlarının dosya/klasör ID'si ile Türkçe resmi adı eşleşmesi.
  */
 export const TEMPLATE_NAMES: Record<string, string> = {
-  'harcama-talimati': 'HARCAMA TALİMATI',
-  'ihtiyac-listesi': 'İHTİYAÇ LİSTESİ',
-  'ihtiyac-talep-formu': 'İHTİYAÇ TALEP FORMU',
+  'harcama-talimati': 'STANDART FORM-KİK024.0/M: DOĞRUDAN TEMİN ONAY BELGESİ (HARCAMA TALİMATI)',
+  'ihtiyac-listesi': 'STANDART FORM (MYHBY m.4/e): İHTİYAÇ LİSTESİ CETVELİ',
+  'ihtiyac-talep-formu': 'STANDART FORM (MYHBY m.4/e - 4734 KİK m.22): İHTİYAÇ BELGESİ VE HARCAMA TALEP MÜZEKKERESİ',
   'komisyon-gorevlendirme-onayi':
-    'KOMİSYON GÖREVLENDİRME ONAYI (MUAYENE VE KABUL VE FİYAT ARAŞTIRMASI)',
+    'STANDART FORM (4734 KİK m.22): PİYASA FİYAT ARAŞTIRMASI VE MUAYENE KABUL GÖREVLENDİRME ONAYI',
   'komisyon-gorevlendirme-onayi-eki':
-    'KOMİSYON GÖREVLENDİRME ONAYI EKİ (MUAYENE VE KABUL VE FİYAT ARAŞTIRMASI)',
-  'luzum-muzekkeresi': 'Lüzum Müzekkeresi',
-  'luzum-muzekkeresi-onay-eki': 'Lüzum Müzekkeresi ONAY EKİ',
-  'luzum-muzekkeresi-teslim-tesellum': 'Lüzum Müzekkeresi TESLİM TESELLÜM',
-  'son-alim-fiyat-cetveli': 'SON ALIM FİYAT CETVELİ',
-  'arastirma-mektubu': 'ARAŞTIRMA MEKTUBU',
-  'birim-fiyat-teklif-cetveli': 'BİRİM FİYAT TEKLİF CETVELİ',
-  'birim-fiyat-teklif-mektubu': 'BİRİM FİYAT TEKLİF MEKTUBU',
-  'dagitim-cizelgesi': 'DAĞITIM ÇİZELGESİ',
-  'dagitim-cizelgesi-karma': 'DAĞITIM ÇİZELGESİ (KARMA)',
-  'fiyat-arastirma-mektubu': 'FİYAT ARAŞTIRMA MEKTUBU',
-  'fiyat-arastirmasi': 'FİYAT ARAŞTIRMASI',
-  'piyasa-fiyat-arastirma-gorevlendirmesi': 'PİYASA FİYAT ARAŞTIRMA GÖREVLENDİRMESİ',
-  'piyasa-fiyat-arastirma-tutanagi': 'PİYASA FİYAT ARAŞTIRMA TUTANAĞI',
-  'teklif-mektubu-dagitim-cizelgesi': 'TEKLİF MEKTUBU DAĞITIM ÇİZELGESİ',
-  'yaklasik-maliyet-cetveli': 'YAKLAŞIK MALİYET CETVELİ',
-  'yaklasik-maliyet-teklif-mektubu': 'YAKLAŞIK MALİYET TEKLİF MEKTUBU',
-  'butce-sorgusu': 'BÜTÇE SORGUSU',
-  'dogrudan-temin-onay-belgesi': 'DOĞRUDAN TEMİN ONAY BELGESİ',
-  'dogrudan-temin-sonuc-onay-belgesi': 'DOĞRUDAN TEMİN SONUÇ ONAY BELGESİ',
-  'dogrudan-temin-sozlesmesi': 'DOĞRUDAN TEMİN SÖZLEŞMESİ',
-  'dogrudan-temin-sozlesmesi-alternatif': 'DOĞRUDAN TEMİN SÖZLEŞMESİ (ALTERNATİF)',
-  'dogrudan-temin-sozlesmesi-uzun': 'DOĞRUDAN TEMİN SÖZLEŞMESİ (UZUN)',
-  'idare-onay-belgesi': 'İDARE ONAY BELGESİ',
-  'ihale-komisyon-karari': 'İHALE KOMİSYON KARARI',
-  'kabul-edilen-teklif': 'KABUL EDİLEN TEKLİF',
-  'kabul-edilen-teklif-alternatif': 'KABUL EDİLEN TEKLİF (ALTERNATİF)',
-  'sozlesmeye-davet': 'SÖZLEŞMEYE DAVET',
-  'teklif-mektubu': 'TEKLİF MEKTUBU',
-  'gunluk-calisma-puantaj-cizelgesi': 'GÜNLÜK ÇALIŞMA PUANTAJ ÇİZELGESİ',
-  'hakedis-raporu': 'HAKEDİŞ RAPORU',
-  'harcama-pusulasi': 'HARCAMA PUSULASI',
-  'hizmet-isleri-kabul-teklif-belgesi': 'HİZMET İŞLERİ KABUL TEKLİF BELGESİ',
-  'hizmet-isleri-kabul-tutanagi': 'HİZMET İŞLERİ KABUL TUTANAĞI',
-  'muayene-kabul-komisyonu': 'MUAYENE VE KABUL KOMİSYONU',
-  'muayene-kabul-tutanagi': 'MUAYENE VE KABUL TUTANAĞI',
-  'odeme-emri-belgesi': 'ÖDEME EMRİ BELGESİ',
-  'odeme-yazisi': 'ÖDEME YAZISI',
-  'tasinir-islem-fisi': 'TAŞINIR İŞLEM FİŞİ',
-  'ihale-kapagi': 'İHALE KAPAĞI',
-  'kapak-ici-indeks-sablonu': 'KAPAK İÇİ İNDEKS ŞABLONU',
-  'klasor-sirtligi-3cm': 'KLASÖR SIRTLIĞI (3 CM)',
-  'klasor-sirtligi-5cm': 'KLASÖR SIRTLIĞI (5 CM)',
-  'klasor-sirtligi-7-5cm': 'KLASÖR SIRTLIĞI (7.5 CM)'
+    'STANDART FORM: GÖREVLENDİRİLEN KOMİSYON VE PERSONEL LİSTESİ EKİ',
+  'luzum-muzekkeresi': 'STANDART FORM (MYHBY m.4/e): LÜZUM MÜZEKKERESİ',
+  'luzum-muzekkeresi-onay-eki': 'STANDART FORM: LÜZUM MÜZEKKERESİ ONAY EKİ',
+  'luzum-muzekkeresi-teslim-tesellum': 'STANDART FORM: LÜZUM MÜZEKKERESİ TESLİM TESELLÜM TUTANAĞI',
+  'son-alim-fiyat-cetveli': 'STANDART FORM: SON ALIM FİYAT ARAŞTIRMA VE MUKAYESE CETVELİ',
+  'arastirma-mektubu': 'STANDART FORM-KİK027.0/M: PİYASA FİYAT ARAŞTIRMA VE TEKLİF İSTEME MEKTUBU',
+  'birim-fiyat-teklif-cetveli': 'STANDART FORM-KİK015.2/M: BİRİM FİYAT TEKLİF CETVELİ',
+  'birim-fiyat-teklif-mektubu': 'STANDART FORM-KİK015.1/M: BİRİM FİYAT TEKLİF MEKTUBU',
+  'dagitim-cizelgesi': 'STANDART FORM: TEKLİF İSTEME DAĞITIM ÇİZELGESİ',
+  'dagitim-cizelgesi-karma': 'STANDART FORM: TEKLİF İSTEME KARMA DAĞITIM ÇİZELGESİ',
+  'fiyat-arastirma-mektubu': 'STANDART FORM-KİK027.0/M: BİRİM FİYAT TEKLİF MEKTUBU VE FİYAT İSTEME FORMU',
+  'fiyat-arastirmasi': 'STANDART FORM-KİK027.0/M: PİYASA FİYAT ARAŞTIRMASI FORMU',
+  'piyasa-fiyat-arastirma-gorevlendirmesi': 'STANDART FORM (4734 KİK m.22): PİYASA FİYAT ARAŞTIRMASI GÖREVLENDİRME ONAYI',
+  'piyasa-fiyat-arastirma-tutanagi': 'STANDART FORM (MYHBY ÖRNEK NO: 2): PİYASA FİYAT ARAŞTIRMASI TUTANAĞI',
+  'teklif-mektubu-dagitim-cizelgesi': 'STANDART FORM: TEKLİF MEKTUBU DAĞITIM ÇİZELGESİ',
+  'yaklasik-maliyet-cetveli': 'STANDART FORM-KİK002.0/M: YAKLAŞIK MALİYET HESAP CETVELİ',
+  'yaklasik-maliyet-teklif-mektubu': 'STANDART FORM-KİK002.1/M: YAKLAŞIK MALİYET FİYAT TEKLİF İSTEME MEKTUBU',
+  'butce-sorgusu': 'STANDART FORM: BÜTÇE ÖDENEK KONTROL VE BLOKE BELGESİ',
+  'dogrudan-temin-onay-belgesi': 'STANDART FORM-KİK024.0/M: DOĞRUDAN TEMİN ONAY BELGESİ (HARCAMA TALİMATI)',
+  'dogrudan-temin-sonuc-onay-belgesi': 'STANDART FORM (4734 KİK m.22): PİYASA FİYAT ARAŞTIRMASI SONUÇ ONAY BELGESİ',
+  'dogrudan-temin-sozlesmesi': 'STANDART FORM-KİK: DOĞRUDAN TEMİN MAL / HİZMET ALIMI TİP SÖZLEŞMESİ',
+  'dogrudan-temin-sozlesmesi-alternatif': 'STANDART FORM-KİK: DOĞRUDAN TEMİN ALTERNATİF ALIM SÖZLEŞMESİ',
+  'dogrudan-temin-sozlesmesi-uzun': 'STANDART FORM-KİK: DOĞRUDAN TEMİN TİP İDARİ SÖZLEŞMESİ (KAPSAMLI)',
+  'idare-onay-belgesi': 'STANDART FORM-KİK001.0/M: İHALE ONAY BELGESİ (HARCAMA TALİMATI)',
+  'ihale-komisyon-karari': 'STANDART FORM-KİK018.0/M: İHALE KOMİSYONU KARARI',
+  'kabul-edilen-teklif': 'STANDART FORM (KİK TEBLİĞİ m.22): SİPARİŞ MEKTUBU VE TEBLİĞ-TEBELLÜĞ BELGESİ',
+  'kabul-edilen-teklif-alternatif': 'STANDART FORM (KİK TEBLİĞİ m.22): SİPARİŞ FORMU (ALTERNATİF)',
+  'sozlesmeye-davet': 'STANDART FORM-KİK023.0/M: SÖZLEŞMEYE DAVET MEKTUBU',
+  'teklif-mektubu': 'STANDART FORM-KİK015.1/M: GÖTÜRÜ BEDEL / BİRİM FİYAT TEKLİF MEKTUBU',
+  'gunluk-calisma-puantaj-cizelgesi': 'STANDART FORM: GÜNLÜK ÇALIŞMA PUANTAJ ÇİZELGESİ',
+  'hakedis-raporu': 'STANDART FORM (MYHBY ÖRNEK NO: 4): HAKEDİŞ RAPORU VE İCMAL CETVELİ',
+  'harcama-pusulasi': 'STANDART FORM (MYHBY ÖRNEK NO: 3): HARCAMA PUSULASI VE KLASÖR DİZİ FİHRİSTİ',
+  'hizmet-isleri-kabul-teklif-belgesi': 'STANDART FORM-KİK047.0/H: HİZMET İŞLERİ KABUL TEKLİF BELGESİ',
+  'hizmet-isleri-kabul-tutanagi': 'STANDART FORM-KİK048.0/H: HİZMET İŞLERİ KABUL TUTANAĞI',
+  'kik048-yapim-gecici-kabul-teklif': 'STANDART FORM-KİK048.0/Y: YAPIM İŞLERİ GEÇİCİ KABUL TEKLİF BELGESİ',
+  'kik049-yapim-gecici-kabul-tutanagi': 'STANDART FORM-KİK049.0/Y: YAPIM İŞLERİ GEÇİCİ KABUL TUTANAĞI',
+  'kik050-yapim-kesin-kabul-teklif': 'STANDART FORM-KİK050.0/Y: YAPIM İŞLERİ KESİN KABUL TEKLİF BELGESİ',
+  'kik051-yapim-kesin-kabul-tutanagi': 'STANDART FORM-KİK051.0/Y: YAPIM İŞLERİ KESİN KABUL TUTANAĞI',
+  'muayene-kabul-komisyonu': 'STANDART FORM-KİK054.0/M: MUAYENE VE KABUL KOMİSYON KARARI',
+  'muayene-kabul-tutanagi': 'STANDART FORM-KİK054.0/M: MAL ALIMLARI MUAYENE VE KABUL KOMİSYONU TUTANAĞI',
+  'odeme-emri-belgesi': 'STANDART FORM (MYHBY ÖRNEK NO: 1): ÖDEME EMRİ BELGESİ (MYS/MİF)',
+  'odeme-yazisi': 'STANDART FORM: MUHASEBE / MALMÜDÜRLÜĞÜ ÖDEME GÖNDERME MÜZEKKERESİ',
+  'tasinir-islem-fisi': 'STANDART FORM (TKKY ÖRNEK NO: 5): TAŞINIR İŞLEM FİŞİ (TİF)',
+  'ihale-kapagi': 'STANDART FORM: İHALE VE HARCAMA İŞLEM DOSYASI DIŞ KAPAĞI',
+  'kapak-ici-indeks-sablonu': 'STANDART FORM (MYHBY m.5): İHALE / TEMİN İŞLEM DOSYASI DİZİ FİHRİSTİ',
+  'klasor-sirtligi-3cm': 'STANDART FORM: ARŞİV KLASÖR SIRTLIĞI (3 CM)',
+  'klasor-sirtligi-5cm': 'STANDART FORM: ARŞİV KLASÖR SIRTLIĞI (5 CM)',
+  'klasor-sirtligi-7-5cm': 'STANDART FORM: ARŞİV KLASÖR SIRTLIĞI (7.5 CM)'
 }
 
 /**
@@ -171,6 +175,16 @@ export const TEMPLATE_GROUPS: TemplateGroup[] = [
       { dosya_adi: 'muayene-kabul-komisyonu', etiket: 'Komisyon' },
       { dosya_adi: 'muayene-kabul-tutanagi', etiket: 'Tutanak' }
     ]
+  },
+  // Yapım İşleri Kabul Ailesi
+  {
+    grup: 'yapim-kabul',
+    sablonlar: [
+      { dosya_adi: 'kik049-yapim-gecici-kabul-tutanagi', etiket: 'Geçici Kabul Tutanağı (KİK049.0/Y)' },
+      { dosya_adi: 'kik048-yapim-gecici-kabul-teklif', etiket: 'Geçici Kabul Teklif Belgesi (KİK048.0/Y)' },
+      { dosya_adi: 'kik051-yapim-kesin-kabul-tutanagi', etiket: 'Kesin Kabul Tutanağı (KİK051.0/Y)' },
+      { dosya_adi: 'kik050-yapim-kesin-kabul-teklif', etiket: 'Kesin Kabul Teklif Belgesi (KİK050.0/Y)' }
+    ]
   }
 ]
 
@@ -218,7 +232,11 @@ export const DEFAULT_MUAYENE_SABLONLAR = [
   'harcama-pusulasi',
   'luzum-muzekkeresi-teslim-tesellum',
   'hizmet-isleri-kabul-tutanagi',
-  'hizmet-isleri-kabul-teklif-belgesi'
+  'hizmet-isleri-kabul-teklif-belgesi',
+  'kik048-yapim-gecici-kabul-teklif',
+  'kik049-yapim-gecici-kabul-tutanagi',
+  'kik050-yapim-kesin-kabul-teklif',
+  'kik051-yapim-kesin-kabul-tutanagi'
 ] as const
 
 /**
