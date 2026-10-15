@@ -269,5 +269,65 @@ export const PRESET_CONTROLLERS: PresetController[] = [
       required: false,
       category: 'document'
     }
+  },
+  {
+    id: 'preset-dt-ihtiyac',
+    name: 'DT 22/d İhtiyaç & Talep Gerekçesi',
+    category: 'document',
+    description: 'Standart doğrudan temin mal/hizmet talep gerekçe metni',
+    defaultField: {
+      label: 'İhtiyaç & Talep Gerekçesi',
+      variableName: 'ihtiyac_talep_gerekcesi',
+      type: 'paragraph',
+      staticContent:
+        'Birimimizin yürütmekte olduğu kamu hizmetlerinin aksamadan sürdürülebilmesi ve iş ve işlemlerin kesintiye uğramaması amacıyla, aşağıda teknik özellikleri ve adetleri belirtilen malzemelerin 4734 Sayılı Kamu İhale Kanununun 22/d maddesi kapsamında doğrudan temin usulüyle satın alınması hususunda gereğini tensiplerinize arz ederim.',
+      required: false,
+      category: 'document'
+    }
+  },
+  {
+    id: 'preset-dt-teklif-isteme',
+    name: 'Piyasa Araştırması Teklif İsteme Mektubu',
+    category: 'document',
+    description: 'Firmalara gönderilen resmi teklif mektubu standart şablonu',
+    defaultField: {
+      label: 'Fiyat Teklifi İstemi (4734 / 22-d)',
+      variableName: 'teklif_isteme_metni',
+      type: 'paragraph',
+      staticContent:
+        'İdaremiz ihtiyacı olan ve ekli şartnamede/listede cinsi, miktarı ve özellikleri belirtilen mal/hizmet alımı işi 4734 Sayılı Kamu İhale Kanununun 22/d maddesi gereğince doğrudan temin yöntemiyle yaptırılacaktır. Söz konusu alıma ilişkin KDV hariç birim ve toplam fiyat teklifinizin kaşeli ve imzalı olarak en geç belirtilen tarih ve saate kadar İdaremize ulaştırılmasını rica ederiz.',
+      required: false,
+      category: 'document'
+    }
+  },
+  {
+    id: 'preset-dt-muayene-kabul',
+    name: 'Muayene & Kabul Tutanağı Karar Metni',
+    category: 'commission',
+    description: 'Malların şartnameye uygun teslim alındığına dair zabıt metni',
+    defaultField: {
+      label: 'Muayene & Kabul Karar Metni',
+      variableName: 'muayene_kabul_karari',
+      type: 'paragraph',
+      staticContent:
+        'İdaremiz Doğrudan Temin Kararı kapsamında yüklenici firma tarafından faturası ile teslim edilen malzemelerin fiziksel kontrolleri, parça sayımları ve teknik şartnameye uygunluk tetkikleri tarafımızca yapılmıştır. Teslim edilen malların evsafına uygun, noksansız ve çalışır durumda olduğu anlaşılmış olup işbu tutanak mahallinde 3 nüsha olarak tanzimle imza altına alınmıştır.',
+      required: false,
+      category: 'commission'
+    }
+  },
+  {
+    id: 'preset-dt-tahakkuk',
+    name: 'Ödeme Emri Tahakkuk Açıklama Notu',
+    category: 'financial',
+    description: 'Muhasebe servisine hakediş ve ödeme talimatı açıklaması',
+    defaultField: {
+      label: 'Tahakkuk & Ödeme Açıklaması',
+      variableName: 'odeme_tahakkuk_serhi',
+      type: 'paragraph',
+      staticContent:
+        'İdaremiz 4734 sayılı Kanunun 22/d maddesi gereğince gerçekleştirilen alıma ait fatura, muayene kabul tutanağı, piyasa fiyat araştırması tutanağı ve onay belgesi ekte sunulmuştur. İş eksiksiz teslim alınmış olup, ilgili mevzuat ve vergi kesintileri tatbik edilerek hakediş bedelinin yüklenicinin kayıtlı IBAN hesabına ödenmesini arz ederim.',
+      required: false,
+      category: 'financial'
+    }
   }
 ]

@@ -56,7 +56,7 @@ const DEFAULT_RETENTION_DAYS = 30
 export const useModuleStore = create<ModuleStoreState>()(
   persist(
     (set, get) => ({
-      installedIds: ['kik-dogrudan-temin-22d'],
+      installedIds: ['kik-dogrudan-temin-22d', 'modul-personel-izin'],
       trashedModules: {},
       defaultRetentionDays: DEFAULT_RETENTION_DAYS,
 

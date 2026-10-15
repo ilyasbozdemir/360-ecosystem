@@ -120,6 +120,9 @@ const EbysScreen = lazyRoute(() => import("./screens/ebys/index.screen"));
 const ModulMagazasiScreen = lazyRoute(() =>
   import("./screens/modul-magazasi/index.screen")
 );
+const SurecStudyosuScreen = lazyRoute(() =>
+  import("./screens/modul-magazasi/SurecStudyosuScreen")
+);
 const TaslakYoneticisi = lazyRoute(() =>
   import("./screens/system/TaslakYoneticisi")
 );
@@ -531,6 +534,12 @@ const modulMagazasiRoute = createRoute({
   component: ModulMagazasiScreen,
 });
 
+const surecStudyosuRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: APP_ROUTES.SUREC_STUDYOSU,
+  component: SurecStudyosuScreen,
+});
+
 const belgelerimRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: APP_ROUTES.BELGELERIM,
@@ -607,6 +616,7 @@ const routeTree = rootRoute.addChildren([
   hesaplamaAraclariRoute,
   ebysRoute,
   modulMagazasiRoute,
+  surecStudyosuRoute,
   belgeOnizlemeRoute,
   islakImzaRoute,
 ]);

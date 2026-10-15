@@ -18,6 +18,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { cn } from "../../../utils/cn";
 import { isModulRemovable, type ModulPaketi } from "../modulMagazasi.types";
 import { getSurumAsamasiMeta } from "../modulDurum";
+import { APP_ROUTES } from "../../../constants/routeConstants";
 
 interface ModulDetailModalProps {
   modul: ModulPaketi | null;
@@ -49,7 +50,7 @@ export const ModulDetailModal: React.FC<ModulDetailModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/75 backdrop-blur-md animate-in fade-in duration-200">
       <div className="relative w-full max-w-4xl max-h-[90vh] flex flex-col rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-2xl overflow-hidden">
         {/* Üst Başlık & Kapatma */}
-        <div className="p-6 border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 via-indigo-50/40 to-slate-50 dark:from-slate-900 dark:via-indigo-950/40 dark:to-slate-900 flex items-start justify-between gap-4">
+        <div className="p-6 border-b border-slate-200 dark:border-slate-800 bg-linear-to-r from-slate-50 via-indigo-50/40 to-slate-50 dark:from-slate-900 dark:via-indigo-950/40 dark:to-slate-900 flex items-start justify-between gap-4">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="px-2.5 py-0.5 rounded text-xs font-bold bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/30 font-mono">
@@ -206,7 +207,7 @@ export const ModulDetailModal: React.FC<ModulDetailModalProps> = ({
               <div className="relative pl-6 border-l-2 border-indigo-200 dark:border-indigo-500/30 space-y-6">
                 {modul.asamalar.map((asama) => (
                   <div key={asama.sira} className="relative group">
-                    <div className="absolute -left-[31px] top-0 w-6 h-6 rounded-full bg-white dark:bg-slate-900 border-2 border-indigo-600 dark:border-indigo-500 flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-xs font-black">
+                    <div className="absolute -left-7.75 top-0 w-6 h-6 rounded-full bg-white dark:bg-slate-900 border-2 border-indigo-600 dark:border-indigo-500 flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-xs font-black">
                       {asama.sira}
                     </div>
                     <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 group-hover:border-indigo-400/50 dark:group-hover:border-indigo-500/40 transition-all">
@@ -291,6 +292,17 @@ export const ModulDetailModal: React.FC<ModulDetailModalProps> = ({
             </button>
             {isInstalled ? (
               <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    onClose();
+                    navigate({ to: APP_ROUTES.SUREC_STUDYOSU });
+                  }}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-600/20 transition-all cursor-pointer"
+                  title="Evrak kontrol listesi, canlı dilekçe/tutanak ve hazır metin kalıpları stüdyosunu aç"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Süreç & Belge Stüdyosu</span>
+                </button>
                 {modul.routePath && (
                   <button
                     onClick={() => {

@@ -70,6 +70,16 @@ export interface ModulPaketi {
   asamalar: ModulAsama[]
   araclar: string[]
   routePath?: string
+  /** Modül kartı görsel şablonu (Screenshot 1 stili kartlar için) */
+  kartStili?: 'default' | 'navy_gradient' | 'solid_red' | 'burgundy' | 'warm_orange'
+  /** Videolu Anlatım butonu var mı? */
+  videoAnlatim?: boolean
+  /** Yeni rozeti gösterilsin mi? */
+  yeniMi?: boolean
+  /** Özel rozet (örn: 'MEB PROJESİ - 4 KADEME' veya '4734 / 22-d') */
+  ozelRozet?: string
+  /** Alt özet (örn: 'Lüzum kağıdı · onay belgesi · teklif mektupları...') */
+  altMetinOzeti?: string
   /** Modül kaldırılabilir / çöp kutusuna taşınabilir mi? (Çekirdek sistem modülleri silinemez, false olur) */
   removable?: boolean
   silinebilir?: boolean

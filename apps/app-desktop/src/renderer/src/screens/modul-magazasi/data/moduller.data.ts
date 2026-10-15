@@ -20,6 +20,9 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     versiyon: 'v2.4.0',
     surumAsamasi: 'Beta',
     etiketler: ['Doğrudan Temin', '22/d', 'Piyasa Araştırması', 'Resmi Onay'],
+    yeniMi: true,
+    altMetinOzeti: 'Lüzum kağıdı · onay belgesi · teklif mektupları · piyasa fiyat araştırma -...',
+    routePath: '/surec-studyosu',
     removable: false,
     silinebilir: false,
     araclar: ['KİK Parasal Limit Denetleyicisi', 'KDV Tevkifat Hesaplama', 'EKAP Yasaklılık Kontrol'],
@@ -44,6 +47,217 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     ]
   },
   {
+    id: 'modul-personel-izin',
+    kod: 'PERS-İZİN',
+    paketTipi: 'modul',
+    baslik: 'Personel & İzin / Görev Takip Sistemi (657 Memur & 4857 İşçi)',
+    kisaAciklama:
+      '657 DMK ve 4857 İş Kanunu uyarınca memur ve sürekli işçi izin hak edişi, sağlık raporu, mazeret ve görevlendirme yönetimi.',
+    detayliAciklama:
+      'Kamu kurumlarında görev yapan 657 Devlet Memuru ve 4857 Sürekli İşçilerin kıdemine göre yıllık izin gün hesaplaması, mazeret/babalık/evlilik izinleri, tek hekim ve heyet rapor intikalleri, resmi izin onay belgesi ve canlı A4 dilekçe üreticisi.',
+    mevzuat: '657 Sayılı DMK m.102-108 & 4857 Sayılı İş Kanunu m.53-60',
+    kategori: 'entegrasyon',
+    ikon: 'Users',
+    renk: 'indigo',
+    versiyon: 'v2.0.0',
+    surumAsamasi: 'Kararlı',
+    etiketler: ['Personel', 'İzin Takibi', '657 Memur', '4857 İşçi', 'Sağlık Raporu', 'Kıdem Hesabı'],
+    yeniMi: true,
+    videoAnlatim: true,
+    altMetinOzeti: 'Memur ve sürekli işçi izin hak edişi, resmi izin onay formu ve canlı dilekçe üretimi.',
+    routePath: '/personel?tab=izinler',
+    removable: true,
+    silinebilir: true,
+    araclar: ['657 / 4857 İzin Gün Hesabı Motoru', 'Otomatik İzin Onay Belgesi Üretici', 'SGK İş Göremezlik Bildirim Takipçisi'],
+    asamalar: [
+      { sira: 1, baslik: 'İzin / Rapor Talebi', aciklama: 'Personelin gerekçeli talep dilekçesi veya sağlık raporunun ibrazı.' },
+      { sira: 2, baslik: 'İdare ve Görev Taksimi', aciklama: 'Vekil personel belirlenmesi ve birim amiri parafı.' },
+      { sira: 3, baslik: 'Harcama Yetkilisi / Müdür Onayı', aciklama: 'Resmi izin onay belgesi imza ve mühür süreci.' },
+      { sira: 4, baslik: 'Özlük Dosyası & MYS / KBS Girişi', aciklama: 'İzin kayıt defteri ve maaş/puantaj yansıması.' }
+    ],
+    belgeler: [
+      { ad: '657 Memur Yıllık İzin Onay Belgesi (Form 1)', kod: 'İZN-01', aciklama: 'Harcama yetkilisi onaylı standart resmi memur izin formu.', zorunluMu: true },
+      { ad: '4857 Sürekli İşçi Yıllık İzin Talep & Takip Formu', kod: 'İZN-02', aciklama: 'İş günü esasına göre hesaplanan sürekli işçi izin belgesi.', zorunluMu: true },
+      { ad: 'Mazeret İzni Talep Dilekçesi (Babalık, Evlilik, Vefat)', kod: 'İZN-03', aciklama: 'Kanuni mazeret halleri için standart resmi dilekçe.', zorunluMu: false },
+      { ad: 'Hastalık / Sağlık Raporu İntikal & İzin Çevirme Yazısı', kod: 'İZN-04', aciklama: 'Hastaneden alınan istirahat raporunun izne dönüştürülmesi.', zorunluMu: false },
+      { ad: 'Görevlendirme ve Tebellüğ Tutanağı', kod: 'İZN-05', aciklama: 'Kurul/komisyon veya geçici görev bildirim evrakı.', zorunluMu: false }
+    ]
+  },
+  {
+    id: 'idareci-pano',
+    kod: 'PANO-PRO',
+    paketTipi: 'modul',
+    baslik: 'İdareci Pano (Canlı Yönetim & Kokpit)',
+    kisaAciklama:
+      'Bilgisayarınızda açık kalan canlı yönetim ekranı: kaçıncı ders, nöbetçiler, bekleyen doğrudan temin ve onaylar...',
+    detayliAciklama:
+      'İdareciler için masaüstünde tam ekran açık kalan; KİK 22/d limit harcamalarını, nöbetçi personeli, bekleyen imzaları ve onayları anlık gösteren canlı takip kokpiti.',
+    mevzuat: '5018 & 4734 İdare Takip Standartları',
+    kategori: 'entegrasyon',
+    ikon: 'Clock',
+    renk: 'blue',
+    versiyon: 'v2.1.0',
+    surumAsamasi: 'Kararlı',
+    etiketler: ['Canlı Pano', 'İdareci Kokpiti', 'Nöbetçi Takip', 'Limit Durumu', 'YENİ'],
+    kartStili: 'navy_gradient',
+    videoAnlatim: true,
+    yeniMi: true,
+    altMetinOzeti: 'Bilgisayarınızda açık kalan canlı yönetim ekranı: kaçıncı ders, nöbetçiler, bekleyen alımlar...',
+    araclar: ['Masaüstü Canlı Widget', 'KİK Limit Barı', 'Nöbetçi Çizelgesi'],
+    asamalar: [
+      { sira: 1, baslik: 'Sabah Yoklama & Nöbetçi Tespiti', aciklama: 'Günün nöbetçi öğretmen ve görevli listesi.' },
+      { sira: 2, baslik: 'Bekleyen Satınalma Onayları', aciklama: 'İmzalanacak 22/d onay ve piyasa tutanakları.' }
+    ],
+    belgeler: [
+      { ad: 'Günlük Nöbet Çizelgesi', kod: 'PNO-01', aciklama: 'Günün görevli nöbetçi personeli listesi.', zorunluMu: false },
+      { ad: 'Bekleyen İdareci İmzaları Raporu', kod: 'PNO-02', aciklama: 'Onay bekleyen evraklar listesi.', zorunluMu: false }
+    ]
+  },
+  {
+    id: 'ek-ders-kik-limit',
+    kod: 'LİMİT-KONTROL',
+    paketTipi: 'modul',
+    baslik: 'Ek Ders & KİK Parasal Limit Denetleyicisi',
+    kisaAciklama:
+      'e-Okul ders programından otomatik puantaj, 4734 m.22/d KİK parasal limit kontrolü ve kurum bütçe tavanı denetleyicisi.',
+    detayliAciklama:
+      'Sayıştay denetimlerinde en çok ceza kesilen alımların kısımlara bölünerek doğrudan temin yapılması riskini önleyen; kurum harcama tavanını ve ek ders puantaj kontrollerini yürüten denetim aracı.',
+    mevzuat: '4734 Sayılı Kanun m.22/d & Sayıştay Teamülleri',
+    kategori: 'alim_ihale',
+    ikon: 'TrendingUp',
+    renk: 'rose',
+    versiyon: 'v2.0.0',
+    surumAsamasi: 'Kararlı',
+    etiketler: ['KİK Limit', 'Kısımlara Bölme Riski', 'Bütçe Kontrol', 'Sayıştay', 'YENİ'],
+    kartStili: 'solid_red',
+    yeniMi: true,
+    altMetinOzeti: 'e-Okul ders programından otomatik ek ders puantajı: kadrolu, görevlendirme ve KİK limit uyarısı.',
+    araclar: ['KİK Parasal Limit Denetleyicisi', 'Bütçe Bloke Formülü'],
+    asamalar: [
+      { sira: 1, baslik: 'Bütçe Tavanı Kontrolü', aciklama: 'Yıllık 22/d limitinin aşılıp aşılmadığı denetimi.' },
+      { sira: 2, baslik: 'Benzer Alım Taraması', aciklama: 'Aynı kodlu alımların kısımlara bölünme riski taraması.' }
+    ],
+    belgeler: [
+      { ad: 'KİK 22/d Limit Kullanım Cetveli', kod: 'LMT-01', aciklama: 'Yıl içi toplam limit ve kalan bakiye tablosu.', zorunluMu: true }
+    ]
+  },
+  {
+    id: 'dilimizin-zenginlikleri-kamu',
+    kod: 'MEB-EYLEM',
+    paketTipi: 'modul',
+    baslik: 'Dilimizin Zenginlikleri & İdari Eylem Planı (2026-2027)',
+    kisaAciklama:
+      'Eylem planları ay ay: okul öncesi, ilkokul, ortaokul, lise ve idari faaliyet sorumlulukları.',
+    detayliAciklama:
+      'MEB ve kamu kurumları için ay ay hazırlanması gereken eylem planları, kulüp ve komisyon faaliyetleri, satın alma lüzum kağıtları ve resmi raporlama paketi.',
+    mevzuat: 'MEB Projeleri & Resmi Eylem Planı Kılavuzu',
+    kategori: 'entegrasyon',
+    ikon: 'FileText',
+    renk: 'purple',
+    versiyon: 'v1.5.0',
+    surumAsamasi: 'Kararlı',
+    etiketler: ['MEB Projesi', 'Eylem Planı', 'Dilimizin Zenginlikleri', 'Faaliyetler'],
+    kartStili: 'burgundy',
+    yeniMi: true,
+    ozelRozet: 'MEB PROJESİ - 4 KADEME',
+    altMetinOzeti: 'Eylem planları ay ay: okul öncesi, ilkokul, ortaokul, lise; faaliyete sorumlu birimler.',
+    araclar: ['Aylık Eylem Matrisi', 'Faaliyet Raporlayıcı'],
+    asamalar: [
+      { sira: 1, baslik: 'Aylık Eylem Planı Hazırlığı', aciklama: 'Okul kademesine göre eylem planı oluşturma.' },
+      { sira: 2, baslik: 'Faaliyet & Malzeme İhtiyacı', aciklama: 'Faaliyet için lüzum kağıdı ve temin evrakı bağlama.' }
+    ],
+    belgeler: [
+      { ad: 'Aylık Proje Eylem Planı Formu', kod: 'DZ-01', aciklama: 'Aylık hedefler ve sorumlu öğretmen tablosu.', zorunluMu: true }
+    ]
+  },
+  {
+    id: 'yapay-zeka-sartname',
+    kod: 'AI-ŞARTNAME',
+    paketTipi: 'utils',
+    baslik: 'Ders Dağıtım & Yapay Zekâ Şartname Robotu',
+    kisaAciklama:
+      'Yapay zekâ destekli, çakışmasız piyasa rayiç analizi, teknik şartname hazırlama ve adil ders/görev dağıtımı.',
+    detayliAciklama:
+      'Kamu kurumları için teknik şartnamelerin KİK mevzuatına göre tarafsız hazırlanması ve okullarda adil, çakışmasız ders ve nöbet dağıtım algoritması.',
+    mevzuat: 'KİK m.12 Teknik Şartname Esasları',
+    kategori: 'finans_hesap',
+    ikon: 'Cpu',
+    renk: 'amber',
+    versiyon: 'v3.0.0',
+    surumAsamasi: 'Beta',
+    etiketler: ['Yapay Zeka', 'Şartname Robotu', 'Adil Dağıtım', 'Rayiç Analizi'],
+    kartStili: 'warm_orange',
+    videoAnlatim: true,
+    altMetinOzeti: 'Yapay zekâ destekli, çakışmasız ve adil ders dağıtımı. (Zerdali & Temin360 Soft)',
+    araclar: ['AI Şartname Üretici', 'Çakışmasız Dağıtım Motoru'],
+    asamalar: [
+      { sira: 1, baslik: 'Girdi Bilgilerini Tanımlama', aciklama: 'Dersler, öğretmenler veya malzeme şartname kriterleri.' },
+      { sira: 2, baslik: 'Yapay Zekâ Optimizasyonu', aciklama: 'Çakışmasız ve adil dağıtım motorunun çalıştırılması.' }
+    ],
+    belgeler: [
+      { ad: 'Çakışmasız Haftalık Dağıtım Çizelgesi', kod: 'AI-01', aciklama: 'Öğretmen ve sınıf bazlı haftalık program.', zorunluMu: true }
+    ]
+  },
+  {
+    id: 'aylik-yonetim-akisi',
+    kod: 'AYLIK-AKIŞ',
+    paketTipi: 'modul',
+    baslik: 'Aylık Yönetim & Satınalma Akışı',
+    kisaAciklama:
+      'Eylülden Hazirana, her ay yapılması gereken idari iş ve satın alma işlemleri.',
+    detayliAciklama:
+      'Eğitim öğretim ve kamu mali yılı boyunca (Eylül-Haziran) her ay yapılması gereken kurul-komisyon toplantıları, sayım işlemleri, ödenek kontrolleri ve doğrudan temin alımları kontrol listesi.',
+    mevzuat: 'Milli Eğitim ve Mali Takvim Esasları',
+    kategori: 'entegrasyon',
+    ikon: 'Clock',
+    renk: 'blue',
+    versiyon: 'v1.4.0',
+    surumAsamasi: 'Kararlı',
+    etiketler: ['Aylık Akış', 'İdari Takvim', 'Satınalma Zamanı'],
+    videoAnlatim: true,
+    altMetinOzeti: 'Eylülden Hazirana, her ay yapılması gereken idari iş ve işlemler.',
+    araclar: ['Aylık Takvim Hatırlatıcısı', 'İşlem Kontrol Listesi'],
+    asamalar: [
+      { sira: 1, baslik: 'Ay Başı Görevleri', aciklama: 'Ödenek talebi ve maaş/puantaj bildirimleri.' },
+      { sira: 2, baslik: 'Ay Sonu Kapanışları', aciklama: 'Fatura tahakkukları ve ambar sayımları.' }
+    ],
+    belgeler: [
+      { ad: 'Aylık İdari İş ve İşlemler Çizelgesi', kod: 'AY-01', aciklama: 'Aylık kontrol formu.', zorunluMu: true }
+    ]
+  },
+  {
+    id: 'planlama-isleri',
+    kod: 'PLANLAMA',
+    paketTipi: 'modul',
+    baslik: 'Planlama İşleri & Kurumsal Görev Dağılım Matrisi',
+    kisaAciklama:
+      'Kurul-komisyonlar, nöbet çizelgeleri, resmî tören & belirli günler, çalışma grupları ve adaletli görev dağılım havuzu.',
+    detayliAciklama:
+      'Tüm kamu kurumlarında (belediyeler, il/ilçe müdürlükleri, üniversiteler, hastaneler ve idareler) görev yapan personelin üzerinde bulunan kurul/komisyon, nöbet, tören ve proje sorumluluklarını tek havuzda toplayan; izin ve devir durumlarıyla entegre adaletli görev dağılım ve iş yükü dengeleme stüdyosu.',
+    mevzuat: '5018 Kamu Mali Yönetimi & Kurum İçi Görev Standartları',
+    kategori: 'entegrasyon',
+    ikon: 'FileCheck',
+    renk: 'emerald',
+    versiyon: 'v2.0.0',
+    surumAsamasi: 'Kararlı',
+    etiketler: ['Komisyonlar', 'Görev Dağılımı', 'Nöbet Havuzu', 'İş Yükü Dengeleme'],
+    videoAnlatim: true,
+    altMetinOzeti: 'Kurul-komisyonlar, belirli günler, idari nöbet ve adaletli personel görev dağılımı.',
+    routePath: '/komisyonlar?tab=gorev_dagilimi',
+    removable: true,
+    silinebilir: true,
+    araclar: ['Personel Görev Yükü Dengeleyici', 'Makam Onaylı Görev Dağılım Çizelgesi', 'Tebliğ-Tebellüğ Belgesi Üretici'],
+    asamalar: [
+      { sira: 1, baslik: 'Personel Görev Havuzu Oluşturma', aciklama: 'Kayıtlı personelin mevcut görevlerinin taranması.' },
+      { sira: 2, baslik: 'İş Yükü Dengeleme & Atama', aciklama: 'Komisyon, nöbet ve tören görevlerinin adil dağıtımı.' },
+      { sira: 3, baslik: 'Makam Onayı & Tebligat', aciklama: 'Resmi görev dağılım çizelgesi ve tebellüğ imzaları.' }
+    ],
+    belgeler: [
+      { ad: 'Makam Onaylı Kurum Görev Dağılım Çizelgesi', kod: 'PLN-01', aciklama: 'Yıl içi tüm personel görev atama matrisi.', zorunluMu: true },
+      { ad: 'Görevlendirme ve Tebellüğ Belgesi', kod: 'PLN-02', aciklama: 'Personele tebliğ edilen görevlendirme yazısı.', zorunluMu: true }
+    ]
+  },
+  {
     id: 'ebys-resmi-yazisma-studyosu',
     kod: 'EBYS-STD',
     paketTipi: 'modul',
@@ -59,6 +273,9 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     versiyon: 'v1.0.0',
     surumAsamasi: 'Kararlı',
     etiketler: ['EBYS', 'Resmî Yazışma', 'Üst Yazı', 'Olur/Onay', 'EYP 2.0'],
+    yeniMi: true,
+    altMetinOzeti: '62 hazır resmî yazı — tebliğler, personel yazıları ve Doğrudan Temin evrakları...',
+    routePath: '/surec-studyosu',
     removable: false,
     silinebilir: false,
     araclar: ['EYP 2.0 Doğrulayıcı', 'Dinamik Makam Hitap Üretici', 'EBYS Rota & Paraf Motoru'],

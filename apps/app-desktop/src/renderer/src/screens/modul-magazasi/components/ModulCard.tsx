@@ -128,18 +128,43 @@ export const ModulCard: React.FC<ModulCardProps> = ({
   onOpenDetail
 }) => {
   const navigate = useNavigate()
+  const isNavyGradient = modul.kartStili === 'navy_gradient'
+  const isSolidRed = modul.kartStili === 'solid_red'
+  const isBurgundy = modul.kartStili === 'burgundy'
+  const isWarmOrange = modul.kartStili === 'warm_orange'
+  const isSpecialThemed = isNavyGradient || isSolidRed || isBurgundy || isWarmOrange
+
   const colorTheme = COLOR_MAP[modul.renk] || COLOR_MAP.blue
   const icon = ICON_MAP[modul.ikon] || <FileText className="w-6 h-6" />
   const surum = getSurumAsamasiMeta(modul.surumAsamasi)
 
+  const cardBgClasses = isNavyGradient
+    ? 'bg-gradient-to-br from-[#0c1f44] via-[#091b3e] to-[#040f26] text-white border-blue-900/50 shadow-xl'
+    : isSolidRed
+      ? 'bg-[#d32f2f] text-white border-red-700/50 shadow-xl'
+      : isBurgundy
+        ? 'bg-[#4a0e17] text-white border-rose-950/50 shadow-xl'
+        : isWarmOrange
+          ? 'bg-[#d97706] text-white border-amber-600/50 shadow-xl'
+          : `bg-white dark:bg-slate-900/80 border border-slate-200/90 dark:border-slate-800/80 ${colorTheme.border} shadow-xs dark:shadow-lg`
+
   return (
     <div
-      className={`relative group flex flex-col justify-between rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200/90 dark:border-slate-800/80 ${colorTheme.border} p-5 md:p-6 shadow-xs dark:shadow-lg transition-all duration-300 hover:shadow-xl dark:hover:shadow-2xl hover:-translate-y-1`}
+      className={`relative group flex flex-col justify-between rounded-2xl ${cardBgClasses} p-5 md:p-6 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1.5 overflow-hidden`}
     >
-      {/* Arka plan yumuşak renk geçişi */}
-      <div
-        className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${colorTheme.glow} opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none`}
-      />
+      {/* Özel Tema Rozet Şeritleri (Örn: Burgundy MEB Şeridi) */}
+      {isBurgundy && (
+        <div className="absolute -right-12 top-6 bg-amber-400 text-amber-950 font-black text-[9px] uppercase tracking-widest px-12 py-1 rotate-45 shadow-md">
+          YENİ
+        </div>
+      )}
+
+      {/* Arka plan yumuşak renk geçişi (Varsayılan kartlar için) */}
+      {!isSpecialThemed && (
+        <div
+          className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${colorTheme.glow} opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none`}
+        />
+      )}
 
       {/* Üst Kısım: İkon, Başlık ve Durum Rozeti */}
       <div className="relative z-10 space-y-4">
@@ -218,24 +243,82 @@ export const ModulCard: React.FC<ModulCardProps> = ({
 
         {/* Başlık ve Açıklama */}
         <div className="space-y-1.5">
-          <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-200 transition-colors line-clamp-1">
-            {modul.baslik}
-          </h3>
-          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h3
+              className={cn(
+                'text-base font-bold transition-colors line-clamp-1',
+                isSpecialThemed
+                  ? 'text-white'
+                  : 'text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-200'
+              )}
+            >
+              {modul.baslik}
+            </h3>
+            {modul.yeniMi && (
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-blue-600 text-white shadow-xs">
+                YENİ
+              </span>
+            )}
+          </div>
+
+          {modul.videoAnlatim && (
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-sky-100/90 text-sky-800 dark:bg-sky-900/50 dark:text-sky-200 border border-sky-300/60 dark:border-sky-700/60 shadow-2xs">
+              <span className="text-[9px]">▶</span> Videolu Anlatım
+            </div>
+          )}
+
+          {modul.ozelRozet && (
+            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-amber-300 text-amber-950 border border-amber-400">
+              {modul.ozelRozet}
+            </div>
+          )}
+
+          <p
+            className={cn(
+              'text-xs leading-relaxed line-clamp-2',
+              isSpecialThemed ? 'text-white/85' : 'text-slate-600 dark:text-slate-300'
+            )}
+          >
             {modul.kisaAciklama}
           </p>
+
+          {modul.altMetinOzeti && (
+            <p
+              className={cn(
+                'text-[11px] font-mono leading-tight pt-1 border-t',
+                isSpecialThemed
+                  ? 'text-white/70 border-white/15'
+                  : 'text-slate-500 dark:text-slate-400 border-slate-100 dark:border-slate-800'
+              )}
+            >
+              {modul.altMetinOzeti}
+            </p>
+          )}
         </div>
 
         {/* Metrikler: Şablon ve Aşama Sayısı */}
-        <div className="flex items-center gap-4 py-2 border-y border-slate-100 dark:border-slate-800/80 text-xs text-slate-500 dark:text-slate-400">
+        <div
+          className={cn(
+            'flex items-center gap-4 py-2 border-y text-xs',
+            isSpecialThemed
+              ? 'border-white/15 text-white/80'
+              : 'border-slate-100 dark:border-slate-800/80 text-slate-500 dark:text-slate-400'
+          )}
+        >
           <div className="flex items-center gap-1.5 font-medium">
-            <FileText className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
-            <span className="text-slate-800 dark:text-slate-200 font-bold">{modul.belgeler.length}</span> Resmi Şablon
+            <FileText className="w-3.5 h-3.5 text-indigo-400" />
+            <span className={cn('font-bold', isSpecialThemed ? 'text-white' : 'text-slate-800 dark:text-slate-200')}>
+              {modul.belgeler.length}
+            </span>{' '}
+            Resmi Şablon
           </div>
           <div className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
           <div className="flex items-center gap-1.5 font-medium">
-            <GitFork className="w-3.5 h-3.5 text-sky-500 dark:text-sky-400" />
-            <span className="text-slate-800 dark:text-slate-200 font-bold">{modul.asamalar.length}</span> Süreç Aşaması
+            <GitFork className="w-3.5 h-3.5 text-sky-400" />
+            <span className={cn('font-bold', isSpecialThemed ? 'text-white' : 'text-slate-800 dark:text-slate-200')}>
+              {modul.asamalar.length}
+            </span>{' '}
+            Süreç Aşaması
           </div>
         </div>
 

@@ -169,49 +169,59 @@ export function CiktiMerkezi(): React.JSX.Element {
 
   return (
     <div className="p-6 md:p-8 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex items-center gap-4 mb-8">
-        <div className="p-3 bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-2xl">
-          <Printer className="w-8 h-8" />
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-3.5">
+          <div className="p-2.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-xl shrink-0">
+            <Printer className="w-6 h-6" />
+          </div>
+          <div>
+            <h1 className="text-xl md:text-2xl font-bold text-slate-800 dark:text-slate-100">
+              Çıktı & Üretim Merkezi
+            </h1>
+            <p className="text-slate-500 text-xs md:text-sm mt-0.5">
+              Dosyanıza ait tüm evrakların tek merkezden üretimi ve yazdırılması.
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
-            Çıktı & Üretim Merkezi
-          </h1>
-          <p className="text-slate-500 text-sm mt-1">
-            Dosyanıza ait tüm evrakların tek merkezden üretimi ve yazdırılması.
-          </p>
+
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <Link
+            to="/surec-studyosu"
+            className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 hover:bg-blue-100 transition-all shadow-2xs cursor-pointer"
+            title="Evrak kontrol listesi, canlı dilekçe/tutanak ve hazır metin kalıpları stüdyosunu aç"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span>Süreç & Hazır Metinler</span>
+          </Link>
+
+          {isDtOzelBelgelerActive && (
+            <div className="flex items-center gap-3 p-2 px-3 rounded-xl bg-linear-to-r from-indigo-50/90 via-purple-50/50 to-indigo-50/90 dark:from-slate-900 dark:via-indigo-950/40 dark:to-slate-900 border border-indigo-200/80 dark:border-indigo-800/50 shadow-2xs">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="p-1 rounded-lg bg-indigo-600 text-white shadow-2xs shrink-0">
+                  <Sparkles className="w-3 h-3" />
+                </span>
+                <div className="text-left">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-100">
+                      Özel Belge Stüdyosu
+                    </span>
+                    <span className="px-1.5 py-0.2 rounded text-[9px] font-black uppercase bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300">
+                      BETA
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <Link
+                to="/degiskenler"
+                className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-xs transition-all"
+              >
+                <Puzzle className="w-3 h-3" />
+                Stüdyo
+              </Link>
+            </div>
+          )}
         </div>
       </div>
-
-      {isDtOzelBelgelerActive && (
-        <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-indigo-50/90 via-purple-50/60 to-indigo-50/90 dark:from-slate-900 dark:via-indigo-950/40 dark:to-slate-900 border border-indigo-200/80 dark:border-indigo-800/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-indigo-600 text-white shadow-xs">
-              <Sparkles className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">
-                  Özel Belge & Dinamik Yer Tutucu Stüdyosu
-                </h3>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700/60">
-                  BETA EKLENTİSİ
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Doğrudan temin aşamalarına kurumsal ek belgeler bağlayabilir ve dinamik değişkenleri (&#123;&#123;...&#125;&#125;) canlı eşleyebilirsiniz.
-              </p>
-            </div>
-          </div>
-          <Link
-            to="/degiskenler"
-            className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm shadow-indigo-600/30 transition-all hover:scale-102 active:scale-98"
-          >
-            <Puzzle className="w-3.5 h-3.5" />
-            Stüdyoyu Aç
-          </Link>
-        </div>
-      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {documentList.map((docName: string, idx: number) => {

@@ -41,11 +41,11 @@ export const NotificationPopover = React.memo(function NotificationPopover(): Re
     <div className="relative" ref={popoverRef}>
       <button
         onClick={(): void => setIsOpen(!isOpen)}
-        className="p-1 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-all rounded hover:bg-slate-200/50 dark:hover:bg-slate-800/50 relative cursor-pointer"
+        className="w-7 h-7 flex items-center justify-center text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800 relative cursor-pointer"
         title="Bildirimler"
       >
         <Bell className="w-3.5 h-3.5" />
-        <span className="absolute top-0 right-0 w-1.5 h-1.5 bg-red-500 rounded-full border border-white dark:border-slate-900 shadow-sm animate-pulse"></span>
+        <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-rose-500 rounded-full ring-2 ring-white dark:ring-slate-900 animate-pulse" />
       </button>
 
       {isOpen && (

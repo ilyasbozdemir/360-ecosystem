@@ -71,6 +71,7 @@ export const APP_ROUTES = {
   DOSYA_KUNYE: '/dosya/kunye',
   BELGE_ONIZLEME: '/dosya/belge-onizleme',
   MODUL_MAGAZASI: '/modul-magazasi',
+  SUREC_STUDYOSU: '/surec-studyosu',
   ISLAK_IMZA: '/islak-imza'
 } as const
 

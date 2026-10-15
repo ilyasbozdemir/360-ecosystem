@@ -40,7 +40,7 @@ export function SyncPopover(): React.JSX.Element {
     <div className="relative" ref={syncRef}>
       <button
         onClick={() => setShowSyncPopover(!showSyncPopover)}
-        className={`px-2 py-0.5 rounded text-[9px] font-bold border transition-all flex items-center gap-1 cursor-pointer ${
+        className={`h-7 px-2 rounded-lg text-[10px] font-semibold border transition-all flex items-center gap-1.5 cursor-pointer ${
           !isOnlineMode
             ? 'bg-amber-500/10 text-amber-650 border-amber-500/20 dark:text-amber-400 hover:bg-amber-500/20'
             : isOnline
@@ -49,9 +49,9 @@ export function SyncPopover(): React.JSX.Element {
         }`}
         title="Bulut Senkronizasyon"
       >
-        <Cloud className="w-3 h-3" />
+        <Cloud className="w-3.5 h-3.5" />
         <span
-          className={`w-1 h-1 rounded-full ${
+          className={`w-1.5 h-1.5 rounded-full ${
             !isOnlineMode
               ? 'bg-amber-500 animate-pulse'
               : isOnline

@@ -24,10 +24,13 @@ export function useKomisyonlarScreenLogic() {
   const { addTab } = useTabStore()
   const queryClient = useQueryClient()
 
-  // Ana Sekme Değişimi: 'sablonlar' | 'dosya_komisyonlari'
-  const [activeMainTab, setActiveMainTab] = useState<'sablonlar' | 'dosya_komisyonlari'>(
-    'sablonlar'
-  )
+  // Ana Sekme Değişimi: 'sablonlar' | 'dosya_komisyonlari' | 'gorev_dagilimi'
+  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
+  const initialTab =
+    searchParams?.get('tab') === 'gorev_dagilimi' ? 'gorev_dagilimi' : 'sablonlar'
+  const [activeMainTab, setActiveMainTab] = useState<
+    'sablonlar' | 'dosya_komisyonlari' | 'gorev_dagilimi'
+  >(initialTab)
 
   const [searchTerm, setSearchTerm] = useState('')
   const [dosyaKomisyonSearch, setDosyaKomisyonSearch] = useState('')

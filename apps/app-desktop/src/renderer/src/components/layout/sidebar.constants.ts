@@ -65,6 +65,11 @@ export function getSidebarMenuGroups(
   const isInstalled = isInstalledParam || ((id: string) => useModuleStore.getState().isInstalled(id))
   const isBelgelerimActive = isInstalled('kutuphane-belgelerim')
   const isDtOzelBelgelerActive = isInstalled('ext-dt-ozel-belgeler')
+  const isDtActive = isInstalled('kik-dogrudan-temin-22d') || isInstalled('dogrudan-temin')
+  const isPersonelIzinActive = isInstalled('modul-personel-izin') || isInstalled('personel')
+  const isEkDersActive = isInstalled('ek-ders-kik-limit') || isInstalled('modul-ek-ders')
+  const isEbysActive = isInstalled('modul-ebys-sablon') || isInstalled('ebys')
+  const isTasinirActive = isInstalled('modul-tasinir-tif') || isInstalled('tasinir')
 
   const belgelerimMenuItem: MenuItem = {
     name: 'Belgelerim (Özel Alan)',
@@ -360,38 +365,131 @@ export function getSidebarMenuGroups(
     ]
   }
 
-  // Doğrudan Temin (Varsayılan)
+  // İdare & Genel Yönetim (Varsayılan Modüler Görünüm)
   return [
     {
-      title: 'Ana Menü',
+      title: 'İdare & Genel Bakış',
       items: [
         { name: 'Gösterge Paneli', path: APP_ROUTES.DASHBOARD, icon: Home },
-        ...(isBelgelerimActive ? [belgelerimMenuItem] : []),
-        ...(isDtOzelBelgelerActive ? [dtOzelBelgelerMenuItem] : []),
         {
-          name: 'EBYS Resmî Yazı Şablonları',
-          path: APP_ROUTES.EBYS,
-          icon: FileText,
-          badge: 'YENİ'
-        },
-        {
-          name: 'Doğrudan Temin Dosyaları',
-          path: APP_ROUTES.DOSYALAR,
-          icon: FileText,
-          badge: '22'
-        },
-        {
-          name: 'Harcama & Hakediş Merkezi',
-          path: APP_ROUTES.HARCAMA_MERKEZI,
-          icon: Landmark,
-          badge: 'YENİ'
-        },
-        {
-          name: 'Modül & Belge Mağazası',
+          name: 'İdareci & Modül Mağazası',
           path: APP_ROUTES.MODUL_MAGAZASI,
           icon: Store,
           badge: 'YENİ'
+        },
+        {
+          name: 'Çıktı & Üretim Merkezi',
+          path: APP_ROUTES.CIKTI_MERKEZI_DASHBOARD,
+          icon: FileText,
+          badge: 'PRO'
         }
+      ]
+    },
+    {
+      title: 'Aktif İdari Modüller',
+      items: [
+        ...(isDtActive
+          ? [
+              {
+                name: 'Doğrudan Temin & Satınalma',
+                icon: Landmark,
+                badge: '4734',
+                children: [
+                  {
+                    name: 'Süreç & Evrak Stüdyosu',
+                    path: APP_ROUTES.SUREC_STUDYOSU,
+                    icon: Sparkles,
+                    badge: 'CANLI'
+                  },
+                  {
+                    name: 'Doğrudan Temin Dosyaları',
+                    path: APP_ROUTES.DOSYALAR,
+                    icon: FileText,
+                    badge: '22/d'
+                  },
+                  {
+                    name: 'Harcama & Hakediş Merkezi',
+                    path: APP_ROUTES.HARCAMA_MERKEZI,
+                    icon: Landmark
+                  },
+                  {
+                    name: 'Süreç Akış Haritası',
+                    path: APP_ROUTES.SUREC_AKISI,
+                    icon: Layers
+                  }
+                ]
+              }
+            ]
+          : []),
+        ...(isPersonelIzinActive
+          ? [
+              {
+                name: 'Personel & İzin / Görev Takibi',
+                icon: Users,
+                badge: '657/4857',
+                children: [
+                  {
+                    name: 'Kadro & Özlük Yönetimi',
+                    path: APP_ROUTES.PERSONEL,
+                    icon: Users
+                  },
+                  {
+                    name: 'İzin & Rapor Takip Merkezi',
+                    path: `${APP_ROUTES.PERSONEL}?tab=izinler`,
+                    icon: BookOpen,
+                    badge: 'MEVZUAT'
+                  },
+                  {
+                    name: 'Komisyon & Görevlendirme',
+                    path: APP_ROUTES.KOMISYONLAR,
+                    icon: Settings
+                  }
+                ]
+              }
+            ]
+          : []),
+        ...(isEkDersActive
+          ? [
+              {
+                name: 'Ek Ders & Puantaj Takip',
+                path: APP_ROUTES.HESAPLAMA_ARACLARI,
+                icon: Calculator,
+                badge: 'KBS'
+              }
+            ]
+          : []),
+        ...(isEbysActive
+          ? [
+              {
+                name: 'EBYS Resmî Yazı Şablonları',
+                path: APP_ROUTES.EBYS,
+                icon: FileText,
+                badge: 'YENİ'
+              }
+            ]
+          : []),
+        ...(isTasinirActive
+          ? [
+              {
+                name: 'Taşınır (TİF) & Envanter',
+                icon: PackageSearch,
+                children: [
+                  {
+                    name: 'Ambar & Stok Yönetimi',
+                    path: APP_ROUTES.AMBAR,
+                    icon: Boxes
+                  },
+                  {
+                    name: 'Taşınır Kodları (TİF)',
+                    path: APP_ROUTES.TASINIR_KOD,
+                    icon: FolderTree
+                  }
+                ]
+              }
+            ]
+          : []),
+        ...(isBelgelerimActive ? [belgelerimMenuItem] : []),
+        ...(isDtOzelBelgelerActive ? [dtOzelBelgelerMenuItem] : [])
       ]
     },
     {

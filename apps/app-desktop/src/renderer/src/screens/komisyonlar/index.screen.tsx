@@ -1,5 +1,5 @@
 import React from 'react'
-import { Building2, FolderKanban, Plus, Users } from 'lucide-react'
+import { Building2, FolderKanban, Plus, Users, Sparkles } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { KomisyonOlusturModal } from './components/KomisyonOlusturModal'
 import { PersonelAtaModal } from './components/PersonelAtaModal'
@@ -7,6 +7,7 @@ import { HizliKadroGuncelleModal } from './components/HizliKadroGuncelleModal'
 import { KomisyonAtamaModal } from '../dosya/sub-screens/components/MalzemeListesi/components/KomisyonAtamaModal'
 import { GenelSablonKadrolariTab } from './components/GenelSablonKadrolariTab'
 import { DosyaKomisyonlariTab } from './components/DosyaKomisyonlariTab'
+import { PersonelGorevDagilimiTab } from './components/PersonelGorevDagilimiTab'
 import { AtamaGecmisiModal } from './components/AtamaGecmisiModal'
 import {
   useKomisyonlarScreenLogic,
@@ -133,7 +134,26 @@ export default function KomisyonlarScreen({
             {dosyaKomisyonList.length}
           </span>
         </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveMainTab('gorev_dagilimi')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+            activeMainTab === 'gorev_dagilimi'
+              ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-md border border-slate-200 dark:border-slate-700'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+          }`}
+        >
+          <Sparkles className="w-4 h-4 text-amber-500" />
+          <span>🧩 Personel Görev Dağılımı (Planlama Havuzu)</span>
+          <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 font-bold">
+            ORTAK HAVUZ
+          </span>
+        </button>
       </div>
+
+      {/* TAB 3: KURUMSAL PERSONEL GÖREV DAĞILIMI VE PLANLAMA HAVUZU */}
+      {activeMainTab === 'gorev_dagilimi' && <PersonelGorevDagilimiTab />}
 
       {/* TAB 1: GENEL ŞABLON KADROLARI */}
       {activeMainTab === 'sablonlar' && (

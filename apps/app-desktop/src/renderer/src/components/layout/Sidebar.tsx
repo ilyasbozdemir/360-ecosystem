@@ -13,6 +13,7 @@ import { useWorkspaceStore } from '../../store/workspaceStore'
 import { useShallow } from 'zustand/react/shallow'
 import { getInitials } from '@renderer/utils/formatters'
 import { MenuGroup, getSidebarMenuGroups } from './sidebar.constants'
+import { useModuleStore } from '../../store/moduleStore'
 
 export function Sidebar(): React.JSX.Element {
   const [isCollapsed, setIsCollapsed] = useState(false)
@@ -99,9 +100,15 @@ export function Sidebar(): React.JSX.Element {
     })
   }
 
+  const installedIds = useModuleStore((s) => s.installedIds)
+
   const finalMenuGroups: MenuGroup[] = useMemo(() => {
-    return getSidebarMenuGroups(procurementMode, activeDosyaId)
-  }, [procurementMode, activeDosyaId])
+    return getSidebarMenuGroups(
+      procurementMode,
+      activeDosyaId,
+      (id: string) => installedIds.includes(id)
+    )
+  }, [procurementMode, activeDosyaId, installedIds])
 
   return (
     <div
