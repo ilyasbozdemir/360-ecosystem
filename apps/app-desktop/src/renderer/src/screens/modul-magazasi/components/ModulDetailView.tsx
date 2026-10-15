@@ -27,7 +27,8 @@ import { cn } from '../../../utils/cn'
 import { isModulRemovable, type ModulPaketi, type HazirMetinKalibi } from '../modulMagazasi.types'
 import { getSurumAsamasiMeta } from '../modulDurum'
 import { APP_ROUTES } from '../../../constants/routeConstants'
-import { HAZIR_METINLER_DATA, REHBERLER_DATA } from '../data/surecVeHazirMetinler.data'
+import { HAZIR_METINLER_DATA } from '../constants/hazirMetinler.constants'
+import { REHBERLER_DATA } from '../constants/mevzuatRehberi.constants'
 import { useEbysStudioStore } from '../../ebys/store/ebysStudioStore'
 
 interface ModulDetailViewProps {
