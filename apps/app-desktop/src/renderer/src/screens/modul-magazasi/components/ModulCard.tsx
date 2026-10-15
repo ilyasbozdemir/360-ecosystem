@@ -20,8 +20,10 @@ import {
   Puzzle,
   Archive,
   RotateCcw,
-  Lock
+  Lock,
+  Sparkles
 } from 'lucide-react'
+import { useNavigate } from '@tanstack/react-router'
 import { cn } from '../../../utils/cn'
 import { isModulRemovable, type ModulPaketi } from '../modulMagazasi.types'
 import { getSurumAsamasiMeta } from '../modulDurum'
@@ -104,6 +106,13 @@ const COLOR_MAP: Record<
     glow: 'from-rose-500/10 dark:from-rose-600/10 to-transparent',
     iconBg: 'bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-500/20 dark:text-rose-400 dark:border-rose-500/30',
     text: 'text-rose-600 dark:text-rose-400'
+  },
+  indigo: {
+    border: 'hover:border-indigo-500/50',
+    badge: 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/30',
+    glow: 'from-indigo-500/10 dark:from-indigo-600/10 to-transparent',
+    iconBg: 'bg-indigo-50 text-indigo-600 border-indigo-200 dark:bg-indigo-500/20 dark:text-indigo-400 dark:border-indigo-500/30',
+    text: 'text-indigo-600 dark:text-indigo-400'
   }
 }
 
@@ -118,6 +127,7 @@ export const ModulCard: React.FC<ModulCardProps> = ({
   onPromptUninstall,
   onOpenDetail
 }) => {
+  const navigate = useNavigate()
   const colorTheme = COLOR_MAP[modul.renk] || COLOR_MAP.blue
   const icon = ICON_MAP[modul.ikon] || <FileText className="w-6 h-6" />
   const surum = getSurumAsamasiMeta(modul.surumAsamasi)
@@ -275,23 +285,35 @@ export const ModulCard: React.FC<ModulCardProps> = ({
             </button>
           </div>
         ) : isInstalled ? (
-          isModulRemovable(modul) ? (
-            <button
-              onClick={() => onPromptUninstall(modul)}
-              title="Modülü kaldır (Çöp kutusuna taşı)"
-              className="flex items-center justify-center p-2 rounded-xl text-xs font-semibold bg-amber-50 hover:bg-amber-100 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20 transition-all cursor-pointer"
-            >
-              <Archive className="w-4 h-4" />
-            </button>
-          ) : (
-            <div
-              title="4734 Doğrudan Temin çekirdek çalışma paketidir; sistem kararlılığı için kaldırılamaz."
-              className="flex items-center gap-1.5 px-2.5 py-2 rounded-xl text-[11px] font-bold bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 select-none cursor-not-allowed"
-            >
-              <Lock className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
-              <span>Korumalı</span>
-            </div>
-          )
+          <div className="flex items-center gap-1.5">
+            {modul.routePath && (
+              <button
+                onClick={() => navigate({ to: modul.routePath as string })}
+                className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs transition-all cursor-pointer"
+                title="Modülü / Eklentiyi Aç"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                Aç
+              </button>
+            )}
+            {isModulRemovable(modul) ? (
+              <button
+                onClick={() => onPromptUninstall(modul)}
+                title="Modülü kaldır (Çöp kutusuna taşı)"
+                className="flex items-center justify-center p-2 rounded-xl text-xs font-semibold bg-amber-50 hover:bg-amber-100 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20 transition-all cursor-pointer"
+              >
+                <Archive className="w-4 h-4" />
+              </button>
+            ) : (
+              <div
+                title="4734 Doğrudan Temin çekirdek çalışma paketidir; sistem kararlılığı için kaldırılamaz."
+                className="flex items-center gap-1.5 px-2.5 py-2 rounded-xl text-[11px] font-bold bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 select-none cursor-not-allowed"
+              >
+                <Lock className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
+                <span>Korumalı</span>
+              </div>
+            )}
+          </div>
         ) : isInstalling ? (
           <button
             disabled

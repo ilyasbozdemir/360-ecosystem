@@ -28,7 +28,8 @@ import {
   User,
   Users,
   Boxes,
-  Store
+  Store,
+  Sparkles
 } from 'lucide-react'
 import { APP_ROUTES } from '../../constants/routeConstants'
 import { useModuleStore } from '../../store/moduleStore'
@@ -63,12 +64,20 @@ export function getSidebarMenuGroups(
 ): MenuGroup[] {
   const isInstalled = isInstalledParam || ((id: string) => useModuleStore.getState().isInstalled(id))
   const isBelgelerimActive = isInstalled('kutuphane-belgelerim')
+  const isDtOzelBelgelerActive = isInstalled('ext-dt-ozel-belgeler')
 
   const belgelerimMenuItem: MenuItem = {
     name: 'Belgelerim (Özel Alan)',
     path: APP_ROUTES.BELGELERIM,
     icon: FolderTree,
     badge: 'YENİ'
+  }
+
+  const dtOzelBelgelerMenuItem: MenuItem = {
+    name: 'Özel Belge & Yer Tutucular',
+    path: APP_ROUTES.DEGISKENLER,
+    icon: Sparkles,
+    badge: 'BETA'
   }
   if (procurementMode === 'devlet_ihale_2886') {
     return [
@@ -358,6 +367,7 @@ export function getSidebarMenuGroups(
       items: [
         { name: 'Gösterge Paneli', path: APP_ROUTES.DASHBOARD, icon: Home },
         ...(isBelgelerimActive ? [belgelerimMenuItem] : []),
+        ...(isDtOzelBelgelerActive ? [dtOzelBelgelerMenuItem] : []),
         {
           name: 'EBYS Resmî Yazı Şablonları',
           path: APP_ROUTES.EBYS,

@@ -12,7 +12,9 @@ import {
   Wrench,
   X,
   Lock,
+  Sparkles,
 } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 import { cn } from "../../../utils/cn";
 import { isModulRemovable, type ModulPaketi } from "../modulMagazasi.types";
 import { getSurumAsamasiMeta } from "../modulDurum";
@@ -36,6 +38,7 @@ export const ModulDetailModal: React.FC<ModulDetailModalProps> = ({
   onInstall,
   onPromptUninstall,
 }) => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>("belgeler");
 
   if (!modul) return null;
@@ -286,26 +289,39 @@ export const ModulDetailModal: React.FC<ModulDetailModalProps> = ({
             >
               Kapat
             </button>
-            {isInstalled
-              ? isModulRemovable(modul) ? (
-                <button
-                  onClick={() => onPromptUninstall(modul)}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/30 transition-all cursor-pointer"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  Modülü Kaldır
-                </button>
-              ) : (
-                <div
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 select-none cursor-not-allowed"
-                  title="Bu paket Temin 360 çekirdek çalışma omurgasıdır ve sistem kararlılığı için kaldırılamaz."
-                >
-                  <Lock className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
-                  <span>Korumalı Çekirdek Modül</span>
-                </div>
-              )
-              : isInstalling
-              ? (
+            {isInstalled ? (
+              <div className="flex items-center gap-2">
+                {modul.routePath && (
+                  <button
+                    onClick={() => {
+                      onClose();
+                      navigate({ to: modul.routePath as string });
+                    }}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    {modul.paketTipi === 'extension' ? 'Eklentiyi Aç & Kullan' : 'Modülü Aç'}
+                  </button>
+                )}
+                {isModulRemovable(modul) ? (
+                  <button
+                    onClick={() => onPromptUninstall(modul)}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/30 transition-all cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Modülü Kaldır
+                  </button>
+                ) : (
+                  <div
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 select-none cursor-not-allowed"
+                    title="Bu paket Temin 360 çekirdek çalışma omurgasıdır ve sistem kararlılığı için kaldırılamaz."
+                  >
+                    <Lock className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
+                    <span>Korumalı Çekirdek Modül</span>
+                  </div>
+                )}
+              </div>
+            ) : isInstalling ? (
                 <button
                   disabled
                   className="flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-semibold bg-indigo-500/80 text-white cursor-wait animate-pulse shadow-md shadow-indigo-600/20"

@@ -474,6 +474,7 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     etiketler: ['Belgelerim', 'Yer Tutucu', 'Koşullu Blok', 'A4 Editör', 'Sürümleme', 'JSON Paket'],
     removable: true,
     silinebilir: true,
+    routePath: '/belgelerim',
     araclar: ['Kanonik TipTap Motoru', 'Güvenli Yer Tutucu Yeniden Adlandırma', 'Sürüm Karşılaştırma (Diff)', 'JSON Paket Doğrulayıcı'],
     asamalar: [
       { sira: 1, baslik: 'Serbest Gruplama & Belge Oluşturma', aciklama: 'İç içe klasörler ve etiketlerle belge alanını yapılandırma.' },
@@ -483,6 +484,44 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     ],
     belgeler: [
       { ad: 'Kullanıcı Özel Belgesi', kod: 'KB-01', aciklama: 'Kullanıcı tarafından oluşturulan dinamik içerikli belge.', zorunluMu: false }
+    ]
+  },
+  {
+    id: 'ext-dt-ozel-belgeler',
+    kod: 'EXT-DT-SABLON',
+    paketTipi: 'extension',
+    baslik: 'Doğrudan Temin Özelleştirilebilir Belge & Dinamik Yer Tutucu Stüdyosu',
+    kisaAciklama:
+      'Doğrudan temin süreçlerinde kuruma ve dosyaya özel ek belgeler, dinamik yer tutucular (placeholders) ve değişken bağlama eklentisi.',
+    detayliAciklama:
+      '4734 Sayılı Kanun Madde 22 doğrudan temin dosyaları için standart mevzuat belgelerinin ötesinde; kuruma ve işe özel şartname ekleri, teslim tesellüm tutanakları, özel taahhütnameler ve dinamik yer tutucuları ({{makam}}, {{teslim_adresi}}, {{ozel_hukum}}, {{firma_notu}} vb.) tanımlayıp doğrudan temin dosyalarına bağlayarak canlı çıktı almayı sağlayan esnek belge motoru eklentisi.',
+    mevzuat: '4734 Sayılı KİK m.22 & Kurumsal Belge Standartları',
+    kategori: 'alim_ihale',
+    ikon: 'Puzzle',
+    renk: 'indigo',
+    versiyon: 'v1.0.0-beta',
+    surumAsamasi: 'Beta',
+    etiketler: ['Doğrudan Temin', 'Özelleştirilebilir Belge', 'Dinamik Yer Tutucu', 'Şablon Stüdyosu', 'Değişkenler', 'Beta'],
+    removable: true,
+    silinebilir: true,
+    routePath: '/degiskenler',
+    araclar: [
+      'Dinamik Yer Tutucu Editörü',
+      'Sürükle-Bırak Belge Tasarımcısı',
+      'Dosya Değişkenleri Eşleştirici',
+      'Özel Belge Çıktı Motoru'
+    ],
+    asamalar: [
+      { sira: 1, baslik: 'Özel Belge & Şablon Tasarımı', aciklama: 'Kuruma özel evrak metni, antet ve tablo düzeni oluşturma.' },
+      { sira: 2, baslik: 'Dinamik Yer Tutucu Tanımlama', aciklama: '{{dosya_no}}, {{yuklenici_firma}}, {{malzeme_listesi}} ve özel kurum alanlarını yerleştirme.' },
+      { sira: 3, baslik: 'Doğrudan Temin Dosyasına Entegrasyon', aciklama: 'Hazırlanan özel belgenin ilgili aşamaya (İhtiyaç, Teklif, Karar, Muayene) eklenmesi.' },
+      { sira: 4, baslik: 'Dinamik Çıktı & Arşiv', aciklama: 'Dosya verileriyle birleşen resmi PDF/A ve Word çıktısı üretimi.' }
+    ],
+    belgeler: [
+      { ad: 'Özelleştirilebilir Doğrudan Temin Ek Belgesi', kod: 'DT-EXT-01', aciklama: 'Kuruma özel eklenen doğrudan temin belgesi.', zorunluMu: false },
+      { ad: 'Özel İdari / Teknik Taahhütname', kod: 'DT-EXT-02', aciklama: 'Yüklenici veya birimden alınan özel taahhüt evrakı.', zorunluMu: false },
+      { ad: 'Kurum İçi Özel Onay & Devir Tutanağı', kod: 'DT-EXT-03', aciklama: 'Birimler arası özel teslim veya ön kabul tutanağı.', zorunluMu: false },
+      { ad: 'Dinamik Yer Tutucu ve Değişken Haritası', kod: 'DT-EXT-04', aciklama: 'Şablonda kullanılan tüm alanların değer eşleşme tablosu.', zorunluMu: false }
     ]
   }
 ]
