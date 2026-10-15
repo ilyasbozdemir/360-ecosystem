@@ -23,6 +23,8 @@ import {
 } from "lucide-react";
 import { getTabLabel, useTabStore } from "../../store/tabStore";
 import { useWorkspaceStore } from "../../store/workspaceStore";
+import { useGlobalDocumentPreviewStore } from "../../store/globalDocumentPreviewStore";
+import { APP_ROUTES } from "../../constants/routeConstants";
 import { useShallow } from "zustand/react/shallow";
 import { cn } from "../../utils/cn";
 
@@ -89,6 +91,10 @@ export function TabsBar(): React.JSX.Element {
 
   const handleCloseClick = (e: React.SyntheticEvent, path: string): void => {
     e.stopPropagation();
+    const cleanPath = path.split('?')[0];
+    if (cleanPath.startsWith(APP_ROUTES.BELGE_ONIZLEME)) {
+      useGlobalDocumentPreviewStore.getState().closeDocument();
+    }
     const nextPath = closeTab(path);
     if (nextPath) {
       navigate({ to: nextPath });
@@ -126,7 +132,11 @@ export function TabsBar(): React.JSX.Element {
       {tabs.map((tab) => {
         const Icon = tabIcons[tab.path] || FileText;
         const isActive = activeTabPath === tab.path;
-        const displayLabel = !tab.label || tab.label === 'Yeni Sekme' ? getTabLabel(tab.path) : tab.label;
+        const isBelgePath = tab.path.split('?')[0].startsWith(APP_ROUTES.BELGE_ONIZLEME);
+        const displayLabel =
+          !tab.label || tab.label === 'Yeni Sekme' || (isBelgePath && tab.label === 'Dosya Detayları')
+            ? getTabLabel(tab.path)
+            : tab.label;
 
         return (
           <button

@@ -427,9 +427,9 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
     capabilities: {
       supportsOlur: true,
       supportsFirmaListesi: true,
-      supportsMuhatap: true,
-      supportsIlgi: true,
-      supportsEk: true,
+      supportsMuhatap: false,
+      supportsIlgi: false,
+      supportsEk: false,
       supportsDagitim: false,
       supportsRota: false,
     },

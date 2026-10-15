@@ -56,95 +56,16 @@ export const ModulDetailModal: React.FC<ModulDetailModalProps> = ({
     }
   };
 
-  const handleOpenBelge = (belge: { ad: string; kod: string }) => {
-    if (!modul) return;
-    onClose();
-    const kodUpper = (belge.kod || '').toUpperCase();
-    const adUpper = (belge.ad || '').toUpperCase();
-
-    // 1. Doğrudan Temin Süreç & Belge Stüdyosu eşleşmeleri
-    if (
-      modul.id === 'kik-dogrudan-temin-22d' ||
-      kodUpper.includes('DT-') ||
-      kodUpper.includes('KİK') ||
-      kodUpper.includes('MYHBY')
-    ) {
-      let targetTab = 'nedir';
-      if (
-        kodUpper.includes('İHTİYAÇ') ||
-        kodUpper.includes('DT-01') ||
-        adUpper.includes('İHTİYAÇ') ||
-        adUpper.includes('TALEP')
-      ) {
-        targetTab = 'luzum_kagidi';
-      } else if (kodUpper.includes('KİK024') || kodUpper.includes('DT-02') || adUpper.includes('ONAY')) {
-        targetTab = 'onay_belgesi';
-      } else if (
-        kodUpper.includes('KİK027') ||
-        kodUpper.includes('DT-03') ||
-        adUpper.includes('TEKLİF')
-      ) {
-        targetTab = 'teklif_mektuplari';
-      } else if (
-        kodUpper.includes('MYHBY-ÖRNEK:2') ||
-        kodUpper.includes('DT-04') ||
-        adUpper.includes('PİYASA')
-      ) {
-        targetTab = 'piyasa_arastirma';
-      } else if (kodUpper.includes('KİK023') || adUpper.includes('YAKLAŞIK MALİYET')) {
-        targetTab = 'yaklasik_maliyet';
-      } else if (
-        kodUpper.includes('KİK054') ||
-        kodUpper.includes('KİK048') ||
-        kodUpper.includes('KİK049') ||
-        kodUpper.includes('KİK050') ||
-        kodUpper.includes('KİK051') ||
-        kodUpper.includes('DT-05') ||
-        adUpper.includes('MUAYENE') ||
-        adUpper.includes('KABUL')
-      ) {
-        targetTab = 'muayene_kabul';
-      } else if (kodUpper.includes('TİP') || kodUpper.includes('DT-06') || adUpper.includes('SÖZLEŞME')) {
-        targetTab = 'dilekce';
-      } else if (
-        kodUpper.includes('TEBLİGAT') ||
-        kodUpper.includes('DT-07') ||
-        adUpper.includes('SİPARİŞ')
-      ) {
-        targetTab = 'teklif_mektuplari';
-      } else if (
-        kodUpper.includes('MYHBY-ÖRNEK:3') ||
-        kodUpper.includes('DT-08') ||
-        adUpper.includes('DİZİ') ||
-        adUpper.includes('PUSULA')
-      ) {
-        targetTab = 'hakedis_raporu';
-      }
-
-      navigate({
-        to: APP_ROUTES.SUREC_STUDYOSU,
-        search: { modulId: 'kik-dogrudan-temin-22d', tab: targetTab } as never,
-      });
-      return;
-    }
-
-    // 2. Personel & İzin Merkezi
-    if (modul.id === 'modul-personel-izin' || kodUpper.includes('İZN-')) {
-      navigate({ to: APP_ROUTES.PERSONEL, search: { tab: 'izinler' } as never });
-      return;
-    }
-
-    // 3. EBYS & Şablonlar
-    if (modul.id === 'modul-ebys-sablon' || kodUpper.includes('EBYS')) {
-      navigate({ to: APP_ROUTES.EBYS, search: { tab: 'editor' } as never });
-      return;
-    }
-
-    // 4. Varsayılan modül routePath'i
+  const handleOpenBelge = (_belge?: { ad: string; kod: string }): void => {
+    void _belge
+    if (!modul) return
+    onClose()
     if (modul.routePath) {
-      handleOpenModul(modul.routePath);
+      handleOpenModul(modul.routePath)
+    } else {
+      navigate({ to: APP_ROUTES.DOSYALAR })
     }
-  };
+  }
 
   if (!modul) return null;
 
@@ -402,36 +323,16 @@ export const ModulDetailModal: React.FC<ModulDetailModalProps> = ({
             </button>
             {isInstalled ? (
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => {
-                    onClose()
-                    navigate({ to: APP_ROUTES.SUREC_STUDYOSU, search: { modulId: modul.id } as never })
-                  }}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-600/20 transition-all cursor-pointer"
-                  title="Evrak kontrol listesi, canlı dilekçe/tutanak ve hazır metin kalıpları stüdyosunu aç"
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Süreç & Belge Stüdyosu</span>
-                </button>
-                {modul.id === 'kik-dogrudan-temin-22d' ? (
+                {modul.routePath ? (
                   <button
                     onClick={() => {
                       onClose();
-                      navigate({ to: APP_ROUTES.DOSYALAR });
+                      handleOpenModul(modul.routePath!);
                     }}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
-                    title="Doğrudan Temin Dosyaları Listesi"
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/20 transition-all cursor-pointer"
                   >
                     <FolderOpen className="w-3.5 h-3.5" />
-                    <span>Doğrudan Temin Dosyaları</span>
-                  </button>
-                ) : modul.routePath ? (
-                  <button
-                    onClick={() => handleOpenModul(modul.routePath)}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
-                  >
-                    <Sparkles className="w-3.5 h-3.5" />
-                    {modul.paketTipi === 'extension' ? 'Eklentiyi Aç & Kullan' : 'Modülü Aç'}
+                    <span>{modul.id === 'kik-dogrudan-temin-22d' ? 'Doğrudan Temin Dosyaları' : 'Modülü Aç'}</span>
                   </button>
                 ) : null}
                 {isModulRemovable(modul) ? (

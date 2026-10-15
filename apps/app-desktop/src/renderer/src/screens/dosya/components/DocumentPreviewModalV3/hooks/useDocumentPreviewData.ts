@@ -126,6 +126,7 @@ export function useDocumentPreviewData({
           showLogoLeft,
           showLogoRight,
           olurYazisi: initialPreloaded.resolvedData.olurYazisi !== false,
+          kurumIci: Boolean(initialPreloaded.resolvedData.kurumIci),
           orientation: 'portrait'
         })
       : ''
@@ -136,6 +137,7 @@ export function useDocumentPreviewData({
     showLogoLeft: localShowLogoLeft,
     showLogoRight: localShowLogoRight,
     olurYazisi: formData.olurYazisi !== false,
+    kurumIci: Boolean(formData.kurumIci),
     orientation
   })
 

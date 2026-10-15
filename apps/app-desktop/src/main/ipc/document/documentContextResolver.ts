@@ -566,7 +566,15 @@ export function resolveDocumentPayload(
       kurumIlce: (kurum as any)?.ilce || settingsMap.district || '',
       kurumTelefon: (kurum as any)?.telefon || settingsMap.phone || '',
       kurumEposta: (kurum as any)?.eposta || settingsMap.email || '',
-      kurumWeb: (kurum as any)?.web_sitesi || settingsMap.website || '',
+      kurumAdres: (kurum as any)?.adres || settingsMap.address || '',
+      kurumWeb: (kurum as any)?.web_sitesi || (kurum as any)?.web || settingsMap.website || '',
+      kurumKep: (kurum as any)?.kep_adresi || (kurum as any)?.kep || settingsMap.kep || '',
+      kurumIci:
+        ['arastirma-mektubu', 'fiyat-arastirma-mektubu', 'teklif-isteme-mektubu', 'birim-fiyat-teklif-mektubu'].includes(documentId)
+          ? false
+          : settingsMap.defaultKurumIci !== undefined
+            ? settingsMap.defaultKurumIci !== 'false'
+            : true,
       limitType: (kurum as any)?.limit_tipi || settingsMap.limitType || 'diger',
       odenekTertibi: (dosya as any)?.odenek_tertibi || '',
       butceTertibi: (dosya as any)?.odenek_tertibi || '',

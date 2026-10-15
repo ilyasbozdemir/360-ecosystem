@@ -111,7 +111,6 @@ export const TEMPLATE_FIELD_MAPPINGS: Record<string, TemplateFieldMapping> = {
     onaylayanAdiKey: 'onaylayanPersonelAdi'
   },
   'muayene-kabul-komisyonu': {
-    muhatapKey: 'kurumumuz',
     tarihKey: 'tarih',
     hazirlayanAdiKey: 'hazirlayanPersonelAdi',
     hazirlayanUnvanKey: 'hazirlayanPersonelUnvan',
@@ -122,7 +121,6 @@ export const TEMPLATE_FIELD_MAPPINGS: Record<string, TemplateFieldMapping> = {
     tarihKey: 'dosyaTarihi'
   },
   'piyasa-fiyat-arastirma-gorevlendirmesi': {
-    muhatapKey: 'kurumumuz',
     tarihKey: 'tarih',
     hazirlayanAdiKey: 'hazirlayanPersonelAdi',
     hazirlayanUnvanKey: 'hazirlayanPersonelUnvan',
@@ -130,7 +128,6 @@ export const TEMPLATE_FIELD_MAPPINGS: Record<string, TemplateFieldMapping> = {
     onaylayanUnvanKey: 'onaylayanPersonelUnvan'
   },
   'piyasa-fiyat-arastirma-tutanagi': {
-    muhatapKey: 'idareAdi',
     tarihKey: 'tarih'
   },
   'teknik-sartname': {

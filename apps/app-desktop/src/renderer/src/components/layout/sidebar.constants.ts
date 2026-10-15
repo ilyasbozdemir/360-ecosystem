@@ -63,13 +63,15 @@ export function getSidebarMenuGroups(
   isInstalledParam?: (id: string) => boolean
 ): MenuGroup[] {
   const isInstalled = isInstalledParam || ((id: string) => useModuleStore.getState().isInstalled(id))
-  const isBelgelerimActive = isInstalled('kutuphane-belgelerim')
-  const isDtOzelBelgelerActive = isInstalled('ext-dt-ozel-belgeler')
-  const isDtActive = isInstalled('kik-dogrudan-temin-22d') || isInstalled('dogrudan-temin')
+  const isBelgelerimActive = true
+  const isDtOzelBelgelerActive = true
+  const isDtActive = true
   const isPersonelIzinActive = isInstalled('modul-personel-izin') || isInstalled('personel')
-  const isKikLimitActive = isInstalled('kik-butce-limit-denetleyici') || isInstalled('ek-ders-kik-limit')
-  const isEbysActive = isInstalled('modul-ebys-sablon') || isInstalled('ebys')
-  const isTasinirActive = isInstalled('modul-tasinir-tif') || isInstalled('tasinir')
+  const isKikLimitActive = true
+  const isEbysActive =
+    isInstalled('ebys-resmi-yazisma-studyosu') || isInstalled('modul-ebys-sablon') || isInstalled('ebys')
+  const isTasinirActive =
+    isInstalled('tasinir-ambar') || isInstalled('modul-tasinir-tif') || isInstalled('tasinir')
 
   const belgelerimMenuItem: MenuItem = {
     name: 'Belgelerim (Özel Alan)',
@@ -395,12 +397,6 @@ export function getSidebarMenuGroups(
                 icon: Landmark,
                 badge: '4734',
                 children: [
-                  {
-                    name: 'Süreç & Evrak Stüdyosu',
-                    path: APP_ROUTES.SUREC_STUDYOSU,
-                    icon: Sparkles,
-                    badge: 'CANLI'
-                  },
                   {
                     name: 'Doğrudan Temin Dosyaları',
                     path: APP_ROUTES.DOSYALAR,

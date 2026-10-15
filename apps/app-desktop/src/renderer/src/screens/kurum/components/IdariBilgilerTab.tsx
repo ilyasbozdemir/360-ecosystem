@@ -18,6 +18,7 @@ import {
   getSubInstitutionOptions,
   INSTITUTION_MAP,
 } from "../../../utils/kurumHelper";
+import { useSettingsStore } from "../../../store/settingsStore";
 import { KurumTabProps } from "../types";
 
 export const IdariBilgilerTab: React.FC<KurumTabProps> = ({
@@ -28,6 +29,7 @@ export const IdariBilgilerTab: React.FC<KurumTabProps> = ({
   parentInstitutionLines,
   setParentInstitutionLines,
 }) => {
+  const { defaultKurumIci, setDefaultKurumIci } = useSettingsStore();
   const [isDetsisSearchOpen, setIsDetsisSearchOpen] = useState(false);
 
   const handleInstitutionTypeChange = (type: string): void => {
@@ -598,6 +600,68 @@ export const IdariBilgilerTab: React.FC<KurumTabProps> = ({
               Büyükşehir Belediyesi Sınırları Dışında Kalan (Diğer) İdareler
             </option>
           </select>
+        </div>
+
+        <div className="md:col-span-2 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2.5">
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">
+                Belge Yazışma Kapsamı & Alt Bilgi (Varsayılan Tercih)
+              </label>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                Yeni oluşturulan doğrudan temin belgelerinde iletişim alt bilgisinin (Adres, Web, E-Posta, KEP) varsayılan görünümü.
+              </p>
+            </div>
+            <span
+              className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                defaultKurumIci
+                  ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                  : 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300'
+              }`}
+            >
+              {defaultKurumIci ? 'Kurum İçi (Varsayılan)' : 'Kurum Dışı (Varsayılan)'}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <button
+              type="button"
+              onClick={() => setDefaultKurumIci(true)}
+              className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                defaultKurumIci
+                  ? 'bg-amber-50/60 dark:bg-amber-950/30 border-amber-300 dark:border-amber-800 ring-2 ring-amber-500/20'
+                  : 'bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 hover:border-slate-300'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+                  <span>🏢 Kurum İçi (Önerilen)</span>
+                </span>
+                {defaultKurumIci && <CheckCircle2 className="w-4 h-4 text-amber-600" />}
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                Belge altında adres ve iletişim alt bilgisi <strong>basılmaz</strong>. Tutanak, onay ve iç yazışmalar için standart temiz sayfa düzenidir.
+              </p>
+            </button>
+            <button
+              type="button"
+              onClick={() => setDefaultKurumIci(false)}
+              className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                !defaultKurumIci
+                  ? 'bg-blue-50/60 dark:bg-blue-950/30 border-blue-300 dark:border-blue-800 ring-2 ring-blue-500/20'
+                  : 'bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 hover:border-slate-300'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+                  <span>🌐 Kurum Dışı</span>
+                </span>
+                {!defaultKurumIci && <CheckCircle2 className="w-4 h-4 text-blue-600" />}
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                Tüm belgelerin altında resmi adres, web, e-posta ve KEP bilgileri içeren <strong>alt bilgi basılır</strong>.
+              </p>
+            </button>
+          </div>
         </div>
       </div>
     </div>

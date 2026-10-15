@@ -89,11 +89,24 @@ export const useGlobalDocumentPreviewStore = create<GlobalDocumentPreviewState>(
       const idParam = params.dosyaId ? `&id=${params.dosyaId}` : ''
       const docParam = `doc=${encodeURIComponent(params.documentId)}`
       const targetPath = `${APP_ROUTES.BELGE_ONIZLEME}?${docParam}${idParam}${titleParam}`
-      useTabStore.getState().addTab(targetPath)
-      if (typeof window !== 'undefined') {
-        const cleanHash = window.location.hash.replace(/^#/, '')
-        if (cleanHash !== targetPath) {
-          window.location.hash = targetPath
+
+      const currentActiveTabPath = useTabStore.getState().activeTabPath
+      const isAlreadyOnBelgeOnizleme = currentActiveTabPath.split('?')[0].startsWith(APP_ROUTES.BELGE_ONIZLEME)
+
+      if (!isAlreadyOnBelgeOnizleme) {
+        // Belge önizleme henüz aktif değilse workspace tabı olarak aç
+        useTabStore.getState().addTab(targetPath)
+        if (typeof window !== 'undefined') {
+          const cleanHash = window.location.hash.replace(/^#/, '')
+          if (cleanHash !== targetPath) {
+            window.location.hash = targetPath
+          }
+        }
+      } else {
+        // Zaten belge önizleme sekmesindeyiz! Üst bara kesinlikle yeni sekme eklenmeyecek.
+        // Sadece mevcut tek sekmenin başlığını aktif belgeye göre güncelle.
+        if (params.documentTitle) {
+          useTabStore.getState().updateTabLabel(currentActiveTabPath, `📄 ${params.documentTitle}`)
         }
       }
     }

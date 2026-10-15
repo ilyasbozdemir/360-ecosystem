@@ -115,6 +115,9 @@ export async function resolveSnapshotOverlay(
       if (snapshotData.orientation) {
         activeOrientation = snapshotData.orientation
       }
+      if (snapshotData.kurumIci !== undefined) {
+        finalData.kurumIci = Boolean(snapshotData.kurumIci)
+      }
     } catch (e) {
       console.error('Failed to merge saved snapshot JSON', e)
     }
@@ -160,6 +163,7 @@ export async function resolveSnapshotOverlay(
     showLogoLeft: activeLogoLeft,
     showLogoRight: activeLogoRight,
     olurYazisi: finalData.olurYazisi !== false,
+    kurumIci: Boolean(finalData.kurumIci),
     orientation: activeOrientation
   })
 

@@ -94,6 +94,15 @@ export function getTabLabel(fullPath: string): string {
   if (path.startsWith(APP_ROUTES.NOTLAR)) return 'Notlar & Yapılacaklar (To-Do)'
   if (path.startsWith(APP_ROUTES.HARCAMA_MERKEZI)) return 'Harcama Merkezi & İhale'
   if (path.startsWith(APP_ROUTES.DOSYA_KUNYE)) return 'Dosya Künyesi & İnceleme'
+  if (path.startsWith(APP_ROUTES.BELGE_ONIZLEME)) {
+    const query = fullPath.split('?')[1] || ''
+    const sp = new URLSearchParams(query)
+    const title = sp.get('title')
+    const doc = sp.get('doc')
+    if (title) return `📄 ${decodeURIComponent(title)}`
+    if (doc) return `📄 ${decodeURIComponent(doc)}`
+    return '📄 Belge Önizleme'
+  }
   if (path.startsWith(APP_ROUTES.DOSYA_DETAY)) return 'Dosya Detayları'
   if (path.startsWith(APP_ROUTES.TAKIP)) return 'Takip & Durum'
   if (path.startsWith(APP_ROUTES.RAPORLAR)) return 'Raporlar'
@@ -119,15 +128,6 @@ export function getTabLabel(fullPath: string): string {
   if (path.startsWith(APP_ROUTES.EBYS)) return 'EBYS Resmî Yazı Şablonları'
   if (path.startsWith(APP_ROUTES.MODUL_MAGAZASI)) return 'Modül & Belge Mağazası'
   if (path.startsWith(APP_ROUTES.SUREC_STUDYOSU)) return 'Doğrudan Temin Süreç Stüdyosu'
-  if (path.startsWith(APP_ROUTES.BELGE_ONIZLEME)) {
-    const query = fullPath.split('?')[1] || ''
-    const sp = new URLSearchParams(query)
-    const title = sp.get('title')
-    const doc = sp.get('doc')
-    if (title) return `📄 ${decodeURIComponent(title)}`
-    if (doc) return `📄 ${decodeURIComponent(doc)}`
-    return '📄 Belge Düzenleyici'
-  }
   return 'Yeni Sekme'
 }
 
@@ -247,6 +247,40 @@ export const useTabStore = create<TabState>((set, get) => ({
       }
     }
 
+    // Belge Önizleme sekmeleri tekil sekmede birleştirilir (iç sekme sistemi kullanıldığı için üst barda mükerrer sekme açılmaz)
+    const isBelgeOnizleme = cleanPath.startsWith(APP_ROUTES.BELGE_ONIZLEME)
+    if (isBelgeOnizleme) {
+      const existingDocIndex = tabs.findIndex((t) =>
+        t.path.split('?')[0].startsWith(APP_ROUTES.BELGE_ONIZLEME)
+      )
+      if (existingDocIndex > -1) {
+        // Varsa tüm mükerrer BELGE_ONIZLEME sekmelerini temizleyip tek sekmeyi koru
+        const firstBelgeTab = tabs[existingDocIndex]
+        const updatedTabs = tabs.filter(
+          (t, idx) => idx === existingDocIndex || !t.path.split('?')[0].startsWith(APP_ROUTES.BELGE_ONIZLEME)
+        )
+        const label = getTabLabel(path)
+        const newHistory = firstBelgeTab.history.slice(0, firstBelgeTab.currentIndex + 1)
+        if (firstBelgeTab.path !== path) {
+          newHistory.push(path)
+        }
+        const updatedDocIndex = updatedTabs.findIndex((t) =>
+          t.path.split('?')[0].startsWith(APP_ROUTES.BELGE_ONIZLEME)
+        )
+        if (updatedDocIndex > -1) {
+          updatedTabs[updatedDocIndex] = {
+            ...firstBelgeTab,
+            path,
+            label: label !== '📄 Belge Önizleme' ? label : firstBelgeTab.label || label,
+            history: newHistory,
+            currentIndex: newHistory.length - 1
+          }
+        }
+        set({ tabs: updatedTabs, activeTabPath: path })
+        return
+      }
+    }
+
     const exists = tabs.some((t) => t.path === path)
 
     if (!exists) {
@@ -292,6 +326,17 @@ export const useTabStore = create<TabState>((set, get) => ({
   },
 
   setActiveTab: (path) => {
+    const { tabs } = get()
+    // Mükerrer BELGE_ONIZLEME sekmeleri varsa tek sekmeye indir
+    const belgeTabs = tabs.filter((t) => t.path.split('?')[0].startsWith(APP_ROUTES.BELGE_ONIZLEME))
+    if (belgeTabs.length > 1) {
+      const activeOrFirst = belgeTabs.find((t) => t.path === path) || belgeTabs[0]
+      const cleanedTabs = tabs.filter(
+        (t) => !t.path.split('?')[0].startsWith(APP_ROUTES.BELGE_ONIZLEME) || t.path === activeOrFirst.path
+      )
+      set({ tabs: cleanedTabs, activeTabPath: path })
+      return
+    }
     set({ activeTabPath: path })
   },
 

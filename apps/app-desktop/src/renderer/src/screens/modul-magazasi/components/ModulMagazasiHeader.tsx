@@ -50,18 +50,18 @@ export const ModulMagazasiHeader: React.FC<ModulMagazasiHeaderProps> = ({
       icon: <FileCheck2 className="w-3.5 h-3.5" />,
     },
     {
-      id: "tip_modul",
-      label: "Süreç Modülleri",
-      icon: <Layers className="w-3.5 h-3.5" />,
+      id: "satis_kiralama",
+      label: "Satış & Kiralama (2886)",
+      icon: <Store className="w-3.5 h-3.5" />,
     },
     {
-      id: "tip_utils",
-      label: "Hesap & Araçlar",
+      id: "finans_hesap",
+      label: "Finans & Hesaplama",
       icon: <Calculator className="w-3.5 h-3.5" />,
     },
     {
-      id: "tip_extension",
-      label: "Eklentiler & Şablonlar",
+      id: "entegrasyon",
+      label: "EBYS, Personel & Takip",
       icon: <Puzzle className="w-3.5 h-3.5" />,
     },
     {
@@ -79,11 +79,6 @@ export const ModulMagazasiHeader: React.FC<ModulMagazasiHeaderProps> = ({
         },
       ]
       : []),
-    {
-      id: "satis_kiralama",
-      label: "Satış & Kiralama (2886)",
-      icon: <Store className="w-3.5 h-3.5" />,
-    },
   ];
 
   return (
@@ -108,7 +103,8 @@ export const ModulMagazasiHeader: React.FC<ModulMagazasiHeaderProps> = ({
                 Modül Mağazası
               </h1>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Kamu ihale, doğrudan temin, personel, EBYS ve süreç paketleri mağazası
+                Kamu ihale, doğrudan temin, personel, EBYS ve süreç paketleri
+                mağazası
               </p>
             </div>
           </div>
@@ -153,24 +149,6 @@ export const ModulMagazasiHeader: React.FC<ModulMagazasiHeaderProps> = ({
           className="w-full pl-6 pr-24 py-3.5 rounded-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 text-sm shadow-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-slate-800 dark:text-slate-100 placeholder-slate-400 transition-all"
         />
         <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-          {searchQuery
-            ? (
-              <button
-                onClick={() => onSearchChange("")}
-                className="text-xs text-slate-400 hover:text-slate-700 dark:hover:text-white px-2 py-1 rounded-full"
-              >
-                Temizle
-              </button>
-            )
-            : (
-              <button
-                type="button"
-                className="w-8 h-8 rounded-full flex items-center justify-center text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/50 transition-colors"
-                title="Sesli arama"
-              >
-                <Mic className="w-4 h-4" />
-              </button>
-            )}
           <button
             type="button"
             className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-xs hover:bg-blue-700 transition-colors cursor-pointer"

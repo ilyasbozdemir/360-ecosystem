@@ -3,11 +3,10 @@ import { useWorkspaceStore } from '../../store/workspaceStore'
 import { Link } from '@tanstack/react-router'
 import { ArrowRight, FileCheck, FileText, Printer, Sparkles, Puzzle } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
-import { useModuleStore } from '../../store/moduleStore'
 
 export function CiktiMerkezi(): React.JSX.Element {
   const activeDosyaId = useWorkspaceStore((s) => s.activeDosyaId)
-  const isDtOzelBelgelerActive = useModuleStore((s) => s.isInstalled('ext-dt-ozel-belgeler'))
+  const isDtOzelBelgelerActive = true
   const [activeDosya, setActiveDosya] = useState<any>(null)
 
   // Fetch active dosya
@@ -185,15 +184,6 @@ export function CiktiMerkezi(): React.JSX.Element {
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
-          <Link
-            to="/surec-studyosu"
-            className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 hover:bg-blue-100 transition-all shadow-2xs cursor-pointer"
-            title="Evrak kontrol listesi, canlı dilekçe/tutanak ve hazır metin kalıpları stüdyosunu aç"
-          >
-            <FileText className="w-3.5 h-3.5" />
-            <span>Süreç & Hazır Metinler</span>
-          </Link>
-
           {isDtOzelBelgelerActive && (
             <div className="flex items-center gap-3 p-2 px-3 rounded-xl bg-linear-to-r from-indigo-50/90 via-purple-50/50 to-indigo-50/90 dark:from-slate-900 dark:via-indigo-950/40 dark:to-slate-900 border border-indigo-200/80 dark:border-indigo-800/50 shadow-2xs">
               <div className="flex items-center gap-2 min-w-0">

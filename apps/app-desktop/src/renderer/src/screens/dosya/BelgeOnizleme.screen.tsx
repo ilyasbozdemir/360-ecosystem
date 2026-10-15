@@ -36,19 +36,52 @@ export function BelgeOnizlemeScreen(): React.JSX.Element | null {
   }, [tabs.length, urlDocId, urlDosyaId, urlTitle, openDocument])
 
   const activeTab = useMemo(() => {
+    if (activeTabId) {
+      const match = tabs.find((t) => t.tabId === activeTabId)
+      if (match) return match
+    }
     if (urlDocId) {
       const match = tabs.find((t) => t.documentId === urlDocId)
       if (match) return match
     }
-    return tabs.find((t) => t.tabId === activeTabId) || tabs[0] || null
+    return tabs[0] || null
   }, [tabs, activeTabId, urlDocId])
 
-  const handleClose = (): void => {
-    if (activeTab) {
-      closeTab(activeTab.tabId)
-    } else {
-      closeDocument()
+  // Aktif sekme değiştiğinde üst sekme başlığını güncelle
+  useEffect(() => {
+    if (activeTab && activeTabPath.startsWith(APP_ROUTES.BELGE_ONIZLEME)) {
+      const docTitle = activeTab.documentTitle || activeTab.documentId
+      useTabStore.getState().updateTabLabel(activeTabPath, `📄 ${docTitle}`)
     }
+  }, [activeTab, activeTabPath])
+
+  // İç sekmeyi değiştirme
+  const handleSwitchTab = (tabId: string): void => {
+    switchTab(tabId)
+    const target = tabs.find((t) => t.tabId === tabId)
+    if (target && activeTabPath.startsWith(APP_ROUTES.BELGE_ONIZLEME)) {
+      const docTitle = target.documentTitle || target.documentId
+      useTabStore.getState().updateTabLabel(activeTabPath, `📄 ${docTitle}`)
+    }
+  }
+
+  // İç sekmeyi kapatma (son sekme kapandığında üst sekmeyi de kapat)
+  const handleCloseInnerTab = (tabId: string): void => {
+    const isLastTab = tabs.length <= 1
+    closeTab(tabId)
+    if (isLastTab) {
+      if (activeTabPath.startsWith(APP_ROUTES.BELGE_ONIZLEME)) {
+        const nextPath = closeAppTab(activeTabPath)
+        if (nextPath && typeof window !== 'undefined') {
+          window.location.hash = nextPath
+        }
+      }
+    }
+  }
+
+  // Tüm önizleme ekranını kapatma
+  const handleClose = (): void => {
+    closeDocument()
     if (activeTabPath.startsWith(APP_ROUTES.BELGE_ONIZLEME)) {
       const nextPath = closeAppTab(activeTabPath)
       if (nextPath && typeof window !== 'undefined') {
@@ -75,8 +108,8 @@ export function BelgeOnizlemeScreen(): React.JSX.Element | null {
         onClose={handleClose}
         tabs={tabs}
         activeTabId={activeTabId}
-        onSwitchTab={switchTab}
-        onCloseTab={closeTab}
+        onSwitchTab={handleSwitchTab}
+        onCloseTab={handleCloseInnerTab}
         onAddTab={openDocument}
       />
     )
@@ -95,8 +128,8 @@ export function BelgeOnizlemeScreen(): React.JSX.Element | null {
       onClose={handleClose}
       tabs={tabs}
       activeTabId={activeTab.tabId}
-      onSwitchTab={switchTab}
-      onCloseTab={closeTab}
+      onSwitchTab={handleSwitchTab}
+      onCloseTab={handleCloseInnerTab}
       onAddTab={openDocument}
     />
   )

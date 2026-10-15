@@ -175,6 +175,7 @@ export function DocumentPreviewModalV3({
           supportsOlur={activeTemplateConf?.capabilities?.supportsOlur}
           supportsLogos={activeTemplateConf?.category !==
             "5-klasor-ve-kapaklar"}
+          templateCapabilities={activeTemplateConf?.capabilities}
           onSelectTemplate={setSelectedDocId}
           templateOptions={templateOptions}
           isEditingMode={isEditingMode}

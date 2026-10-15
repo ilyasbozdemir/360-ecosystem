@@ -1,6 +1,6 @@
 import React from 'react'
 import { ChevronLeft, Edit3, FileText, Layers, Sliders } from 'lucide-react'
-import { IhtiyacListesiType } from '@temin360/document-templates'
+import { IhtiyacListesiType, TemplateCapabilities } from '@temin360/document-templates'
 import { TemplateOptionItem } from '../templateResolver'
 import { useSettingsStore } from '../../../../../store/settingsStore'
 import { getTemplateFieldMapping } from '../../tek-tik-yazdir/ciktiWizardFieldMapping'
@@ -11,6 +11,7 @@ interface DocumentPreviewSidebarProps {
   selectedDocId?: string
   supportsOlur?: boolean
   supportsLogos?: boolean
+  templateCapabilities?: Partial<TemplateCapabilities>
   onSelectTemplate?: (id: string) => void
   templateOptions?: TemplateOptionItem[]
   isEditingMode: boolean
@@ -31,6 +32,7 @@ export function DocumentPreviewSidebar({
   selectedDocId,
   supportsOlur,
   supportsLogos = true,
+  templateCapabilities,
   onSelectTemplate,
   templateOptions = [],
   isEditingMode,
@@ -431,22 +433,74 @@ export function DocumentPreviewSidebar({
               </label>
             </>
           )}
+
+          {/* Kurum İçi / Kurum Dışı Yazışma (Alt Bilgi Kontrolü) */}
+          <div className="p-2.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-slate-700 dark:text-slate-200 block">
+                Yazışma Kapsamı & Alt Bilgi
+              </span>
+              <span
+                className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                  (formData as any).kurumIci !== false
+                    ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                    : 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300'
+                }`}
+              >
+                {(formData as any).kurumIci !== false ? 'Kurum İçi' : 'Kurum Dışı'}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-100 dark:bg-slate-900 rounded-lg">
+              <button
+                type="button"
+                onClick={() => setFormData((prev: any) => ({ ...prev, kurumIci: true }))}
+                className={`px-2 py-1.5 rounded-md text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                  (formData as any).kurumIci !== false
+                    ? 'bg-white dark:bg-slate-800 text-amber-600 dark:text-amber-400 shadow-2xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                }`}
+                title="Kurum İçi: Sayfa altında iletişim/adres alt bilgisi basılmaz"
+              >
+                <span>🏢 Kurum İçi</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData((prev: any) => ({ ...prev, kurumIci: false }))}
+                className={`px-2 py-1.5 rounded-md text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                  (formData as any).kurumIci === false
+                    ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-2xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                }`}
+                title="Kurum Dışı: Sayfa altında adres, web, e-posta, KEP alt bilgisi basılır"
+              >
+                <span>🌐 Kurum Dışı</span>
+              </button>
+            </div>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
+              {(formData as any).kurumIci !== false
+                ? 'Kurum içi evrak: İletişim alt bilgisi basılmaz.'
+                : 'Kurum dışı evrak: Sayfa altında resmi iletişim alt bilgisi basılır.'}
+            </p>
+          </div>
         </div>
 
         {/* ========================================================= */}
-        {/* YENİ BÖLÜM: BELGE EVRAK AYARLARI (Muhatap, İlgi, Ek, Dağıtım) */}
+        {/* BELGE EVRAK AYARLARI (Muhatap, İlgi, Ek, Dağıtım) */}
+        {/* Sadece şablon yeteneklerinde (capabilities) gerçekten desteklenen alanlar gösterilir */}
         {/* ========================================================= */}
         {(() => {
           const mapping = selectedDocId
             ? getTemplateFieldMapping(selectedDocId)
             : {}
-          const hasAnyEvrakField =
-            Boolean(mapping.muhatapKey) ||
-            Boolean(mapping.ilgiKey) ||
-            Boolean(mapping.eklerKey) ||
-            Boolean(mapping.dagitimKey)
+          const caps = templateCapabilities
 
-          if (!hasAnyEvrakField) return null
+          // Bir alanın gösterilmesi için şablon yeteneklerinde (capabilities) açık olması ve mapping'inin bulunması gerekir
+          const showMuhatap = Boolean(mapping.muhatapKey) && Boolean(caps?.supportsMuhatap)
+          const showIlgi = Boolean(mapping.ilgiKey) && Boolean(caps?.supportsIlgi)
+          const showEkler = Boolean(mapping.eklerKey) && Boolean(caps?.supportsEk)
+          const showDagitim = Boolean(mapping.dagitimKey) && Boolean(caps?.supportsDagitim)
+
+          if (!showMuhatap && !showIlgi && !showEkler && !showDagitim) return null
 
           // Öneri Havuzu (Önceki Belgelerden / Standart Kalıplardan)
           const suggestionPool = {
@@ -475,7 +529,7 @@ export function DocumentPreviewSidebar({
               </div>
 
               {/* 1. MUHATAP / SUNULACAK MAKAM */}
-              {mapping.muhatapKey && (
+              {showMuhatap && mapping.muhatapKey && (
                 <div className="p-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl space-y-2">
                   <label className="text-xs font-semibold text-slate-700 dark:text-slate-200 flex items-center justify-between">
                     <span>Muhatap / Sunulacak Makam</span>
@@ -499,7 +553,7 @@ export function DocumentPreviewSidebar({
               )}
 
               {/* 2. İLGİ */}
-              {mapping.ilgiKey && (
+              {showIlgi && mapping.ilgiKey && (
                 <div className="p-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl space-y-2">
                   <label className="text-xs font-semibold text-slate-700 dark:text-slate-200 flex items-center justify-between">
                     <span>İlgi Tutulan Evrak / Yazı</span>
@@ -520,7 +574,7 @@ export function DocumentPreviewSidebar({
                     className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-hidden focus:border-purple-500"
                   />
 
-                  {/* Öneri Chipleri (Tıklayınca kopyalar, otomatik ezmez) */}
+                  {/* Öneri Chipleri */}
                   <div className="space-y-1 pt-1">
                     <span className="text-[10px] text-slate-400 block">Önceki Belgelerden Öneriler:</span>
                     <div className="flex flex-wrap gap-1">
@@ -549,7 +603,7 @@ export function DocumentPreviewSidebar({
               )}
 
               {/* 3. EKLER */}
-              {mapping.eklerKey && (
+              {showEkler && mapping.eklerKey && (
                 <div className="p-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl space-y-2">
                   <label className="text-xs font-semibold text-slate-700 dark:text-slate-200 flex items-center justify-between">
                     <span>Ekler Listesi</span>
@@ -605,7 +659,7 @@ export function DocumentPreviewSidebar({
               )}
 
               {/* 4. DAĞITIM */}
-              {mapping.dagitimKey && (
+              {showDagitim && mapping.dagitimKey && (
                 <div className="p-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl space-y-2">
                   <label className="text-xs font-semibold text-slate-700 dark:text-slate-200 flex items-center justify-between">
                     <span>Dağıtım Listesi</span>
@@ -632,21 +686,6 @@ export function DocumentPreviewSidebar({
                   />
                 </div>
               )}
-
-              {/* 5. ROTA VE DAĞITIM GRUPLARI (İSKELET / WORKFLOW PROFİLİ ENTEGRASYONU) */}
-              <div className="p-3 bg-slate-100/60 dark:bg-slate-950/40 border border-dashed border-slate-300 dark:border-slate-800 rounded-xl space-y-1.5 opacity-85">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400">
-                    İmza Rotası & Dağıtım Grupları
-                  </span>
-                  <span className="px-1.5 py-0.2 rounded bg-slate-200 dark:bg-slate-800 text-[9px] font-semibold text-slate-500">
-                    İskelet Hazırlık
-                  </span>
-                </div>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
-                  Bu alan EBYS workflow profili ve kurumlar arası dağıtım grupları entegrasyonu tamamlandığında tam dinamik hale gelecektir.
-                </p>
-              </div>
             </div>
           )
         })()}

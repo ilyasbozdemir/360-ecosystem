@@ -67,6 +67,8 @@ interface SettingsState {
   setTrashRetentionDays: (days: number) => void
   isAiConfigured: boolean
   aiProvider: string
+  defaultKurumIci: boolean
+  setDefaultKurumIci: (val: boolean) => Promise<void>
   loadSettings: () => Promise<void>
 }
 
@@ -79,6 +81,19 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   logoRight: null,
   showLogoLeft: true,
   showLogoRight: true,
+  defaultKurumIci: true,
+  setDefaultKurumIci: async (val: boolean) => {
+    set({ defaultKurumIci: val })
+    try {
+      if (window.electron?.ipcRenderer) {
+        await window.electron.ipcRenderer.invoke('db:save-settings', {
+          defaultKurumIci: String(val)
+        })
+      }
+    } catch (e) {
+      console.error('Failed to save defaultKurumIci setting:', e)
+    }
+  },
   adminName: 'Sistem Yöneticisi',
   adminTitle: 'Destek Sorumlusu',
   adminUsername: 'admin',
@@ -191,7 +206,8 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         disclaimerHistory: settings.disclaimerHistory || '[]',
         trashRetentionDays: parseInt(settings.trashRetentionDays || '30', 10) || 30,
         isAiConfigured,
-        aiProvider
+        aiProvider,
+        defaultKurumIci: settings.defaultKurumIci !== undefined ? settings.defaultKurumIci !== 'false' : true
         // isDisclaimerAccepted is intentionally not loaded from DB to show it on every app launch
       })
     } catch (error) {
