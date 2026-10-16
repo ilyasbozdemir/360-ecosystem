@@ -1,3 +1,6 @@
+// Geliştirme ortamında Electron güvenlik uyarılarının konsolu ve log dosyasını kirletmesini engelle
+process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true'
+
 import {
   app,
   shell,

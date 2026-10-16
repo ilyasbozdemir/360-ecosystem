@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { calistirFormul } from '@renderer/utils/engine/formulaParser'
 
 export interface OlcuBirimi {
   id: number
@@ -277,9 +278,8 @@ export function evaluateFormula(formula: string, xVal: number): number {
       .toLowerCase()
       .replace(/x/g, `(${xVal})`)
       .replace(/[^0-9+\-*/().\s]/g, '')
-    // eslint-disable-next-line no-new-func
-    const result = new Function(`return (${sanitized});`)()
-    return typeof result === 'number' && !isNaN(result) ? result : 0
+    const res = calistirFormul(sanitized)
+    return res.success && typeof res.result === 'number' && !isNaN(res.result) ? res.result : 0
   } catch {
     return 0
   }

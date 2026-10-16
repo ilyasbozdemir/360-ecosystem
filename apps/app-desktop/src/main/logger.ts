@@ -12,12 +12,36 @@ class AppLogger {
     if (this.isInitialized) return
 
     try {
-      // In dev mode, keep logs in project root /logs AND in userData/logs
-      const baseDir = app.isReady() ? app.getPath('userData') : join(process.cwd(), 'logs')
+      // In dev mode, keep logs in project root /logs; in packaged mode use userData/logs
+      const baseDir = app.isPackaged ? app.getPath('userData') : process.cwd()
 
       this.logDir = join(baseDir, 'logs')
       if (!fs.existsSync(this.logDir)) {
         fs.mkdirSync(this.logDir, { recursive: true })
+      }
+
+      // Legacy migration: If logs were previously saved into logs/logs, move them up
+      const legacyNestedLogs = join(this.logDir, 'logs')
+      if (fs.existsSync(legacyNestedLogs)) {
+        try {
+          const files = fs.readdirSync(legacyNestedLogs)
+          for (const file of files) {
+            const oldPath = join(legacyNestedLogs, file)
+            const newPath = join(this.logDir, file)
+            if (!fs.existsSync(newPath)) {
+              try {
+                fs.renameSync(oldPath, newPath)
+              } catch {
+                // If rename fails (e.g. across drives or locked), try copy and unlink
+                fs.copyFileSync(oldPath, newPath)
+                fs.unlinkSync(oldPath)
+              }
+            }
+          }
+          fs.rmdirSync(legacyNestedLogs)
+        } catch {
+          // Ignore legacy cleanup errors
+        }
       }
 
       const today = new Date().toISOString().slice(0, 10)
@@ -53,7 +77,9 @@ class AppLogger {
       fs.appendFile(this.logFilePath, line, (err) => {
         if (err) process.stderr.write(`[Log File Write Error] ${err.message}\n`)
       })
-    } catch {}
+    } catch {
+      // Ignore write errors to prevent infinite error loops
+    }
   }
 
   private interceptConsole(): void {

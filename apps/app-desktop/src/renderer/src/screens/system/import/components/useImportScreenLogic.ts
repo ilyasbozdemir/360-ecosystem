@@ -33,12 +33,16 @@ export function useImportScreenLogic() {
       let data: any
       try {
         data = JSON.parse(jsonText)
-      } catch (err) {
+      } catch {
         const match = jsonText.match(/\[[\s\S]*\]/)
         if (match) {
           try {
-            data = new Function(`return ${match[0]}`)()
-          } catch (evalErr) {
+            const sanitized = match[0]
+              .replace(/'((?:\\'|[^'])*)'/g, '"$1"')
+              .replace(/([{,]\s*)([a-zA-Z0-9_$]+)\s*:/g, '$1"$2":')
+              .replace(/,\s*([}\]])/g, '$1')
+            data = JSON.parse(sanitized)
+          } catch {
             throw new Error('Geçersiz format. Hem standart JSON hem de JS formatı ayrıştırılamadı.')
           }
         } else {
