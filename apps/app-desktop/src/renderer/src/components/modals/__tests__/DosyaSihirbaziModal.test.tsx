@@ -258,6 +258,36 @@ describe('DosyaSihirbaziModal (Issue #9)', () => {
     })
   })
 
+  it('kurum ayarına (limitType: diger / Belde Belediyesi) göre varsayılan olarak 22/d** seçer ve diger_limit (340.391 TL) uygular', async () => {
+    renderModal()
+
+    // Step 1
+    const konuInput = screen.getByPlaceholderText(/Örn: Hizmet Binaları İçin/i)
+    fireEvent.change(konuInput, { target: { value: 'Belde Belediyesi Yol Bakımı' } })
+    fireEvent.click(screen.getByRole('button', { name: /İleri/i }))
+
+    // Step 2
+    await waitFor(() => {
+      expect(screen.getByDisplayValue(/22\/d\*\*/i)).toBeTruthy()
+      expect(screen.getByText(/Diğer İdare \(22\/d\*\*\)/i)).toBeTruthy()
+      expect(screen.getByText(/340\.391/i)).toBeTruthy()
+    })
+
+    // Enter 500.000 TL - this is below buyuksehir_limit (1.021.827) BUT above diger_limit (340.391)
+    const maliyetInput = screen.getByPlaceholderText(/Örn: 150000/i)
+    fireEvent.change(maliyetInput, { target: { value: '500000' } })
+
+    await waitFor(() => {
+      expect(screen.getByText(/KİK 22\/d Parasal Limiti Aşıldı/i)).toBeTruthy()
+    })
+
+    // Trying to proceed must be blocked
+    fireEvent.click(screen.getByRole('button', { name: /İleri/i }))
+    await waitFor(() => {
+      expect(screen.getByText(/yasal KİK 22\/d parasal limiti/i)).toBeTruthy()
+    })
+  })
+
   it('22/a veya 22/b gibi parasal limite tabi olmayan bentlerde limit denetim kartı yerine muafiyet panelini görüntüler ve geçişe izin verir', async () => {
     renderModal()
 
@@ -268,11 +298,11 @@ describe('DosyaSihirbaziModal (Issue #9)', () => {
 
     // Step 2
     await waitFor(() => {
-      expect(screen.getByDisplayValue(/22\/d\*/i)).toBeTruthy()
+      expect(screen.getByDisplayValue(/22\/d\*\*/i)).toBeTruthy()
     })
 
     // Select 22/a
-    const selectSekli = screen.getByDisplayValue(/22\/d\*/i)
+    const selectSekli = screen.getByDisplayValue(/22\/d\*\*/i)
     fireEvent.change(selectSekli, { target: { value: '22/a' } })
 
     // Enter high amount (5.000.000 TL)

@@ -42,6 +42,7 @@ const flags = {
   noPush: args.includes('--no-push'),
   patch: args.includes('--patch'),
   skipVersions: args.includes('--skip-versions'),
+  allowDirty: args.includes('--allow-dirty'),
   help: args.includes('--help') || args.includes('-h')
 }
 
@@ -69,6 +70,7 @@ ${c.cyan('Seçenekler:')}
   ${c.yellow('--no-push')}         Sadece commit + tag oluşturur, push yapmaz
   ${c.yellow('--patch')}           Versiyon numarasını otomatik artırır (beta.15 → beta.16)
   ${c.yellow('--skip-versions')}   versions.json dosyasını güncellemeyi atlar
+  ${c.yellow('--allow-dirty')}     Kirli çalışma alanını yok sayarak release yapmaya izin verir
   ${c.yellow('--message, -m')}     Özel commit mesajı belirler
   ${c.yellow('--help, -h')}        Bu yardım mesajını gösterir
 
@@ -202,17 +204,55 @@ function finalizeCurrentSchemaManifest(version, dryRun) {
   }
 }
 
+const releaseTargets = [
+  'package.json',
+  'apps/app-desktop/package.json',
+  'packages/database/package.json',
+  'packages/document-templates/package.json',
+  'packages/database/versions.json',
+  'packages/database/src/schema-manifest',
+  'packages/database/src/schema-snapshot'
+]
+
+function stageReleaseFiles() {
+  const existing = releaseTargets.filter((t) => fs.existsSync(path.join(GIT_ROOT, t)))
+  if (existing.length > 0) {
+    exec(`git add ${existing.map((f) => `"${f}"`).join(' ')}`)
+  }
+}
+
 // ─── Ana Akış ─────────────────────────────────────────────
 function main() {
   console.log(`\n${c.bold('📦 TEMİN 360 - Release Script')}\n`)
 
-  // 0. Ön Kontroller: Şema Snapshot Eşitleme
+  // 0. Ön Kontrol: Çalışma Alanı Temizlik Kontrolü
+  const initialStatus = execSilent('git status --porcelain')
+  if (initialStatus.length > 0 && !flags.allowDirty && !flags.dryRun) {
+    console.error(
+      c.red('\n❌ Çalışma alanında commit edilmemiş veya stage edilmemiş değişiklikler var!')
+    )
+    console.error(c.yellow('Release işlemi temiz bir git çalışma alanı gerektirir.'))
+    console.error(c.dim('Değişen dosyalar:\n' + initialStatus + '\n'))
+    console.error(c.yellow('Lütfen release öncesi değişikliklerinizi commit edin veya stash yapın.'))
+    console.error(
+      c.dim('Mevcut değişikliklerle zorlamak için: node scripts/release.js --allow-dirty')
+    )
+    process.exit(1)
+  }
+
+  // 0.1 Ön Kontroller: Şema Snapshot Eşitleme
   const schemaScript = path.join(GIT_ROOT, 'scripts/check-schema.mjs')
   if (fs.existsSync(schemaScript)) {
     try {
-      console.log(c.cyan('🔍 Şema kontrol ediliyor ve snapshot eşitleniyor (--fix)...'))
-      exec(`node "${schemaScript}" --fix`, { silent: true })
-      console.log(c.green('✔ Şema snapshot başarıyla eşitlendi.\n'))
+      if (flags.dryRun) {
+        console.log(c.cyan('🔍 [DRY RUN] Şema kontrol ediliyor (dosyalar değiştirilmeyecek)...'))
+        exec(`node "${schemaScript}"`, { silent: true })
+        console.log(c.green('✔ Şema kontrolü tamamlandı.\n'))
+      } else {
+        console.log(c.cyan('🔍 Şema kontrol ediliyor ve snapshot eşitleniyor (--fix)...'))
+        exec(`node "${schemaScript}" --fix`, { silent: true })
+        console.log(c.green('✔ Şema snapshot başarıyla eşitlendi.\n'))
+      }
     } catch (e) {
       console.warn(c.yellow(`⚠️ Şema snapshot uyarısı: ${e.message}\n`))
     }
@@ -308,12 +348,12 @@ function main() {
     console.log(c.cyan(`\n📂 Değişen dosyalar (${changedFiles.length}):`))
     changedFiles.forEach((f) => console.log(f))
 
-    // Stage all
+    // Stage release targets
     if (!flags.dryRun) {
-      console.log(c.cyan('\n📥 Tüm değişiklikler stage ediliyor...'))
-      exec('git add .')
+      console.log(c.cyan('\n📥 Release dosyaları stage ediliyor...'))
+      stageReleaseFiles()
     } else {
-      console.log(c.yellow('\n📥 [DRY RUN] git add . çalıştırılacak'))
+      console.log(c.yellow('\n📥 [DRY RUN] Sadece release dosyaları stage edilecek'))
     }
   } else {
     console.log(c.dim('\nℹ️  Commit edilecek değişiklik yok (clean working tree)'))
@@ -325,7 +365,7 @@ function main() {
   if (hasChanges || !flags.skipVersions) {
     // versions.json eklenmiş olabilir, tekrar stage edelim
     if (!flags.dryRun) {
-      exec('git add .')
+      stageReleaseFiles()
     }
 
     const stagedCheck = execSilent('git diff --cached --name-only')

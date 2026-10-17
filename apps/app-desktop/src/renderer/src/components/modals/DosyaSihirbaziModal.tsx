@@ -89,7 +89,15 @@ export function DosyaSihirbaziModal({
   const [konu, setKonu] = useState<string>('')
   const [birimId, setBirimId] = useState<number | ''>('')
 
-  const [ihaleSekli, setIhaleSekli] = useState<string>('22/d*')
+  const { addDosya, dosyalar } = useDosyalarHooks()
+  const { limitType } = useSettingsStore()
+  const { donemler } = useKikLimitDonemleri()
+  const { setActiveDosyaId } = useWorkspaceStore()
+
+  const defaultIhaleSekli = limitType === 'buyuksehir' ? '22/d*' : '22/d**'
+  const [customIhaleSekli, setCustomIhaleSekli] = useState<string | null>(null)
+  const ihaleSekli = customIhaleSekli ?? defaultIhaleSekli
+
   const [yaklasikMaliyet, setYaklasikMaliyet] = useState<string>('')
   const [kdvOrani, setKdvOrani] = useState<number>(20)
   const [kdvDahilMi, setKdvDahilMi] = useState<boolean>(false)
@@ -105,11 +113,6 @@ export function DosyaSihirbaziModal({
   // DB Data
   const [birimler, setBirimler] = useState<BirimOption[]>([])
   const [personeller, setPersoneller] = useState<PersonelOption[]>([])
-
-  const { addDosya, dosyalar } = useDosyalarHooks()
-  const { limitType } = useSettingsStore()
-  const { donemler } = useKikLimitDonemleri()
-  const { setActiveDosyaId } = useWorkspaceStore()
 
   // Calculate Next Temin No automatically
   const nextNoSuggestion = useMemo(() => {
@@ -139,6 +142,7 @@ export function DosyaSihirbaziModal({
     setCustomTeminNo('')
     setIsTeminNoManual(false)
     setCustomAsama(null)
+    setCustomIhaleSekli(null)
     setStep(1)
     setKonu('')
     setYaklasikMaliyet('')
@@ -491,16 +495,21 @@ export function DosyaSihirbaziModal({
           <div className="space-y-4 animate-in fade-in duration-200">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  İhale / Alım Şekli
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                    İhale / Alım Şekli
+                  </label>
+                  <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
+                    Kurum: {limitType === 'buyuksehir' ? 'Büyükşehir (22/d*)' : 'Diğer İdare (22/d**)'}
+                  </span>
+                </div>
                 <select
                   value={ihaleSekli}
-                  onChange={(e) => setIhaleSekli(e.target.value)}
+                  onChange={(e) => setCustomIhaleSekli(e.target.value)}
                   className="w-full px-3 py-2 text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="22/d*">22/d* (Büyükşehir Doğrudan Temin)</option>
-                  <option value="22/d**">22/d** (Diğer İdareler Doğrudan Temin)</option>
+                  <option value="22/d**">22/d** (Diğer İdareler / İlçe-Belde Doğrudan Temin)</option>
+                  <option value="22/d*">22/d* (Büyükşehir Belediyesi Doğrudan Temin)</option>
                   <option value="22/a">22/a (Tek Satıcı / İhtiyaç Sahibi)</option>
                   <option value="22/b">22/b (Özel Hak Sahipliği)</option>
                   <option value="22/c">22/c (Mevcut Mal/Hizmet Uyumu)</option>
