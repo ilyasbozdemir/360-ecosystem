@@ -128,6 +128,18 @@ export function getTabLabel(fullPath: string): string {
   if (path.startsWith(APP_ROUTES.EBYS)) return 'EBYS Resmî Yazı Şablonları'
   if (path.startsWith(APP_ROUTES.MODUL_MAGAZASI)) return 'Modül & Belge Mağazası'
   if (path.startsWith(APP_ROUTES.SUREC_STUDYOSU)) return 'Doğrudan Temin Süreç Stüdyosu'
+  if (path.startsWith(APP_ROUTES.IHTIYAC_RAPORLARI)) {
+    const query = fullPath.split('?')[1] || ''
+    const sp = new URLSearchParams(query)
+    const action = sp.get('action')
+    const no = sp.get('no')
+    const dosyaId = sp.get('dosyaId')
+    if (action === 'yeni') return 'Yeni İhtiyaç Raporu'
+    if (action === 'duzenle') return no ? `Düzenle: ${no}` : 'İhtiyaç Raporu Düzenle'
+    if (action === 'detay') return no ? `Rapor: ${no}` : 'İhtiyaç Raporu Detayı'
+    if (dosyaId) return `İhtiyaç Raporları (Dosya #${dosyaId})`
+    return 'İhtiyaç Raporları'
+  }
   return 'Yeni Sekme'
 }
 

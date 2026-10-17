@@ -52,6 +52,8 @@ describe('Database Schema Integrity & Manifest Tests', () => {
       'DATA_AmbarHareket',
       'DATA_DosyaSablonVeri',
       'DATA_NotVeGorev',
+      'DATA_IhtiyacRaporu',
+      'DATA_IhtiyacRaporuKalem',
       'LOG_SystemLog'
     ]
 

@@ -134,6 +134,9 @@ const BelgeOnizlemeScreen = lazyRoute(
   () => import("./screens/dosya/BelgeOnizleme.screen"),
   "BelgeOnizlemeScreen",
 );
+const IhtiyacRaporlariScreen = lazyRoute(() =>
+  import("./screens/ihtiyac-raporlari/IhtiyacRaporlariScreen")
+);
 
 // SubScreens
 const HazirlikVeIhtiyac = lazyRoute(
@@ -298,6 +301,12 @@ const raporlarRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: APP_ROUTES.RAPORLAR,
   component: RaporlarScreen,
+});
+
+const ihtiyacRaporlariRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: APP_ROUTES.IHTIYAC_RAPORLARI,
+  component: IhtiyacRaporlariScreen,
 });
 
 const okasKodRoute = createRoute({
@@ -619,6 +628,7 @@ const routeTree = rootRoute.addChildren([
   surecStudyosuRoute,
   belgeOnizlemeRoute,
   islakImzaRoute,
+  ihtiyacRaporlariRoute,
 ]);
 
 const hashHistory = createHashHistory();

@@ -29,7 +29,8 @@ import {
   Users,
   Boxes,
   Store,
-  Sparkles
+  Sparkles,
+  FileSpreadsheet
 } from 'lucide-react'
 import { APP_ROUTES } from '../../constants/routeConstants'
 import { useModuleStore } from '../../store/moduleStore'
@@ -271,6 +272,12 @@ export function getSidebarMenuGroups(
                   path: APP_ROUTES.TAKIP,
                   icon: FolderOpen,
                   badge: 'AÇIK'
+                },
+                {
+                  name: 'Dosya İhtiyaç Raporu & Lüzum',
+                  path: `${APP_ROUTES.IHTIYAC_RAPORLARI}?dosyaId=${activeDosyaId}`,
+                  icon: FileSpreadsheet,
+                  badge: 'AKTİF'
                 }
               ]
             : []),
@@ -279,6 +286,12 @@ export function getSidebarMenuGroups(
             path: APP_ROUTES.HARCAMA_MERKEZI,
             icon: Landmark,
             badge: '19/21'
+          },
+          {
+            name: activeDosyaId ? 'Tüm İhtiyaç Raporları (Havuz)' : 'İhtiyaç Raporları',
+            path: APP_ROUTES.IHTIYAC_RAPORLARI,
+            icon: FileSpreadsheet,
+            badge: activeDosyaId ? 'HAVUZ' : 'YENİ'
           },
           {
             name: 'Hakediş & Harcama İşlemleri',
@@ -403,6 +416,29 @@ export function getSidebarMenuGroups(
                     icon: FileText,
                     badge: '22/d'
                   },
+                  ...(activeDosyaId
+                    ? [
+                        {
+                          name: 'Dosya İhtiyaç Raporu & Lüzum',
+                          path: `${APP_ROUTES.IHTIYAC_RAPORLARI}?dosyaId=${activeDosyaId}`,
+                          icon: FileSpreadsheet,
+                          badge: 'AKTİF'
+                        },
+                        {
+                          name: 'İhtiyaç Raporları Havuzu',
+                          path: APP_ROUTES.IHTIYAC_RAPORLARI,
+                          icon: FileSpreadsheet,
+                          badge: 'HAVUZ'
+                        }
+                      ]
+                    : [
+                        {
+                          name: 'İhtiyaç Raporları',
+                          path: APP_ROUTES.IHTIYAC_RAPORLARI,
+                          icon: FileSpreadsheet,
+                          badge: 'YENİ'
+                        }
+                      ]),
                   {
                     name: 'Harcama & Hakediş Merkezi',
                     path: APP_ROUTES.HARCAMA_MERKEZI,
@@ -503,6 +539,12 @@ export function getSidebarMenuGroups(
                       badge: 'AÇIK'
                     },
                     {
+                      name: 'Dosya İhtiyaç Raporu & Lüzum',
+                      path: `${APP_ROUTES.IHTIYAC_RAPORLARI}?dosyaId=${activeDosyaId}`,
+                      icon: FileSpreadsheet,
+                      badge: 'AKTİF'
+                    },
+                    {
                       name: 'Süreç Akış Haritası',
                       path: APP_ROUTES.SUREC_AKISI,
                       icon: Layers,
@@ -514,6 +556,12 @@ export function getSidebarMenuGroups(
                 name: 'Doğrudan Temin Dosyaları',
                 path: APP_ROUTES.DOSYALAR,
                 icon: FileText
+              },
+              {
+                name: activeDosyaId ? 'Tüm İhtiyaç Raporları (Havuz)' : 'İhtiyaç Raporları',
+                path: APP_ROUTES.IHTIYAC_RAPORLARI,
+                icon: FileSpreadsheet,
+                badge: activeDosyaId ? 'HAVUZ' : 'YENİ'
               },
               {
                 name: 'Hakediş & Harcama İşlemleri',

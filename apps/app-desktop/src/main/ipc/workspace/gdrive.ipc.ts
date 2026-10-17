@@ -497,7 +497,7 @@ export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void):
             closingBuffer
           ])
 
-          const res = await fetchWithRetry(
+          let res = await fetchWithRetry(
             'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
             {
               method: 'POST',
@@ -509,8 +509,41 @@ export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void):
             }
           )
 
+          if (res.status === 401) {
+            console.log('[Google Drive] Yükleme sırasında 401 hatası, token yenileme deneniyor...')
+            cachedAppFolderId = null
+            const newToken = await tryRefreshToken(db)
+            if (newToken) {
+              cleanToken = newToken
+              res = await fetchWithRetry(
+                'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
+                {
+                  method: 'POST',
+                  headers: {
+                    Authorization: `Bearer ${cleanToken}`,
+                    'Content-Type': `multipart/related; boundary=${boundary}`
+                  },
+                  body: multipartBody
+                }
+              )
+            } else {
+              return {
+                success: false,
+                error:
+                  'Google Drive oturum süresi dolmuş veya geçersiz (401). Lütfen Ayarlar > Google Drive bölümünden token bilginizi yenileyin.'
+              }
+            }
+          }
+
           if (!res.ok) {
             const errText = await res.text()
+            if (res.status === 401) {
+              return {
+                success: false,
+                error:
+                  'Google Drive yetkilendirme hatası (401). Lütfen Ayarlar > Google Drive bölümünden token bilginizi yenileyin.'
+              }
+            }
             throw new Error(`Google Drive API Yükleme Hatası (${res.status}): ${errText}`)
           }
 

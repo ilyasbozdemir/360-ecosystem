@@ -1,7 +1,6 @@
 import Database from 'better-sqlite3'
 import { schema } from '../index'
 import { runMigrations, CURRENT_SCHEMA_VERSION } from '@dt/database'
-import yiUfeSeed from '../seed/yi_ufe_endeksleri.json'
 import { seedUnitConversions } from './conversionsSeed'
 import { seedDefaultCommissions } from './commissionsSeed'
 
@@ -24,6 +23,45 @@ export function ensureSchemaIntegrity(db: Database.Database): void {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
+      CREATE TABLE IF NOT EXISTS DATA_IhtiyacRaporu (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        rapor_no TEXT NOT NULL,
+        baslik TEXT NOT NULL,
+        gerekce TEXT,
+        birim_id INTEGER,
+        birim_adi TEXT,
+        talep_eden_personel_id INTEGER,
+        talep_eden_personel TEXT,
+        durum TEXT DEFAULT 'taslak',
+        temin_dosya_id INTEGER,
+        tarih DATE DEFAULT CURRENT_DATE,
+        onay_tarihi DATE,
+        tahmini_butce REAL DEFAULT 0,
+        notlar TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(temin_dosya_id) REFERENCES DATA_TeminDosyasi(id) ON DELETE SET NULL
+      );
+      CREATE TABLE IF NOT EXISTS DATA_IhtiyacRaporuKalem (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        rapor_id INTEGER NOT NULL,
+        sira_no INTEGER,
+        kalem_adi TEXT NOT NULL,
+        tipi TEXT DEFAULT 'Mal',
+        birim TEXT DEFAULT 'Adet',
+        miktar REAL NOT NULL DEFAULT 1,
+        kdv_orani REAL DEFAULT 20,
+        tasinir_kodu TEXT,
+        okas_kodu TEXT,
+        poz_no TEXT,
+        aciklama TEXT,
+        tahmini_birim_fiyat REAL DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(rapor_id) REFERENCES DATA_IhtiyacRaporu(id) ON DELETE CASCADE
+      );
+      CREATE INDEX IF NOT EXISTS idx_ihtiyac_raporu_temin_dosya ON DATA_IhtiyacRaporu(temin_dosya_id);
+      CREATE INDEX IF NOT EXISTS idx_ihtiyac_raporu_kalem_rapor ON DATA_IhtiyacRaporuKalem(rapor_id);
     `)
   } catch {}
 

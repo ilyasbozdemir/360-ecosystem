@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useRouterState } from '@tanstack/react-router'
-import { Check, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Check, ChevronDown, ChevronLeft, ChevronRight, FileSpreadsheet } from 'lucide-react'
 import { useCiktiMerkeziData } from '../../screens/dosya/CiktiMerkezi.hooks'
 import { useQuery } from '@tanstack/react-query'
 import { useWorkspaceStore } from '../../store/workspaceStore'
@@ -186,7 +186,7 @@ export function ActiveFileSidebar(): React.JSX.Element | null {
       <div className="p-3 border-b border-slate-200 dark:border-slate-850 flex items-center justify-between min-h-[3rem] shrink-0">
         {!isCollapsed && (
           <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500">
-            Dosya Süreçlerixxx
+            Dosya Süreçleri
           </span>
         )}
         <button
@@ -198,8 +198,37 @@ export function ActiveFileSidebar(): React.JSX.Element | null {
         </button>
       </div>
 
+      {/* Quick Action: Dosya İhtiyaç Raporu */}
+      <div className="p-2 pb-0 shrink-0">
+        <button
+          onClick={() =>
+            navigate({
+              to: APP_ROUTES.IHTIYAC_RAPORLARI as never,
+              search: { dosyaId: String(activeDosyaId) } as never
+            })
+          }
+          className={cn(
+            'w-full flex items-center gap-2.5 p-2 rounded-xl text-left transition-all duration-200 border cursor-pointer group',
+            router.location.pathname === APP_ROUTES.IHTIYAC_RAPORLARI
+              ? 'bg-cyan-50 border-cyan-200 dark:bg-cyan-900/30 dark:border-cyan-800 text-cyan-700 dark:text-cyan-300 font-bold'
+              : 'bg-cyan-50/50 dark:bg-cyan-950/20 border-cyan-200/60 dark:border-cyan-900/40 text-cyan-700 dark:text-cyan-400 hover:bg-cyan-100/60'
+          )}
+          title="Dosya İhtiyaç Raporu & Lüzum Müzekkeresi"
+        >
+          <div className="w-6 h-6 rounded-lg bg-cyan-600/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center shrink-0">
+            <FileSpreadsheet className="w-3.5 h-3.5" />
+          </div>
+          {!isCollapsed && (
+            <div className="flex-1 min-w-0 pr-1">
+              <div className="text-xs truncate font-bold">İhtiyaç Raporu & Lüzum</div>
+              <div className="text-[10px] text-cyan-600/70 dark:text-cyan-400/70 truncate">Ön Hazırlık</div>
+            </div>
+          )}
+        </button>
+      </div>
+
       {/* Stages List */}
-      <div className="flex-1 overflow-y-auto py-4 px-2 space-y-1.5">
+      <div className="flex-1 overflow-y-auto py-3 px-2 space-y-1.5">
         {stagesToUseMapped.map((asama, idx) => {
           const kategoriler = STAGE_KATEGORI[asama.asama_sira] || []
           let stageSablons = sablons.filter((s: any) => kategoriler.includes(s.kategori))

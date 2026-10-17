@@ -1,27 +1,48 @@
-# Katkıda Bulunma Rehberi (Contributing)
+# Katkıda Bulunma Rehberi
 
-Öncelikle Doğrudan Temin (DT) Masaüstü Uygulaması projesine katkıda bulunmayı düşündüğünüz için teşekkür ederiz!
+TEMİN 360'a katkıda bulunmayı düşündüğünüz için teşekkür ederiz!
 
-## Geliştirme Ortamının Kurulumu
+## Geliştirme Ortamı
 
-1. Repoyu bilgisayarınıza klonlayın.
-2. Gerekli bağımlılıkları yüklemek için `pnpm install` komutunu çalıştırın.
-3. Uygulamayı geliştirme modunda başlatmak için `pnpm dev` komutunu kullanın.
+1. Repoyu klonlayın.
+2. `pnpm install` ile bağımlılıkları yükleyin.
+3. `pnpm dev:desktop` ile masaüstü uygulamasını başlatın. (Opsiyonel:
+   `pnpm dev:web`, `pnpm dev:website`)
+
+## Proje Yapısı
+
+- `apps/app-desktop`: Electron + React + SQLite masaüstü uygulaması
+- `apps/app-web`, `apps/app-landing`: Senkronizasyon servisi ve tanıtım portalı
+- `packages/document-templates`: Resmi evrak ve tutanak şablonları
+- `packages/pdf-generator`: PDF derleme paketi
+- `packages/database`: Şema ve migrasyonlar
 
 ## Kod Standartları
 
-- Proje genelinde **TypeScript**, **React** ve **Tailwind CSS** kullanılmaktadır.
-- Electron altyapısında `electron-vite` şablonu temel alınmıştır.
-- Veritabanı olarak **SQLite** kullanılmaktadır.
-- Yeni kod eklerken mevcut kodlama stiline ve lint kurallarına dikkat ediniz.
+- TypeScript, React, Tailwind CSS ve SQLite kullanılır.
+- PR açmadan önce şunlar hatasız çalışmalıdır: `pnpm typecheck`, `pnpm lint`,
+  `pnpm format`
+- Commit mesajlarında `feat:`, `fix:`, `style:`, `docs:` gibi önekler kullanın.
+
+## Mevzuat ile İlgili Değişiklikler
+
+Limit, oran, usul veya şablon metni değişikliklerinde ilgili kanun maddesini,
+tebliğ veya Resmî Gazete kaynağını PR açıklamasına yazın. Kaynağı belirtilmeyen
+mevzuat değişiklikleri kabul edilmez.
 
 ## Katkı Süreci
 
-1. Yeni bir branch (dal) oluşturun: `git checkout -b ozellik/yeni-ozellik-adi`
-2. Değişikliklerinizi yapın ve commit'leyin: `git commit -am 'feat: yeni özellik eklendi'`
-3. Dalınızı uzak sunucuya gönderin: `git push origin ozellik/yeni-ozellik-adi`
-4. Bir **Pull Request (PR)** açarak değişikliklerinizi incelemeye sunun.
+1. Dal oluşturun: `git checkout -b ozellik/yeni-ozellik-adi`
+2. Değişiklikleri commit'leyin: `git commit -am 'feat: yeni özellik'`
+3. Dalı gönderin: `git push origin ozellik/yeni-ozellik-adi`
+4. Pull Request açın.
+
+## Lisans ve Katkı Hakları
+
+Proje çift lisanslıdır (GNU AGPLv3 ve kurumsal/ticari lisans). Pull Request
+göndererek, katkınızın bu iki lisans altında da dağıtılabileceğini kabul etmiş
+olursunuz.
 
 ## Sorun Bildirimi
 
-Eğer uygulamada bir hata fark ederseniz veya yeni bir özellik önermek isterseniz, lütfen Issue açarak durumu detaylı bir şekilde açıklayın.
+Hata veya öneri için Issue açın ve durumu mümkün olduğunca ayrıntılı anlatın.

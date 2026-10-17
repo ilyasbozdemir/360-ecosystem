@@ -50,6 +50,7 @@ export const APP_ROUTES = {
   HESAPLAMA_ARACLARI: '/hesaplama-araclari',
   EBYS: '/ebys',
   BELGELERIM: '/belgelerim',
+  IHTIYAC_RAPORLARI: '/ihtiyac-raporlari',
 
   // Dosya Alt Süreçleri (SubScreens)
   // Aşamalar

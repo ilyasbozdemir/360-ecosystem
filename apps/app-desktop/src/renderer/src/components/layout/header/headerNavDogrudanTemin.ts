@@ -16,6 +16,10 @@ export function getDogrudanTeminMenus(
           onClick: (): Promise<void> => navigate({ to: APP_ROUTES.DOSYALAR })
         },
         {
+          label: '📋 İhtiyaç Raporları Havuzu (Genel)',
+          onClick: (): Promise<void> => navigate({ to: APP_ROUTES.IHTIYAC_RAPORLARI })
+        },
+        {
           label: '📁 Proje Yönetimi & Yatırımlar',
           onClick: (): Promise<void> => navigate({ to: APP_ROUTES.PROJELER })
         },
@@ -47,6 +51,14 @@ export function getDogrudanTeminMenus(
                 onClick: (): Promise<void> => navigate({ to: APP_ROUTES.TAKIP })
               },
               {
+                label: '📋 Bu Dosyaya Bağlı İhtiyaç Raporları',
+                onClick: (): Promise<void> =>
+                  navigate({
+                    to: APP_ROUTES.IHTIYAC_RAPORLARI,
+                    search: { dosyaId: String(activeDosyaId) } as Record<string, string>
+                  })
+              },
+              {
                 label: '🧭 Süreç Akış Haritası (Beta - Tablar)',
                 onClick: (): Promise<void> => navigate({ to: APP_ROUTES.SUREC_AKISI })
               },
@@ -71,6 +83,14 @@ export function getDogrudanTeminMenus(
           {
             name: 'Adım Adım Süreç',
             items: [
+              {
+                label: '0. İhtiyaç Raporu & Lüzum Müzekkeresi',
+                onClick: (): Promise<void> =>
+                  navigate({
+                    to: APP_ROUTES.IHTIYAC_RAPORLARI,
+                    search: { dosyaId: String(activeDosyaId) } as Record<string, string>
+                  })
+              },
               {
                 label: '1. İhtiyaç Listesi & Maliyet & Onay',
                 onClick: (): Promise<void> => navigate({ to: APP_ROUTES.HAZIRLIK_VE_IHTIYAC })

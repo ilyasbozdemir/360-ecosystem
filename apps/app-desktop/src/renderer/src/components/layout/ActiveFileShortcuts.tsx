@@ -4,6 +4,7 @@ import {
   Briefcase,
   Building2,
   ClipboardList,
+  FileSpreadsheet,
   FolderKanban,
   HelpCircle,
   Home,
@@ -16,6 +17,7 @@ import {
 } from "lucide-react";
 import { cn } from "../../utils/cn";
 import { useSettingsStore } from "../../store/settingsStore";
+import { useWorkspaceStore } from "../../store/workspaceStore";
 import { getInitials } from "@renderer/utils/formatters";
 
 interface ShortcutItem {
@@ -23,12 +25,14 @@ interface ShortcutItem {
   path: string;
   icon: React.ComponentType<{ className?: string }>;
   color: string;
+  badge?: string;
 }
 
 export function ActiveFileShortcuts(): React.JSX.Element {
   const router = useRouterState();
   const currentPath = router.location.pathname;
   const { adminUsername, adminName, institutionLogo } = useSettingsStore();
+  const { activeDosyaId } = useWorkspaceStore();
 
   const primaryItems: ShortcutItem[] = [
     {
@@ -70,6 +74,17 @@ export function ActiveFileShortcuts(): React.JSX.Element {
       path: "/malzemeler",
       icon: PackageSearch,
       color: "hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20",
+    },
+    {
+      name: activeDosyaId
+        ? `İhtiyaç Raporları (Dosya #${activeDosyaId})`
+        : "İhtiyaç Raporları (Genel Havuz)",
+      path: activeDosyaId
+        ? `/ihtiyac-raporlari?dosyaId=${activeDosyaId}`
+        : "/ihtiyac-raporlari",
+      icon: FileSpreadsheet,
+      color: "hover:text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-950/20",
+      badge: activeDosyaId ? "AKTİF" : undefined,
     },
     {
       name: "Komisyon Yönetimi",
@@ -117,13 +132,14 @@ export function ActiveFileShortcuts(): React.JSX.Element {
   ];
 
   const renderLink = (item: ShortcutItem): React.JSX.Element => {
-    const isActive = currentPath === item.path;
+    const itemPathClean = item.path.split("?")[0];
+    const isActive = currentPath === itemPathClean;
     const Icon = item.icon;
 
     return (
       <Link
         key={item.path}
-        to={item.path as any}
+        to={item.path as never}
         className={cn(
           "w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 border cursor-pointer relative group",
           isActive
@@ -134,9 +150,18 @@ export function ActiveFileShortcuts(): React.JSX.Element {
       >
         <Icon className="w-5 h-5" />
 
+        {item.badge && (
+          <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-cyan-500 ring-2 ring-white dark:ring-slate-900" />
+        )}
+
         {/* Tooltip */}
-        <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 hidden group-hover:block z-50 bg-slate-900 text-white text-xs rounded-lg py-1.5 px-3 shadow-xl whitespace-nowrap">
-          {item.name}
+        <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 hidden group-hover:flex items-center gap-1.5 z-50 bg-slate-900 text-white text-xs rounded-lg py-1.5 px-3 shadow-xl whitespace-nowrap">
+          <span>{item.name}</span>
+          {item.badge && (
+            <span className="px-1.5 py-0.2 text-[9px] font-black uppercase rounded bg-cyan-500/30 text-cyan-300">
+              {item.badge}
+            </span>
+          )}
         </div>
       </Link>
     );

@@ -16,6 +16,10 @@ export function getIhaleMenus(navigate: NavigateFn, activeDosyaId: number | null
           label: 'Pazarlık Usulü İhale (KİK Md. 21)',
           onClick: () => navigate({ to: APP_ROUTES.HARCAMA_MERKEZI })
         },
+        {
+          label: '📋 İhtiyaç Raporları Havuzu (Genel)',
+          onClick: () => navigate({ to: APP_ROUTES.IHTIYAC_RAPORLARI })
+        },
         { label: 'İhale Hakediş & Harcama Raporları', onClick: () => navigate({ to: APP_ROUTES.HAKEDIS }) },
         { divider: true },
         { label: 'Şablon & Kategori Yönetimi', onClick: () => navigate({ to: APP_ROUTES.DEGISKENLER }) },
@@ -27,6 +31,14 @@ export function getIhaleMenus(navigate: NavigateFn, activeDosyaId: number | null
           {
             name: 'İhale Süreç Adımları',
             items: [
+              {
+                label: '0. İhtiyaç Raporu & Lüzum Müzekkeresi',
+                onClick: () =>
+                  navigate({
+                    to: APP_ROUTES.IHTIYAC_RAPORLARI,
+                    search: { dosyaId: String(activeDosyaId) } as Record<string, string>
+                  })
+              },
               {
                 label: '1. İhale Onay Belgesi & Şartnameler',
                 onClick: () => navigate({ to: APP_ROUTES.HAZIRLIK_VE_IHTIYAC })
@@ -53,6 +65,14 @@ export function getIhaleMenus(navigate: NavigateFn, activeDosyaId: number | null
             name: 'İhale İşlemleri',
             items: [
               { label: 'İhale Dosya Durumu & Takip', onClick: () => navigate({ to: APP_ROUTES.TAKIP }) },
+              {
+                label: '📋 Bu Dosyaya Bağlı İhtiyaç Raporları',
+                onClick: () =>
+                  navigate({
+                    to: APP_ROUTES.IHTIYAC_RAPORLARI,
+                    search: { dosyaId: String(activeDosyaId) } as Record<string, string>
+                  })
+              },
               {
                 label: 'İhale Belge Çıktı Merkezi',
                 onClick: () => navigate({ to: APP_ROUTES.CIKTI_MERKEZI_DASHBOARD })

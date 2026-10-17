@@ -20,6 +20,7 @@ import {
   Tag,
   Users,
   X,
+  FileSpreadsheet,
 } from "lucide-react";
 import { getTabLabel, useTabStore } from "../../store/tabStore";
 import { useWorkspaceStore } from "../../store/workspaceStore";
@@ -49,6 +50,7 @@ const tabIcons: Record<string, LucideIcon> = {
   "/profil": Users,
   "/dosya": FileText,
   "/modul-magazasi": Store,
+  [APP_ROUTES.IHTIYAC_RAPORLARI]: FileSpreadsheet,
 };
 
 export function TabsBar(): React.JSX.Element {
@@ -130,9 +132,10 @@ export function TabsBar(): React.JSX.Element {
       className="flex items-end gap-[2px] bg-slate-100/80 dark:bg-slate-950/40 border-b border-slate-200/50 dark:border-slate-800/50 px-4 h-11 overflow-x-auto overflow-y-hidden select-none custom-scrollbar scroll-smooth shrink-0"
     >
       {tabs.map((tab) => {
-        const Icon = tabIcons[tab.path] || FileText;
+        const cleanTabPath = tab.path.split('?')[0];
+        const Icon = tabIcons[cleanTabPath] || tabIcons[tab.path] || FileText;
         const isActive = activeTabPath === tab.path;
-        const isBelgePath = tab.path.split('?')[0].startsWith(APP_ROUTES.BELGE_ONIZLEME);
+        const isBelgePath = cleanTabPath.startsWith(APP_ROUTES.BELGE_ONIZLEME);
         const displayLabel =
           !tab.label || tab.label === 'Yeni Sekme' || (isBelgePath && tab.label === 'Dosya Detayları')
             ? getTabLabel(tab.path)

@@ -49,6 +49,8 @@ import { DATA_KutuphaneGrup } from './tables/DATA_KutuphaneGrup'
 import { DATA_KutuphaneBelge } from './tables/DATA_KutuphaneBelge'
 import { DATA_KutuphaneBelgeSurum } from './tables/DATA_KutuphaneBelgeSurum'
 import { DATA_KutuphaneYerTutucu } from './tables/DATA_KutuphaneYerTutucu'
+import { DATA_IhtiyacRaporu } from './tables/DATA_IhtiyacRaporu'
+import { DATA_IhtiyacRaporuKalem } from './tables/DATA_IhtiyacRaporuKalem'
 import { runMigrations, CURRENT_SCHEMA_VERSION } from './migrate'
 import { defineTable } from './BaseTable'
 
@@ -101,6 +103,8 @@ const rawTables = [
   DATA_KutuphaneBelge,
   DATA_KutuphaneBelgeSurum,
   DATA_KutuphaneYerTutucu,
+  DATA_IhtiyacRaporu,
+  DATA_IhtiyacRaporuKalem,
   LOG_SystemLog
 ]
 
@@ -239,6 +243,8 @@ export { DATA_KutuphaneGrup } from './tables/DATA_KutuphaneGrup'
 export { DATA_KutuphaneBelge } from './tables/DATA_KutuphaneBelge'
 export { DATA_KutuphaneBelgeSurum } from './tables/DATA_KutuphaneBelgeSurum'
 export { DATA_KutuphaneYerTutucu } from './tables/DATA_KutuphaneYerTutucu'
+export { DATA_IhtiyacRaporu } from './tables/DATA_IhtiyacRaporu'
+export { DATA_IhtiyacRaporuKalem } from './tables/DATA_IhtiyacRaporuKalem'
 export { manifests } from './schema-manifest/index'
 export { defineTable } from './BaseTable'
 export { auditColumns, auditColumnsNoRef } from './audit'
