@@ -6,7 +6,8 @@
 
 const RESTRICTED_TABLES = ['SETTINGS', 'TANIM_AYAR']
 
-export function validateSqlQuery(sql: string, _params: any[] = []): void {
+export function validateSqlQuery(sql: string, _params?: unknown[]): void {
+  void _params
   const cleanSql = sql.trim()
 
   // 1. Check for multi-statement injection (e.g. SELECT 1; DELETE FROM tutanaklar)
@@ -45,4 +46,27 @@ export function validateSqlQuery(sql: string, _params: any[] = []): void {
         'Use dedicated named handlers (e.g. db:get-settings, db:save-settings) instead.'
     )
   }
+}
+
+export function extractTableAndAction(sql: string): {
+  tableName: string
+  action: 'insert' | 'update' | 'delete' | 'other'
+} {
+  if (!sql || typeof sql !== 'string') return { tableName: 'Veritabanı', action: 'other' }
+  const clean = sql.trim().replace(/\s+/g, ' ')
+  const upper = clean.toUpperCase()
+  let action: 'insert' | 'update' | 'delete' | 'other' = 'other'
+
+  if (upper.startsWith('INSERT')) action = 'insert'
+  else if (upper.startsWith('UPDATE')) action = 'update'
+  else if (upper.startsWith('DELETE')) action = 'delete'
+
+  let tableName = 'Veritabanı'
+  const match = clean.match(
+    /(?:FROM|INTO|UPDATE)\s+(?:["`'[\]]?[A-Za-z0-9_]+["`'[\]]?\.)?["`'[\]]?([A-Za-z0-9_]+)["`'[\]]?/i
+  )
+  if (match && match[1]) {
+    tableName = match[1]
+  }
+  return { tableName, action }
 }

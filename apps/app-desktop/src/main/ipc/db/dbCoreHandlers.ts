@@ -7,6 +7,10 @@ import {
 import { validateSqlQuery } from '../utils/sqlGuard'
 import { withSchemaRetry } from '../utils/schemaRetry'
 
+import { handleDbTransaction, executeDbTransaction } from './dbTransaction'
+
+export { handleDbTransaction, executeDbTransaction }
+
 /**
  * Veritabanı Temel SQL Çalıştırma ve Sorgulama IPC İşleyicileri
  * SQLite veritabanı üzerinde SELECT, INSERT, UPDATE, DELETE ve TRANSACTION işlemlerini
@@ -115,35 +119,17 @@ export function registerDbCoreHandlers(): void {
    * @param queries Çalıştırılacak SQL ve parametre nesneleri dizisi
    * @returns Tranzaksiyon sonucu ve toplam değişen satır sayısı
    */
-  ipcMain.handle('db:transaction', async (_, queries: { sql: string; params: any[] }[]) => {
-    try {
-      const db = workspaceManager.getDb()
-      for (const q of queries) {
-        validateSqlQuery(q.sql, q.params)
-      }
-
-      let lastInsertRowid: number | bigint = 0
-      let totalChanges = 0
-
-      const transaction = db.transaction((stmts: { sql: string; params: any[] }[]) => {
-        for (const q of stmts) {
-          const stmt = db.prepare(q.sql)
-          const info = stmt.run(...q.params)
-          lastInsertRowid = info.lastInsertRowid
-          totalChanges += info.changes
-          const { tableName, action } = extractTableAndAction(q.sql)
-          workspaceManager.recordMutation(tableName, action, info.changes || 1)
+  ipcMain.handle('db:transaction', async (_, queries: { sql: string; params?: any[] }[]) => {
+    return handleDbTransaction(workspaceManager.getDb(), queries, {
+      validateSql: true,
+      onMutation: (tableName, action, count) => {
+        workspaceManager.recordMutation(tableName, action, count)
+      },
+      onSave: () => {
+        if (workspaceManager.isDirty()) {
+          workspaceManager.save()
         }
-      })
-
-      transaction(queries)
-      if (workspaceManager.isDirty()) {
-        workspaceManager.save()
       }
-
-      return { success: true, lastInsertRowid, changes: totalChanges }
-    } catch (error: any) {
-      return { success: false, error: error.message }
-    }
+    })
   })
 }

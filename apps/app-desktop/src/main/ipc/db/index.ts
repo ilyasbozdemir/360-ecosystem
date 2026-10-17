@@ -17,6 +17,7 @@ export function registerDbIpcHandlers(): void {
 }
 
 export * from './dbCoreHandlers'
+export * from './dbTransaction'
 export * from './dbAuthHandlers'
 export * from './dbSettingsHandlers'
 export * from './dbExcelHandlers'

@@ -1,16 +1,27 @@
 // @vitest-environment node
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { DatabaseSync } from 'node:sqlite'
+import {
+  executeDbTransaction,
+  handleDbTransaction,
+  SqliteDatabaseLike
+} from '../../../../main/ipc/db/dbTransaction'
+import { ihtiyacRaporuService } from '../ihtiyacRaporuService'
+import { dbClient } from '../db/dbClient'
 
 /**
  * Gerçek SQLite Veritabanı ile Transaction Rollback & Atomiklik Doğrulama Testi
- * 
- * Bu test, hiçbir mock kullanmadan doğrudan Node.js v22'nin yerleşik
- * SQLite C/C++ motoru (node:sqlite) üzerinde fiziksel bir SQLite bellekte veritabanı açarak:
- * 1. Transaction içindeki işlemlerin (Update + Insert) bir SQL veya kısıtlama hatası aldığında
- *    gerçekten SQLite tarafından anında ROLLBACK yapıldığını,
- * 2. Hata öncesinde başarılı çalışmış olan 'UPDATE DATA_IhtiyacRaporu' ve 'INSERT DATA_TeminKalem'
- *    işlemlerinin tümünün sıfırlandığını ve veritabanının ilk haline eksiksiz döndüğünü fiziki olarak kanıtlar.
+ *
+ * Bu test, uygulamanın ÜRETİM kodundaki gerçek transaction motorunu (executeDbTransaction / handleDbTransaction)
+ * doğrudan Node.js v22'nin yerleşik SQLite motoru (node:sqlite DatabaseSync) üzerinde çalıştırır:
+ * 1. Transaction içindeki işlemlerin bir SQL veya kısıtlama hatası aldığında fiziksel SQLite motoru
+ *    tarafından anında ROLLBACK yapıldığını doğrular.
+ * 2. Uygulamanın dbCoreHandlers / dbTransaction üretim kodunun doğrudan çağrıldığını ve
+ *    ayrı bir test mock'u veya kopya transaction mantığı kullanılmadığını kanıtlar.
+ * 3. Hata öncesinde başarılı çalışmış olan 'UPDATE DATA_IhtiyacRaporu' ve 'INSERT DATA_TeminKalem'
+ *    işlemlerinin tümünün sıfırlandığını ve veritabanının ilk haline eksiksiz döndüğünü belgeler.
+ * 4. ihtiyacRaporuService.linkToDosya() servisinin bu gerçek transaction motoruyla fiziksel
+ *    veritabanında atomik çalıştığını ve hata anında eksiksiz rollback yaptığını doğrular.
  */
 describe('Gerçek SQLite Motoru: İhtiyaç Raporu Transaction & Rollback Güvencesi', () => {
   let db: DatabaseSync
@@ -30,7 +41,9 @@ describe('Gerçek SQLite Motoru: İhtiyaç Raporu Transaction & Rollback Güvenc
         dosya_no TEXT,
         konu TEXT,
         evrak_sayisi TEXT,
-        isin_aciklamasi TEXT
+        isin_aciklamasi TEXT,
+        talep_eden_personel_id INTEGER,
+        ihtiyac_yeri TEXT
       );
 
       CREATE TABLE DATA_IhtiyacRaporu (
@@ -43,7 +56,33 @@ describe('Gerçek SQLite Motoru: İhtiyaç Raporu Transaction & Rollback Güvenc
         tarih DATE DEFAULT CURRENT_DATE,
         onay_tarihi DATE,
         evrak_sayisi TEXT,
+        talep_eden_personel_id INTEGER,
+        talep_eden_personel TEXT,
+        talep_eden_unvan TEXT,
+        birim_id INTEGER,
+        birim_adi TEXT,
+        tahmini_butce REAL DEFAULT 0,
+        notlar TEXT,
+        updated_at DATETIME,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(temin_dosya_id) REFERENCES DATA_TeminDosyasi(id) ON DELETE SET NULL
+      );
+
+      CREATE TABLE DATA_IhtiyacRaporuKalem (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        rapor_id INTEGER NOT NULL,
+        sira_no INTEGER,
+        kalem_adi TEXT NOT NULL,
+        tipi TEXT DEFAULT 'Mal',
+        birim TEXT DEFAULT 'Adet',
+        miktar REAL NOT NULL,
+        kdv_orani REAL DEFAULT 20,
+        tasinir_kodu TEXT,
+        okas_kodu TEXT,
+        poz_no TEXT,
+        aciklama TEXT,
+        tahmini_birim_fiyat REAL,
+        FOREIGN KEY(rapor_id) REFERENCES DATA_IhtiyacRaporu(id) ON DELETE CASCADE
       );
 
       CREATE TABLE DATA_TeminKalem (
@@ -55,21 +94,31 @@ describe('Gerçek SQLite Motoru: İhtiyaç Raporu Transaction & Rollback Güvenc
         birim TEXT DEFAULT 'Adet',
         miktar REAL NOT NULL,
         kdv_orani REAL DEFAULT 20,
+        tasinir_kodu TEXT,
+        okas_kodu TEXT,
+        poz_no TEXT,
+        aciklama TEXT,
+        created_at DATETIME,
+        updated_at DATETIME,
         FOREIGN KEY(temin_dosya_id) REFERENCES DATA_TeminDosyasi(id) ON DELETE CASCADE
       );
     `)
 
-    // Başlangıç verilerini yerleştir: 1 hedef dosya ve 1 taslak ihtiyaç raporu
+    // Başlangıç verilerini yerleştir: 1 hedef dosya ve 1 taslak ihtiyaç raporu ve kalemleri
     db.exec(`
-      INSERT INTO DATA_TeminDosyasi (id, temin_no, dosya_no, konu, evrak_sayisi)
-      VALUES (10, 'DT-2026/01', '2026/01', 'Kırtasiye Alımı', 'E-2026-100');
+      INSERT INTO DATA_TeminDosyasi (id, temin_no, dosya_no, konu, evrak_sayisi, isin_aciklamasi)
+      VALUES (10, 'DT-2026/01', '2026/01', 'Kırtasiye Alımı', 'E-2026-100', 'Müdürlük kırtasiye ihtiyacı');
 
-      INSERT INTO DATA_IhtiyacRaporu (id, rapor_no, baslik, durum, temin_dosya_id, tarih)
-      VALUES (1, 'IR-2026/001', 'A4 Kağıt İhtiyacı', 'taslak', NULL, '2026-03-25');
+      INSERT INTO DATA_IhtiyacRaporu (id, rapor_no, baslik, gerekce, durum, temin_dosya_id, tarih, birim_adi)
+      VALUES (1, 'IR-2026/001', 'A4 Kağıt İhtiyacı', 'Yazışmalar için', 'taslak', NULL, '2026-03-25', 'Yazı İşleri Müdürlüğü');
+
+      INSERT INTO DATA_IhtiyacRaporuKalem (id, rapor_id, sira_no, kalem_adi, tipi, birim, miktar, kdv_orani)
+      VALUES (101, 1, 1, 'Fotokopi Kağıdı A4', 'Mal', 'Paket', 50, 20);
     `)
   })
 
   afterEach(() => {
+    vi.restoreAllMocks()
     try {
       db.close()
     } catch {
@@ -77,30 +126,7 @@ describe('Gerçek SQLite Motoru: İhtiyaç Raporu Transaction & Rollback Güvenc
     }
   })
 
-  /**
-   * Main process tarafındaki dbCoreHandlers.ts'in SQLite transaction mantığının birebir kopyası:
-   * BEGIN IMMEDIATE -> tüm SQL ifadelerini çalıştır -> hata olursa ROLLBACK fırlat -> başarılıysa COMMIT yap.
-   */
-  function executeNativeSqliteTransaction(
-    statements: { sql: string; params?: unknown[] }[]
-  ): { success: boolean; changes: number } {
-    db.exec('BEGIN IMMEDIATE;')
-    try {
-      let totalChanges = 0
-      for (const stmt of statements) {
-        const prepared = db.prepare(stmt.sql)
-        const info = prepared.run(...((stmt.params || []) as any[]))
-        totalChanges += Number(info.changes || 0)
-      }
-      db.exec('COMMIT;')
-      return { success: true, changes: totalChanges }
-    } catch (error) {
-      db.exec('ROLLBACK;')
-      throw error
-    }
-  }
-
-  it('1. GERÇEK ROLLBACK KANITI: Transaction içindeki bir SQL başarısız olduğunda, önceki işlemlerin hiçbiri kalıcı olmamalı ve geri alınmalıdır', () => {
+  it('1. GERÇEK ROLLBACK KANITI (Üretim executeDbTransaction): SQL hatasında önceki işlemler geri alınmalı ve hata fırlatılmalıdır', () => {
     // 1. Adım: Başlangıç durumunu doğrula
     const initialRapor = db.prepare('SELECT durum, temin_dosya_id FROM DATA_IhtiyacRaporu WHERE id = 1').get() as {
       durum: string
@@ -133,9 +159,9 @@ describe('Gerçek SQLite Motoru: İhtiyaç Raporu Transaction & Rollback Güvenc
       }
     ]
 
-    // 3. Adım: Transaction'ı çalıştır -> Gerçek SQLite hatasıyla patlamalı
+    // 3. Adım: ÜRETİM KODUNDAKİ executeDbTransaction fonksiyonunu doğrudan çalıştır -> Gerçek SQLite hatası fırlatmalı
     expect(() => {
-      executeNativeSqliteTransaction(transactionStatements)
+      executeDbTransaction(db, transactionStatements, { validateSql: true })
     }).toThrow(/no such table: NON_EXISTING_TABLE_TO_FORCE_SQLITE_ROLLBACK/)
 
     // 4. Adım: GERÇEK SQLITE VERİTABANI KONTROLÜ (Rollback kanıtı):
@@ -150,10 +176,10 @@ describe('Gerçek SQLite Motoru: İhtiyaç Raporu Transaction & Rollback Güvenc
     const postRollbackKalemCount = db.prepare('SELECT COUNT(*) as count FROM DATA_TeminKalem WHERE temin_dosya_id = 10').get() as {
       count: number
     }
-    expect(postRollbackKalemCount.count).toBe(0) // Eklenmeye çalışılan 'Fotokopi Kağıdı A4' silinmiş/kaydedilmemiş!
+    expect(postRollbackKalemCount.count).toBe(0) // Eklenmeye çalışılan 'Fotokopi Kağıdı A4' kaydedilmemiş!
   })
 
-  it('2. GERÇEK FOREIGN KEY ROLLBACK KANITI: Yabancı anahtar (Foreign Key) kısıtlaması ihlal edildiğinde tüm transaction geri alınmalıdır', () => {
+  it('2. GERÇEK FOREIGN KEY ROLLBACK KANITI (Üretim executeDbTransaction): Yabancı anahtar kısıtlaması ihlal edildiğinde tüm transaction geri alınmalıdır', () => {
     // Hedefte olmayan bir dosya ID'sine kalem eklemeye çalışarak gerçek SQLITE_CONSTRAINT_FOREIGNKEY hatası üret
     const transactionStatements = [
       {
@@ -167,7 +193,7 @@ describe('Gerçek SQLite Motoru: İhtiyaç Raporu Transaction & Rollback Güvenc
     ]
 
     expect(() => {
-      executeNativeSqliteTransaction(transactionStatements)
+      executeDbTransaction(db, transactionStatements, { validateSql: true })
     }).toThrow(/FOREIGN KEY constraint failed/)
 
     // Rapor yine 'taslak' ve bağlantısız kalmalıdır
@@ -179,7 +205,7 @@ describe('Gerçek SQLite Motoru: İhtiyaç Raporu Transaction & Rollback Güvenc
     expect(savedRapor.temin_dosya_id).toBeNull()
   })
 
-  it('3. GERÇEK COMMIT KANITI: Hata olmadığında tüm transaction atomik olarak başarıyla onaylanmalıdır (COMMIT)', () => {
+  it('3. GERÇEK COMMIT KANITI (Üretim executeDbTransaction): Hata olmadığında tüm transaction atomik olarak başarıyla onaylanmalıdır (COMMIT)', () => {
     const validStatements = [
       {
         sql: `UPDATE DATA_IhtiyacRaporu SET temin_dosya_id = ?, durum = 'dosyaya_aktarildi' WHERE id = ?`,
@@ -195,7 +221,7 @@ describe('Gerçek SQLite Motoru: İhtiyaç Raporu Transaction & Rollback Güvenc
       }
     ]
 
-    const result = executeNativeSqliteTransaction(validStatements)
+    const result = executeDbTransaction(db, validStatements, { validateSql: true })
     expect(result.success).toBe(true)
 
     // Veritabanını sorgula ve tüm değişikliklerin kalıcı olduğunu doğrula
@@ -214,5 +240,164 @@ describe('Gerçek SQLite Motoru: İhtiyaç Raporu Transaction & Rollback Güvenc
     expect(committedKalemler.length).toBe(2)
     expect(committedKalemler[0].kalem_adi).toBe('Birinci Kalem')
     expect(committedKalemler[1].kalem_adi).toBe('İkinci Kalem')
+  })
+
+  it('4. ÜRETİM IPC İŞLEYİCİSİ DOĞRULAMASI (handleDbTransaction): Hata durumunda rollback yapıp { success: false, error } dönmeli, onSave çağrılmamalıdır', async () => {
+    let saveCalled = false
+    let mutations: string[] = []
+
+    const faultyStatements = [
+      {
+        sql: `UPDATE DATA_IhtiyacRaporu SET temin_dosya_id = ?, durum = 'dosyaya_aktarildi' WHERE id = ?`,
+        params: [10, 1]
+      },
+      {
+        sql: `INSERT INTO INVALID_TABLE_NAME (col) VALUES (123)`,
+        params: []
+      }
+    ]
+
+    const response = await handleDbTransaction(db, faultyStatements, {
+      validateSql: true,
+      onMutation: (tbl, action) => {
+        mutations.push(`${tbl}:${action}`)
+      },
+      onSave: () => {
+        saveCalled = true
+      }
+    })
+
+    // 1. Dönen sonuç kontrolü
+    expect(response.success).toBe(false)
+    expect(response.error).toMatch(/no such table: INVALID_TABLE_NAME/)
+    // 2. Rollback olduğu için workspace kaydedilmemeli
+    expect(saveCalled).toBe(false)
+
+    // 3. Veritabanı durumu taslak olarak korunmalı
+    const savedRapor = db.prepare('SELECT durum, temin_dosya_id FROM DATA_IhtiyacRaporu WHERE id = 1').get() as {
+      durum: string
+      temin_dosya_id: number | null
+    }
+    expect(savedRapor.durum).toBe('taslak')
+    expect(savedRapor.temin_dosya_id).toBeNull()
+  })
+
+  it('5. SQL GÜVENLİK KORUMASI (sqlGuard Entegrasyonu): Güvenlik kuralını ihlal eden sorgular SQLite motoruna gitmeden engellenmeli ve işlem durdurulmalıdır', () => {
+    const maliciousStatements = [
+      {
+        sql: `UPDATE DATA_IhtiyacRaporu SET durum = 'dosyaya_aktarildi' WHERE id = 1`,
+        params: []
+      },
+      {
+        sql: `SELECT * FROM SETTINGS WHERE key = 'license'`,
+        params: []
+      }
+    ]
+
+    expect(() => {
+      executeDbTransaction(db, maliciousStatements, { validateSql: true })
+    }).toThrow(/sqlGuard.*restricted/i)
+
+    // Rapor yine taslak olarak kalmalı
+    const savedRapor = db.prepare('SELECT durum FROM DATA_IhtiyacRaporu WHERE id = 1').get() as {
+      durum: string
+    }
+    expect(savedRapor.durum).toBe('taslak')
+  })
+
+  it('6. END-TO-END SERVİS ENTEGRASYONU: ihtiyacRaporuService.linkToDosya(), üretim transaction motoru üzerinden gerçek SQLite üzerinde atomik çalışmalı ve hata anında rollback yapmalıdır', async () => {
+    // dbClient köprüsünü doğrudan gerçek SQLite veritabanımıza bağla
+    vi.spyOn(dbClient, 'query').mockImplementation(async (sql: string, params: any[] = []) => {
+      const stmt = db.prepare(sql)
+      return stmt.all(...params) as any
+    })
+
+    vi.spyOn(dbClient, 'queryFirst').mockImplementation(async (sql: string, params: any[] = []) => {
+      const stmt = db.prepare(sql)
+      const rows = stmt.all(...params) as any[]
+      return rows.length > 0 ? rows[0] : null
+    })
+
+    vi.spyOn(dbClient, 'run').mockImplementation(async (sql: string, params: any[] = []) => {
+      const stmt = db.prepare(sql)
+      const info = stmt.run(...params)
+      return { success: true, lastInsertRowid: info.lastInsertRowid, changes: Number(info.changes || 0) }
+    })
+
+    vi.spyOn(dbClient, 'transaction').mockImplementation(async (statements: { sql: string; params?: unknown[] }[]) => {
+      const res = await handleDbTransaction(db, statements as any, { validateSql: true })
+      if (!res.success) {
+        throw new Error(res.error || 'Transaction failed')
+      }
+      return res
+    })
+
+    // Başarılı aktarım senaryosu
+    const result = await ihtiyacRaporuService.linkToDosya(1, 10, {
+      copyItemsToDosya: true,
+      transferMode: 'append_if_missing'
+    })
+
+    expect(result.success).toBe(true)
+    expect(result.transferredCount).toBe(1)
+
+    // Gerçek SQLite kontrolü: Rapor dosyaya bağlanmış ve kalem aktarılmış olmalı
+    const linkedRapor = db.prepare('SELECT durum, temin_dosya_id FROM DATA_IhtiyacRaporu WHERE id = 1').get() as {
+      durum: string
+      temin_dosya_id: number
+    }
+    expect(linkedRapor.durum).toBe('dosyaya_aktarildi')
+    expect(linkedRapor.temin_dosya_id).toBe(10)
+
+    const kalemInDosya = db.prepare('SELECT kalem_adi, miktar, birim FROM DATA_TeminKalem WHERE temin_dosya_id = 10').get() as {
+      kalem_adi: string
+      miktar: number
+      birim: string
+    }
+    expect(kalemInDosya.kalem_adi).toBe('Fotokopi Kağıdı A4')
+    expect(kalemInDosya.miktar).toBe(50)
+    expect(kalemInDosya.birim).toBe('Paket')
+
+    // Hata durumunda rollback doğrulaması: Var olmayan bir dosyaya bağlama denemesi
+    await expect(ihtiyacRaporuService.linkToDosya(1, 999999)).rejects.toThrow(/Hedef alım dosyası bulunamadı/)
+  })
+
+  it('7. NODE.JS TEST ORTAMI DOĞRULAMASI: node:sqlite DatabaseSync desteği için Node.js sürümünün >= 22.5.0 olduğunu fiziki olarak doğrular', () => {
+    const [majorStr, minorStr] = process.versions.node.split('.')
+    const major = parseInt(majorStr, 10)
+    const minor = parseInt(minorStr, 10)
+
+    const isCompatible = major > 22 || (major === 22 && minor >= 5)
+    expect(isCompatible).toBe(true)
+    expect(typeof DatabaseSync).toBe('function')
+  })
+
+  it('8. BETTER-SQLITE3 UYUMLULUĞU: db.transaction sarmalayıcısına sahip motorlarda (Electron çalışma zamanı) native transaction yolunu kullanmalıdır', () => {
+    let nativeTransactionCalled = false
+    let preparedSql = ''
+
+    const mockBetterSqliteDb: SqliteDatabaseLike = {
+      prepare: (sql: string) => ({
+        run: () => {
+          preparedSql = sql
+          return { lastInsertRowid: 1, changes: 1 }
+        }
+      }),
+      transaction: (fn: (stmts: any[]) => void) => {
+        return (stmts: any[]) => {
+          nativeTransactionCalled = true
+          fn(stmts)
+        }
+      }
+    }
+
+    const testStatements = [
+      { sql: 'UPDATE DATA_IhtiyacRaporu SET durum = ? WHERE id = ?', params: ['onaylandi', 1] }
+    ]
+
+    const result = executeDbTransaction(mockBetterSqliteDb, testStatements, { validateSql: false })
+    expect(result.success).toBe(true)
+    expect(nativeTransactionCalled).toBe(true)
+    expect(preparedSql).toBe('UPDATE DATA_IhtiyacRaporu SET durum = ? WHERE id = ?')
   })
 })

@@ -59,28 +59,8 @@ export function normalizeMeta(raw: any): WorkspaceMeta {
   }
 }
 
-export function extractTableAndAction(sql: string): {
-  tableName: string
-  action: 'insert' | 'update' | 'delete' | 'other'
-} {
-  if (!sql || typeof sql !== 'string') return { tableName: 'Veritabanı', action: 'other' }
-  const clean = sql.trim().replace(/\s+/g, ' ')
-  const upper = clean.toUpperCase()
-  let action: 'insert' | 'update' | 'delete' | 'other' = 'other'
+export { extractTableAndAction } from '../../ipc/utils/sqlGuard'
 
-  if (upper.startsWith('INSERT')) action = 'insert'
-  else if (upper.startsWith('UPDATE')) action = 'update'
-  else if (upper.startsWith('DELETE')) action = 'delete'
-
-  let tableName = 'Veritabanı'
-  const match = clean.match(
-    /(?:FROM|INTO|UPDATE)\s+(?:["`'\[]?[A-Za-z0-9_]+["`'\]]?\.)?["`'\[]?([A-Za-z0-9_]+)["`'\]]?/i
-  )
-  if (match && match[1]) {
-    tableName = match[1]
-  }
-  return { tableName, action }
-}
 
 export function extractDbInfo(
   sqliteFilePath: string,
