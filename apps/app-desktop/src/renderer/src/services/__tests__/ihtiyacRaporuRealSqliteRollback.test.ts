@@ -491,4 +491,44 @@ describe('Gerçek SQLite Motoru: İhtiyaç Raporu Transaction & Rollback Güvenc
     expect(nativeTransactionCalled).toBe(true)
     expect(preparedSql).toBe('UPDATE DATA_IhtiyacRaporu SET durum = ? WHERE id = ?')
   })
+
+  it('11. ONMUTATION HATA YÖNETİMİ: Başarılı COMMIT sonrası onMutation callback hatası commit sonucunu maskelememeli, success: true kalmalıdır', async () => {
+    const validStatements = [
+      {
+        sql: `UPDATE DATA_IhtiyacRaporu SET durum = 'onaylandi' WHERE id = 1`,
+        params: []
+      }
+    ]
+
+    // onMutation callback'i hata fırlatsın (örn. UI store veya abonelik hatası)
+    const result = executeDbTransaction(db, validStatements, {
+      validateSql: true,
+      onMutation: () => {
+        throw new Error('Simüle edilmiş UI değişiklik takip hatası')
+      }
+    })
+
+    // 1. Veritabanı COMMIT işlemi başarılı olduğu için success: true kalmalı
+    expect(result.success).toBe(true)
+    // 2. mutationError ve warning alanları doldurulmalı
+    expect(result.mutationError).toMatch(/Simüle edilmiş UI değişiklik takip hatası/)
+    expect(result.warning).toBeDefined()
+
+    // 3. Veritabanındaki değişiklik kalıcı olmalı
+    const committedRapor = db.prepare('SELECT durum FROM DATA_IhtiyacRaporu WHERE id = 1').get() as {
+      durum: string
+    }
+    expect(committedRapor.durum).toBe('onaylandi')
+
+    // handleDbTransaction üzerinden de aynı güvenceyi doğrula
+    const ipcResult = await handleDbTransaction(db, validStatements, {
+      validateSql: true,
+      onMutation: () => {
+        throw new Error('IPC onMutation hatası')
+      }
+    })
+    expect(ipcResult.success).toBe(true)
+    expect(ipcResult.mutationError).toMatch(/IPC onMutation hatası/)
+  })
 })
+

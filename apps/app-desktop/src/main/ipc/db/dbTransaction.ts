@@ -12,6 +12,7 @@ export interface TransactionResult {
   error?: string
   warning?: string
   saveError?: string
+  mutationError?: string
 }
 
 export interface ExecuteDbTransactionOptions {
@@ -54,7 +55,13 @@ export function executeDbTransaction(
   db: SqliteDatabaseLike,
   queries: TransactionQuery[],
   options?: ExecuteDbTransactionOptions
-): { success: true; lastInsertRowid: number | bigint; changes: number } {
+): {
+  success: true
+  lastInsertRowid: number | bigint
+  changes: number
+  mutationError?: string
+  warning?: string
+} {
   if (!db) {
     throw new Error('[dbTransaction] Veritabanı bağlantısı sağlanamadı.')
   }
@@ -120,13 +127,39 @@ export function executeDbTransaction(
   }
 
   // 3. Veritabanı COMMIT işlemi başarıyla bitti: Şimdi mutation'ları güvenle bildir.
+  // Not: Commit sonrasındaki JavaScript callback'lerinde oluşabilecek bir istisna,
+  // veritabanındaki başarılı COMMIT işlemini asla geçersiz kılmaz veya başarısız göstermez.
+  let mutationError: string | undefined
   if (options?.onMutation && pendingMutations.length > 0) {
     for (const m of pendingMutations) {
-      options.onMutation(m.tableName, m.action, m.count)
+      try {
+        options.onMutation(m.tableName, m.action, m.count)
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err)
+        console.error('[dbTransaction] Commit sonrası onMutation bildirim hatası:', msg)
+        mutationError = msg
+      }
     }
   }
 
-  return { success: true, lastInsertRowid, changes: totalChanges }
+  const result: {
+    success: true
+    lastInsertRowid: number | bigint
+    changes: number
+    mutationError?: string
+    warning?: string
+  } = {
+    success: true,
+    lastInsertRowid,
+    changes: totalChanges
+  }
+
+  if (mutationError) {
+    result.mutationError = mutationError
+    result.warning = `Veritabanı işlemi commit edildi fakat değişiklik bildirimi sırasında uyarı oluştu: ${mutationError}`
+  }
+
+  return result
 }
 
 /**
@@ -145,7 +178,13 @@ export async function handleDbTransaction(
   queries: TransactionQuery[],
   options?: HandleDbTransactionOptions
 ): Promise<TransactionResult> {
-  let result: { success: true; lastInsertRowid: number | bigint; changes: number }
+  let result: {
+    success: true
+    lastInsertRowid: number | bigint
+    changes: number
+    mutationError?: string
+    warning?: string
+  }
 
   try {
     result = executeDbTransaction(db, queries, options)
@@ -167,7 +206,9 @@ export async function handleDbTransaction(
       return {
         ...result,
         saveError: saveMessage,
-        warning: `Veritabanı işlemi başarıyla uygulandı fakat çalışma dosyası kaydedilirken uyarı oluştu: ${saveMessage}`
+        warning: result.warning
+          ? `${result.warning}; Dosya kaydedilirken de uyarı oluştu: ${saveMessage}`
+          : `Veritabanı işlemi başarıyla uygulandı fakat çalışma dosyası kaydedilirken uyarı oluştu: ${saveMessage}`
       }
     }
   }
