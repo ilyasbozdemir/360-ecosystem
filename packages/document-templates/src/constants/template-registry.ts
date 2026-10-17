@@ -277,7 +277,7 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
     name: "PiyasaFiyatArastirmaGorevlendirmesi",
     title: "Standart Form (4734 KİK m.22): Piyasa Fiyat Araştırma Görevlendirme Onayı",
     category: "1-ihtiyac-tespiti-ve-baslangic",
-    group: "piyasa_arastirma",
+    groups: ["piyasa_arastirma", "olur_onay"],
     description: "Piyasa fiyat araştırmasını yapmak üzere görevlendirilen personelin olur belgesi",
     standartFormKodu: "4734 KİK m.22",
     standartFormAdi: "Piyasa Fiyat Araştırma Görevlendirme Onayı",

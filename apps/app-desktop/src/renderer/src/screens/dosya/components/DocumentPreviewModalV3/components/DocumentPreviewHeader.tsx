@@ -94,7 +94,7 @@ export function DocumentPreviewHeader({
     ? getDocumentStatus(targetDosyaId, docKey)
     : "draft";
 
-  const handleToggleQueue = () => {
+  const handleToggleQueue = (): void => {
     if (!targetDosyaId || !docKey) {
       alert("Belge kuyruğa eklenemedi: Dosya veya şablon tanımlanamadı.");
       return;
@@ -104,7 +104,7 @@ export function DocumentPreviewHeader({
     });
   };
 
-  const onPrintClick = async () => {
+  const onPrintClick = async (): Promise<void> => {
     if (targetDosyaId && docKey) {
       markAsPrinted(targetDosyaId, docKey);
     }
@@ -112,144 +112,154 @@ export function DocumentPreviewHeader({
   };
 
   return (
-    <div className="flex items-center justify-between px-4 py-2 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 gap-3 shrink-0 select-none">
-      {/* Left: Document Icon & Title */}
-      <div className="flex items-center gap-3 min-w-0">
-        <div className="p-2 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-xl shrink-0">
+    <header className="flex items-center justify-between px-2.5 sm:px-4 py-1.5 border-b border-slate-200/90 dark:border-slate-800 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xs gap-2 shrink-0 select-none min-w-0">
+      {/* Sol: Belge İkonu, Başlık ve Durum Rozetleri */}
+      <div className="flex items-center gap-2 min-w-0 flex-1 mr-1">
+        <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
           <FileText className="w-4 h-4" />
         </div>
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <h2 className="text-sm font-bold text-slate-850 dark:text-slate-100 truncate">
-              {documentTitle || "Belge Düzenleyici"}
-            </h2>
-            {docKey && (
-              <span className="text-[10px] font-mono font-semibold bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 rounded-md shrink-0">
-                ID: {docKey}
-              </span>
-            )}
-            {isQueued && (
-              <span className="inline-flex items-center gap-1 text-[9px] font-extrabold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 px-1.5 py-0.5 rounded-full animate-in fade-in">
-                <CheckCircle2
-                  size={10}
-                  className="text-emerald-600 dark:text-emerald-400"
-                />
-                Yazdırmaya Hazır
-              </span>
-            )}
-            {docStatus === "printed" && !isQueued && (
-              <span className="text-[9px] font-bold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 px-1.5 py-0.5 rounded-full">
-                Yazdırıldı
-              </span>
-            )}
-          </div>
+        <div className="min-w-0 flex items-center gap-1.5 sm:gap-2">
+          <h2
+            className="text-xs sm:text-sm font-bold text-slate-850 dark:text-slate-100 truncate tracking-tight"
+            title={documentTitle || "Belge Düzenleyici"}
+          >
+            {documentTitle || "Belge Düzenleyici"}
+          </h2>
+
+          {docKey && (
+            <span
+              className="hidden 2xl:inline-flex text-[10px] font-mono font-medium bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700/60 px-1.5 py-0.5 rounded-md shrink-0"
+              title={`Şablon ID: ${docKey}`}
+            >
+              {docKey}
+            </span>
+          )}
+
+          {isQueued && (
+            <span className="hidden xl:inline-flex items-center gap-1 text-[9px] font-extrabold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 px-1.5 py-0.5 rounded-full shrink-0 animate-in fade-in">
+              <CheckCircle2
+                size={10}
+                className="text-emerald-600 dark:text-emerald-400"
+              />
+              Sırada
+            </span>
+          )}
+
+          {docStatus === "printed" && !isQueued && (
+            <span className="hidden xl:inline-flex text-[9px] font-bold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 px-1.5 py-0.5 rounded-full shrink-0">
+              Yazdırıldı
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Right: Actions */}
-      <div className="flex items-center gap-2 shrink-0">
-        {/* Zoom Controls */}
-        <div className="flex items-center bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 rounded-xl p-0.5">
+      {/* Sağ: Aksiyon Grupları */}
+      <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+        {/* GRUP 1: Yakınlaştırma & Görünüm */}
+        <div className="flex items-center bg-slate-100 dark:bg-slate-850 border border-slate-200 dark:border-slate-700/60 rounded-xl p-0.5 shrink-0 h-8">
           <button
+            type="button"
             onClick={() => {
               setZoomMode("manual");
               setManualZoom((prev) =>
                 Math.max(0.4, Number((prev - 0.1).toFixed(1)))
               );
             }}
-            className="p-1 hover:bg-white dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg transition-colors cursor-pointer"
+            className="w-6 sm:w-7 h-7 flex items-center justify-center hover:bg-white dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg transition-colors cursor-pointer"
             title="Uzaklaştır (%10)"
           >
             <ZoomOut className="w-3.5 h-3.5" />
           </button>
 
           <button
+            type="button"
             onClick={() => {
               setZoomMode("auto");
               setManualZoom(1.0);
             }}
-            className="px-2 py-0.5 text-[11px] font-bold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer min-w-[55px] text-center"
+            className="px-1 sm:px-1.5 h-7 text-[11px] font-bold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer min-w-9 sm:min-w-11 text-center"
             title="Otomatik Sığdır (Sıfırla)"
           >
-            {zoomMode === "auto"
-              ? `% ${Math.round(previewScale * 100)}`
-              : `% ${Math.round(manualZoom * 100)}`}
+            %{Math.round((zoomMode === "auto" ? previewScale : manualZoom) * 100)}
           </button>
 
           <button
+            type="button"
             onClick={() => {
               setZoomMode("manual");
               setManualZoom((prev) =>
                 Math.min(2.0, Number((prev + 0.1).toFixed(1)))
               );
             }}
-            className="p-1 hover:bg-white dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg transition-colors cursor-pointer"
+            className="w-6 sm:w-7 h-7 flex items-center justify-center hover:bg-white dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg transition-colors cursor-pointer"
             title="Yakınlaştır (%10)"
           >
             <ZoomIn className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        {/* Toggle Floating Balloon Mode */}
+        {/* Yüzen Balon Modu */}
         {onToggleBalloon && (
           <button
             type="button"
             onClick={onToggleBalloon}
-            className="p-1.5 rounded-xl font-bold transition-all flex items-center justify-center text-xs cursor-pointer border bg-blue-50/80 hover:bg-blue-100 text-blue-600 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800"
+            className="w-8 h-8 rounded-xl font-bold transition-all flex items-center justify-center text-xs cursor-pointer border bg-slate-50 hover:bg-blue-50 text-slate-600 hover:text-blue-600 border-slate-200 hover:border-blue-200 dark:bg-slate-900 dark:text-slate-300 dark:border-slate-800 dark:hover:bg-blue-950/40 shrink-0"
             title="Yüzen Balon Moduna Al (Ekranın köşesine küçült)"
           >
-            <Layers className="w-4 h-4" />
+            <Layers className="w-3.5 h-3.5" />
           </button>
         )}
 
-        {/* Toggle Full Screen */}
+        {/* Tam Ekran Toggle */}
         <button
+          type="button"
           onClick={() => setIsFullScreen((v) => !v)}
-          className={`p-1.5 rounded-xl font-bold transition-all flex items-center justify-center text-xs cursor-pointer border ${
+          className={`w-8 h-8 rounded-xl font-bold transition-all flex items-center justify-center text-xs cursor-pointer border shrink-0 ${
             isFullScreen
               ? "bg-indigo-50 text-indigo-600 border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800"
-              : "bg-white text-slate-700 border-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:border-slate-800 hover:bg-slate-50"
+              : "bg-white text-slate-600 border-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:border-slate-800 hover:bg-slate-50"
           }`}
           title={isFullScreen ? "Tam Ekrandan Çık" : "Tam Ekran Önizleme"}
         >
           {isFullScreen
-            ? <Minimize2 className="w-4 h-4" />
-            : <Maximize2 className="w-4 h-4" />}
+            ? <Minimize2 className="w-3.5 h-3.5" />
+            : <Maximize2 className="w-3.5 h-3.5" />}
         </button>
 
-        {/* Toggle Sidebar */}
+        {/* Kenar Çubuğu (Ayarlar) Toggle */}
         <button
+          type="button"
           onClick={() => setSidebarOpen((v) => !v)}
-          className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 text-xs cursor-pointer border ${
+          className={`h-8 px-2 sm:px-2.5 rounded-xl font-bold transition-all flex items-center justify-center gap-1.5 text-xs cursor-pointer border shrink-0 ${
             sidebarOpen
               ? "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800"
               : "bg-white text-slate-700 border-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:border-slate-800 hover:bg-slate-50"
           }`}
-          title={sidebarOpen
-            ? "Belge Ayarlarını Gizle"
-            : "Belge Ayarlarını Göster"}
+          title={sidebarOpen ? "Belge Ayarlarını Gizle" : "Belge Ayarlarını Göster"}
         >
-          <Sliders className="w-3.5 h-3.5" />
-          <span>{sidebarOpen ? "Ayarlar Açık" : "Belge Ayarları"}</span>
+          <Sliders className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+          <span className="hidden xl:inline">{sidebarOpen ? "Ayarlar Açık" : "Ayarlar"}</span>
         </button>
 
-        {/* Refresh / Reload from Dossier Button */}
+        <div className="w-px h-4 bg-slate-200 dark:bg-slate-800 mx-0.5 shrink-0 hidden sm:block" />
+
+        {/* GRUP 2: Veri Yenileme & Kaydet */}
         <button
           type="button"
           onClick={handleRefreshFromDb}
           disabled={isSaving}
-          className="px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 text-xs cursor-pointer border bg-white hover:bg-teal-50 text-slate-700 hover:text-teal-700 border-slate-200 hover:border-teal-300 dark:bg-slate-900 dark:hover:bg-teal-950/40 dark:text-slate-200 dark:hover:text-teal-300 dark:border-slate-800 dark:hover:border-teal-800 shadow-2xs group"
-          title="Belgeyi dosyadaki en güncel kalemler, teklifler ve ayarlarla yeniden hesaplar ve günceller"
+          className="w-8 h-8 2xl:w-auto 2xl:px-2.5 rounded-xl font-bold transition-all flex items-center justify-center gap-1.5 text-xs cursor-pointer border bg-white hover:bg-teal-50 text-slate-700 hover:text-teal-700 border-slate-200 hover:border-teal-300 dark:bg-slate-900 dark:hover:bg-teal-950/40 dark:text-slate-200 dark:hover:text-teal-300 dark:border-slate-800 dark:hover:border-teal-800 shadow-2xs group shrink-0"
+          title="Belgeyi dosyadaki en güncel kalemler, teklifler ve ayarlarla yeniden hesaplar"
         >
           <RefreshCw className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400 group-hover:rotate-180 transition-transform duration-500" />
-          <span>Güncel Verileri Al</span>
+          <span className="hidden 2xl:inline">Verileri Güncelle</span>
         </button>
 
-        {/* Save Button */}
         <button
+          type="button"
           onClick={handleSaveToDb}
           disabled={isSaving}
-          className={`px-3.5 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 text-xs cursor-pointer shadow-2xs ${
+          className={`h-8 px-2.5 sm:px-3 rounded-xl font-bold transition-all flex items-center justify-center gap-1.5 text-xs cursor-pointer shadow-2xs shrink-0 ${
             saveSuccess
               ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/25 ring-2 ring-emerald-500/30"
               : isSaving
@@ -258,160 +268,189 @@ export function DocumentPreviewHeader({
               ? "bg-amber-600 hover:bg-amber-700 text-white shadow-md shadow-amber-600/30 ring-2 ring-amber-400/50"
               : "bg-slate-800 hover:bg-slate-900 text-white dark:bg-slate-700 dark:hover:bg-slate-600"
           }`}
-          title={isDirty
-            ? "Belgede kaydedilmemiş değişiklikler var. Veritabanına kaydetmek için tıklayın."
-            : "Belgedeki düzenlemeleri veri tabanına kaydeder"}
+          title={
+            isDirty
+              ? "Belgede kaydedilmemiş değişiklikler var. Veritabanına kaydetmek için tıklayın."
+              : "Belgedeki düzenlemeleri veri tabanına kaydeder"
+          }
         >
-          {saveSuccess
-            ? (
-              <>
-                <CheckCircle2 className="w-3.5 h-3.5 text-white" />
-                <span>Kaydedildi!</span>
-              </>
-            )
-            : isSaving
-            ? (
-              <>
-                <RefreshCw className="w-3.5 h-3.5 animate-spin text-white" />
-                <span>Kaydediliyor...</span>
-              </>
-            )
-            : isDirty
-            ? (
-              <>
+          {saveSuccess ? (
+            <>
+              <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+              <span>Kaydedildi!</span>
+            </>
+          ) : isSaving ? (
+            <>
+              <RefreshCw className="w-3.5 h-3.5 animate-spin text-white" />
+              <span className="hidden sm:inline">Kaydediliyor...</span>
+            </>
+          ) : (
+            <>
+              {isDirty && (
                 <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-200 opacity-75">
-                  </span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-white">
-                  </span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-200 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
                 </span>
-                <Save className="w-3.5 h-3.5" />
-                <span>Kaydet</span>
-                <span className="text-[10px] bg-amber-950/40 text-amber-100 px-1 py-0.5 rounded-md font-semibold">
-                  Değişiklik Var
-                </span>
-              </>
-            )
-            : (
-              <>
-                <Save className="w-3.5 h-3.5" />
-                <span>Kaydet</span>
-              </>
-            )}
+              )}
+              <Save className="w-3.5 h-3.5" />
+              <span>Kaydet</span>
+            </>
+          )}
         </button>
 
-        {/* Send to Print Queue / Ready Flag Button */}
+        <div className="w-px h-4 bg-slate-200 dark:bg-slate-800 mx-0.5 shrink-0 hidden sm:block" />
+
+        {/* GRUP 3: Yazdırma & Sıra */}
         {targetDosyaId && docKey && (
           <button
             type="button"
             onClick={handleToggleQueue}
-            className={`px-3.5 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 text-xs cursor-pointer shadow-2xs border ${
+            className={`h-8 px-2 sm:px-2.5 rounded-xl font-bold transition-all flex items-center justify-center gap-1.5 text-xs cursor-pointer shadow-2xs border shrink-0 ${
               isQueued
                 ? "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600 shadow-emerald-500/20"
                 : "bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800/60"
             }`}
-            title={isQueued
-              ? "Belge yazdırma merkezine gönderildi. Kuyruktan çıkarmak için tıklayın."
-              : "Belgeyi Çıktı & Yazdırma Merkezindeki yazdırma listesine ekler."}
+            title={
+              isQueued
+                ? "Belge yazdırma merkezine eklendi. Sıradan çıkarmak için tıklayın."
+                : "Belgeyi Çıktı & Yazdırma Merkezindeki yazdırma listesine ekler."
+            }
           >
-            {isQueued
-              ? (
-                <>
-                  <CheckCircle2 className="w-3.5 h-3.5 text-white" />
-                  <span>Yazdırmaya Hazır ✓</span>
-                </>
-              )
-              : (
-                <>
-                  <Send className="w-3.5 h-3.5" />
-                  <span>Yazdırma Sırasına Gönder</span>
-                </>
-              )}
+            {isQueued ? (
+              <>
+                <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                <span className="hidden sm:inline">Sırada</span>
+              </>
+            ) : (
+              <>
+                <Send className="w-3.5 h-3.5" />
+                <span className="hidden 2xl:inline">Sıraya Ekle</span>
+              </>
+            )}
           </button>
         )}
 
-        {/* Direct Print Button */}
+        {/* Doğrudan Yazdır Butonu (Birincil Aksiyon) */}
         <button
+          type="button"
           onClick={onPrintClick}
           disabled={isPrinting}
-          className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-all flex items-center gap-1.5 disabled:opacity-50 text-xs shadow-2xs shadow-blue-600/20 cursor-pointer"
+          className="h-8 px-3 sm:px-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-1.5 disabled:opacity-50 text-xs shadow-2xs shadow-blue-600/25 cursor-pointer shrink-0"
           title="Doğrudan Yazıcıya Gönder"
         >
           <Printer className="w-3.5 h-3.5" />
           <span>Yazdır</span>
         </button>
 
+        {/* Yeni Sekmede Önizle */}
         <button
+          type="button"
           onClick={async () => {
             setDownloadOpen(false);
             await handleOpenPdfInNewTab();
           }}
-          className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-all flex items-center gap-1.5 disabled:opacity-50 text-xs shadow-2xs shadow-indigo-600/20 cursor-pointer"
+          className="h-8 w-8 xl:w-auto xl:px-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-1.5 disabled:opacity-50 text-xs shadow-2xs shadow-indigo-600/20 cursor-pointer shrink-0"
+          title="PDF Olarak Yeni Sekmede Aç ve Önizle"
         >
-          <Eye className="w-4 h-4" />
-          <span>Önizle</span>
+          <Eye className="w-3.5 h-3.5" />
+          <span className="hidden xl:inline">Önizle</span>
         </button>
 
-        {/* Options Dropdown */}
-        <div className="relative" ref={dropdownRef}>
+        {/* Diğer Seçenekler Dropdown */}
+        <div className="relative shrink-0" ref={dropdownRef}>
           <button
+            type="button"
             onClick={() => setDownloadOpen((v) => !v)}
             disabled={isPrinting}
-            title="Diğer Seçenekler"
-            className="p-1.5 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-xl font-bold transition-all flex items-center justify-center disabled:opacity-50 text-xs shadow-2xs cursor-pointer"
+            title="Diğer Seçenekler (İndir, Dışa Aktar, Yenile)"
+            className="w-8 h-8 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-xl font-bold transition-all flex items-center justify-center disabled:opacity-50 text-xs shadow-2xs cursor-pointer"
           >
             <MoreVertical className="w-4 h-4" />
           </button>
 
           {downloadOpen && (
-            <div className="absolute top-full mt-2 right-0 w-52 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl py-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150 overflow-hidden">
+            <div className="absolute top-full mt-2 right-0 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl py-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150 overflow-hidden">
               <button
+                type="button"
                 onClick={async () => {
                   setDownloadOpen(false);
                   await handleRefreshFromDb();
                 }}
                 className="w-full text-left px-3.5 py-2.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/60 font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-2.5 cursor-pointer transition-colors"
               >
-                <RefreshCw className="w-4 h-4 text-teal-600 dark:text-teal-400" />
-                <span>Güncel Verileri Al</span>
+                <RefreshCw className="w-4 h-4 text-teal-600 dark:text-teal-400 shrink-0" />
+                <div className="min-w-0">
+                  <div className="font-bold">Verileri Yeniden Hesapla</div>
+                  <div className="text-[10px] text-slate-400 font-normal">Dosyadan güncel kalem ve teklifleri çeker</div>
+                </div>
               </button>
 
+              {targetDosyaId && docKey && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDownloadOpen(false);
+                    handleToggleQueue();
+                  }}
+                  className="w-full text-left px-3.5 py-2.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/60 font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-2.5 cursor-pointer transition-colors border-t border-slate-100 dark:border-slate-800/50"
+                >
+                  <Send className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                  <div className="min-w-0">
+                    <div className="font-bold">
+                      {isQueued ? "Sıradan Çıkar" : "Yazdırma Sırasına Ekle"}
+                    </div>
+                    <div className="text-[10px] text-slate-400 font-normal">Toplu yazdırma merkezine gönderir</div>
+                  </div>
+                </button>
+              )}
+
               <button
+                type="button"
                 onClick={async () => {
                   setDownloadOpen(false);
                   await handlePdf();
                 }}
                 className="w-full text-left px-3.5 py-2.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/60 font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-2.5 cursor-pointer transition-colors border-t border-slate-100 dark:border-slate-800/50"
               >
-                <Download className="w-4 h-4 text-rose-600 dark:text-rose-400" />
-                <span>PDF Olarak Kaydet</span>
+                <Download className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
+                <div className="min-w-0">
+                  <div className="font-bold">PDF Olarak İndir</div>
+                  <div className="text-[10px] text-slate-400 font-normal">Yüksek çözünürlüklü vektör PDF</div>
+                </div>
               </button>
 
               {handleDocx && (
                 <button
+                  type="button"
                   onClick={async () => {
                     setDownloadOpen(false);
                     await handleDocx();
                   }}
                   className="w-full text-left px-3.5 py-2.5 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/60 font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-2.5 cursor-pointer transition-colors border-t border-slate-100 dark:border-slate-800/50"
                 >
-                  <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                  <span>Word (DOCX) Olarak Kaydet</span>
+                  <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                  <div className="min-w-0">
+                    <div className="font-bold">Word (DOCX) İndir</div>
+                    <div className="text-[10px] text-slate-400 font-normal">Düzenlenebilir ofis belgesi</div>
+                  </div>
                 </button>
               )}
             </div>
           )}
         </div>
 
-        <div className="w-px h-5 bg-slate-200 dark:bg-slate-800 mx-1" />
+        <div className="w-px h-5 bg-slate-200 dark:bg-slate-800 mx-0.5 shrink-0" />
 
+        {/* Kapat Butonu */}
         <button
+          type="button"
           onClick={onClose}
-          className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+          title="Kapat (ESC)"
+          className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-850 transition-colors cursor-pointer shrink-0"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4.5 h-4.5" />
         </button>
       </div>
-    </div>
+    </header>
   );
 }

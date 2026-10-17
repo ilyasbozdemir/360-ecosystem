@@ -144,7 +144,9 @@ export function DocumentPreviewSidebar({
               formData.items ||
               []) as any[]
             const totalRowCount = tableRows.length
-            if (totalRowCount <= 1) return null
+            if (totalRowCount <= 1) {
+              return null
+            }
 
             // Generate smart quick split buttons based on actual row count
             const quickRowOptions: { label: string; val: number | null }[] = [
@@ -299,7 +301,7 @@ export function DocumentPreviewSidebar({
           })()}
 
           {/* Newline / Boşluk Satırı Ekleme */}
-          <div className="p-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl space-y-1.5">
+          <div className="p-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl space-y-2">
             <div className="flex items-center justify-between text-[11px]">
               <span className="text-slate-600 dark:text-slate-400 font-semibold">
                 Ekstra Boşluk (Kaydırma):

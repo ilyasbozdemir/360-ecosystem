@@ -4,6 +4,7 @@ import { EditableField } from "../../document/EditableField";
 import { DateEditableField } from "../../document/ApprovalSignature";
 import { MuayeneKabulKomisyonuData } from "./MuayeneKabulKomisyonu.schema";
 import { formatUnvan } from "../../utils/textHelpers";
+import { formatOfficialEvrakSayisi } from "../../resolver/helpers/resolveEvrakSayisi";
 
 interface Props {
   data?: Partial<MuayeneKabulKomisyonuData> & Record<string, any>;
@@ -94,12 +95,15 @@ export const MuayeneKabulKomisyonu: React.FC<Props> = ({
 
   // Evrak sayısı oluşturma (EBYS Standart Formatı: E-DETSİS-SDP-NO)
   const evrakNo =
-    data.evrakSayisi && !data.evrakSayisi.includes('/')
+    data.evrakSayisi && String(data.evrakSayisi).startsWith("E-") && !String(data.evrakSayisi).includes("/")
       ? data.evrakSayisi
-      : data.evrakSayisi ||
-        `${data.detsisNo || "........"}-${data.yili || "...."}/${
-          data.sayisi || "...."
-        }`;
+      : formatOfficialEvrakSayisi({
+          evrakSayisi: data.evrakSayisi,
+          detsisNo: data.detsisNo,
+          tur: (data as any)?.tur,
+          sayisi: (data as any)?.sayisi,
+          teminNo: (data as any)?.teminNo || (data as any)?.dosyaNo || (data as any)?.dosyaSayisi,
+        });
 
   const konuMetni = data.dosyaKonusu ??
     "Muayene ve Kabul Komisyonu";
@@ -242,7 +246,7 @@ export const MuayeneKabulKomisyonu: React.FC<Props> = ({
             textIndent: "40px",
             textAlign: "justify",
             marginTop: "0px",
-            marginBottom: "30px",
+            marginBottom: "20px",
             lineHeight: 1.6,
           }}
         >
@@ -253,7 +257,7 @@ export const MuayeneKabulKomisyonu: React.FC<Props> = ({
         <div
           style={{
             textAlign: "right",
-            marginBottom: "40px",
+            marginBottom: "30px",
             lineHeight: 1.3,
             paddingRight: "20px",
           }}

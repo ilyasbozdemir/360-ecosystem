@@ -1,4 +1,5 @@
 import { formatDateString } from '../../../../../contextBuilder/dateHelpers'
+import { resolveEvrakSayisi } from '@temin360/document-templates'
 
 export async function resolveAntetAndBirim(
   baseData: any,
@@ -79,6 +80,30 @@ export async function resolveAntetAndBirim(
     rawIhtiyac === '[]' || rawIhtiyac === '[""]'
       ? (ctx.altKurumBulunma || 'İdaremizde')
       : rawIhtiyac
+
+  // Resolve official EBYS / E-DETSİS evrakSayisi if missing, slash-separated or invalid format
+  if (
+    !baseData.evrakSayisi ||
+    String(baseData.evrakSayisi).trim() === '' ||
+    String(baseData.evrakSayisi).includes('/') ||
+    !String(baseData.evrakSayisi).startsWith('E-')
+  ) {
+    const activeDosyaId = Number(dosyaObj.id || dosyaRecord?.id || 0)
+    if (activeDosyaId) {
+      try {
+        const computed = await resolveEvrakSayisi(activeDosyaId, queryExecutor)
+        if (computed) {
+          baseData.evrakSayisi = computed
+          baseData.evrakNo = computed
+        }
+      } catch (err) {
+        console.warn('Failed to resolveEvrakSayisi in resolveAntetAndBirim:', err)
+      }
+    }
+  }
+  if (!baseData.evrakNo) {
+    baseData.evrakNo = baseData.evrakSayisi
+  }
 
   let matchedBirimName =
     dosyaObj.islem_yapan_birim ||

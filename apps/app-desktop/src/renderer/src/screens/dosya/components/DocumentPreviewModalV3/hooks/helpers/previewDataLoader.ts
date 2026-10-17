@@ -32,9 +32,6 @@ export async function loadDocumentPreviewData({
     return []
   }
 
-  const mapping = getDefaultMappingForProcess(resolvedId)
-  const resolver = new TemplateResolver(queryExecutor)
-
   // Fetch complete pre-computed document payload via single native Electron IPC handler
   let payloadData: any = {}
   let resolved: any = {}
@@ -57,7 +54,7 @@ export async function loadDocumentPreviewData({
   if (!payloadData || Object.keys(payloadData).length === 0) {
     const mapping = getDefaultMappingForProcess(resolvedId)
     const resolver = new TemplateResolver(queryExecutor)
-    resolved = await resolver.resolve(mapping, activeDosyaId || 0)
+    resolved = await resolver.resolve(mapping, activeDosyaId || 0, resolvedId)
   }
   let dosyaRecord = payloadData.dosya || null
   if (!dosyaRecord && activeDosyaId) {

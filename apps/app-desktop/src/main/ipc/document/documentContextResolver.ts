@@ -452,6 +452,78 @@ export function resolveDocumentPayload(
       ''
     const resolvedTutanakTarihi = rawTutanakTarihi ? formatTurkishDate(rawTutanakTarihi) : ''
 
+    // Resolve official EBYS / E-DETSİS evrakSayisi format (E-10234521-934.01-0001)
+    let detsisNo =
+      String(
+        (dosya as any)?.detsis_kodu ||
+          (kurum as any)?.detsis_kodu ||
+          (kurum as any)?.detsis_no ||
+          (kurum as any)?.dtvt_kodu ||
+          settingsMap.detsisKodu ||
+          settingsMap.detsis_kodu ||
+          ''
+      ).trim()
+    if (!detsisNo) detsisNo = '10234521'
+
+    const rawTur = String((dosya as any)?.tur || 'mal').toLowerCase()
+    let sdpAltKodu = '01'
+    if (rawTur.includes('hizmet') || rawTur.includes('danismanlik')) {
+      sdpAltKodu = '02'
+    } else if (rawTur.includes('yapim')) {
+      sdpAltKodu = '03'
+    }
+    const sdpKodu = `934.${sdpAltKodu}`
+
+    const fileYear =
+      (dosya as any)?.butce_yili ||
+      ((dosya as any)?.dosya_acilis_tarihi
+        ? new Date((dosya as any).dosya_acilis_tarihi).getFullYear()
+        : null) ||
+      ((dosya as any)?.created_at ? new Date((dosya as any).created_at).getFullYear() : null) ||
+      new Date().getFullYear()
+
+    let seqNumber: number | null = null
+    const teminNoStr = String((dosya as any)?.temin_no || '').trim()
+    if (teminNoStr) {
+      const parts = teminNoStr.split(/[/_ -]+/)
+      for (let i = parts.length - 1; i >= 0; i--) {
+        const num = parseInt(parts[i], 10)
+        if (!isNaN(num) && num !== fileYear && num > 0 && num < 2000) {
+          seqNumber = num
+          break
+        }
+      }
+    }
+
+    if (!seqNumber || seqNumber <= 0) {
+      try {
+        const countRow = db
+          .prepare(
+            `SELECT COUNT(*) as cnt FROM DATA_TeminDosyasi 
+             WHERE (coalesce(butce_yili, strftime('%Y', coalesce(dosya_acilis_tarihi, created_at))) = ? 
+                    OR temin_no LIKE ?) 
+               AND id <= ? AND (is_deleted IS NULL OR is_deleted = 0)`
+          )
+          .get(fileYear, `%${fileYear}%`, dosyaId)
+        if (countRow?.cnt && countRow.cnt > 0) {
+          seqNumber = countRow.cnt
+        }
+      } catch {}
+    }
+
+    if (!seqNumber || seqNumber <= 0) {
+      seqNumber = 1
+    }
+
+    const paddedSayi = String(seqNumber).padStart(4, '0')
+    const officialEvrakSayisi = `E-${detsisNo}-${sdpKodu}-${paddedSayi}`
+
+    const existingEvrak = String((dosya as any)?.evrak_sayisi || '').trim()
+    const resolvedEvrakSayisi =
+      existingEvrak && existingEvrak.startsWith('E-') && !existingEvrak.includes('/')
+        ? existingEvrak
+        : officialEvrakSayisi
+
     const resolvedContext = {
       faturaNo: resolvedFaturaNo,
       fatura_no: resolvedFaturaNo,
@@ -639,7 +711,11 @@ export function resolveDocumentPayload(
       tarih: formatTurkishDate(
         (dosya as any)?.dosya_acilis_tarihi || (dosya as any)?.tarih || (dosya as any)?.created_at
       ),
-      evrakSayisi: (dosya as any)?.evrak_sayisi || (dosya as any)?.temin_no || '',
+      evrakSayisi: resolvedEvrakSayisi,
+      evrakNo: resolvedEvrakSayisi,
+      detsisNo,
+      sayisi: paddedSayi,
+      dosyaSayisi: teminNoStr || paddedSayi,
       ihtiyacKalemleri,
       firmaListesi: combinedFirms,
       firmalar: fileFirms,
@@ -669,6 +745,102 @@ export function resolveDocumentPayload(
           adSoyad: k.resolved_ad_soyad || k.ad_soyad || '',
           unvan: k.resolved_unvan || k.unvan || '',
           gorevi: k.gorev || k.gorevi || 'Üye',
+          pozisyonu: k.resolved_unvan || k.unvan || ''
+        }))
+        const seen = new Set<string>()
+        return mapped.filter((item: any) => {
+          const name = (item.adSoyad || '').trim().toLowerCase()
+          if (!name || seen.has(name)) return false
+          seen.add(name)
+          return true
+        })
+      })(),
+      gorevlendirilenler: (() => {
+        const eligible = komisyonlar.filter(
+          (k: any) => resolveCommissionCategory(k) === 'maliyet' && isMemberVisibleInDocument(k, documentId)
+        )
+        const activeOfficers = eligible.filter((k: any) => {
+          const combined = `${k.resolved_ad_soyad || k.ad_soyad || ''} ${k.resolved_unvan || k.unvan || ''} ${k.gorev || ''}`.toLowerCase()
+          return (
+            !combined.includes('harcama yetkili') &&
+            !combined.includes('gerçekleştirme') &&
+            !combined.includes('gerceklestirme') &&
+            !combined.includes('muhasebe') &&
+            !combined.includes('satın alma harcama') &&
+            !combined.includes('talep eden') &&
+            !combined.includes('hazırlayan') &&
+            !combined.includes('onaylayan')
+          )
+        })
+        const listToUse = activeOfficers.length > 0 ? activeOfficers : eligible
+        const mapped = listToUse.map((k: any) => ({
+          adSoyad: k.resolved_ad_soyad || k.ad_soyad || '',
+          unvan: k.resolved_unvan || k.unvan || '',
+          gorevi: k.gorev || k.gorevi || 'Fiyat Araştırma Görevlisi',
+          pozisyonu: k.resolved_unvan || k.unvan || ''
+        }))
+        const seen = new Set<string>()
+        return mapped.filter((item: any) => {
+          const name = (item.adSoyad || '').trim().toLowerCase()
+          if (!name || seen.has(name)) return false
+          seen.add(name)
+          return true
+        })
+      })(),
+      gorevliler: (() => {
+        const eligible = komisyonlar.filter(
+          (k: any) => resolveCommissionCategory(k) === 'maliyet' && isMemberVisibleInDocument(k, documentId)
+        )
+        const activeOfficers = eligible.filter((k: any) => {
+          const combined = `${k.resolved_ad_soyad || k.ad_soyad || ''} ${k.resolved_unvan || k.unvan || ''} ${k.gorev || ''}`.toLowerCase()
+          return (
+            !combined.includes('harcama yetkili') &&
+            !combined.includes('gerçekleştirme') &&
+            !combined.includes('gerceklestirme') &&
+            !combined.includes('muhasebe') &&
+            !combined.includes('satın alma harcama') &&
+            !combined.includes('talep eden') &&
+            !combined.includes('hazırlayan') &&
+            !combined.includes('onaylayan')
+          )
+        })
+        const listToUse = activeOfficers.length > 0 ? activeOfficers : eligible
+        const mapped = listToUse.map((k: any) => ({
+          adSoyad: k.resolved_ad_soyad || k.ad_soyad || '',
+          unvan: k.resolved_unvan || k.unvan || '',
+          gorevi: k.gorev || k.gorevi || 'Fiyat Araştırma Görevlisi',
+          pozisyonu: k.resolved_unvan || k.unvan || ''
+        }))
+        const seen = new Set<string>()
+        return mapped.filter((item: any) => {
+          const name = (item.adSoyad || '').trim().toLowerCase()
+          if (!name || seen.has(name)) return false
+          seen.add(name)
+          return true
+        })
+      })(),
+      dagitimListesi: (() => {
+        const eligible = komisyonlar.filter(
+          (k: any) => resolveCommissionCategory(k) === 'maliyet' && isMemberVisibleInDocument(k, documentId)
+        )
+        const activeOfficers = eligible.filter((k: any) => {
+          const combined = `${k.resolved_ad_soyad || k.ad_soyad || ''} ${k.resolved_unvan || k.unvan || ''} ${k.gorev || ''}`.toLowerCase()
+          return (
+            !combined.includes('harcama yetkili') &&
+            !combined.includes('gerçekleştirme') &&
+            !combined.includes('gerceklestirme') &&
+            !combined.includes('muhasebe') &&
+            !combined.includes('satın alma harcama') &&
+            !combined.includes('talep eden') &&
+            !combined.includes('hazırlayan') &&
+            !combined.includes('onaylayan')
+          )
+        })
+        const listToUse = activeOfficers.length > 0 ? activeOfficers : eligible
+        const mapped = listToUse.map((k: any) => ({
+          adSoyad: k.resolved_ad_soyad || k.ad_soyad || '',
+          unvan: k.resolved_unvan || k.unvan || '',
+          gorevi: k.gorev || k.gorevi || 'Fiyat Araştırma Görevlisi',
           pozisyonu: k.resolved_unvan || k.unvan || ''
         }))
         const seen = new Set<string>()

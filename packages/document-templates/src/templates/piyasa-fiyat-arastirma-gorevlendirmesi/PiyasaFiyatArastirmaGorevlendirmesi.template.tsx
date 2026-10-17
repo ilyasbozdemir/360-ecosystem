@@ -9,6 +9,7 @@ import {
 } from "../../document/ApprovalSignature";
 import { PiyasaFiyatArastirmaGorevlendirmesiData } from "./PiyasaFiyatArastirmaGorevlendirmesi.schema";
 import { formatUnvan } from "../../utils/textHelpers";
+import { formatOfficialEvrakSayisi } from "../../resolver/helpers/resolveEvrakSayisi";
 
 interface Props {
   data?: Partial<PiyasaFiyatArastirmaGorevlendirmesiData> & Record<string, any>;
@@ -47,10 +48,35 @@ export const PiyasaFiyatArastirmaGorevlendirmesi: React.FC<Props> = ({
       return true;
     }
 
+    // Harcama yetkilisi, gerçekleştirme görevlisi veya muhasebe görevlileri piyasa fiyat araştırma görevlisi olarak listelenmez
+    const duty = (
+      typeof item === "object"
+        ? `${item.gorev || ""} ${item.gorevi || ""} ${item.komisyonGorevi || ""} ${item.unvan || ""}`
+        : ""
+    ).toLowerCase();
+
+    if (
+      duty.includes("harcama yetkili") ||
+      duty.includes("gerçekleştirme") ||
+      duty.includes("gerceklestirme") ||
+      duty.includes("onaylayan") ||
+      duty.includes("muhasebe")
+    ) {
+      return true;
+    }
+
+    // Kişinin adı doğrudan onaylayan personel ile aynı ise de hariç tut
+    if (
+      data.onaylayanPersonelAdi &&
+      adSoyad.toLowerCase() === data.onaylayanPersonelAdi.trim().toLowerCase()
+    ) {
+      return true;
+    }
+
     return false;
   };
 
-  // Ham görevli listesini topla (gorevlendirilenler, fiyatKomisyonu, gorevliler, dagitimListesi)
+  // Ham görevli listesini topla (gorevlendirilenler, fiyatKomisyonu, komisyon, komisyonUyeleri, gorevliler, dagitimListesi)
   const rawList: any[] = (() => {
     if (
       data.gorevlendirilenler && Array.isArray(data.gorevlendirilenler) &&
@@ -65,16 +91,28 @@ export const PiyasaFiyatArastirmaGorevlendirmesi: React.FC<Props> = ({
       return data.fiyatKomisyonu;
     }
     if (
-      data.dagitimListesi && Array.isArray(data.dagitimListesi) &&
-      data.dagitimListesi.length > 0
+      data.komisyon && Array.isArray(data.komisyon) &&
+      data.komisyon.length > 0
     ) {
-      return data.dagitimListesi;
+      return data.komisyon;
+    }
+    if (
+      data.komisyonUyeleri && Array.isArray(data.komisyonUyeleri) &&
+      data.komisyonUyeleri.length > 0
+    ) {
+      return data.komisyonUyeleri;
     }
     if (
       data.gorevliler && Array.isArray(data.gorevliler) &&
       data.gorevliler.length > 0
     ) {
       return data.gorevliler;
+    }
+    if (
+      data.dagitimListesi && Array.isArray(data.dagitimListesi) &&
+      data.dagitimListesi.length > 0
+    ) {
+      return data.dagitimListesi;
     }
     return [];
   })();
@@ -103,7 +141,7 @@ export const PiyasaFiyatArastirmaGorevlendirmesi: React.FC<Props> = ({
     });
   })();
 
-  // Dağıtım listesi (Mükerrer isimleri tekleştir)
+  // Dağıtım listesi (Mükerrer isimleri tekleştir, yoksa gorevlendirilenler listesine geri düş)
   const dagitimListesi: Array<{ adSoyad: string; unvan: string }> = (() => {
     if (
       data.dagitimListesi && Array.isArray(data.dagitimListesi) &&
@@ -131,16 +169,20 @@ export const PiyasaFiyatArastirmaGorevlendirmesi: React.FC<Props> = ({
         });
       }
     }
-    return [];
+    return gorevlendirilenler;
   })();
 
   // Evrak sayısı oluşturma (EBYS Standart Formatı: E-DETSİS-SDP-NO)
-  const evrakNo = data.evrakSayisi && !data.evrakSayisi.includes("/")
-    ? data.evrakSayisi
-    : data.evrakSayisi ||
-      `${data.detsisNo || "........"}-${data.yili || "...."}/${
-        data.sayisi || "...."
-      }`;
+  const evrakNo =
+    data.evrakSayisi && String(data.evrakSayisi).startsWith("E-") && !String(data.evrakSayisi).includes("/")
+      ? data.evrakSayisi
+      : formatOfficialEvrakSayisi({
+          evrakSayisi: data.evrakSayisi,
+          detsisNo: data.detsisNo,
+          tur: (data as any)?.tur,
+          sayisi: (data as any)?.sayisi,
+          teminNo: (data as any)?.teminNo || (data as any)?.dosyaNo || (data as any)?.dosyaSayisi,
+        });
 
   const konuMetni = data.dosyaKonusu ??
     "Piyasa Fiyat Araştırması Görevlendirmesi";
@@ -153,8 +195,6 @@ export const PiyasaFiyatArastirmaGorevlendirmesi: React.FC<Props> = ({
     : fallbackKurum;
 
   const isinAdiMetni = data.isinAdi ?? "Alımı yapılacak";
-
-  console.log("data", data);
 
   return (
     <DocumentLayout

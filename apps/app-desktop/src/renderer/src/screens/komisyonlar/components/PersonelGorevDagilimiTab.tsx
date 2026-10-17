@@ -1,295 +1,312 @@
-import React, { useState, useMemo } from 'react'
+import React, { useMemo, useState } from "react";
 import {
-  Users,
-  Shield,
-  Calendar,
-  Sparkles,
-  Search,
-  CheckCircle2,
   AlertTriangle,
-  Clock,
-  Printer,
-  FileText,
-  Building,
-  Plus,
-  Scale,
-  ClipboardList,
-  Info,
-  Trash2,
-  Tag,
+  BookmarkCheck,
   Briefcase,
-  BookmarkCheck
-} from 'lucide-react'
-import { Button } from '../../../components/ui/Button'
-import { Input } from '../../../components/ui/Input'
-import { useSettingsStore } from '../../../store/settingsStore'
+  Building,
+  Calendar,
+  CheckCircle2,
+  ClipboardList,
+  Clock,
+  FileText,
+  Info,
+  Plus,
+  Printer,
+  Scale,
+  Search,
+  Shield,
+  Sparkles,
+  Tag,
+  Trash2,
+  Users,
+} from "lucide-react";
+import { Button } from "../../../components/ui/Button";
+import { Input } from "../../../components/ui/Input";
+import { useSettingsStore } from "../../../store/settingsStore";
 
 export interface DigerGorevKaydi {
-  id: string
-  personelId: number
-  gorevAdi: string
+  id: string;
+  personelId: number;
+  gorevAdi: string;
   kategori:
-    | 'İdari'
-    | 'Mali & Lojistik'
-    | 'Teknik & Bilişim'
-    | 'İSG & Güvenlik'
-    | 'Basın & Halkla İlişkiler'
-  makamOluru?: string
-  tarih: string
+    | "İdari"
+    | "Mali & Lojistik"
+    | "Teknik & Bilişim"
+    | "İSG & Güvenlik"
+    | "Basın & Halkla İlişkiler";
+  makamOluru?: string;
+  tarih: string;
 }
 
 interface PersonelGorevItem {
-  id: number
-  adSoyad: string
-  unvan: string
-  birim: string
-  sicilNo: string
-  istihdamTuru: '657_memur' | '4857_isci'
-  komisyonSayisi: number
-  nobetSayisi: number
-  torenSayisi: number
-  digerGorevSayisi: number
-  digerGorevler: DigerGorevKaydi[]
-  gorevListesi: string[]
-  izinDurumu: 'gorevde' | 'izinde' | 'raporlu'
-  izinDonusTarihi?: string
+  id: number;
+  adSoyad: string;
+  unvan: string;
+  birim: string;
+  sicilNo: string;
+  istihdamTuru: "657_memur" | "4857_isci";
+  komisyonSayisi: number;
+  nobetSayisi: number;
+  torenSayisi: number;
+  digerGorevSayisi: number;
+  digerGorevler: DigerGorevKaydi[];
+  gorevListesi: string[];
+  izinDurumu: "gorevde" | "izinde" | "raporlu";
+  izinDonusTarihi?: string;
 }
 
 const HAZIR_KAMU_GOREV_SABLONLARI: Array<{
-  gorevAdi: string
-  kategori: DigerGorevKaydi['kategori']
-  ornekOlur: string
-  icon: string
+  gorevAdi: string;
+  kategori: DigerGorevKaydi["kategori"];
+  ornekOlur: string;
+  icon: string;
 }> = [
   {
-    gorevAdi: 'EBYS & Resmî Yazışma Koordinatörü',
-    kategori: 'İdari',
-    ornekOlur: '2026/14 Sayılı Makam Oluru',
-    icon: '📄'
+    gorevAdi: "EBYS & Resmî Yazışma Koordinatörü",
+    kategori: "İdari",
+    ornekOlur: "2026/14 Sayılı Makam Oluru",
+    icon: "📄",
   },
   {
-    gorevAdi: 'Taşınır Kayıt ve Kontrol Yetkilisi (TİF)',
-    kategori: 'Mali & Lojistik',
-    ornekOlur: '5018 SK / 2026/08 Sayılı Görevlendirme',
-    icon: '📦'
+    gorevAdi: "Taşınır Kayıt ve Kontrol Yetkilisi (TİF)",
+    kategori: "Mali & Lojistik",
+    ornekOlur: "5018 SK / 2026/08 Sayılı Görevlendirme",
+    icon: "📦",
   },
   {
-    gorevAdi: 'Kurum Web Sitesi & Basın / Sosyal Medya Sorumlusu',
-    kategori: 'Basın & Halkla İlişkiler',
-    ornekOlur: '2026/22 Sayılı İletişim Oluru',
-    icon: '🌐'
+    gorevAdi: "Kurum Web Sitesi & Basın / Sosyal Medya Sorumlusu",
+    kategori: "Basın & Halkla İlişkiler",
+    ornekOlur: "2026/22 Sayılı İletişim Oluru",
+    icon: "🌐",
   },
   {
-    gorevAdi: 'İş Sağlığı ve Güvenliği (İSG) Saha Denetim Sorumlusu',
-    kategori: 'İSG & Güvenlik',
-    ornekOlur: '6331 SK / İSG Kurul Kararı No: 4',
-    icon: '🦺'
+    gorevAdi: "İş Sağlığı ve Güvenliği (İSG) Saha Denetim Sorumlusu",
+    kategori: "İSG & Güvenlik",
+    ornekOlur: "6331 SK / İSG Kurul Kararı No: 4",
+    icon: "🦺",
   },
   {
-    gorevAdi: 'Arşiv, Ayıklama ve İmha Komisyonu Sorumlusu',
-    kategori: 'İdari',
-    ornekOlur: 'Devlet Arşivleri Yön. / 2026-31 Kararı',
-    icon: '📁'
+    gorevAdi: "Arşiv, Ayıklama ve İmha Komisyonu Sorumlusu",
+    kategori: "İdari",
+    ornekOlur: "Devlet Arşivleri Yön. / 2026-31 Kararı",
+    icon: "📁",
   },
   {
-    gorevAdi: 'Kurum Hizmet Aracı & Servis Sevk Amiri',
-    kategori: 'Mali & Lojistik',
-    ornekOlur: '237 SK / Taşıt İşletme Oluru 2026/05',
-    icon: '🚐'
+    gorevAdi: "Kurum Hizmet Aracı & Servis Sevk Amiri",
+    kategori: "Mali & Lojistik",
+    ornekOlur: "237 SK / Taşıt İşletme Oluru 2026/05",
+    icon: "🚐",
   },
   {
-    gorevAdi: 'Kalite Yönetim Sistemi (KYS / ISO) ve İç Kontrol Temsilcisi',
-    kategori: 'İdari',
-    ornekOlur: 'İç Kontrol Eylem Planı 2026/19',
-    icon: '📑'
+    gorevAdi: "Kalite Yönetim Sistemi (KYS / ISO) ve İç Kontrol Temsilcisi",
+    kategori: "İdari",
+    ornekOlur: "İç Kontrol Eylem Planı 2026/19",
+    icon: "📑",
   },
   {
-    gorevAdi: 'Bilgi İşlem, Siber Güvenlik & Donanım İrtibat Yetkilisi',
-    kategori: 'Teknik & Bilişim',
-    ornekOlur: 'Bilgi Güvenliği Yönergesi 2026/11',
-    icon: '💻'
+    gorevAdi: "Bilgi İşlem, Siber Güvenlik & Donanım İrtibat Yetkilisi",
+    kategori: "Teknik & Bilişim",
+    ornekOlur: "Bilgi Güvenliği Yönergesi 2026/11",
+    icon: "💻",
   },
   {
-    gorevAdi: 'CİMER ve Bilgi Edinme Başvuruları Koordinatörü',
-    kategori: 'Basın & Halkla İlişkiler',
-    ornekOlur: '4982 SK / CİMER Koordinasyon Oluru',
-    icon: '📢'
+    gorevAdi: "CİMER ve Bilgi Edinme Başvuruları Koordinatörü",
+    kategori: "Basın & Halkla İlişkiler",
+    ornekOlur: "4982 SK / CİMER Koordinasyon Oluru",
+    icon: "📢",
   },
   {
-    gorevAdi: 'Sivil Savunma, Afet & Tahliye Ekip Lideri',
-    kategori: 'İSG & Güvenlik',
-    ornekOlur: 'Afet ve Acil Durum Planı 2026/02',
-    icon: '🚨'
-  }
-]
+    gorevAdi: "Sivil Savunma, Afet & Tahliye Ekip Lideri",
+    kategori: "İSG & Güvenlik",
+    ornekOlur: "Afet ve Acil Durum Planı 2026/02",
+    icon: "🚨",
+  },
+];
 
 const MOCK_PERSONEL_GOREVLER: PersonelGorevItem[] = [
   {
     id: 1,
-    adSoyad: 'Ahmet Yılmaz',
-    unvan: 'V.H.K.İ. (Veri Hazırlama)',
-    birim: 'İdari ve Mali İşler Servisi',
-    sicilNo: 'TR-882910',
-    istihdamTuru: '657_memur',
+    adSoyad: "Ahmet Yılmaz",
+    unvan: "V.H.K.İ. (Veri Hazırlama)",
+    birim: "İdari ve Mali İşler Servisi",
+    sicilNo: "TR-882910",
+    istihdamTuru: "657_memur",
     komisyonSayisi: 2,
     nobetSayisi: 1,
     torenSayisi: 1,
     digerGorevSayisi: 1,
     digerGorevler: [
       {
-        id: 'dg-1',
+        id: "dg-1",
         personelId: 1,
-        gorevAdi: 'Taşınır Kayıt ve Kontrol Yetkilisi (TİF)',
-        kategori: 'Mali & Lojistik',
-        makamOluru: '5018 SK / 2026/08 Sayılı Görevlendirme',
-        tarih: '10.01.2026'
-      }
+        gorevAdi: "Taşınır Kayıt ve Kontrol Yetkilisi (TİF)",
+        kategori: "Mali & Lojistik",
+        makamOluru: "5018 SK / 2026/08 Sayılı Görevlendirme",
+        tarih: "10.01.2026",
+      },
     ],
     gorevListesi: [
-      'Doğrudan Temin Piyasa Fiyat Araştırma Görevlisi',
-      'Muayene ve Kabul Komisyonu (Asil Üye)',
-      'Çarşamba İdari Bina Nöbetçisi',
-      '29 Ekim Cumhuriyet Bayramı Tören Komitesi',
-      'Taşınır Kayıt ve Kontrol Yetkilisi (TİF)'
+      "Doğrudan Temin Piyasa Fiyat Araştırma Görevlisi",
+      "Muayene ve Kabul Komisyonu (Asil Üye)",
+      "Çarşamba İdari Bina Nöbetçisi",
+      "29 Ekim Cumhuriyet Bayramı Tören Komitesi",
+      "Taşınır Kayıt ve Kontrol Yetkilisi (TİF)",
     ],
-    izinDurumu: 'gorevde'
+    izinDurumu: "gorevde",
   },
   {
     id: 2,
-    adSoyad: 'Mehmet Demir',
-    unvan: 'Mühendis (Teknik Hizmetler)',
-    birim: 'Destek & Fen İşleri',
-    sicilNo: 'TR-771920',
-    istihdamTuru: '657_memur',
+    adSoyad: "Mehmet Demir",
+    unvan: "Mühendis (Teknik Hizmetler)",
+    birim: "Destek & Fen İşleri",
+    sicilNo: "TR-771920",
+    istihdamTuru: "657_memur",
     komisyonSayisi: 3,
     nobetSayisi: 1,
     torenSayisi: 0,
     digerGorevSayisi: 1,
     digerGorevler: [
       {
-        id: 'dg-2',
+        id: "dg-2",
         personelId: 2,
-        gorevAdi: 'EBYS & Resmî Yazışma Koordinatörü',
-        kategori: 'İdari',
-        makamOluru: '2026/14 Sayılı Makam Oluru',
-        tarih: '05.02.2026'
-      }
+        gorevAdi: "EBYS & Resmî Yazışma Koordinatörü",
+        kategori: "İdari",
+        makamOluru: "2026/14 Sayılı Makam Oluru",
+        tarih: "05.02.2026",
+      },
     ],
     gorevListesi: [
-      'Yaklaşık Maliyet Tespit Komisyonu (Başkan)',
-      'İhale Komisyonu (Asil Üye)',
-      'Hasar Tespit & Kıymet Takdir Komisyonu',
-      'Pazartesi Tesis Güvenlik Nöbeti',
-      'EBYS & Resmî Yazışma Koordinatörü'
+      "Yaklaşık Maliyet Tespit Komisyonu (Başkan)",
+      "İhale Komisyonu (Asil Üye)",
+      "Hasar Tespit & Kıymet Takdir Komisyonu",
+      "Pazartesi Tesis Güvenlik Nöbeti",
+      "EBYS & Resmî Yazışma Koordinatörü",
     ],
-    izinDurumu: 'gorevde'
+    izinDurumu: "gorevde",
   },
   {
     id: 3,
-    adSoyad: 'Mustafa Kaya',
-    unvan: 'Sürekli İşçi (Teknisyen)',
-    birim: 'Bakım Onarım & İntikal',
-    sicilNo: 'İSC-40192',
-    istihdamTuru: '4857_isci',
+    adSoyad: "Mustafa Kaya",
+    unvan: "Sürekli İşçi (Teknisyen)",
+    birim: "Bakım Onarım & İntikal",
+    sicilNo: "İSC-40192",
+    istihdamTuru: "4857_isci",
     komisyonSayisi: 1,
     nobetSayisi: 2,
     torenSayisi: 0,
     digerGorevSayisi: 1,
     digerGorevler: [
       {
-        id: 'dg-3',
+        id: "dg-3",
         personelId: 3,
-        gorevAdi: 'Kurum Hizmet Aracı & Servis Sevk Amiri',
-        kategori: 'Mali & Lojistik',
-        makamOluru: '237 SK / Taşıt İşletme Oluru 2026/05',
-        tarih: '15.01.2026'
-      }
+        gorevAdi: "Kurum Hizmet Aracı & Servis Sevk Amiri",
+        kategori: "Mali & Lojistik",
+        makamOluru: "237 SK / Taşıt İşletme Oluru 2026/05",
+        tarih: "15.01.2026",
+      },
     ],
     gorevListesi: [
-      'Taşınır Sayım ve Hurda Düşüm Komisyonu (Üye)',
-      'Salı & Cuma Alan Nöbet Görevlisi',
-      'Kurum Hizmet Aracı & Servis Sevk Amiri'
+      "Taşınır Sayım ve Hurda Düşüm Komisyonu (Üye)",
+      "Salı & Cuma Alan Nöbet Görevlisi",
+      "Kurum Hizmet Aracı & Servis Sevk Amiri",
     ],
-    izinDurumu: 'gorevde'
+    izinDurumu: "gorevde",
   },
   {
     id: 4,
-    adSoyad: 'Zeynep Şahin',
-    unvan: 'Şef / Büro Personeli',
-    birim: 'Yazı İşleri & EBYS',
-    sicilNo: 'TR-992014',
-    istihdamTuru: '657_memur',
+    adSoyad: "Zeynep Şahin",
+    unvan: "Şef / Büro Personeli",
+    birim: "Yazı İşleri & EBYS",
+    sicilNo: "TR-992014",
+    istihdamTuru: "657_memur",
     komisyonSayisi: 1,
     nobetSayisi: 0,
     torenSayisi: 1,
     digerGorevSayisi: 1,
     digerGorevler: [
       {
-        id: 'dg-4',
+        id: "dg-4",
         personelId: 4,
-        gorevAdi: 'CİMER ve Bilgi Edinme Başvuruları Koordinatörü',
-        kategori: 'Basın & Halkla İlişkiler',
-        makamOluru: '4982 SK / CİMER Koordinasyon Oluru',
-        tarih: '02.01.2026'
-      }
+        gorevAdi: "CİMER ve Bilgi Edinme Başvuruları Koordinatörü",
+        kategori: "Basın & Halkla İlişkiler",
+        makamOluru: "4982 SK / CİMER Koordinasyon Oluru",
+        tarih: "02.01.2026",
+      },
     ],
     gorevListesi: [
-      'İş Sağlığı ve Güvenliği (İSG) Kurulu Sekreteryası',
-      'Resmî Tören ve Protokol Karşılama',
-      'CİMER ve Bilgi Edinme Başvuruları Koordinatörü'
+      "İş Sağlığı ve Güvenliği (İSG) Kurulu Sekreteryası",
+      "Resmî Tören ve Protokol Karşılama",
+      "CİMER ve Bilgi Edinme Başvuruları Koordinatörü",
     ],
-    izinDurumu: 'izinde',
-    izinDonusTarihi: '24 Ekim 2026'
+    izinDurumu: "izinde",
+    izinDonusTarihi: "24 Ekim 2026",
   },
   {
     id: 5,
-    adSoyad: 'Ali Çelik',
-    unvan: 'Memur',
-    birim: 'Stok ve Taşınır Kayıt',
-    sicilNo: 'TR-619283',
-    istihdamTuru: '657_memur',
+    adSoyad: "Ali Çelik",
+    unvan: "Memur",
+    birim: "Stok ve Taşınır Kayıt",
+    sicilNo: "TR-619283",
+    istihdamTuru: "657_memur",
     komisyonSayisi: 0,
     nobetSayisi: 0,
     torenSayisi: 0,
     digerGorevSayisi: 0,
     digerGorevler: [],
     gorevListesi: [],
-    izinDurumu: 'gorevde'
-  }
-]
+    izinDurumu: "gorevde",
+  },
+];
 
 export const PersonelGorevDagilimiTab: React.FC = () => {
-  const institutionName = useSettingsStore((s) => s.institutionName)
-  const adminName = useSettingsStore((s) => s.adminName)
-  const aktifKurumAdi = institutionName || 'T.C. İDARE BAŞKANLIĞI / DESTEK VE MALİ HİZMETLER'
-  const aktifHarcamaYetkilisi = adminName || 'Harcama Yetkilisi / Birim Amiri'
+  const institutionName = useSettingsStore((s) => s.institutionName);
+  const adminName = useSettingsStore((s) => s.adminName);
+  const aktifKurumAdi = institutionName ||
+    "T.C. İDARE BAŞKANLIĞI / DESTEK VE MALİ HİZMETLER";
+  const aktifHarcamaYetkilisi = adminName || "Harcama Yetkilisi / Birim Amiri";
 
-  const [subTab, setSubTab] = useState<'matris' | 'diger_gorevler'>('matris')
-  const [searchTerm, setSearchTerm] = useState('')
+  const [subTab, setSubTab] = useState<"matris" | "diger_gorevler">("matris");
+  const [searchTerm, setSearchTerm] = useState("");
   const [filterDurum, setFilterDurum] = useState<
-    'hepsi' | 'atanabilir' | 'dengeli' | 'yuksek' | 'izinde'
-  >('hepsi')
-  const [filterRejim, setFilterRejim] = useState<'hepsi' | '657_memur' | '4857_isci'>('hepsi')
-  const [personeller, setPersoneller] = useState<PersonelGorevItem[]>(MOCK_PERSONEL_GOREVLER)
-  const [seciliPersonel, setSeciliPersonel] = useState<PersonelGorevItem | null>(null)
-  const [showA4Modal, setShowA4Modal] = useState(false)
+    "hepsi" | "atanabilir" | "dengeli" | "yuksek" | "izinde"
+  >("hepsi");
+  const [filterRejim, setFilterRejim] = useState<
+    "hepsi" | "657_memur" | "4857_isci"
+  >("hepsi");
+  const [personeller, setPersoneller] = useState<PersonelGorevItem[]>(
+    MOCK_PERSONEL_GOREVLER,
+  );
+  const [seciliPersonel, setSeciliPersonel] = useState<
+    PersonelGorevItem | null
+  >(null);
+  const [showA4Modal, setShowA4Modal] = useState(false);
 
   // Diğer Görev Ekleme Form State
-  const [yeniGorevPersonelId, setYeniGorevPersonelId] = useState<number>(1)
-  const [yeniGorevAdi, setYeniGorevAdi] = useState('')
-  const [yeniGorevKategori, setYeniGorevKategori] =
-    useState<DigerGorevKaydi['kategori']>('İdari')
-  const [yeniGorevMakamOluru, setYeniGorevMakamOluru] = useState('')
-  const [eklemeSuccess, setEklemeSuccess] = useState(false)
+  const [yeniGorevPersonelId, setYeniGorevPersonelId] = useState<number>(1);
+  const [yeniGorevAdi, setYeniGorevAdi] = useState("");
+  const [yeniGorevKategori, setYeniGorevKategori] = useState<
+    DigerGorevKaydi["kategori"]
+  >("İdari");
+  const [yeniGorevMakamOluru, setYeniGorevMakamOluru] = useState("");
+  const [eklemeSuccess, setEklemeSuccess] = useState(false);
 
   // Metrikler
-  const totalPersonel = personeller.length
-  const totalKomisyonAtamasi = personeller.reduce((acc, p) => acc + p.komisyonSayisi, 0)
-  const totalNobetGorevlisi = personeller.filter((p) => p.nobetSayisi > 0).length
-  const totalDigerGorev = personeller.reduce((acc, p) => acc + p.digerGorevSayisi, 0)
+  const totalPersonel = personeller.length;
+  const totalKomisyonAtamasi = personeller.reduce(
+    (acc, p) => acc + p.komisyonSayisi,
+    0,
+  );
+  const totalNobetGorevlisi =
+    personeller.filter((p) => p.nobetSayisi > 0).length;
+  const totalDigerGorev = personeller.reduce(
+    (acc, p) => acc + p.digerGorevSayisi,
+    0,
+  );
   const atamaBekleyenler = personeller.filter(
-    (p) => p.komisyonSayisi + p.nobetSayisi + p.torenSayisi + p.digerGorevSayisi === 0
-  ).length
+    (p) =>
+      p.komisyonSayisi + p.nobetSayisi + p.torenSayisi + p.digerGorevSayisi ===
+        0,
+  ).length;
 
   // Tüm Diğer Görevler Düz Liste
   const allDigerGorevler = useMemo(() => {
@@ -299,67 +316,73 @@ export const PersonelGorevDagilimiTab: React.FC = () => {
         personelAdSoyad: p.adSoyad,
         personelUnvan: p.unvan,
         personelBirim: p.birim,
-        personelRejim: p.istihdamTuru
+        personelRejim: p.istihdamTuru,
       }))
-    )
-  }, [personeller])
+    );
+  }, [personeller]);
 
   // Görev Ekleme
   const handleGorevEkle = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!yeniGorevAdi.trim()) return
+    e.preventDefault();
+    if (!yeniGorevAdi.trim()) return;
 
-    const hedefPersonel = personeller.find((p) => p.id === yeniGorevPersonelId)
-    if (!hedefPersonel) return
+    const hedefPersonel = personeller.find((p) => p.id === yeniGorevPersonelId);
+    if (!hedefPersonel) return;
 
     const yeniKayit: DigerGorevKaydi = {
       id: `dg-${Date.now()}`,
       personelId: yeniGorevPersonelId,
       gorevAdi: yeniGorevAdi.trim(),
       kategori: yeniGorevKategori,
-      makamOluru: yeniGorevMakamOluru.trim() || 'Makam Oluru',
-      tarih: new Date().toLocaleDateString('tr-TR')
-    }
+      makamOluru: yeniGorevMakamOluru.trim() || "Makam Oluru",
+      tarih: new Date().toLocaleDateString("tr-TR"),
+    };
 
     setPersoneller((prev) =>
       prev.map((p) => {
-        if (p.id !== yeniGorevPersonelId) return p
+        if (p.id !== yeniGorevPersonelId) return p;
         return {
           ...p,
           digerGorevSayisi: p.digerGorevSayisi + 1,
           digerGorevler: [yeniKayit, ...p.digerGorevler],
-          gorevListesi: [...p.gorevListesi, yeniKayit.gorevAdi]
-        }
+          gorevListesi: [...p.gorevListesi, yeniKayit.gorevAdi],
+        };
       })
-    )
+    );
 
-    setYeniGorevAdi('')
-    setYeniGorevMakamOluru('')
-    setEklemeSuccess(true)
-    setTimeout(() => setEklemeSuccess(false), 3000)
-  }
+    setYeniGorevAdi("");
+    setYeniGorevMakamOluru("");
+    setEklemeSuccess(true);
+    setTimeout(() => setEklemeSuccess(false), 3000);
+  };
 
   // Görev Silme
-  const handleGorevSil = (personelId: number, gorevId: string, gorevAdi: string) => {
+  const handleGorevSil = (
+    personelId: number,
+    gorevId: string,
+    gorevAdi: string,
+  ) => {
     setPersoneller((prev) =>
       prev.map((p) => {
-        if (p.id !== personelId) return p
+        if (p.id !== personelId) return p;
         return {
           ...p,
           digerGorevSayisi: Math.max(0, p.digerGorevSayisi - 1),
           digerGorevler: p.digerGorevler.filter((g) => g.id !== gorevId),
-          gorevListesi: p.gorevListesi.filter((g) => g !== gorevAdi)
-        }
+          gorevListesi: p.gorevListesi.filter((g) => g !== gorevAdi),
+        };
       })
-    )
-  }
+    );
+  };
 
   // Şablon Seçme
-  const handleSablonSec = (sablon: (typeof HAZIR_KAMU_GOREV_SABLONLARI)[number]) => {
-    setYeniGorevAdi(sablon.gorevAdi)
-    setYeniGorevKategori(sablon.kategori)
-    setYeniGorevMakamOluru(sablon.ornekOlur)
-  }
+  const handleSablonSec = (
+    sablon: (typeof HAZIR_KAMU_GOREV_SABLONLARI)[number],
+  ) => {
+    setYeniGorevAdi(sablon.gorevAdi);
+    setYeniGorevKategori(sablon.kategori);
+    setYeniGorevMakamOluru(sablon.ornekOlur);
+  };
 
   // Filtreleme
   const filteredPersonel = useMemo(() => {
@@ -368,21 +391,26 @@ export const PersonelGorevDagilimiTab: React.FC = () => {
         p.adSoyad.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.unvan.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.birim.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.sicilNo.toLowerCase().includes(searchTerm.toLowerCase())
+        p.sicilNo.toLowerCase().includes(searchTerm.toLowerCase());
 
-      if (!matchSearch) return false
+      if (!matchSearch) return false;
 
-      if (filterRejim !== 'hepsi' && p.istihdamTuru !== filterRejim) return false
+      if (filterRejim !== "hepsi" && p.istihdamTuru !== filterRejim) {
+        return false;
+      }
 
-      const toplamGorev = p.komisyonSayisi + p.nobetSayisi + p.torenSayisi + p.digerGorevSayisi
-      if (filterDurum === 'atanabilir' && toplamGorev > 0) return false
-      if (filterDurum === 'dengeli' && (toplamGorev === 0 || toplamGorev > 2)) return false
-      if (filterDurum === 'yuksek' && toplamGorev < 3) return false
-      if (filterDurum === 'izinde' && p.izinDurumu === 'gorevde') return false
+      const toplamGorev = p.komisyonSayisi + p.nobetSayisi + p.torenSayisi +
+        p.digerGorevSayisi;
+      if (filterDurum === "atanabilir" && toplamGorev > 0) return false;
+      if (filterDurum === "dengeli" && (toplamGorev === 0 || toplamGorev > 2)) {
+        return false;
+      }
+      if (filterDurum === "yuksek" && toplamGorev < 3) return false;
+      if (filterDurum === "izinde" && p.izinDurumu === "gorevde") return false;
 
-      return true
-    })
-  }, [personeller, searchTerm, filterDurum, filterRejim])
+      return true;
+    });
+  }, [personeller, searchTerm, filterDurum, filterRejim]);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -390,11 +418,11 @@ export const PersonelGorevDagilimiTab: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setSubTab('matris')}
+            onClick={() => setSubTab("matris")}
             className={`px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer ${
-              subTab === 'matris'
-                ? 'bg-blue-600 text-white shadow-xs shadow-blue-500/20'
-                : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
+              subTab === "matris"
+                ? "bg-blue-600 text-white shadow-xs shadow-blue-500/20"
+                : "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300"
             }`}
           >
             <Scale className="w-4 h-4" />
@@ -402,20 +430,20 @@ export const PersonelGorevDagilimiTab: React.FC = () => {
           </button>
 
           <button
-            onClick={() => setSubTab('diger_gorevler')}
+            onClick={() => setSubTab("diger_gorevler")}
             className={`px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer ${
-              subTab === 'diger_gorevler'
-                ? 'bg-indigo-600 text-white shadow-xs shadow-indigo-500/20'
-                : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
+              subTab === "diger_gorevler"
+                ? "bg-indigo-600 text-white shadow-xs shadow-indigo-500/20"
+                : "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300"
             }`}
           >
             <ClipboardList className="w-4 h-4 text-amber-300" />
             <span>📋 Diğer Görevler</span>
             <span
               className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono ${
-                subTab === 'diger_gorevler'
-                  ? 'bg-white/20 text-white'
-                  : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300'
+                subTab === "diger_gorevler"
+                  ? "bg-white/20 text-white"
+                  : "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300"
               }`}
             >
               {allDigerGorevler.length}
@@ -435,7 +463,7 @@ export const PersonelGorevDagilimiTab: React.FC = () => {
       </div>
 
       {/* SUB-TAB 1: GÖREV DAĞILIM MATRİSİ */}
-      {subTab === 'matris' && (
+      {subTab === "matris" && (
         <div className="space-y-6">
           {/* ÜST BİLGİLENDİRME BANNER'I */}
           <div className="p-5 rounded-2xl bg-linear-to-r from-blue-50 via-indigo-50/70 to-slate-50 dark:from-slate-900 dark:via-indigo-950/40 dark:to-slate-900 border border-blue-200/80 dark:border-blue-900/40 shadow-xs space-y-2">
@@ -451,20 +479,26 @@ export const PersonelGorevDagilimiTab: React.FC = () => {
               </span>
             </div>
             <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed max-w-4xl">
-              Kurumunuzdaki personeli ekleyin; her birinin aldığı{' '}
-              <strong className="text-blue-700 dark:text-blue-400 font-bold">kurul/komisyon</strong>
-              ,{' '}
+              Kurumunuzdaki personeli ekleyin; her birinin aldığı{" "}
+              <strong className="text-blue-700 dark:text-blue-400 font-bold">
+                kurul/komisyon
+              </strong>
+              ,{" "}
               <strong className="text-indigo-700 dark:text-indigo-400 font-bold">
                 belirli gün & tören
               </strong>
-              , <strong className="text-emerald-700 dark:text-emerald-400 font-bold">nöbet</strong>{' '}
-              ve{' '}
+              ,{" "}
+              <strong className="text-emerald-700 dark:text-emerald-400 font-bold">
+                nöbet
+              </strong>{" "}
+              ve{" "}
               <strong className="text-amber-700 dark:text-amber-400 font-bold">
                 diğer idari görev sayısı (TİF, EBYS, İSG vb.)
-              </strong>{' '}
-              otomatik burada görünür. Bu havuz <strong>Nöbet Çizelgesi</strong>,{' '}
-              <strong>Personel İzin/Devam</strong> ve <strong>Satınalma Komisyonları</strong> ile
-              ortaktır.
+              </strong>{" "}
+              otomatik burada görünür. Bu havuz{" "}
+              <strong>Nöbet Çizelgesi</strong>,{" "}
+              <strong>Personel İzin/Devam</strong> ve{" "}
+              <strong>Satınalma Komisyonları</strong> ile ortaktır.
             </p>
           </div>
 
@@ -478,7 +512,9 @@ export const PersonelGorevDagilimiTab: React.FC = () => {
               <div className="text-xl font-black text-slate-900 dark:text-white">
                 {totalPersonel}
               </div>
-              <div className="text-[10px] text-slate-400">Kayıtlı memur & işçi</div>
+              <div className="text-[10px] text-slate-400">
+                Kayıtlı memur & işçi
+              </div>
             </div>
 
             <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-1">
@@ -489,7 +525,9 @@ export const PersonelGorevDagilimiTab: React.FC = () => {
               <div className="text-xl font-black text-indigo-600 dark:text-indigo-400">
                 {totalKomisyonAtamasi}
               </div>
-              <div className="text-[10px] text-slate-400">İhale, kabul, sayım</div>
+              <div className="text-[10px] text-slate-400">
+                İhale, kabul, sayım
+              </div>
             </div>
 
             <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-1">
@@ -500,7 +538,9 @@ export const PersonelGorevDagilimiTab: React.FC = () => {
               <div className="text-xl font-black text-emerald-600 dark:text-emerald-400">
                 {totalNobetGorevlisi}
               </div>
-              <div className="text-[10px] text-slate-400">Bina & alan nöbeti</div>
+              <div className="text-[10px] text-slate-400">
+                Bina & alan nöbeti
+              </div>
             </div>
 
             <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-1">
@@ -511,7 +551,9 @@ export const PersonelGorevDagilimiTab: React.FC = () => {
               <div className="text-xl font-black text-purple-600 dark:text-purple-400">
                 {totalDigerGorev}
               </div>
-              <div className="text-[10px] text-slate-400">TİF, EBYS, İSG, Araç</div>
+              <div className="text-[10px] text-slate-400">
+                TİF, EBYS, İSG, Araç
+              </div>
             </div>
 
             <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-1">
@@ -522,7 +564,9 @@ export const PersonelGorevDagilimiTab: React.FC = () => {
               <div className="text-xl font-black text-amber-600 dark:text-amber-400">
                 {atamaBekleyenler}
               </div>
-              <div className="text-[10px] text-slate-400">Henüz görev almayan</div>
+              <div className="text-[10px] text-slate-400">
+                Henüz görev almayan
+              </div>
             </div>
           </div>
 
@@ -542,41 +586,41 @@ export const PersonelGorevDagilimiTab: React.FC = () => {
 
               <div className="flex items-center gap-1.5 flex-wrap">
                 <button
-                  onClick={() => setFilterDurum('hepsi')}
+                  onClick={() => setFilterDurum("hepsi")}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    filterDurum === 'hepsi'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
+                    filterDurum === "hepsi"
+                      ? "bg-blue-600 text-white"
+                      : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200"
                   }`}
                 >
                   Tümü ({personeller.length})
                 </button>
                 <button
-                  onClick={() => setFilterDurum('atanabilir')}
+                  onClick={() => setFilterDurum("atanabilir")}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    filterDurum === 'atanabilir'
-                      ? 'bg-emerald-600 text-white'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
+                    filterDurum === "atanabilir"
+                      ? "bg-emerald-600 text-white"
+                      : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200"
                   }`}
                 >
                   Görev Atanabilir ({atamaBekleyenler})
                 </button>
                 <button
-                  onClick={() => setFilterDurum('yuksek')}
+                  onClick={() => setFilterDurum("yuksek")}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    filterDurum === 'yuksek'
-                      ? 'bg-amber-600 text-white'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
+                    filterDurum === "yuksek"
+                      ? "bg-amber-600 text-white"
+                      : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200"
                   }`}
                 >
                   Yüksek İş Yükü (3+)
                 </button>
                 <button
-                  onClick={() => setFilterDurum('izinde')}
+                  onClick={() => setFilterDurum("izinde")}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    filterDurum === 'izinde'
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
+                    filterDurum === "izinde"
+                      ? "bg-purple-600 text-white"
+                      : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200"
                   }`}
                 >
                   İzindekiler
@@ -586,31 +630,31 @@ export const PersonelGorevDagilimiTab: React.FC = () => {
 
             <div className="flex items-center gap-1.5">
               <button
-                onClick={() => setFilterRejim('hepsi')}
+                onClick={() => setFilterRejim("hepsi")}
                 className={`px-2.5 py-1 rounded-md text-[11px] font-bold ${
-                  filterRejim === 'hepsi'
-                    ? 'bg-slate-800 text-white'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                  filterRejim === "hepsi"
+                    ? "bg-slate-800 text-white"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-500"
                 }`}
               >
                 Tüm Rejimler
               </button>
               <button
-                onClick={() => setFilterRejim('657_memur')}
+                onClick={() => setFilterRejim("657_memur")}
                 className={`px-2.5 py-1 rounded-md text-[11px] font-bold ${
-                  filterRejim === '657_memur'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                  filterRejim === "657_memur"
+                    ? "bg-blue-600 text-white"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-500"
                 }`}
               >
                 657 Memur
               </button>
               <button
-                onClick={() => setFilterRejim('4857_isci')}
+                onClick={() => setFilterRejim("4857_isci")}
                 className={`px-2.5 py-1 rounded-md text-[11px] font-bold ${
-                  filterRejim === '4857_isci'
-                    ? 'bg-amber-600 text-white'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                  filterRejim === "4857_isci"
+                    ? "bg-amber-600 text-white"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-500"
                 }`}
               >
                 4857 İşçi
@@ -637,11 +681,10 @@ export const PersonelGorevDagilimiTab: React.FC = () => {
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
                   {filteredPersonel.map((personel) => {
-                    const toplamGorev =
-                      personel.komisyonSayisi +
+                    const toplamGorev = personel.komisyonSayisi +
                       personel.nobetSayisi +
                       personel.torenSayisi +
-                      personel.digerGorevSayisi
+                      personel.digerGorevSayisi;
 
                     return (
                       <tr
@@ -653,83 +696,107 @@ export const PersonelGorevDagilimiTab: React.FC = () => {
                             {personel.adSoyad}
                           </div>
                           <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                            {personel.unvan} ·{' '}
-                            <span className="font-mono text-[10px]">{personel.sicilNo}</span>
+                            {personel.unvan} ·{" "}
+                            <span className="font-mono text-[10px]">
+                              {personel.sicilNo}
+                            </span>
                           </div>
-                          <div className="text-[10px] text-slate-400 mt-0.5">{personel.birim}</div>
+                          <div className="text-[10px] text-slate-400 mt-0.5">
+                            {personel.birim}
+                          </div>
                         </td>
 
                         <td className="py-3 px-3">
                           <span
                             className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${
-                              personel.istihdamTuru === '657_memur'
-                                ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
-                                : 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+                              personel.istihdamTuru === "657_memur"
+                                ? "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
+                                : "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
                             }`}
                           >
-                            {personel.istihdamTuru === '657_memur' ? '657 MEMUR' : '4857 İŞÇİ'}
+                            {personel.istihdamTuru === "657_memur"
+                              ? "657 MEMUR"
+                              : "4857 İŞÇİ"}
                           </span>
                         </td>
 
                         <td className="py-3 px-3">
-                          {personel.komisyonSayisi > 0 ? (
-                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-extrabold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-                              <Building className="w-3.5 h-3.5 text-indigo-500" />
-                              <span>{personel.komisyonSayisi} Komisyon</span>
-                            </div>
-                          ) : (
-                            <span className="text-slate-400 text-xs italic">Yok</span>
-                          )}
+                          {personel.komisyonSayisi > 0
+                            ? (
+                              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-extrabold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                                <Building className="w-3.5 h-3.5 text-indigo-500" />
+                                <span>{personel.komisyonSayisi} Komisyon</span>
+                              </div>
+                            )
+                            : (
+                              <span className="text-slate-400 text-xs italic">
+                                Yok
+                              </span>
+                            )}
                         </td>
 
                         <td className="py-3 px-3">
-                          {personel.nobetSayisi > 0 ? (
-                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-extrabold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                              <Shield className="w-3.5 h-3.5 text-emerald-500" />
-                              <span>{personel.nobetSayisi} Nöbet</span>
-                            </div>
-                          ) : (
-                            <span className="text-slate-400 text-xs italic">Yok</span>
-                          )}
+                          {personel.nobetSayisi > 0
+                            ? (
+                              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-extrabold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                <Shield className="w-3.5 h-3.5 text-emerald-500" />
+                                <span>{personel.nobetSayisi} Nöbet</span>
+                              </div>
+                            )
+                            : (
+                              <span className="text-slate-400 text-xs italic">
+                                Yok
+                              </span>
+                            )}
                         </td>
 
                         <td className="py-3 px-3">
-                          {personel.torenSayisi > 0 ? (
-                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-extrabold bg-purple-50 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
-                              <Calendar className="w-3.5 h-3.5 text-purple-500" />
-                              <span>{personel.torenSayisi} Tören</span>
-                            </div>
-                          ) : (
-                            <span className="text-slate-400 text-xs italic">-</span>
-                          )}
+                          {personel.torenSayisi > 0
+                            ? (
+                              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-extrabold bg-purple-50 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                                <Calendar className="w-3.5 h-3.5 text-purple-500" />
+                                <span>{personel.torenSayisi} Tören</span>
+                              </div>
+                            )
+                            : (
+                              <span className="text-slate-400 text-xs italic">
+                                -
+                              </span>
+                            )}
                         </td>
 
                         {/* DİĞER GÖREVLER SÜTUNU */}
                         <td className="py-3 px-3">
-                          {personel.digerGorevler.length > 0 ? (
-                            <div className="flex flex-col gap-1 max-w-xs">
-                              {personel.digerGorevler.map((g) => (
-                                <span
-                                  key={g.id}
-                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 border border-amber-200 dark:border-amber-800 truncate"
-                                  title={`${g.gorevAdi} (${g.makamOluru || ''})`}
-                                >
-                                  <Tag className="w-2.5 h-2.5 shrink-0 text-amber-600" />
-                                  <span className="truncate">{g.gorevAdi}</span>
-                                </span>
-                              ))}
-                            </div>
-                          ) : (
-                            <button
-                              onClick={() => {
-                                setYeniGorevPersonelId(personel.id)
-                                setSubTab('diger_gorevler')
-                              }}
-                              className="text-[11px] font-semibold text-blue-600 hover:text-blue-700 hover:underline inline-flex items-center gap-1 cursor-pointer"
-                            >
-                              <Plus className="w-3 h-3" /> Görev Ekle
-                            </button>
-                          )}
+                          {personel.digerGorevler.length > 0
+                            ? (
+                              <div className="flex flex-col gap-1 max-w-xs">
+                                {personel.digerGorevler.map((g) => (
+                                  <span
+                                    key={g.id}
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 border border-amber-200 dark:border-amber-800 truncate"
+                                    title={`${g.gorevAdi} (${
+                                      g.makamOluru || ""
+                                    })`}
+                                  >
+                                    <Tag className="w-2.5 h-2.5 shrink-0 text-amber-600" />
+                                    <span className="truncate">
+                                      {g.gorevAdi}
+                                    </span>
+                                  </span>
+                                ))}
+                              </div>
+                            )
+                            : (
+                              <button
+                                onClick={() => {
+                                  setYeniGorevPersonelId(personel.id);
+                                  setSubTab("diger_gorevler");
+                                }}
+                                className="text-[11px] font-semibold text-blue-600 hover:text-blue-700 hover:underline inline-flex items-center gap-1 cursor-pointer"
+                              >
+                                <Plus className="w-3 h-3" /> Görev Ekle
+                              </button>
+                            )}
                         </td>
 
                         <td className="py-3 px-3">
@@ -737,10 +804,10 @@ export const PersonelGorevDagilimiTab: React.FC = () => {
                             <span
                               className={`text-xs font-black px-2 py-0.5 rounded-full ${
                                 toplamGorev === 0
-                                  ? 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+                                  ? "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
                                   : toplamGorev <= 2
-                                    ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300'
-                                    : 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300 font-bold'
+                                  ? "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300"
+                                  : "bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300 font-bold"
                               }`}
                             >
                               {toplamGorev} Görev
@@ -757,24 +824,26 @@ export const PersonelGorevDagilimiTab: React.FC = () => {
                         </td>
 
                         <td className="py-3 px-3">
-                          {personel.izinDurumu === 'gorevde' ? (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
-                              <CheckCircle2 className="w-3.5 h-3.5" />
-                              Görevinin Başında
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-purple-600 dark:text-purple-400">
-                              <Clock className="w-3.5 h-3.5" />
-                              İzinde ({personel.izinDonusTarihi} dönüş)
-                            </span>
-                          )}
+                          {personel.izinDurumu === "gorevde"
+                            ? (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                Görevinin Başında
+                              </span>
+                            )
+                            : (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-purple-600 dark:text-purple-400">
+                                <Clock className="w-3.5 h-3.5" />
+                                İzinde ({personel.izinDonusTarihi} dönüş)
+                              </span>
+                            )}
                         </td>
 
                         <td className="py-3 px-4 text-right">
                           <button
                             onClick={() => {
-                              setSeciliPersonel(personel)
-                              setShowA4Modal(true)
+                              setSeciliPersonel(personel);
+                              setShowA4Modal(true);
                             }}
                             className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800 transition-colors cursor-pointer"
                           >
@@ -782,7 +851,7 @@ export const PersonelGorevDagilimiTab: React.FC = () => {
                           </button>
                         </td>
                       </tr>
-                    )
+                    );
                   })}
                 </tbody>
               </table>
@@ -792,16 +861,20 @@ export const PersonelGorevDagilimiTab: React.FC = () => {
       )}
 
       {/* SUB-TAB 2: REFERANS GÖRSELDEKİ "DİĞER GÖREVLER" ALANI */}
-      {subTab === 'diger_gorevler' && (
+      {subTab === "diger_gorevler" && (
         <div className="space-y-6 animate-in fade-in duration-200">
           {/* BAŞLIK */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <span className="text-2xl">📋</span>
-              <h2 className="text-lg font-black text-slate-900 dark:text-white">Diğer Görevler</h2>
+              <h2 className="text-lg font-black text-slate-900 dark:text-white">
+                Diğer Görevler
+              </h2>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-500">Kayıtlı Özel / İdari Sorumluluk:</span>
+              <span className="text-xs text-slate-500">
+                Kayıtlı Özel / İdari Sorumluluk:
+              </span>
               <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-indigo-100 text-indigo-800 dark:bg-indigo-900/60 dark:text-indigo-300 font-mono">
                 {allDigerGorevler.length} Atama
               </span>
@@ -815,25 +888,26 @@ export const PersonelGorevDagilimiTab: React.FC = () => {
               <Info className="w-4 h-4" />
             </div>
             <div className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-              Buraya{' '}
+              Buraya{" "}
               <strong className="text-blue-900 dark:text-blue-300 font-bold">
                 kurul-komisyon, belirli gün ve törenler, nöbet
-              </strong>{' '}
-              dışında kalan kurumsal idari ve teknik görevleri yazabilir veya aşağıdaki hazır
-              şablonlardan seçebilirsiniz —{' '}
+              </strong>{" "}
+              dışında kalan kurumsal idari ve teknik görevleri yazabilir veya
+              aşağıdaki hazır şablonlardan seçebilirsiniz —{" "}
               <span className="font-semibold text-slate-800 dark:text-slate-200">
-                EBYS resmî yazışma koordinatörü, taşınır kayıt (TİF) yetkilisi, kurum web sitesi &
-                sosyal medya sorumluluğu, İSG saha denetimi, arşiv/ayıklama komisyonu, araç & servis
-                filo amirliği, kalite (ISO/KYS) yönetimi, CİMER koordinasyonu
-              </span>{' '}
-              gibi. Girdiğiniz görevler{' '}
+                EBYS resmî yazışma koordinatörü, taşınır kayıt (TİF) yetkilisi,
+                kurum web sitesi & sosyal medya sorumluluğu, İSG saha denetimi,
+                arşiv/ayıklama komisyonu, araç & servis filo amirliği, kalite
+                (ISO/KYS) yönetimi, CİMER koordinasyonu
+              </span>{" "}
+              gibi. Girdiğiniz görevler{" "}
               <strong className="text-blue-900 dark:text-blue-300 font-bold">
                 Personel Görev Dağılımı
-              </strong>{' '}
-              ve{' '}
+              </strong>{" "}
+              ve{" "}
               <strong className="text-blue-900 dark:text-blue-300 font-bold">
                 Makam Onaylı Dağılım Çizelgesi
-              </strong>{' '}
+              </strong>{" "}
               ekranlarına da otomatik yansır.
             </div>
           </div>
@@ -870,7 +944,9 @@ export const PersonelGorevDagilimiTab: React.FC = () => {
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="text-xs font-extrabold uppercase text-slate-500 dark:text-slate-400 tracking-wider flex items-center gap-2">
                 <Briefcase className="w-4 h-4 text-indigo-600" />
-                <span>Personele Yeni İdari / Özel Görev Tanımla & Yetkilendir</span>
+                <span>
+                  Personele Yeni İdari / Özel Görev Tanımla & Yetkilendir
+                </span>
               </div>
               {eklemeSuccess && (
                 <div className="text-xs font-bold text-emerald-600 flex items-center gap-1.5 animate-in fade-in">
@@ -888,7 +964,8 @@ export const PersonelGorevDagilimiTab: React.FC = () => {
                 </label>
                 <select
                   value={yeniGorevPersonelId}
-                  onChange={(e) => setYeniGorevPersonelId(Number(e.target.value))}
+                  onChange={(e) =>
+                    setYeniGorevPersonelId(Number(e.target.value))}
                   className="w-full text-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-2.5 font-medium text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
                 >
                   {personeller.map((p) => (
@@ -922,15 +999,18 @@ export const PersonelGorevDagilimiTab: React.FC = () => {
                 <select
                   value={yeniGorevKategori}
                   onChange={(e) =>
-                    setYeniGorevKategori(e.target.value as DigerGorevKaydi['kategori'])
-                  }
+                    setYeniGorevKategori(
+                      e.target.value as DigerGorevKaydi["kategori"],
+                    )}
                   className="w-full text-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-2.5 font-medium text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value="İdari">İdari</option>
                   <option value="Mali & Lojistik">Mali & Lojistik</option>
                   <option value="Teknik & Bilişim">Teknik & Bilişim</option>
                   <option value="İSG & Güvenlik">İSG & Güvenlik</option>
-                  <option value="Basın & Halkla İlişkiler">Basın & Halkla İlişkiler</option>
+                  <option value="Basın & Halkla İlişkiler">
+                    Basın & Halkla İlişkiler
+                  </option>
                 </select>
               </div>
             </div>
@@ -986,56 +1066,64 @@ export const PersonelGorevDagilimiTab: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
-                  {allDigerGorevler.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="py-8 text-center text-slate-400 italic">
-                        Henüz özel veya idari bir görev kaydı girilmemiş. Yukarıdaki formdan ekleme
-                        yapabilirsiniz.
-                      </td>
-                    </tr>
-                  ) : (
-                    allDigerGorevler.map((g) => (
-                      <tr
-                        key={g.id}
-                        className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors"
-                      >
-                        <td className="py-3 px-4">
-                          <div className="font-bold text-slate-900 dark:text-white">
-                            {g.personelAdSoyad}
-                          </div>
-                          <div className="text-[10px] text-slate-400">
-                            {g.personelUnvan} · {g.personelBirim}
-                          </div>
-                        </td>
-
-                        <td className="py-3 px-3 font-semibold text-slate-900 dark:text-slate-100">
-                          {g.gorevAdi}
-                        </td>
-
-                        <td className="py-3 px-3">
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-                            {g.kategori}
-                          </span>
-                        </td>
-
-                        <td className="py-3 px-3 text-slate-500 text-[11px] font-mono">
-                          {g.makamOluru || '-'}
-                        </td>
-
-                        <td className="py-3 px-3 text-slate-400 text-[11px]">{g.tarih}</td>
-
-                        <td className="py-3 px-4 text-right">
-                          <button
-                            onClick={() => handleGorevSil(g.personelId, g.id, g.gorevAdi)}
-                            className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 hover:text-rose-600 transition-colors cursor-pointer"
-                            title="Görevi İptal Et"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                  {allDigerGorevler.length === 0
+                    ? (
+                      <tr>
+                        <td
+                          colSpan={6}
+                          className="py-8 text-center text-slate-400 italic"
+                        >
+                          Henüz özel veya idari bir görev kaydı girilmemiş.
+                          Yukarıdaki formdan ekleme yapabilirsiniz.
                         </td>
                       </tr>
-                    ))
-                  )}
+                    )
+                    : (
+                      allDigerGorevler.map((g) => (
+                        <tr
+                          key={g.id}
+                          className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors"
+                        >
+                          <td className="py-3 px-4">
+                            <div className="font-bold text-slate-900 dark:text-white">
+                              {g.personelAdSoyad}
+                            </div>
+                            <div className="text-[10px] text-slate-400">
+                              {g.personelUnvan} · {g.personelBirim}
+                            </div>
+                          </td>
+
+                          <td className="py-3 px-3 font-semibold text-slate-900 dark:text-slate-100">
+                            {g.gorevAdi}
+                          </td>
+
+                          <td className="py-3 px-3">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                              {g.kategori}
+                            </span>
+                          </td>
+
+                          <td className="py-3 px-3 text-slate-500 text-[11px] font-mono">
+                            {g.makamOluru || "-"}
+                          </td>
+
+                          <td className="py-3 px-3 text-slate-400 text-[11px]">
+                            {g.tarih}
+                          </td>
+
+                          <td className="py-3 px-4 text-right">
+                            <button
+                              onClick={() =>
+                                handleGorevSil(g.personelId, g.id, g.gorevAdi)}
+                              className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 hover:text-rose-600 transition-colors cursor-pointer"
+                              title="Görevi İptal Et"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                 </tbody>
               </table>
             </div>
@@ -1063,8 +1151,8 @@ export const PersonelGorevDagilimiTab: React.FC = () => {
                 </button>
                 <button
                   onClick={() => {
-                    setSeciliPersonel(null)
-                    setShowA4Modal(false)
+                    setSeciliPersonel(null);
+                    setShowA4Modal(false);
                   }}
                   className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 cursor-pointer"
                 >
@@ -1076,12 +1164,15 @@ export const PersonelGorevDagilimiTab: React.FC = () => {
             <div className="flex-1 overflow-y-auto p-8 font-serif text-slate-900 dark:text-slate-100 text-xs leading-relaxed space-y-6">
               {/* T.C. Antet */}
               <div className="text-center space-y-1 border-b pb-4">
-                <div className="font-bold text-sm tracking-widest uppercase">T.C.</div>
+                <div className="font-bold text-sm tracking-widest uppercase">
+                  T.C.
+                </div>
                 <div className="font-extrabold text-xs uppercase">
                   {aktifKurumAdi}
                 </div>
                 <div className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
-                  2026-2027 İDARİ VE MALİ DÖNEMİ PERSONEL GÖREV, KOMİSYON VE NÖBET DAĞILIM ÇİZELGESİ
+                  2026-2027 İDARİ VE MALİ DÖNEMİ PERSONEL GÖREV, KOMİSYON VE
+                  NÖBET DAĞILIM ÇİZELGESİ
                 </div>
               </div>
 
@@ -1090,49 +1181,62 @@ export const PersonelGorevDagilimiTab: React.FC = () => {
                   <strong>Sayı:</strong> E-92847102-903.07-2026/89
                 </div>
                 <div>
-                  <strong>Tarih:</strong> {new Date().toLocaleDateString('tr-TR')}
+                  <strong>Tarih:</strong>{" "}
+                  {new Date().toLocaleDateString("tr-TR")}
                 </div>
               </div>
 
               <p className="text-justify text-[11px] indent-6 leading-relaxed">
-                5018 Sayılı Kamu Malî Yönetimi ve Kontrol Kanunu, 4734 Sayılı Kamu İhale Kanunu ve
-                ilgili mevzuat hükümleri uyarınca, kurumumuz bünyesinde yürütülen komisyon, nöbet,
-                resmî tören ve diğer kurumsal idari görevlendirmelere (TİF, EBYS, İSG vb.) ait
-                yetki ve sorumluluklar aşağıda belirtilen personellere tevdi edilmiş olup gereği için
-                tebliğ olunur.
+                5018 Sayılı Kamu Malî Yönetimi ve Kontrol Kanunu, 4734 Sayılı
+                Kamu İhale Kanunu ve ilgili mevzuat hükümleri uyarınca,
+                kurumumuz bünyesinde yürütülen komisyon, nöbet, resmî tören ve
+                diğer kurumsal idari görevlendirmelere (TİF, EBYS, İSG vb.) ait
+                yetki ve sorumluluklar aşağıda belirtilen personellere tevdi
+                edilmiş olup gereği için tebliğ olunur.
               </p>
 
               <table className="w-full border border-slate-400 text-[10px] border-collapse">
                 <thead>
                   <tr className="bg-slate-100 dark:bg-slate-800 border-b border-slate-400 font-bold text-center">
                     <th className="p-2 border-r border-slate-400 w-12">S.No</th>
-                    <th className="p-2 border-r border-slate-400 w-44">Adı Soyadı & Unvanı</th>
-                    <th className="p-2 border-r border-slate-400">Tevdi Edilen Resmî Görevler</th>
+                    <th className="p-2 border-r border-slate-400 w-44">
+                      Adı Soyadı & Unvanı
+                    </th>
+                    <th className="p-2 border-r border-slate-400">
+                      Tevdi Edilen Resmî Görevler
+                    </th>
                     <th className="p-2 w-24">Tebellüğ İmzası</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-400">
-                  {(seciliPersonel ? [seciliPersonel] : personeller).map((p, idx) => (
+                  {(seciliPersonel ? [seciliPersonel] : personeller).map((
+                    p,
+                    idx,
+                  ) => (
                     <tr key={p.id} className="border-b border-slate-400">
                       <td className="p-2 text-center border-r border-slate-400 font-bold">
                         {idx + 1}
                       </td>
                       <td className="p-2 border-r border-slate-400 font-bold">
                         {p.adSoyad}
-                        <div className="font-normal text-[9px] text-slate-500">{p.unvan}</div>
+                        <div className="font-normal text-[9px] text-slate-500">
+                          {p.unvan}
+                        </div>
                       </td>
                       <td className="p-2 border-r border-slate-400">
-                        {p.gorevListesi.length > 0 ? (
-                          <ul className="list-disc pl-4 space-y-0.5">
-                            {p.gorevListesi.map((g, gIdx) => (
-                              <li key={gIdx}>{g}</li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <span className="italic text-slate-400">
-                            Genel idari büro işleri yürütülmektedir.
-                          </span>
-                        )}
+                        {p.gorevListesi.length > 0
+                          ? (
+                            <ul className="list-disc pl-4 space-y-0.5">
+                              {p.gorevListesi.map((g, gIdx) => (
+                                <li key={gIdx}>{g}</li>
+                              ))}
+                            </ul>
+                          )
+                          : (
+                            <span className="italic text-slate-400">
+                              Genel idari büro işleri yürütülmektedir.
+                            </span>
+                          )}
                       </td>
                       <td className="p-2 text-center align-bottom text-[9px] text-slate-400 font-sans">
                         İmza
@@ -1147,9 +1251,11 @@ export const PersonelGorevDagilimiTab: React.FC = () => {
                   UYGUNDUR
                 </div>
                 <div className="text-[10px] text-slate-500">
-                  {new Date().toLocaleDateString('tr-TR')}
+                  {new Date().toLocaleDateString("tr-TR")}
                 </div>
-                <div className="pt-6 font-bold text-xs">{aktifHarcamaYetkilisi}</div>
+                <div className="pt-6 font-bold text-xs">
+                  {aktifHarcamaYetkilisi}
+                </div>
                 <div className="text-[10px] text-slate-500 font-sans">
                   Harcama Yetkilisi / Birim Amiri (Mühür ve İmza)
                 </div>
@@ -1159,6 +1265,5 @@ export const PersonelGorevDagilimiTab: React.FC = () => {
         </div>
       )}
     </div>
-  )
-}
-
+  );
+};

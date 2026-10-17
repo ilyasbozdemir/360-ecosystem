@@ -8,6 +8,8 @@ interface PiyasaFiyatTeklifleriTableProps {
   displayFirmaToplamlari: any[];
   formatMoney: (val: any) => string;
   data?: Record<string, any>;
+  startIndex?: number;
+  showTotals?: boolean;
 }
 
 export const PiyasaFiyatTeklifleriTable: React.FC<PiyasaFiyatTeklifleriTableProps> = ({
@@ -16,6 +18,8 @@ export const PiyasaFiyatTeklifleriTable: React.FC<PiyasaFiyatTeklifleriTableProp
   displayFirmaToplamlari,
   formatMoney,
   data = {},
+  startIndex = 0,
+  showTotals = true,
 }) => {
   const firmCount = Math.max(1, displayFirmalar.length);
   // Base non-firm columns total percentage:
@@ -202,7 +206,7 @@ export const PiyasaFiyatTeklifleriTable: React.FC<PiyasaFiyatTeklifleriTableProp
                     textAlign: "center",
                   }}
                 >
-                  {kalem.siraNo ?? idx + 1}
+                  {kalem.siraNo ?? startIndex + idx + 1}
                 </td>
                 <td
                   style={{
@@ -318,7 +322,7 @@ export const PiyasaFiyatTeklifleriTable: React.FC<PiyasaFiyatTeklifleriTableProp
                 })}
               </tr>
               <TableRowSplitDivider
-                rowIndex={idx + 1}
+                rowIndex={startIndex + idx + 1}
                 colSpan={5 + displayFirmalar.length * 2}
                 currentSplitIndex={
                   data?.firstPageLimit
@@ -329,7 +333,7 @@ export const PiyasaFiyatTeklifleriTable: React.FC<PiyasaFiyatTeklifleriTableProp
             </React.Fragment>
           ))}
 
-          {processedKalemler.length > 0 && (
+          {showTotals !== false && processedKalemler.length > 0 && (
             <tr style={{ fontWeight: "bold", backgroundColor: "#fafafa" }}>
               <td
                 colSpan={5}

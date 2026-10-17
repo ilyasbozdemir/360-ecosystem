@@ -40,16 +40,40 @@ export function resolveCommissionCategory(
     }
   }
 
-  // 2. Verified Database ID Precedence
+  // 2. Tur / Type code precedence (from TANIM_Komisyon.tur or komisyon_tur_kodu)
+  const rawTur = input.tur ?? input.komisyon_tur_kodu ?? input.komisyonTuruKodu;
+  if (rawTur !== undefined && rawTur !== null && rawTur !== '') {
+    const turStr = String(rawTur).trim().toLowerCase();
+    if (turStr.includes('yaklasik') || turStr.includes('maliyet') || turStr.includes('fiyat') || turStr.includes('piyasa')) {
+      return 'maliyet';
+    }
+    if (turStr.includes('muayene') || turStr.includes('kabul')) {
+      return 'muayene';
+    }
+    if (turStr.includes('ihale')) {
+      return 'ihale';
+    }
+  }
+
+  // 3. Database ID Precedence:
+  // In initial default seeds, komisyon_id = 1 was Yaklasik Maliyet.
+  // komisyon_id = 2 was Muayene ONLY if the commission/task text does not explicitly say Yaklasik Maliyet or Fiyat Arastirma.
+  // (In many databases, Yaklasik Maliyet was created with id = 2 and Muayene with id = 3).
   const rawId = input.komisyon_id;
   if (rawId !== undefined && rawId !== null && rawId !== '') {
     const numId = Number(rawId);
     if (numId === 1) return 'maliyet';
-    if (numId === 2) return 'muayene';
+    if (numId === 2) {
+      const text = `${input.komisyon_turu || ''} ${input.komisyon_adi || ''} ${input.komisyon_turu_adi || ''} ${input.gorev || ''} ${input.gorevi || ''}`.toLowerCase();
+      if (text.includes('fiyat') || text.includes('maliyet') || text.includes('araştırma') || text.includes('arastirma') || text.includes('piyasa')) {
+        return 'maliyet';
+      }
+      return 'muayene';
+    }
   }
 
-  // 3. Normalized Text Classification Fallback
-  const textSource = `${input.komisyon_turu || ''} ${input.komisyon_adi || ''} ${input.gorev || ''}`.trim().toLowerCase();
+  // 4. Normalized Text Classification Fallback
+  const textSource = `${input.komisyon_turu || ''} ${input.komisyon_adi || ''} ${input.komisyon_turu_adi || ''} ${input.gorev || ''} ${input.gorevi || ''} ${input.komisyonGorevi || ''}`.trim().toLowerCase();
   if (!textSource) return 'unmapped';
 
   if (

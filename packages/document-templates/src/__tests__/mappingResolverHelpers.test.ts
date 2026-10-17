@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   resolveEvrakSayisi,
+  formatOfficialEvrakSayisi,
   resolveAntetSatirlari,
   resolveFormula
 } from '../resolver/mappingResolver';
@@ -51,5 +52,29 @@ describe('Document Templates - mappingResolver Modular Helpers', () => {
     const formula = 'DETSIS-{{TANIM_Kurum.detsis_kodu}}';
     const result = await resolveFormula(formula, 1, mockExecutor);
     expect(result).toBe('DETSIS-99887766');
+  });
+
+  it('formatOfficialEvrakSayisi formats slashed or unpadded numbers correctly', () => {
+    // When evrakSayisi is slashed like '2026/1'
+    const res1 = formatOfficialEvrakSayisi({
+      evrakSayisi: '2026/1',
+      detsisNo: '10234521',
+      tur: 'mal'
+    });
+    expect(res1).toBe('E-10234521-934.01-0001');
+
+    // When already official format
+    const res2 = formatOfficialEvrakSayisi({
+      evrakSayisi: 'E-10234521-934.01-0005'
+    });
+    expect(res2).toBe('E-10234521-934.01-0005');
+
+    // When hizmet with padded sayisi
+    const res3 = formatOfficialEvrakSayisi({
+      sayisi: '42',
+      detsisNo: '87654321',
+      tur: 'hizmet'
+    });
+    expect(res3).toBe('E-87654321-934.02-0042');
   });
 });

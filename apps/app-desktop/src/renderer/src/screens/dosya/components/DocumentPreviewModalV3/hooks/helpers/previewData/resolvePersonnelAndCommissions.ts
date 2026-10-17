@@ -197,9 +197,22 @@ export async function resolvePersonnelAndCommissions(
           baseData.fiyatKomisyonu = formattedMaliyet
           const currentDocId = String(resolvedId || selectedDocId || '').toLowerCase()
           if (!currentDocId.includes('muayene') && !currentDocId.includes('kabul')) {
-            baseData.gorevlendirilenler = formattedMaliyet
-            baseData.gorevliler = formattedMaliyet
-            baseData.dagitimListesi = formattedMaliyet
+            const activeOfficers = formattedMaliyet.filter((m: any) => {
+              const combined = `${m.adSoyad || ''} ${m.unvan || ''} ${m.gorev || ''}`.toLowerCase()
+              return (
+                !combined.includes('harcama yetkili') &&
+                !combined.includes('gerçekleştirme') &&
+                !combined.includes('gerceklestirme') &&
+                !combined.includes('muhasebe') &&
+                !combined.includes('satın alma harcama') &&
+                !combined.includes('talep eden') &&
+                !combined.includes('hazırlayan') &&
+                !combined.includes('onaylayan')
+              )
+            })
+            baseData.gorevlendirilenler = activeOfficers.length > 0 ? activeOfficers : formattedMaliyet
+            baseData.gorevliler = baseData.gorevlendirilenler
+            baseData.dagitimListesi = baseData.gorevlendirilenler
           }
         }
 
@@ -369,6 +382,38 @@ export async function resolvePersonnelAndCommissions(
       baseData.gorevlendirilenler = activeFromCtx.length > 0 ? activeFromCtx : ctx.fiyatKomisyonu
       baseData.gorevliler = baseData.gorevlendirilenler
       baseData.dagitimListesi = baseData.gorevlendirilenler
+    } else if (globalKomisyonlar && globalKomisyonlar.length > 0) {
+      const gMaliyet = globalKomisyonlar.filter((g: any) => {
+        if (!TemplateRegistryService.isMemberVisibleInDocument(g, targetDocIds)) return false
+        return resolveCommissionCategory(g) === 'maliyet'
+      })
+      if (gMaliyet.length > 0) {
+        const formatted = dedupeMembers(gMaliyet).map((m: any) => ({
+          adSoyad: m.ad_soyad || '',
+          unvan: m.unvan || '',
+          gorev: m.gorev || 'Fiyat Araştırma Görevlisi',
+          gorevi: m.gorev || 'Fiyat Araştırma Görevlisi',
+          komisyonGorevi: m.gorev || 'Fiyat Araştırma Görevlisi',
+          rol: m.rol || 'Üye'
+        }))
+        baseData.fiyatKomisyonu = formatted
+        const activeOfficers = formatted.filter((m: any) => {
+          const combined = `${m.adSoyad || ''} ${m.unvan || ''} ${m.gorev || ''}`.toLowerCase()
+          return (
+            !combined.includes('harcama yetkili') &&
+            !combined.includes('gerçekleştirme') &&
+            !combined.includes('gerceklestirme') &&
+            !combined.includes('muhasebe') &&
+            !combined.includes('satın alma harcama') &&
+            !combined.includes('talep eden') &&
+            !combined.includes('hazırlayan') &&
+            !combined.includes('onaylayan')
+          )
+        })
+        baseData.gorevlendirilenler = activeOfficers.length > 0 ? activeOfficers : formatted
+        baseData.gorevliler = baseData.gorevlendirilenler
+        baseData.dagitimListesi = baseData.gorevlendirilenler
+      }
     }
   }
 

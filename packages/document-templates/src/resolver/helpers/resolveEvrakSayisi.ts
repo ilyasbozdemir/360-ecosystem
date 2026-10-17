@@ -1,4 +1,46 @@
 /**
+ * Formats an evrak sayısı into official EBYS format (E-[DETSIS]-[SDP]-[SAYI]).
+ */
+export function formatOfficialEvrakSayisi(options: {
+  evrakSayisi?: string | null;
+  detsisNo?: string | null;
+  tur?: string | null;
+  sayisi?: string | number | null;
+  teminNo?: string | null;
+}): string {
+  const current = String(options.evrakSayisi || '').trim();
+  if (current.startsWith('E-') && !current.includes('/')) {
+    return current;
+  }
+
+  const detsis = String(options.detsisNo || '').trim() || '10234521';
+  const rawTur = String(options.tur || 'mal').toLowerCase();
+  let sdpAltKodu = '01';
+  if (rawTur.includes('hizmet') || rawTur.includes('danismanlik')) {
+    sdpAltKodu = '02';
+  } else if (rawTur.includes('yapim')) {
+    sdpAltKodu = '03';
+  }
+  const sdpKodu = `934.${sdpAltKodu}`;
+
+  let seqNumber = 1;
+  const numSource = String(options.sayisi || options.teminNo || current || '');
+  if (numSource) {
+    const parts = numSource.split(/[/_ -]+/);
+    for (let i = parts.length - 1; i >= 0; i--) {
+      const n = parseInt(parts[i], 10);
+      if (!isNaN(n) && n > 0 && n < 2000) {
+        seqNumber = n;
+        break;
+      }
+    }
+  }
+
+  const padded = String(seqNumber).padStart(4, '0');
+  return `E-${detsis}-${sdpKodu}-${padded}`;
+}
+
+/**
  * Resolves official E-DETSIS formatted document number e.g. E-10234521-934.01-0001
  */
 export async function resolveEvrakSayisi(
@@ -15,8 +57,28 @@ export async function resolveEvrakSayisi(
         detsisNo = String(kurumRes[0].detsis_kodu).trim();
       } else if (kurumRes?.[0]?.detsis_no) {
         detsisNo = String(kurumRes[0].detsis_no).trim();
+      } else if (kurumRes?.[0]?.dtvt_kodu) {
+        detsisNo = String(kurumRes[0].dtvt_kodu).trim();
       }
     } catch {}
+
+    // 1.b Check birim detsis_kodu if dosya has birim_id
+    if (!detsisNo && activeDosyaId) {
+      try {
+        const bRes = await queryExecutor(
+          `SELECT b.detsis_kodu, b.dtvt_kodu 
+           FROM DATA_TeminDosyasi d 
+           JOIN TANIM_Birim b ON d.birim_id = b.id 
+           WHERE d.id = ? LIMIT 1`,
+          [activeDosyaId]
+        );
+        if (bRes?.[0]?.detsis_kodu) {
+          detsisNo = String(bRes[0].detsis_kodu).trim();
+        } else if (bRes?.[0]?.dtvt_kodu) {
+          detsisNo = String(bRes[0].dtvt_kodu).trim();
+        }
+      } catch {}
+    }
 
     // 2. Fallback to TANIM_Ayar / settings (detsisKodu / detsis_kodu)
     if (!detsisNo) {

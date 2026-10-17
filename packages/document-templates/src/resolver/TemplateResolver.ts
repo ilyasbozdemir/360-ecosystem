@@ -14,7 +14,7 @@ export class TemplateResolver {
   /**
    * Resolves the template variables using the provided mapping and document ID.
    */
-  async resolve(mapping: ProcessMapping, activeDosyaId: number): Promise<Record<string, any>> {
-    return resolveTemplateData(mapping, activeDosyaId, this.queryExecutor);
+  async resolve(mapping: ProcessMapping, activeDosyaId: number, templateId?: string): Promise<Record<string, any>> {
+    return resolveTemplateData(mapping, activeDosyaId, this.queryExecutor, templateId);
   }
 }

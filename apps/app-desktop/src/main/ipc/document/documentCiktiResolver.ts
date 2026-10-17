@@ -382,6 +382,78 @@ export function resolveAllCiktiData(
       activeDosya?.temin_tarihi ||
       ''
 
+    // Resolve official EBYS / E-DETSİS evrakSayisi format (E-10234521-934.01-0001)
+    let detsisNo =
+      String(
+        (activeDosya as any)?.detsis_kodu ||
+          (kurum as any)?.detsis_kodu ||
+          (kurum as any)?.detsis_no ||
+          (kurum as any)?.dtvt_kodu ||
+          settingsMap.detsisKodu ||
+          settingsMap.detsis_kodu ||
+          ''
+      ).trim()
+    if (!detsisNo) detsisNo = '10234521'
+
+    const rawTur = String((activeDosya as any)?.tur || 'mal').toLowerCase()
+    let sdpAltKodu = '01'
+    if (rawTur.includes('hizmet') || rawTur.includes('danismanlik')) {
+      sdpAltKodu = '02'
+    } else if (rawTur.includes('yapim')) {
+      sdpAltKodu = '03'
+    }
+    const sdpKodu = `934.${sdpAltKodu}`
+
+    const fileYear =
+      (activeDosya as any)?.butce_yili ||
+      ((activeDosya as any)?.dosya_acilis_tarihi
+        ? new Date((activeDosya as any).dosya_acilis_tarihi).getFullYear()
+        : null) ||
+      ((activeDosya as any)?.created_at ? new Date((activeDosya as any).created_at).getFullYear() : null) ||
+      new Date().getFullYear()
+
+    let seqNumber: number | null = null
+    const teminNoStr = String((activeDosya as any)?.temin_no || '').trim()
+    if (teminNoStr) {
+      const parts = teminNoStr.split(/[/_ -]+/)
+      for (let i = parts.length - 1; i >= 0; i--) {
+        const num = parseInt(parts[i], 10)
+        if (!isNaN(num) && num !== fileYear && num > 0 && num < 2000) {
+          seqNumber = num
+          break
+        }
+      }
+    }
+
+    if (!seqNumber || seqNumber <= 0) {
+      try {
+        const countRow = db
+          .prepare(
+            `SELECT COUNT(*) as cnt FROM DATA_TeminDosyasi 
+             WHERE (coalesce(butce_yili, strftime('%Y', coalesce(dosya_acilis_tarihi, created_at))) = ? 
+                    OR temin_no LIKE ?) 
+               AND id <= ? AND (is_deleted IS NULL OR is_deleted = 0)`
+          )
+          .get(fileYear, `%${fileYear}%`, dosyaId)
+        if (countRow?.cnt && countRow.cnt > 0) {
+          seqNumber = countRow.cnt
+        }
+      } catch {}
+    }
+
+    if (!seqNumber || seqNumber <= 0) {
+      seqNumber = 1
+    }
+
+    const paddedSayi = String(seqNumber).padStart(4, '0')
+    const officialEvrakSayisi = `E-${detsisNo}-${sdpKodu}-${paddedSayi}`
+
+    const existingEvrak = String((activeDosya as any)?.evrak_sayisi || '').trim()
+    const resolvedEvrakSayisi =
+      existingEvrak && existingEvrak.startsWith('E-') && !existingEvrak.includes('/')
+        ? existingEvrak
+        : officialEvrakSayisi
+
     const dosyaContext: any = {
       ...masterJson,
       kurumAdi,
@@ -397,6 +469,11 @@ export function resolveAllCiktiData(
       solLogo,
       sagLogo,
       id: activeDosya?.id || 0,
+      evrakSayisi: resolvedEvrakSayisi,
+      evrakNo: resolvedEvrakSayisi,
+      detsisNo,
+      sayisi: paddedSayi,
+      dosyaSayisi: teminNoStr || paddedSayi,
       dosyaNo: activeDosya?.temin_no || '',
       teminNo: activeDosya?.temin_no || '',
       dosya_no: activeDosya?.temin_no || '',
