@@ -487,7 +487,7 @@ export const ihtiyacRaporuService = {
       tarih: new Date().toISOString().split('T')[0],
       onay_tarihi: null,
       tahmini_butce: source.tahmini_butce || 0,
-      evrak_sayisi: source.evrak_sayisi || null,
+      evrak_sayisi: null, // Yeni rapor bağımsız bir taslak olduğundan eski resmî EBYS evrak numarasını taşımaz
       notlar: source.notlar
         ? `[${source.rapor_no} raporundan kopyalandı] ${source.notlar}`
         : `[${source.rapor_no} raporundan kopyalandı]`

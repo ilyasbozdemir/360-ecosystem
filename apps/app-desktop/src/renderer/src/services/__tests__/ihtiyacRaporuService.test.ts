@@ -698,7 +698,9 @@ describe('ihtiyacRaporuService Tests', () => {
     expect(mockTeminKalemler[1].tasinir_kodu).toBe('150.01.02')
   })
 
-  it('12. should execute atomic rollback and revert all partial state mutations if any statement in transaction fails', async () => {
+  it('12. (Mock Tabanlı Rollback Simülasyonu) servis seviyesinde transaction başarısız olduğunda bellek durumunun geri alınmasını simüle etmeli', async () => {
+    // NOT: Bu test servis seviyesindeki mock geri alma mantığını doğrular.
+    // Gerçek SQLite engine seviyesindeki ROLLBACK kanıtı için 'ihtiyacRaporuRealSqliteRollback.test.ts' testine bakınız.
     const raporId = await ihtiyacRaporuService.createRapor(
       {
         rapor_no: 'IR-2026/010',
@@ -726,7 +728,7 @@ describe('ihtiyacRaporuService Tests', () => {
       ihtiyacRaporuService.linkToDosya(raporId, 10, { copyItemsToDosya: true })
     ).rejects.toThrow('SQLite SQLITE_CONSTRAINT')
 
-    // ROLLBACK KANITI:
+    // MOCK ROLLBACK DOĞRULAMASI:
     // 1. DATA_IhtiyacRaporu tablosundaki rapor geri alınmalı; durumu 'dosyaya_aktarildi' değil, 'taslak' kalmalı!
     const savedRapor = mockRaporlar.find((r) => r.id === raporId)
     expect(savedRapor.durum).toBe('taslak')
@@ -876,6 +878,55 @@ describe('ihtiyacRaporuService Tests', () => {
       evrak_sayisi: 'CUSTOM-EBYS-111'
     })
     expect(res3.evrakSayisi).toBe('CUSTOM-EBYS-111')
+  })
+
+  it('17. should reset evrak_sayisi, onay_tarihi, and temin_dosya_id to null when duplicating a report', async () => {
+    // 1. Kaynak rapor oluştur (onaylanmış, EBYS sayısı verilmiş ve dosyaya bağlanmış)
+    const sourceId = await ihtiyacRaporuService.createRapor(
+      {
+        rapor_no: 'IR-2026/099',
+        baslik: 'Orijinal Onaylı EBYS Raporu',
+        durum: 'onaylandi',
+        temin_dosya_id: 10,
+        tarih: '2026-03-20',
+        onay_tarihi: '2026-03-22',
+        evrak_sayisi: 'EBYS-2026-77777',
+        tahmini_butce: 50000
+      },
+      [
+        {
+          kalem_adi: 'Orijinal Kalem',
+          tipi: 'Mal',
+          birim: 'Adet',
+          miktar: 100,
+          tahmini_birim_fiyat: 500
+        }
+      ]
+    )
+
+    // 2. Raporu kopyala (duplicate)
+    const newId = await ihtiyacRaporuService.duplicateRapor(sourceId)
+    expect(newId).toBeGreaterThan(0)
+
+    // 3. Yeni kopyalanan raporu getir ve doğrula
+    const clonedRapor = await ihtiyacRaporuService.getRaporById(newId)
+    expect(clonedRapor).not.toBeNull()
+    if (clonedRapor) {
+      // Bağımsız yeni bir taslak olduğu için:
+      expect(clonedRapor.durum).toBe('taslak')
+      expect(clonedRapor.temin_dosya_id).toBeNull()
+      expect(clonedRapor.onay_tarihi).toBeNull()
+      // KRİTİK: Eski resmî EBYS evrak numarası kopyalanmamalı, null olmalı!
+      expect(clonedRapor.evrak_sayisi).toBeNull()
+      expect(clonedRapor.baslik).toBe('Orijinal Onaylı EBYS Raporu (Kopya)')
+      expect(clonedRapor.tahmini_butce).toBe(50000)
+    }
+
+    // 4. Kalemlerin kopyalandığını doğrula
+    const clonedKalemler = await ihtiyacRaporuService.getRaporKalemleri(newId)
+    expect(clonedKalemler.length).toBe(1)
+    expect(clonedKalemler[0].kalem_adi).toBe('Orijinal Kalem')
+    expect(clonedKalemler[0].miktar).toBe(100)
   })
 })
 
