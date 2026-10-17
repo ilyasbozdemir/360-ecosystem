@@ -1,9 +1,14 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import {
   ihtiyacRaporuService,
-  IhtiyacRaporu,
   IhtiyacRaporuKalem
 } from '../ihtiyacRaporuService'
+import {
+  mapRaporToLuzumMuzekkeresiData,
+  sanitizeMiktar,
+  sanitizeKdvOrani,
+  sanitizeBirimFiyat
+} from '../ihtiyacRaporuAdapter'
 import { dbClient } from '../db/dbClient'
 
 describe('ihtiyacRaporuService Tests', () => {
@@ -603,4 +608,154 @@ describe('ihtiyacRaporuService Tests', () => {
     expect(hasReportUpdate).toBe(true)
     expect(hasKalemInsert).toBe(true)
   })
+
+  it('11. should match items using multi-field key (name, type, unit, codes, description) so distinct items with same name are not lost', async () => {
+    // Hedef dosyada mevcut bir kalem olsun: Bakır Kablo (2.5mm²)
+    mockTeminKalemler = [
+      {
+        id: nextTeminKalemId++,
+        temin_dosya_id: 10,
+        sira_no: 1,
+        kalem_adi: 'Bakır Kablo',
+        tipi: 'Mal',
+        birim: 'Metre',
+        tasinir_kodu: '150.01.01',
+        okas_kodu: null,
+        poz_no: null,
+        aciklama: '3x2.5 mm² TTR'
+      }
+    ]
+
+    // Raporda 2 kalem var:
+    // 1. Kalem: Hedefteki ile birebir aynı (atlamalı)
+    // 2. Kalem: Aynı isim ve birimde ancak farklı kesit/özellikte (4x6 mm² ve farklı kod - ATLANMAMALI)
+    const raporId = await ihtiyacRaporuService.createRapor(
+      {
+        rapor_no: 'IR-2026/009',
+        baslik: 'Kablo İhtiyaç Raporu',
+        durum: 'taslak',
+        temin_dosya_id: null,
+        tarih: '2026-03-15'
+      },
+      [
+        {
+          kalem_adi: 'Bakır Kablo',
+          tipi: 'Mal',
+          birim: 'Metre',
+          tasinir_kodu: '150.01.01',
+          aciklama: '3x2.5 mm² TTR',
+          miktar: 100,
+          kdv_orani: 20
+        },
+        {
+          kalem_adi: 'Bakır Kablo',
+          tipi: 'Mal',
+          birim: 'Metre',
+          tasinir_kodu: '150.01.02',
+          aciklama: '4x6 mm² Antigron',
+          miktar: 50,
+          kdv_orani: 20
+        }
+      ]
+    )
+
+    const res = await ihtiyacRaporuService.linkToDosya(raporId, 10, {
+      copyItemsToDosya: true,
+      transferMode: 'append_if_missing'
+    })
+
+    // 1 tanesi atlandı (aynı özellik), 1 tanesi aktarıldı (farklı özellik)
+    expect(res.transferredCount).toBe(1)
+    expect(res.skippedCount).toBe(1)
+    expect(mockTeminKalemler.length).toBe(2)
+    expect(mockTeminKalemler[1].aciklama).toBe('4x6 mm² Antigron')
+    expect(mockTeminKalemler[1].tasinir_kodu).toBe('150.01.02')
+  })
+
+  it('12. should propagate error cleanly when atomic transaction fails (rollback guarantee)', async () => {
+    // Transaction sırasında hata oluşmasını simüle et
+    vi.spyOn(dbClient, 'transaction').mockRejectedValueOnce(
+      new Error('SQLite transaction failed: SQLITE_CONSTRAINT foreign key mismatch')
+    )
+
+    const raporId = await ihtiyacRaporuService.createRapor(
+      {
+        rapor_no: 'IR-2026/010',
+        baslik: 'Rollback Test Raporu',
+        durum: 'taslak',
+        temin_dosya_id: null,
+        tarih: '2026-03-16'
+      },
+      [{ kalem_adi: 'Hatalı Kalem', tipi: 'Mal', birim: 'Adet', miktar: 1 }]
+    )
+
+    await expect(
+      ihtiyacRaporuService.linkToDosya(raporId, 10, { copyItemsToDosya: true })
+    ).rejects.toThrow('SQLite transaction failed')
+  })
+
+  it('13. should correctly sanitize numeric fields with Number.isFinite() preventing Infinity and NaN leaks', () => {
+    // sanitizeMiktar
+    expect(sanitizeMiktar(Infinity)).toBe(1)
+    expect(sanitizeMiktar(-Infinity)).toBe(1)
+    expect(sanitizeMiktar(NaN)).toBe(1)
+    expect(sanitizeMiktar(-5)).toBe(1)
+    expect(sanitizeMiktar(0)).toBe(1)
+    expect(sanitizeMiktar('42')).toBe(42)
+    expect(sanitizeMiktar(15.5)).toBe(15.5)
+
+    // sanitizeKdvOrani
+    expect(sanitizeKdvOrani(Infinity)).toBe(20)
+    expect(sanitizeKdvOrani(-Infinity)).toBe(20)
+    expect(sanitizeKdvOrani(NaN)).toBe(20)
+    expect(sanitizeKdvOrani(-1)).toBe(20)
+    expect(sanitizeKdvOrani(0)).toBe(0) // Sıfır KDV korunmalı
+    expect(sanitizeKdvOrani('0')).toBe(0)
+    expect(sanitizeKdvOrani(10)).toBe(10)
+    expect(sanitizeKdvOrani('20')).toBe(20)
+
+    // sanitizeBirimFiyat
+    expect(sanitizeBirimFiyat(Infinity)).toBe(0)
+    expect(sanitizeBirimFiyat(-Infinity)).toBe(0)
+    expect(sanitizeBirimFiyat(NaN)).toBe(0)
+    expect(sanitizeBirimFiyat(-10)).toBe(0)
+    expect(sanitizeBirimFiyat(0)).toBe(0)
+    expect(sanitizeBirimFiyat(150.75)).toBe(150.75)
+    expect(sanitizeBirimFiyat('300.5')).toBe(300.5)
+  })
+
+  it('14. should keep onayTarihi empty if report has no official approval, and separate rapor_no from evrakSayisi', () => {
+    const mockRaporWithoutOnay = {
+      id: 1,
+      rapor_no: 'IR-2026/015',
+      baslik: 'Onaysız Taslak Raporu',
+      gerekce: 'Gerekçe metni',
+      birim_adi: 'Fen İşleri',
+      durum: 'dosyaya_aktarildi' as const,
+      temin_dosya_id: 10,
+      tarih: '2026-03-20',
+      onay_tarihi: null // Resmi onay henüz yok!
+    }
+
+    const docData = mapRaporToLuzumMuzekkeresiData(mockRaporWithoutOnay, [])
+
+    // Dosyaya bağlanmış olsa bile resmi onay tarihi yoksa onayTarihi boş kalmalıdır
+    expect(docData.onayTarihi).toBe('')
+    // Rapor numarası evrakSayisi alanına yazılmamalı, ayrı raporNo alanında bulunmalıdır
+    expect(docData.evrakSayisi).toBe('')
+    expect(docData.raporNo).toBe('IR-2026/015')
+
+    // Gerçek onay tarihi ve kurum evrak sayısı verildiğinde ise doğru eşlenmelidir
+    const mockRaporWithOnay = {
+      ...mockRaporWithoutOnay,
+      onay_tarihi: '2026-03-22'
+    }
+    const docDataWithOnay = mapRaporToLuzumMuzekkeresiData(mockRaporWithOnay, [], {
+      evrak_sayisi: 'E.98765432'
+    })
+    expect(docDataWithOnay.onayTarihi).toBe('2026-03-22')
+    expect(docDataWithOnay.evrakSayisi).toBe('E.98765432')
+    expect(docDataWithOnay.raporNo).toBe('IR-2026/015')
+  })
 })
+

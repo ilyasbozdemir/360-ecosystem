@@ -62,24 +62,25 @@ export interface TeminKalemInsertPayload {
 
 /**
  * Güvenli sayı ve değer dönüştürücüleri (0 KDV oranı ve özel miktarlar için)
+ * Number.isFinite() kontrolü ile NaN ve sonsuz (Infinity) değerler engellenir.
  */
 export function sanitizeMiktar(val: unknown, defaultVal = 1): number {
   if (val === null || val === undefined || val === '') return defaultVal
   const num = Number(val)
-  return isNaN(num) || num <= 0 ? defaultVal : num
+  return Number.isFinite(num) && num > 0 ? num : defaultVal
 }
 
 export function sanitizeKdvOrani(val: unknown, defaultVal = 20): number {
   if (val === null || val === undefined || val === '') return defaultVal
   const num = Number(val)
   // %0 KDV geçerli bir muafiyet oranıdır, varsayılan 20 ile ezilmemelidir!
-  return isNaN(num) || num < 0 ? defaultVal : num
+  return Number.isFinite(num) && num >= 0 ? num : defaultVal
 }
 
 export function sanitizeBirimFiyat(val: unknown, defaultVal = 0): number {
   if (val === null || val === undefined || val === '') return defaultVal
   const num = Number(val)
-  return isNaN(num) || num < 0 ? defaultVal : num
+  return Number.isFinite(num) && num >= 0 ? num : defaultVal
 }
 
 /**
@@ -132,6 +133,7 @@ export function mapRaporToLuzumMuzekkeresiData(
   kurumInfo?: {
     kurum_anteti?: string[]
     makam_adi?: string
+    evrak_sayisi?: string
   }
 ): LuzumMuzekkeresiDocumentData {
   const mappedKalemler = kalemler.map((k, idx) => mapIhtiyacKalemToLuzumMuzekkeresiItem(k, idx))
@@ -142,14 +144,15 @@ export function mapRaporToLuzumMuzekkeresiData(
     ? `${rapor.baslik}\n\nİhtiyaç Gerekçesi:\n${rapor.gerekce!.trim()}`
     : rapor.baslik
 
-  // Taslak durumundaki raporların onay tarihi henüz oluşmamıştır
-  const isApproved = rapor.durum === 'onaylandi' || rapor.durum === 'dosyaya_aktarildi'
-  const resolvedOnayTarihi = isApproved ? rapor.onay_tarihi || rapor.tarih : ''
+  // Onay tarihi: Sadece raporda gerçek bir onay_tarihi kayıtlıysa kullanılır.
+  // Dosyaya bağlanmak tek başına resmi onay tarihi oluşturmaz; onay_tarihi yoksa boş kalmalıdır.
+  const resolvedOnayTarihi = rapor.onay_tarihi ? String(rapor.onay_tarihi).trim() : ''
 
   return {
     antetSatirlari: kurumInfo?.kurum_anteti,
     dosyaKonusu: rapor.baslik || 'Lüzum Müzekkeresi',
-    evrakSayisi: rapor.rapor_no,
+    // Rapor numarası ile resmi EBYS evrak sayısı farklı kavramlardır:
+    evrakSayisi: kurumInfo?.evrak_sayisi || '',
     raporNo: rapor.rapor_no,
     tarih: rapor.tarih,
     dosyaTarihi: rapor.tarih,

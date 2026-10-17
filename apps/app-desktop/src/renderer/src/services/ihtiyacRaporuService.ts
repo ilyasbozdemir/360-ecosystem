@@ -551,9 +551,14 @@ export const ihtiyacRaporuService = {
         id: number
         sira_no: number
         kalem_adi: string
+        tipi?: string | null
         birim: string
+        tasinir_kodu?: string | null
+        okas_kodu?: string | null
+        poz_no?: string | null
+        aciklama?: string | null
       }>(
-        `SELECT id, sira_no, kalem_adi, birim FROM DATA_TeminKalem WHERE temin_dosya_id = ? ORDER BY sira_no ASC`,
+        `SELECT id, sira_no, kalem_adi, tipi, birim, tasinir_kodu, okas_kodu, poz_no, aciklama FROM DATA_TeminKalem WHERE temin_dosya_id = ? ORDER BY sira_no ASC`,
         [dosyaId]
       )
 
@@ -591,18 +596,36 @@ export const ihtiyacRaporuService = {
           transferredCount++
         }
       } else if (mode === 'append_if_missing') {
-        const normalizeKey = (name?: string, birim?: string): string =>
-          `${(name || '').trim().toLowerCase()}___${(birim || '').trim().toLowerCase()}`
+        // Kalem eşleştirmesi: Yalnızca ad ve birim değil; tür, taşınır/okas kodları, poz ve açıklama da dahil edilerek
+        // farklı teknik nitelik veya koda sahip kalemlerin yanlışlıkla elenmesi önlenir.
+        const normalizeItemKey = (item: {
+          kalem_adi?: string | null
+          tipi?: string | null
+          birim?: string | null
+          tasinir_kodu?: string | null
+          okas_kodu?: string | null
+          poz_no?: string | null
+          aciklama?: string | null
+        }): string => {
+          const name = (item.kalem_adi || '').trim().toLowerCase()
+          const tipi = (item.tipi || 'Mal').trim().toLowerCase()
+          const birim = (item.birim || 'Adet').trim().toLowerCase()
+          const tasinir = (item.tasinir_kodu || '').trim().toLowerCase()
+          const okas = (item.okas_kodu || '').trim().toLowerCase()
+          const poz = (item.poz_no || '').trim().toLowerCase()
+          const aciklama = (item.aciklama || '').trim().toLowerCase()
+          return `${name}___${tipi}___${birim}___${tasinir}___${okas}___${poz}___${aciklama}`
+        }
 
         const existingSet = new Set(
-          existingItems.map((item) => normalizeKey(item.kalem_adi, item.birim))
+          existingItems.map((item) => normalizeItemKey(item))
         )
 
         let curSira =
           existingItems.reduce((max, item) => Math.max(max, item.sira_no || 0), 0) + 1
 
         for (const k of kalemler) {
-          const key = normalizeKey(k.kalem_adi, k.birim)
+          const key = normalizeItemKey(k)
           if (existingSet.has(key)) {
             skippedCount++
           } else {
