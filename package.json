@@ -2,6 +2,10 @@
   "name": "temin360-monorepo",
   "version": "1.0.0-beta.255",
   "private": true,
+  "engines": {
+    "node": ">=22.5.0",
+    "pnpm": ">=9.0.0"
+  },
   "scripts": {
     "dev:desktop": "pnpm --filter app-desktop dev",
     "dev:web": "pnpm --filter app-web dev",
