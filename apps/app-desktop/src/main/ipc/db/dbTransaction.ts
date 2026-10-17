@@ -10,6 +10,8 @@ export interface TransactionResult {
   lastInsertRowid?: number | bigint
   changes?: number
   error?: string
+  warning?: string
+  saveError?: string
 }
 
 export interface ExecuteDbTransactionOptions {
@@ -27,9 +29,10 @@ export interface HandleDbTransactionOptions extends ExecuteDbTransactionOptions 
 
 export interface SqliteDatabaseLike {
   transaction?: (fn: (stmts: TransactionQuery[]) => void) => (stmts: TransactionQuery[]) => void
-  prepare: (
-    sql: string
-  ) => { run: (...params: unknown[]) => { lastInsertRowid?: number | bigint; changes?: number } }
+  prepare: (sql: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    run: (...params: any[]) => { lastInsertRowid?: number | bigint; changes?: number | bigint }
+  }
   exec?: (sql: string) => void
 }
 
@@ -38,7 +41,13 @@ export interface SqliteDatabaseLike {
  * Hem better-sqlite3 (Electron çalışma zamanı) hem de node:sqlite (test ortamı / Node 22+)
  * motorları ile doğrudan ve şeffaf olarak çalışır.
  *
- * Herhangi bir sorgu veya kısıtlama (FK, UNIQUE vb.) hatasında transaction geri alınır (ROLLBACK)
+ * Önemli Bütünlük Kuralı:
+ * Mutation bildirimleri (onMutation) transaction sırasında anlık olarak tetiklenmez;
+ * geçici bir dizide toplanır. Yalnızca veritabanı işlemi (COMMIT) başarıyla tamamlandığında
+ * topluca iletilir. Bu sayede ara bir sorgu hata alıp ROLLBACK yapıldığında JavaScript
+ * tarafındaki dosya değişiklik geçmişi (workspace dirty state) kirlenmez.
+ *
+ * Herhangi bir sorgu veya kısıtlama (FK, UNIQUE, CHECK vb.) hatasında transaction geri alınır (ROLLBACK)
  * ve hata yukarı fırlatılır.
  */
 export function executeDbTransaction(
@@ -59,7 +68,14 @@ export function executeDbTransaction(
   let lastInsertRowid: number | bigint = 0
   let totalChanges = 0
 
-  const runAll = (stmts: TransactionQuery[]) => {
+  // Mutation bilgilerini transaction süresince biriktir; asla COMMIT öncesi bildirme!
+  const pendingMutations: Array<{
+    tableName: string
+    action: 'insert' | 'update' | 'delete' | 'other'
+    count: number
+  }> = []
+
+  const runAll = (stmts: TransactionQuery[]): void => {
     for (const q of stmts) {
       const stmt = db.prepare(q.sql)
       const params = q.params || []
@@ -68,14 +84,18 @@ export function executeDbTransaction(
       totalChanges += Number(info.changes || 0)
       if (options?.onMutation) {
         const { tableName, action } = extractTableAndAction(q.sql)
-        options.onMutation(tableName, action, Number(info.changes || 1))
+        pendingMutations.push({
+          tableName,
+          action,
+          count: Number(info.changes || 1)
+        })
       }
     }
   }
 
   if (typeof db.transaction === 'function') {
     // 1. Native better-sqlite3 transaction API (db.transaction)
-    const tx = db.transaction((stmts: TransactionQuery[]) => {
+    const tx = db.transaction((stmts: TransactionQuery[]): void => {
       runAll(stmts)
     })
     tx(queries)
@@ -94,7 +114,16 @@ export function executeDbTransaction(
       throw error
     }
   } else {
-    throw new Error('[dbTransaction] Veritabanı motoru ne db.transaction ne de db.exec destekliyor.')
+    throw new Error(
+      '[dbTransaction] Veritabanı motoru ne db.transaction ne de db.exec destekliyor.'
+    )
+  }
+
+  // 3. Veritabanı COMMIT işlemi başarıyla bitti: Şimdi mutation'ları güvenle bildir.
+  if (options?.onMutation && pendingMutations.length > 0) {
+    for (const m of pendingMutations) {
+      options.onMutation(m.tableName, m.action, m.count)
+    }
   }
 
   return { success: true, lastInsertRowid, changes: totalChanges }
@@ -102,21 +131,46 @@ export function executeDbTransaction(
 
 /**
  * IPC ve üst servis katmanları için güvenli transaction işleyicisi.
- * Hata oluştuğunda rollback'i garanti eder, onSave'i çağırmaz ve { success: false, error: message } döner.
- * Başarılı olduğunda commit sonrası onSave'i tetikler ve sonucu iletir.
+ *
+ * Hata Yönetimi & Ayrım Kuralı:
+ * 1. Transaction sırasında bir SQL veya kısıtlama hatası olursa rollback yapılır, onSave çağrılmaz
+ *    ve { success: false, error: message } döner.
+ * 2. Transaction başarıyla COMMIT edildikten sonra onSave() çalıştırılır. Eğer dosya kaydetme
+ *    (onSave) aşamasında bir I/O veya zip hatası çıkarsa, bu durum COMMIT edilmiş veritabanı işlemini
+ *    "başarısız / geri alındı" gibi göstermemelidir (zira veritabanı kalıcı olarak değişmiştir).
+ *    Böyle bir durumda { success: true, saveError, warning } döndürülerek çağıran taraf doğru bilgilendirilir.
  */
 export async function handleDbTransaction(
   db: SqliteDatabaseLike,
   queries: TransactionQuery[],
   options?: HandleDbTransactionOptions
 ): Promise<TransactionResult> {
+  let result: { success: true; lastInsertRowid: number | bigint; changes: number }
+
   try {
-    const result = executeDbTransaction(db, queries, options)
-    if (options?.onSave) {
-      options.onSave()
-    }
-    return result
-  } catch (error: any) {
-    return { success: false, error: error.message }
+    result = executeDbTransaction(db, queries, options)
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error)
+    return { success: false, error: message }
   }
+
+  // Veritabanı COMMIT işlemi tamamlandı. Dosya kaydını gerçekleştir:
+  if (options?.onSave) {
+    try {
+      options.onSave()
+    } catch (saveError: unknown) {
+      const saveMessage = saveError instanceof Error ? saveError.message : String(saveError)
+      console.error(
+        '[dbTransaction] Transaction veritabanında COMMIT edildi fakat onSave diske kaydederken hata oluştu:',
+        saveMessage
+      )
+      return {
+        ...result,
+        saveError: saveMessage,
+        warning: `Veritabanı işlemi başarıyla uygulandı fakat çalışma dosyası kaydedilirken uyarı oluştu: ${saveMessage}`
+      }
+    }
+  }
+
+  return result
 }
