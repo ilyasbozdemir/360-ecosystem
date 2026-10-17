@@ -88,13 +88,14 @@ export function executeDbTransaction(
       const params = q.params || []
       const info = stmt.run(...params)
       lastInsertRowid = info.lastInsertRowid ?? lastInsertRowid
-      totalChanges += Number(info.changes || 0)
-      if (options?.onMutation) {
+      const changesCount = Number(info.changes ?? 0)
+      totalChanges += changesCount
+      if (options?.onMutation && changesCount > 0) {
         const { tableName, action } = extractTableAndAction(q.sql)
         pendingMutations.push({
           tableName,
           action,
-          count: Number(info.changes || 1)
+          count: changesCount
         })
       }
     }

@@ -28,6 +28,7 @@ export const workspaceManager = {
     return activeWorkspace.saveAs(targetFilePath)
   },
   recordMutation: (tableName?: string, action?: string, count: number = 1) => {
+    if (count <= 0) return
     if (activeWorkspace) activeWorkspace.recordMutation(tableName, action, count)
   },
   getDirtySummary: () => {

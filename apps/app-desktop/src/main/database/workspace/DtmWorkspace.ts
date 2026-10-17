@@ -351,6 +351,7 @@ export class DtmWorkspace {
   }
 
   public recordMutation(tableName?: string, action?: string, count: number = 1): void {
+    if (count <= 0) return
     const table = tableName || 'Veritabanı'
     const tableUpper = table.toUpperCase()
     if (

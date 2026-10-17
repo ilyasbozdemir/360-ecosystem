@@ -548,5 +548,27 @@ describe('Gerçek SQLite Motoru: İhtiyaç Raporu Transaction & Rollback Güvenc
     expect(ipcResult.success).toBe(true)
     expect(ipcResult.mutationError).toMatch(/IPC onMutation hatası/)
   })
+
+  it('12. SIFIR DEĞİŞİKLİK GÜVENCESİ: Hiçbir satırı etkilemeyen sorgularda (changes === 0) onMutation tetiklenmemeli ve sahte değişiklik bildirilmemelidir', () => {
+    let onMutationCalled = false
+    const statementsWithNoChanges = [
+      {
+        sql: `UPDATE DATA_IhtiyacRaporu SET durum = 'onaylandi' WHERE id = 999999`,
+        params: []
+      }
+    ]
+
+    const result = executeDbTransaction(db, statementsWithNoChanges, {
+      validateSql: true,
+      onMutation: () => {
+        onMutationCalled = true
+      }
+    })
+
+    expect(result.success).toBe(true)
+    expect(result.changes).toBe(0)
+    expect(onMutationCalled).toBe(false)
+  })
 })
+
 

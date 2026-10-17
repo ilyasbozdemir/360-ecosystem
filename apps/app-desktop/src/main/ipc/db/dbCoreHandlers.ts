@@ -59,10 +59,13 @@ export function registerDbCoreHandlers(): void {
         const db = workspaceManager.getDb()
         const stmt = db.prepare(sql)
         const info = stmt.run(...params)
-        const { tableName, action } = extractTableAndAction(sql)
-        workspaceManager.recordMutation(tableName, action, info.changes || 1)
-        if (workspaceManager.isDirty()) {
-          workspaceManager.save()
+        const changes = Number(info.changes ?? 0)
+        if (changes > 0) {
+          const { tableName, action } = extractTableAndAction(sql)
+          workspaceManager.recordMutation(tableName, action, changes)
+          if (workspaceManager.isDirty()) {
+            workspaceManager.save()
+          }
         }
         return { success: true, lastInsertRowid: info.lastInsertRowid, changes: info.changes }
       }
@@ -93,10 +96,13 @@ export function registerDbCoreHandlers(): void {
         const db = workspaceManager.getDb()
         const stmt = db.prepare(sql)
         const info = stmt.run(...actualParams)
-        const { tableName, action } = extractTableAndAction(sql)
-        workspaceManager.recordMutation(tableName, action, info.changes || 1)
-        if (workspaceManager.isDirty()) {
-          workspaceManager.save()
+        const changes = Number(info.changes ?? 0)
+        if (changes > 0) {
+          const { tableName, action } = extractTableAndAction(sql)
+          workspaceManager.recordMutation(tableName, action, changes)
+          if (workspaceManager.isDirty()) {
+            workspaceManager.save()
+          }
         }
         return { success: true, lastInsertRowid: info.lastInsertRowid, changes: info.changes }
       }
