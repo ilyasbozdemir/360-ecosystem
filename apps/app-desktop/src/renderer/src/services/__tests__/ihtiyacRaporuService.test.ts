@@ -101,7 +101,8 @@ describe('ihtiyacRaporuService Tests', () => {
           kalem_sayisi: kCount,
           dosya_no: d?.temin_no || d?.dosya_no || null,
           dosya_konu: d?.konu || null,
-          dosya_tur: d?.tur || null
+          dosya_tur: d?.tur || null,
+          dosya_evrak_sayisi: d?.evrak_sayisi || null
         }
       }
 
@@ -128,42 +129,66 @@ describe('ihtiyacRaporuService Tests', () => {
       return null
     })
 
-    // Mock dbClient.transaction (atomic runner)
+    // Mock dbClient.transaction (atomic runner with snapshot rollback simulation)
     vi.spyOn(dbClient, 'transaction').mockImplementation(async (statements: { sql: string; params?: any[] }[]) => {
-      for (const stmt of statements) {
-        const sql = stmt.sql
-        const params = stmt.params || []
+      // 1. Transaction öncesi anlık durum (Snapshot) alınır
+      const snapshotRaporlar = JSON.parse(JSON.stringify(mockRaporlar))
+      const snapshotTeminKalemler = JSON.parse(JSON.stringify(mockTeminKalemler))
+      const snapshotDosyalar = JSON.parse(JSON.stringify(mockDosyalar))
 
-        if (sql.includes('UPDATE DATA_IhtiyacRaporu SET temin_dosya_id = ?')) {
-          const dosyaId = params[0]
-          const raporId = params[1]
-          const r = mockRaporlar.find((item) => item.id === raporId)
-          if (r) {
-            r.temin_dosya_id = dosyaId
-            r.durum = 'dosyaya_aktarildi'
+      try {
+        for (const stmt of statements) {
+          const sql = stmt.sql
+          const params = stmt.params || []
+
+          // Simüle edilmiş SQL/Kısıtlama hatası tetikleyici
+          if (sql.includes('SIMULATE_SQL_FAILURE')) {
+            throw new Error('SQLite SQLITE_CONSTRAINT: foreign key mismatch in transaction')
           }
-        } else if (sql.includes('DELETE FROM DATA_TeminKalem WHERE temin_dosya_id = ?')) {
-          const dId = params[0]
-          mockTeminKalemler = mockTeminKalemler.filter((tk) => tk.temin_dosya_id !== dId)
-        } else if (sql.includes('INSERT INTO DATA_TeminKalem')) {
-          const id = nextTeminKalemId++
-          mockTeminKalemler.push({
-            id,
-            temin_dosya_id: params[0],
-            sira_no: params[1],
-            kalem_adi: params[2],
-            tipi: params[3],
-            birim: params[4],
-            miktar: params[5],
-            kdv_orani: params[6],
-            tasinir_kodu: params[7],
-            okas_kodu: params[8],
-            poz_no: params[9],
-            aciklama: params[10]
-          })
+
+          if (sql.includes('UPDATE DATA_IhtiyacRaporu SET temin_dosya_id = ?')) {
+            const dosyaId = params[0]
+            const raporId = params[1]
+            const r = mockRaporlar.find((item) => item.id === raporId)
+            if (r) {
+              r.temin_dosya_id = dosyaId
+              r.durum = 'dosyaya_aktarildi'
+            }
+          } else if (sql.includes('DELETE FROM DATA_TeminKalem WHERE temin_dosya_id = ?')) {
+            const dId = params[0]
+            mockTeminKalemler = mockTeminKalemler.filter((tk) => tk.temin_dosya_id !== dId)
+          } else if (sql.includes('INSERT INTO DATA_TeminKalem')) {
+            const id = nextTeminKalemId++
+            mockTeminKalemler.push({
+              id,
+              temin_dosya_id: params[0],
+              sira_no: params[1],
+              kalem_adi: params[2],
+              tipi: params[3],
+              birim: params[4],
+              miktar: params[5],
+              kdv_orani: params[6],
+              tasinir_kodu: params[7],
+              okas_kodu: params[8],
+              poz_no: params[9],
+              aciklama: params[10]
+            })
+          } else if (sql.includes('UPDATE DATA_TeminDosyasi SET')) {
+            const dId = params[params.length - 1]
+            const d = mockDosyalar.find((item) => item.id === dId)
+            if (d && sql.includes('isin_aciklamasi = ?')) {
+              d.isin_aciklamasi = params[0]
+            }
+          }
         }
+        return { success: true, changes: statements.length }
+      } catch (err) {
+        // Rollback: Hata durumunda veritabanı anlık durumuna (snapshot) geri döndürülür
+        mockRaporlar = snapshotRaporlar
+        mockTeminKalemler = snapshotTeminKalemler
+        mockDosyalar = snapshotDosyalar
+        throw err
       }
-      return { success: true, changes: statements.length }
     })
 
     // Mock dbClient.run
@@ -215,7 +240,8 @@ describe('ihtiyacRaporuService Tests', () => {
           tarih: params[10],
           onay_tarihi: params[11],
           tahmini_butce: params[12],
-          notlar: params[13]
+          notlar: params[13],
+          evrak_sayisi: params[14]
         }
         mockRaporlar.push(newRecord)
         return { success: true, lastInsertRowid: id, changes: 1 }
@@ -672,12 +698,7 @@ describe('ihtiyacRaporuService Tests', () => {
     expect(mockTeminKalemler[1].tasinir_kodu).toBe('150.01.02')
   })
 
-  it('12. should propagate error cleanly when atomic transaction fails (rollback guarantee)', async () => {
-    // Transaction sırasında hata oluşmasını simüle et
-    vi.spyOn(dbClient, 'transaction').mockRejectedValueOnce(
-      new Error('SQLite transaction failed: SQLITE_CONSTRAINT foreign key mismatch')
-    )
-
+  it('12. should execute atomic rollback and revert all partial state mutations if any statement in transaction fails', async () => {
     const raporId = await ihtiyacRaporuService.createRapor(
       {
         rapor_no: 'IR-2026/010',
@@ -689,9 +710,31 @@ describe('ihtiyacRaporuService Tests', () => {
       [{ kalem_adi: 'Hatalı Kalem', tipi: 'Mal', birim: 'Adet', miktar: 1 }]
     )
 
+    // Transaction mock'una ortada bir hatayı tetiklemesini sağlayacak bir SQL enjekte edelim
+    const origTransaction = dbClient.transaction
+    vi.spyOn(dbClient, 'transaction').mockImplementationOnce(async (statements) => {
+      // Birinci statement (UPDATE DATA_IhtiyacRaporu) çalıştıktan sonra hata patlat
+      const augmentedStatements = [
+        ...statements,
+        { sql: 'SIMULATE_SQL_FAILURE' }
+      ]
+      return origTransaction.call(dbClient, augmentedStatements)
+    })
+
+    // linkToDosya çağrısı transaction hatası nedeniyle reject etmeli
     await expect(
       ihtiyacRaporuService.linkToDosya(raporId, 10, { copyItemsToDosya: true })
-    ).rejects.toThrow('SQLite transaction failed')
+    ).rejects.toThrow('SQLite SQLITE_CONSTRAINT')
+
+    // ROLLBACK KANITI:
+    // 1. DATA_IhtiyacRaporu tablosundaki rapor geri alınmalı; durumu 'dosyaya_aktarildi' değil, 'taslak' kalmalı!
+    const savedRapor = mockRaporlar.find((r) => r.id === raporId)
+    expect(savedRapor.durum).toBe('taslak')
+    expect(savedRapor.temin_dosya_id).toBeNull()
+
+    // 2. DATA_TeminKalem tablosuna hiçbir kısmi kalem eklenmemiş olmalı!
+    const addedItems = mockTeminKalemler.filter((k) => k.temin_dosya_id === 10)
+    expect(addedItems.length).toBe(0)
   })
 
   it('13. should correctly sanitize numeric fields with Number.isFinite() preventing Infinity and NaN leaks', () => {
@@ -756,6 +799,83 @@ describe('ihtiyacRaporuService Tests', () => {
     expect(docDataWithOnay.onayTarihi).toBe('2026-03-22')
     expect(docDataWithOnay.evrakSayisi).toBe('E.98765432')
     expect(docDataWithOnay.raporNo).toBe('IR-2026/015')
+  })
+
+  it('15. should deduplicate items existing within the SAME report when using append_if_missing', async () => {
+    // Hedef dosyada başlangıçta hiçbir kalem yok
+    mockTeminKalemler = []
+
+    // Aynı rapor içinde BİREBİR AYNI 2 kalem bulunuyor
+    const raporId = await ihtiyacRaporuService.createRapor(
+      {
+        rapor_no: 'IR-2026/020',
+        baslik: 'Aynı Kalem İçeren Rapor',
+        durum: 'taslak',
+        temin_dosya_id: null,
+        tarih: '2026-03-25'
+      },
+      [
+        {
+          kalem_adi: 'A4 Kağıt',
+          tipi: 'Mal',
+          birim: 'Paket',
+          tasinir_kodu: '150.01',
+          aciklama: '80 gr 500lü',
+          miktar: 10
+        },
+        {
+          // Aynı raporda ikinci kez aynı kalem
+          kalem_adi: 'A4 Kağıt',
+          tipi: 'Mal',
+          birim: 'Paket',
+          tasinir_kodu: '150.01',
+          aciklama: '80 gr 500lü',
+          miktar: 20
+        }
+      ]
+    )
+
+    const res = await ihtiyacRaporuService.linkToDosya(raporId, 10, {
+      copyItemsToDosya: true,
+      transferMode: 'append_if_missing'
+    })
+
+    // Birinci kalem aktarılmalı, rapor içindeki ikinci mükerrer kalem atlanmalıdır
+    expect(res.transferredCount).toBe(1)
+    expect(res.skippedCount).toBe(1)
+    expect(mockTeminKalemler.length).toBe(1)
+  })
+
+  it('16. should correctly resolve evrakSayisi across report, linked dossier, and kurumInfo fallback chain', () => {
+    // 1. Raporda kayıtlı kendi evrak_sayisi varsa
+    const raporWithEvrak = {
+      id: 1,
+      rapor_no: 'IR-2026/021',
+      baslik: 'EBYS Kayıtlı Rapor',
+      durum: 'taslak' as const,
+      tarih: '2026-03-25',
+      evrak_sayisi: 'E-2026-99999'
+    }
+    const res1 = mapRaporToLuzumMuzekkeresiData(raporWithEvrak, [])
+    expect(res1.evrakSayisi).toBe('E-2026-99999')
+
+    // 2. Raporda evrak_sayisi yok ama bağlı dosyanın evrak_sayisi varsa (dosya_evrak_sayisi)
+    const raporWithDosyaEvrak = {
+      id: 2,
+      rapor_no: 'IR-2026/022',
+      baslik: 'Dosyadan Evrak Alan Rapor',
+      durum: 'dosyaya_aktarildi' as const,
+      tarih: '2026-03-25',
+      dosya_evrak_sayisi: 'DOSYA-EBYS-88888'
+    }
+    const res2 = mapRaporToLuzumMuzekkeresiData(raporWithDosyaEvrak, [])
+    expect(res2.evrakSayisi).toBe('DOSYA-EBYS-88888')
+
+    // 3. Ekrandan parametre olarak geçilen kurumInfo.evrak_sayisi en yüksek önceliğe sahiptir
+    const res3 = mapRaporToLuzumMuzekkeresiData(raporWithEvrak, [], {
+      evrak_sayisi: 'CUSTOM-EBYS-111'
+    })
+    expect(res3.evrakSayisi).toBe('CUSTOM-EBYS-111')
   })
 })
 

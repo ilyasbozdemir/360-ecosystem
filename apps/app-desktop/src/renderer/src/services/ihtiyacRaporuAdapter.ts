@@ -152,7 +152,12 @@ export function mapRaporToLuzumMuzekkeresiData(
     antetSatirlari: kurumInfo?.kurum_anteti,
     dosyaKonusu: rapor.baslik || 'Lüzum Müzekkeresi',
     // Rapor numarası ile resmi EBYS evrak sayısı farklı kavramlardır:
-    evrakSayisi: kurumInfo?.evrak_sayisi || '',
+    // Evrak sayısı sırasıyla: ekran parametresi -> raporda kayıtlı evrak_sayisi -> bağlı dosyanın evrak_sayisi
+    evrakSayisi:
+      (kurumInfo?.evrak_sayisi || '').trim() ||
+      (rapor.evrak_sayisi || '').trim() ||
+      (rapor.dosya_evrak_sayisi || '').trim() ||
+      '',
     raporNo: rapor.rapor_no,
     tarih: rapor.tarih,
     dosyaTarihi: rapor.tarih,

@@ -91,6 +91,7 @@ export function IhtiyacRaporuEditorView({
 
   // Form Fields
   const [raporNo, setRaporNo] = useState('')
+  const [evrakSayisi, setEvrakSayisi] = useState('')
   const [baslik, setBaslik] = useState('')
   const [gerekce, setGerekce] = useState('')
   const [birimId, setBirimId] = useState<number | null>(null)
@@ -142,6 +143,7 @@ export function IhtiyacRaporuEditorView({
         .then(([rep, items]) => {
           if (!rep) return
           setRaporNo(rep.rapor_no)
+          setEvrakSayisi(rep.evrak_sayisi || '')
           setBaslik(rep.baslik)
           setGerekce(rep.gerekce || '')
           setBirimId(rep.birim_id || null)
@@ -262,6 +264,7 @@ export function IhtiyacRaporuEditorView({
 
       const payload = {
         rapor_no: raporNo.trim(),
+        evrak_sayisi: evrakSayisi.trim() || null,
         baslik: baslik.trim(),
         gerekce: gerekce.trim() || null,
         birim_id: birimId,
@@ -420,7 +423,7 @@ export function IhtiyacRaporuEditorView({
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <div>
               <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">
                 Rapor Numarası *
@@ -431,6 +434,19 @@ export function IhtiyacRaporuEditorView({
                 value={raporNo}
                 onChange={(e) => setRaporNo(e.target.value)}
                 placeholder="Örn: IR-2026/001"
+                className="w-full px-3.5 py-2 bg-slate-50/70 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono font-bold text-slate-800 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">
+                EBYS Evrak No / Sayısı
+              </label>
+              <input
+                type="text"
+                value={evrakSayisi}
+                onChange={(e) => setEvrakSayisi(e.target.value)}
+                placeholder="Örn: E-83726194-934.01-12345"
                 className="w-full px-3.5 py-2 bg-slate-50/70 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono font-bold text-slate-800 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
               />
             </div>

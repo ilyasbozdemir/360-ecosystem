@@ -76,7 +76,8 @@ describe('ihtiyacRaporuAdapter Tests', () => {
 
     expect(doc.antetSatirlari).toEqual(['T.C.', 'DEVLET KURUMLARI GENEL MÜDÜRLÜĞÜ'])
     expect(doc.dosyaKonusu).toBe('Ana Hizmet Binası Onarımı')
-    expect(doc.evrakSayisi).toBe('IR-2026/001')
+    expect(doc.raporNo).toBe('IR-2026/001')
+    expect(doc.evrakSayisi).toBe('')
     expect(doc.sunulacakMakamAdi).toBe('Genel Müdürlük Makamına')
     expect(doc.talepEdenPersonelAdi).toBe('Ahmet Yılmaz')
     expect(doc.talepEdenPersonelUnvan).toBe('İnşaat Mühendisi')

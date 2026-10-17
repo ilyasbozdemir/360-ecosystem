@@ -298,6 +298,14 @@ export function IhtiyacRaporuDetailView({
               <span className="px-3 py-1 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 font-mono text-xs font-extrabold border border-blue-400/30">
                 {rapor.rapor_no}
               </span>
+              {(rapor.evrak_sayisi || rapor.dosya_evrak_sayisi) && (
+                <span
+                  className="px-3 py-1 rounded-lg bg-purple-500/10 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 font-mono text-xs font-extrabold border border-purple-400/30"
+                  title="Resmî EBYS Evrak Sayısı"
+                >
+                  EBYS: {rapor.evrak_sayisi || rapor.dosya_evrak_sayisi}
+                </span>
+              )}
               {getStatusBadge(rapor.durum)}
               <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 font-medium">
                 <Calendar size={13} className="text-slate-400 dark:text-slate-450" />

@@ -64,6 +64,7 @@ export interface IhtiyacRaporu {
   /** Ön bilgi / bütçe öngörüsü tutarı (Resmi yaklaşık maliyet hesabı değildir) */
   tahmini_butce?: number
   notlar?: string | null
+  evrak_sayisi?: string | null
   created_at?: string
   updated_at?: string
   // İlişkili alanlar (Join)
@@ -71,6 +72,7 @@ export interface IhtiyacRaporu {
   dosya_no?: string | null
   dosya_konu?: string | null
   dosya_tur?: string | null
+  dosya_evrak_sayisi?: string | null
 }
 
 export interface DosyaOption {
@@ -104,6 +106,7 @@ export async function ensureIhtiyacRaporuTables(): Promise<void> {
       onay_tarihi DATE,
       tahmini_butce REAL DEFAULT 0,
       notlar TEXT,
+      evrak_sayisi TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY(temin_dosya_id) REFERENCES DATA_TeminDosyasi(id) ON DELETE SET NULL,
@@ -131,6 +134,11 @@ export async function ensureIhtiyacRaporuTables(): Promise<void> {
     // Self-healing: Mevcut veritabanında sütun eksikse ekle
     try {
       await dbClient.run(`ALTER TABLE DATA_IhtiyacRaporu ADD COLUMN talep_eden_unvan TEXT`)
+    } catch {
+      // Sütun zaten mevcutsa hatayı yut
+    }
+    try {
+      await dbClient.run(`ALTER TABLE DATA_IhtiyacRaporu ADD COLUMN evrak_sayisi TEXT`)
     } catch {
       // Sütun zaten mevcutsa hatayı yut
     }
@@ -219,7 +227,8 @@ export const ihtiyacRaporuService = {
         COUNT(k.id) AS kalem_sayisi,
         COALESCE(d.temin_no, d.dosya_no) AS dosya_no,
         d.konu AS dosya_konu,
-        d.tur AS dosya_tur
+        d.tur AS dosya_tur,
+        d.evrak_sayisi AS dosya_evrak_sayisi
       FROM DATA_IhtiyacRaporu r
       LEFT JOIN DATA_IhtiyacRaporuKalem k ON k.rapor_id = r.id
       LEFT JOIN DATA_TeminDosyasi d ON d.id = r.temin_dosya_id
@@ -285,8 +294,8 @@ export const ihtiyacRaporuService = {
         rapor_no, baslik, gerekce, birim_id, birim_adi,
         talep_eden_personel_id, talep_eden_personel, talep_eden_unvan,
         durum, temin_dosya_id, tarih, onay_tarihi,
-        tahmini_butce, notlar, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        tahmini_butce, notlar, evrak_sayisi, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
     `
     const res = await dbClient.run(insertSql, [
       rapor.rapor_no,
@@ -302,7 +311,8 @@ export const ihtiyacRaporuService = {
       rapor.tarih || new Date().toISOString().split('T')[0],
       rapor.onay_tarihi || null,
       rapor.tahmini_butce ?? totalEst,
-      rapor.notlar || null
+      rapor.notlar || null,
+      rapor.evrak_sayisi || null
     ])
 
     const newId = Number(res.lastInsertRowid)
@@ -381,6 +391,10 @@ export const ihtiyacRaporuService = {
     if (rapor.notlar !== undefined) {
       fields.push('notlar = ?')
       values.push(rapor.notlar)
+    }
+    if (rapor.evrak_sayisi !== undefined) {
+      fields.push('evrak_sayisi = ?')
+      values.push(rapor.evrak_sayisi)
     }
 
     fields.push('updated_at = CURRENT_TIMESTAMP')
@@ -473,6 +487,7 @@ export const ihtiyacRaporuService = {
       tarih: new Date().toISOString().split('T')[0],
       onay_tarihi: null,
       tahmini_butce: source.tahmini_butce || 0,
+      evrak_sayisi: source.evrak_sayisi || null,
       notlar: source.notlar
         ? `[${source.rapor_no} raporundan kopyalandı] ${source.notlar}`
         : `[${source.rapor_no} raporundan kopyalandı]`
