@@ -520,6 +520,24 @@ describe('Gerçek SQLite Motoru: İhtiyaç Raporu Transaction & Rollback Güvenc
     }
     expect(committedRapor.durum).toBe('onaylandi')
 
+    // 4. Çoklu mutation durumunda tüm hata mesajlarının biriktirildiğini doğrula
+    const multiStatements = [
+      { sql: `UPDATE DATA_IhtiyacRaporu SET durum = 'taslak' WHERE id = 1`, params: [] },
+      { sql: `UPDATE DATA_IhtiyacRaporu SET baslik = 'Yeni Baslik' WHERE id = 1`, params: [] }
+    ]
+    let callIndex = 0
+    const multiResult = executeDbTransaction(db, multiStatements, {
+      validateSql: true,
+      onMutation: () => {
+        callIndex++
+        throw new Error(`Callback hatası #${callIndex}`)
+      }
+    })
+    expect(multiResult.success).toBe(true)
+    expect(multiResult.mutationError).toContain('Callback hatası #1')
+    expect(multiResult.mutationError).toContain('Callback hatası #2')
+    expect(multiResult.mutationError).toContain(';')
+
     // handleDbTransaction üzerinden de aynı güvenceyi doğrula
     const ipcResult = await handleDbTransaction(db, validStatements, {
       validateSql: true,

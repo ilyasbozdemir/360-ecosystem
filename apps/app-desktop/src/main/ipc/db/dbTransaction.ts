@@ -129,7 +129,7 @@ export function executeDbTransaction(
   // 3. Veritabanı COMMIT işlemi başarıyla bitti: Şimdi mutation'ları güvenle bildir.
   // Not: Commit sonrasındaki JavaScript callback'lerinde oluşabilecek bir istisna,
   // veritabanındaki başarılı COMMIT işlemini asla geçersiz kılmaz veya başarısız göstermez.
-  let mutationError: string | undefined
+  const mutationErrors: string[] = []
   if (options?.onMutation && pendingMutations.length > 0) {
     for (const m of pendingMutations) {
       try {
@@ -137,7 +137,7 @@ export function executeDbTransaction(
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err)
         console.error('[dbTransaction] Commit sonrası onMutation bildirim hatası:', msg)
-        mutationError = msg
+        mutationErrors.push(msg)
       }
     }
   }
@@ -154,9 +154,10 @@ export function executeDbTransaction(
     changes: totalChanges
   }
 
-  if (mutationError) {
-    result.mutationError = mutationError
-    result.warning = `Veritabanı işlemi commit edildi fakat değişiklik bildirimi sırasında uyarı oluştu: ${mutationError}`
+  if (mutationErrors.length > 0) {
+    const combinedMsg = mutationErrors.join('; ')
+    result.mutationError = combinedMsg
+    result.warning = `Veritabanı işlemi commit edildi fakat değişiklik bildirimi sırasında uyarı oluştu: ${combinedMsg}`
   }
 
   return result
