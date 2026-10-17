@@ -74,6 +74,12 @@ describe('ihtiyacRaporuService Tests', () => {
         return mockDosyalar
       }
 
+      // DATA_TeminKalem by temin_dosya_id
+      if (sql.includes('FROM DATA_TeminKalem WHERE temin_dosya_id = ?')) {
+        const dId = params[0]
+        return mockTeminKalemler.filter((tk) => tk.temin_dosya_id === dId)
+      }
+
       return []
     })
 
@@ -94,6 +100,11 @@ describe('ihtiyacRaporuService Tests', () => {
         }
       }
 
+      if (sql.includes('FROM DATA_TeminDosyasi WHERE id = ?')) {
+        const id = params[0]
+        return mockDosyalar.find((d) => d.id === id) || null
+      }
+
       if (sql.includes('SELECT rapor_no FROM DATA_IhtiyacRaporu')) {
         const prefix = (params[0] || '').replace('%', '')
         const matches = mockRaporlar
@@ -110,6 +121,44 @@ describe('ihtiyacRaporuService Tests', () => {
       }
 
       return null
+    })
+
+    // Mock dbClient.transaction (atomic runner)
+    vi.spyOn(dbClient, 'transaction').mockImplementation(async (statements: { sql: string; params?: any[] }[]) => {
+      for (const stmt of statements) {
+        const sql = stmt.sql
+        const params = stmt.params || []
+
+        if (sql.includes('UPDATE DATA_IhtiyacRaporu SET temin_dosya_id = ?')) {
+          const dosyaId = params[0]
+          const raporId = params[1]
+          const r = mockRaporlar.find((item) => item.id === raporId)
+          if (r) {
+            r.temin_dosya_id = dosyaId
+            r.durum = 'dosyaya_aktarildi'
+          }
+        } else if (sql.includes('DELETE FROM DATA_TeminKalem WHERE temin_dosya_id = ?')) {
+          const dId = params[0]
+          mockTeminKalemler = mockTeminKalemler.filter((tk) => tk.temin_dosya_id !== dId)
+        } else if (sql.includes('INSERT INTO DATA_TeminKalem')) {
+          const id = nextTeminKalemId++
+          mockTeminKalemler.push({
+            id,
+            temin_dosya_id: params[0],
+            sira_no: params[1],
+            kalem_adi: params[2],
+            tipi: params[3],
+            birim: params[4],
+            miktar: params[5],
+            kdv_orani: params[6],
+            tasinir_kodu: params[7],
+            okas_kodu: params[8],
+            poz_no: params[9],
+            aciklama: params[10]
+          })
+        }
+      }
+      return { success: true, changes: statements.length }
     })
 
     // Mock dbClient.run
@@ -409,5 +458,149 @@ describe('ihtiyacRaporuService Tests', () => {
 
     expect(mockRaporlar.length).toBe(0)
     expect(mockKalemler.length).toBe(0)
+  })
+
+  it('7. should preserve 0% KDV exemption and zero unit price correctly', async () => {
+    const kalemler: IhtiyacRaporuKalem[] = [
+      {
+        kalem_adi: 'KDV Muaf Kitap Alımı',
+        tipi: 'Mal',
+        birim: 'Adet',
+        miktar: 50,
+        kdv_orani: 0, // %0 KDV muafiyeti!
+        tahmini_birim_fiyat: 100
+      },
+      {
+        kalem_adi: 'Standart Kırtasiye',
+        tipi: 'Mal',
+        birim: 'Adet',
+        miktar: 10,
+        kdv_orani: 20,
+        tahmini_birim_fiyat: 0 // Sıfır birim fiyat
+      }
+    ]
+
+    const raporId = await ihtiyacRaporuService.createRapor(
+      {
+        rapor_no: 'IR-2026/005',
+        baslik: 'Kültür ve Eğitim Yayınları İhtiyacı',
+        durum: 'taslak',
+        temin_dosya_id: null,
+        tarih: '2026-03-01'
+      },
+      kalemler
+    )
+
+    const saved = mockKalemler.filter((k) => k.rapor_id === raporId)
+    expect(saved.length).toBe(2)
+    // 0% KDV asla 20 ile ezilmemeli!
+    expect(saved[0].kdv_orani).toBe(0)
+    expect(saved[1].kdv_orani).toBe(20)
+    expect(saved[1].tahmini_birim_fiyat).toBe(0)
+  })
+
+  it('8. should prevent duplicate items during transfer with append_if_missing', async () => {
+    const raporId = await ihtiyacRaporuService.createRapor(
+      {
+        rapor_no: 'IR-2026/006',
+        baslik: 'Yedek Parça İhtiyacı',
+        durum: 'taslak',
+        temin_dosya_id: null,
+        tarih: '2026-03-05'
+      },
+      [
+        { kalem_adi: 'Hava Filtresi', tipi: 'Mal', birim: 'Adet', miktar: 4, kdv_orani: 20 },
+        { kalem_adi: 'Motor Yağı 5W30', tipi: 'Mal', birim: 'Litre', miktar: 20, kdv_orani: 20 }
+      ]
+    )
+
+    // İlk aktarım: 2 kalem eklenmeli
+    const firstResult = await ihtiyacRaporuService.linkToDosya(raporId, 10, {
+      copyItemsToDosya: true,
+      transferMode: 'append_if_missing'
+    })
+
+    expect(firstResult.success).toBe(true)
+    expect(firstResult.transferredCount).toBe(2)
+    expect(firstResult.skippedCount).toBe(0)
+    expect(mockTeminKalemler.length).toBe(2)
+
+    // İkinci aktarım (aynı rapora tekrar bağlama veya aynı kalemleri aktarma):
+    // Mükerrerliği önleyip 0 kalem eklemeli, 2 kalemi atlamalı
+    const secondResult = await ihtiyacRaporuService.linkToDosya(raporId, 10, {
+      copyItemsToDosya: true,
+      transferMode: 'append_if_missing'
+    })
+
+    expect(secondResult.success).toBe(true)
+    expect(secondResult.transferredCount).toBe(0)
+    expect(secondResult.skippedCount).toBe(2)
+    // Kalem sayısı 2'de kalmalı, mükerrer oluşturulmamalı
+    expect(mockTeminKalemler.length).toBe(2)
+  })
+
+  it('9. should replace all dossier items when transferMode is replace_all', async () => {
+    // Önceden dosyada 1 kalem olsun
+    mockTeminKalemler = [
+      {
+        id: nextTeminKalemId++,
+        temin_dosya_id: 10,
+        sira_no: 1,
+        kalem_adi: 'Eski Kalem',
+        tipi: 'Mal',
+        birim: 'Adet',
+        miktar: 1
+      }
+    ]
+
+    const raporId = await ihtiyacRaporuService.createRapor(
+      {
+        rapor_no: 'IR-2026/007',
+        baslik: 'Yeni Donanım İhtiyacı',
+        durum: 'taslak',
+        temin_dosya_id: null,
+        tarih: '2026-03-10'
+      },
+      [
+        { kalem_adi: 'Monitor 27 inç', tipi: 'Mal', birim: 'Adet', miktar: 3, kdv_orani: 20 }
+      ]
+    )
+
+    const res = await ihtiyacRaporuService.linkToDosya(raporId, 10, {
+      copyItemsToDosya: true,
+      transferMode: 'replace_all'
+    })
+
+    expect(res.transferredCount).toBe(1)
+    // Eski kalem silinip sadece yeni kalem kalmalı
+    expect(mockTeminKalemler.length).toBe(1)
+    expect(mockTeminKalemler[0].kalem_adi).toBe('Monitor 27 inç')
+  })
+
+  it('10. should execute dossier link and item transfer in a single atomic transaction', async () => {
+    const txSpy = vi.spyOn(dbClient, 'transaction')
+
+    const raporId = await ihtiyacRaporuService.createRapor(
+      {
+        rapor_no: 'IR-2026/008',
+        baslik: 'Atomik Test Raporu',
+        durum: 'taslak',
+        temin_dosya_id: null,
+        tarih: '2026-03-12'
+      },
+      [{ kalem_adi: 'Atomik Kalem', tipi: 'Mal', birim: 'Adet', miktar: 1 }]
+    )
+
+    await ihtiyacRaporuService.linkToDosya(raporId, 10, { copyItemsToDosya: true })
+
+    // dbClient.transaction en az 1 kez ve tüm SQL cümlelerini içeren liste ile çağrılmalıdır
+    expect(txSpy).toHaveBeenCalledTimes(1)
+    const statements = txSpy.mock.calls[0][0]
+    expect(Array.isArray(statements)).toBe(true)
+    // Rapor güncelleme ve kalem ekleme aynı transaction dizisinde olmalıdır
+    const hasReportUpdate = statements.some((s) => s.sql.includes('UPDATE DATA_IhtiyacRaporu'))
+    const hasKalemInsert = statements.some((s) => s.sql.includes('INSERT INTO DATA_TeminKalem'))
+    expect(hasReportUpdate).toBe(true)
+    expect(hasKalemInsert).toBe(true)
   })
 })

@@ -1,5 +1,24 @@
 import { dbClient } from './db/dbClient'
-import { mapIhtiyacKalemToTeminKalem } from './ihtiyacRaporuAdapter'
+import {
+  mapIhtiyacKalemToTeminKalem,
+  sanitizeMiktar,
+  sanitizeKdvOrani,
+  sanitizeBirimFiyat
+} from './ihtiyacRaporuAdapter'
+
+export type TransferKalemMode = 'append_if_missing' | 'replace_all' | 'append_all'
+
+export interface LinkToDosyaOptions {
+  copyItemsToDosya?: boolean
+  transferMode?: TransferKalemMode
+}
+
+export interface LinkToDosyaResult {
+  success: boolean
+  transferredCount: number
+  skippedCount: number
+  totalRaporKalemCount: number
+}
 
 export type IhtiyacRaporuDurum =
   | 'taslak'
@@ -256,7 +275,8 @@ export const ihtiyacRaporuService = {
   ): Promise<number> {
     await ensureIhtiyacRaporuTables()
     const totalEst = kalemler.reduce(
-      (sum, item) => sum + (Number(item.miktar) || 0) * (Number(item.tahmini_birim_fiyat) || 0),
+      (sum, item) =>
+        sum + sanitizeMiktar(item.miktar, 0) * sanitizeBirimFiyat(item.tahmini_birim_fiyat, 0),
       0
     )
 
@@ -401,13 +421,13 @@ export const ihtiyacRaporuService = {
           k.kalem_adi.trim(),
           k.tipi || 'Mal',
           k.birim || 'Adet',
-          Number(k.miktar) || 1,
-          Number(k.kdv_orani) || 20,
+          sanitizeMiktar(k.miktar, 1),
+          sanitizeKdvOrani(k.kdv_orani, 20),
           k.tasinir_kodu || null,
           k.okas_kodu || null,
           k.poz_no || null,
           k.aciklama || null,
-          Number(k.tahmini_birim_fiyat) || 0
+          sanitizeBirimFiyat(k.tahmini_birim_fiyat, 0)
         ]
       )
     }
@@ -476,39 +496,85 @@ export const ihtiyacRaporuService = {
 
   /**
    * Raporu mevcut bir alım dosyasına bağlar.
-   * İsteğe bağlı olarak raporun kalemlerini dosyanın ihtiyaç listesine (DATA_TeminKalem) klonlar.
+   * Atomik transaction ile:
+   * 1. Raporun durumunu ve dosya bağlantısını günceller.
+   * 2. Kalem aktarımı istenmişse seçilen moda göre:
+   *    - 'append_if_missing': Hedef dosyadaki mevcut kalemleri kontrol eder, mükerrer olanları atlar.
+   *    - 'replace_all': Hedef dosyadaki mevcut kalemleri siler ve baştan yazar.
+   *    - 'append_all': Tüm kalemleri dosyadaki mevcutların üzerine ekler.
+   * 3. Hedef dosyanın talep eden personeli veya iş açıklaması boşsa rapordan tamamlar.
+   * Tüm işlemler tek bir veritabanı transaction'ı içinde gerçekleştirilir; hata durumunda tamamen geri alınır (rollback).
    */
   async linkToDosya(
     raporId: number,
     dosyaId: number,
-    options?: { copyItemsToDosya?: boolean }
-  ): Promise<void> {
-    await dbClient.run(
-      `UPDATE DATA_IhtiyacRaporu SET temin_dosya_id = ?, durum = 'dosyaya_aktarildi', updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
-      [dosyaId, raporId]
+    options?: LinkToDosyaOptions
+  ): Promise<LinkToDosyaResult> {
+    const copyItems = options?.copyItemsToDosya !== false
+    const mode: TransferKalemMode = options?.transferMode || 'append_if_missing'
+
+    // Hedef dosya ve raporun varlığını doğrula
+    const targetDosya = await dbClient.queryFirst<{
+      id: number
+      talep_eden_personel_id?: number | null
+      ihtiyac_yeri?: string | null
+      isin_aciklamasi?: string | null
+    }>(
+      `SELECT id, talep_eden_personel_id, ihtiyac_yeri, isin_aciklamasi FROM DATA_TeminDosyasi WHERE id = ?`,
+      [dosyaId]
     )
 
-    if (options?.copyItemsToDosya) {
-      const kalemler = await this.getRaporKalemleri(raporId)
-      if (kalemler.length > 0) {
-        // Dosyadaki mevcut en yüksek sıra no'yu bul
-        const maxSiraRow = await dbClient.queryFirst<{ max_sira: number }>(
-          `SELECT COALESCE(MAX(sira_no), 0) as max_sira FROM DATA_TeminKalem WHERE temin_dosya_id = ?`,
-          [dosyaId]
-        )
-        let curSira = (maxSiraRow?.max_sira || 0) + 1
+    if (!targetDosya) {
+      throw new Error(`Hedef alım dosyası bulunamadı (ID: ${dosyaId})`)
+    }
 
+    const rapor = await this.getRaporById(raporId)
+    if (!rapor) {
+      throw new Error(`İhtiyaç raporu bulunamadı (ID: ${raporId})`)
+    }
+
+    const txStatements: { sql: string; params?: unknown[] }[] = []
+
+    // 1. Rapor bağlantısı ve durum güncellemesi
+    txStatements.push({
+      sql: `UPDATE DATA_IhtiyacRaporu SET temin_dosya_id = ?, durum = 'dosyaya_aktarildi', updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+      params: [dosyaId, raporId]
+    })
+
+    let transferredCount = 0
+    let skippedCount = 0
+    const kalemler = await this.getRaporKalemleri(raporId)
+
+    // 2. Kalemlerin aktarımı (Atomik işlem sırasına eklenir)
+    if (copyItems && kalemler.length > 0) {
+      const existingItems = await dbClient.query<{
+        id: number
+        sira_no: number
+        kalem_adi: string
+        birim: string
+      }>(
+        `SELECT id, sira_no, kalem_adi, birim FROM DATA_TeminKalem WHERE temin_dosya_id = ? ORDER BY sira_no ASC`,
+        [dosyaId]
+      )
+
+      if (mode === 'replace_all') {
+        txStatements.push({
+          sql: `DELETE FROM DATA_TeminKalem WHERE temin_dosya_id = ?`,
+          params: [dosyaId]
+        })
+
+        let curSira = 1
         for (const k of kalemler) {
           const payload = mapIhtiyacKalemToTeminKalem(k, dosyaId, curSira++)
-          await dbClient.run(
-            `
-            INSERT INTO DATA_TeminKalem (
-              temin_dosya_id, sira_no, kalem_adi, tipi, birim,
-              miktar, kdv_orani, tasinir_kodu, okas_kodu,
-              poz_no, aciklama, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-          `,
-            [
+          txStatements.push({
+            sql: `
+              INSERT INTO DATA_TeminKalem (
+                temin_dosya_id, sira_no, kalem_adi, tipi, birim,
+                miktar, kdv_orani, tasinir_kodu, okas_kodu,
+                poz_no, aciklama, created_at, updated_at
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            `,
+            params: [
               payload.temin_dosya_id,
               payload.sira_no,
               payload.kalem_adi,
@@ -521,52 +587,119 @@ export const ihtiyacRaporuService = {
               payload.poz_no,
               payload.aciklama
             ]
-          )
+          })
+          transferredCount++
+        }
+      } else if (mode === 'append_if_missing') {
+        const normalizeKey = (name?: string, birim?: string): string =>
+          `${(name || '').trim().toLowerCase()}___${(birim || '').trim().toLowerCase()}`
+
+        const existingSet = new Set(
+          existingItems.map((item) => normalizeKey(item.kalem_adi, item.birim))
+        )
+
+        let curSira =
+          existingItems.reduce((max, item) => Math.max(max, item.sira_no || 0), 0) + 1
+
+        for (const k of kalemler) {
+          const key = normalizeKey(k.kalem_adi, k.birim)
+          if (existingSet.has(key)) {
+            skippedCount++
+          } else {
+            existingSet.add(key)
+            const payload = mapIhtiyacKalemToTeminKalem(k, dosyaId, curSira++)
+            txStatements.push({
+              sql: `
+                INSERT INTO DATA_TeminKalem (
+                  temin_dosya_id, sira_no, kalem_adi, tipi, birim,
+                  miktar, kdv_orani, tasinir_kodu, okas_kodu,
+                  poz_no, aciklama, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+              `,
+              params: [
+                payload.temin_dosya_id,
+                payload.sira_no,
+                payload.kalem_adi,
+                payload.tipi,
+                payload.birim,
+                payload.miktar,
+                payload.kdv_orani,
+                payload.tasinir_kodu,
+                payload.okas_kodu,
+                payload.poz_no,
+                payload.aciklama
+              ]
+            })
+            transferredCount++
+          }
+        }
+      } else {
+        // mode === 'append_all'
+        let curSira =
+          existingItems.reduce((max, item) => Math.max(max, item.sira_no || 0), 0) + 1
+
+        for (const k of kalemler) {
+          const payload = mapIhtiyacKalemToTeminKalem(k, dosyaId, curSira++)
+          txStatements.push({
+            sql: `
+              INSERT INTO DATA_TeminKalem (
+                temin_dosya_id, sira_no, kalem_adi, tipi, birim,
+                miktar, kdv_orani, tasinir_kodu, okas_kodu,
+                poz_no, aciklama, created_at, updated_at
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            `,
+            params: [
+              payload.temin_dosya_id,
+              payload.sira_no,
+              payload.kalem_adi,
+              payload.tipi,
+              payload.birim,
+              payload.miktar,
+              payload.kdv_orani,
+              payload.tasinir_kodu,
+              payload.okas_kodu,
+              payload.poz_no,
+              payload.aciklama
+            ]
+          })
+          transferredCount++
         }
       }
     }
 
-    // Hedef dosyanın talep eden personeli veya gerekçesi henüz girilmemişse, rapordaki veriyi aktar
-    try {
-      const rapor = await this.getRaporById(raporId)
-      if (rapor) {
-        const targetDosya = await dbClient.queryFirst<{
-          talep_eden_personel_id?: number | null
-          ihtiyac_yeri?: string | null
-          isin_aciklamasi?: string | null
-        }>(
-          `SELECT talep_eden_personel_id, ihtiyac_yeri, isin_aciklamasi FROM DATA_TeminDosyasi WHERE id = ?`,
-          [dosyaId]
-        )
+    // 3. Hedef dosyanın talep eden personeli veya iş açıklaması boşsa rapordan tamamla
+    const dosyaUpdates: string[] = []
+    const dosyaParams: (string | number)[] = []
 
-        if (targetDosya) {
-          const updates: string[] = []
-          const params: (string | number)[] = []
+    if (!targetDosya.talep_eden_personel_id && rapor.talep_eden_personel_id) {
+      dosyaUpdates.push('talep_eden_personel_id = ?')
+      dosyaParams.push(rapor.talep_eden_personel_id)
+    }
+    if (!targetDosya.ihtiyac_yeri && rapor.birim_adi) {
+      dosyaUpdates.push('ihtiyac_yeri = ?')
+      dosyaParams.push(rapor.birim_adi)
+    }
+    if (!targetDosya.isin_aciklamasi && (rapor.gerekce || rapor.baslik)) {
+      dosyaUpdates.push('isin_aciklamasi = ?')
+      dosyaParams.push((rapor.gerekce || rapor.baslik) as string)
+    }
 
-          if (!targetDosya.talep_eden_personel_id && rapor.talep_eden_personel_id) {
-            updates.push('talep_eden_personel_id = ?')
-            params.push(rapor.talep_eden_personel_id)
-          }
-          if (!targetDosya.ihtiyac_yeri && rapor.birim_adi) {
-            updates.push('ihtiyac_yeri = ?')
-            params.push(rapor.birim_adi)
-          }
-          if (!targetDosya.isin_aciklamasi && (rapor.gerekce || rapor.baslik)) {
-            updates.push('isin_aciklamasi = ?')
-            params.push((rapor.gerekce || rapor.baslik) as string)
-          }
+    if (dosyaUpdates.length > 0) {
+      dosyaParams.push(dosyaId)
+      txStatements.push({
+        sql: `UPDATE DATA_TeminDosyasi SET ${dosyaUpdates.join(', ')} WHERE id = ?`,
+        params: dosyaParams
+      })
+    }
 
-          if (updates.length > 0) {
-            params.push(dosyaId)
-            await dbClient.run(
-              `UPDATE DATA_TeminDosyasi SET ${updates.join(', ')} WHERE id = ?`,
-              params
-            )
-          }
-        }
-      }
-    } catch (e) {
-      console.warn('[ihtiyacRaporuService] Dosya meta aktarımı uyarısı:', e)
+    // Tüm adımları tek bir atomik transaction içinde işlet
+    await dbClient.transaction(txStatements)
+
+    return {
+      success: true,
+      transferredCount,
+      skippedCount,
+      totalRaporKalemCount: kalemler.length
     }
   },
 

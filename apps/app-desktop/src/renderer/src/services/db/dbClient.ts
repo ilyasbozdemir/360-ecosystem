@@ -64,6 +64,26 @@ class DatabaseClient {
       throw err
     }
   }
+
+  /**
+   * Çoklu sorguyu tek bir SQLite transaction'ı içinde atomik çalıştırır
+   */
+  public async transaction(statements: { sql: string; params?: unknown[] }[]): Promise<DbRunResult> {
+    try {
+      const sanitized = statements.map((s) => ({
+        sql: s.sql,
+        params: s.params || []
+      }))
+      const res: DbRunResult = await this.ipc.invoke('db:transaction', sanitized)
+      if (!res.success) {
+        throw new Error(res.error || 'Veritabanı transaction işlemi başarısız oldu')
+      }
+      return res
+    } catch (err: unknown) {
+      console.error('[DbClient Transaction Error]:', err)
+      throw err
+    }
+  }
 }
 
 export const dbClient = new DatabaseClient()

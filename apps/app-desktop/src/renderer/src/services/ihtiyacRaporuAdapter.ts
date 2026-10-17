@@ -61,21 +61,43 @@ export interface TeminKalemInsertPayload {
 }
 
 /**
+ * Güvenli sayı ve değer dönüştürücüleri (0 KDV oranı ve özel miktarlar için)
+ */
+export function sanitizeMiktar(val: unknown, defaultVal = 1): number {
+  if (val === null || val === undefined || val === '') return defaultVal
+  const num = Number(val)
+  return isNaN(num) || num <= 0 ? defaultVal : num
+}
+
+export function sanitizeKdvOrani(val: unknown, defaultVal = 20): number {
+  if (val === null || val === undefined || val === '') return defaultVal
+  const num = Number(val)
+  // %0 KDV geçerli bir muafiyet oranıdır, varsayılan 20 ile ezilmemelidir!
+  return isNaN(num) || num < 0 ? defaultVal : num
+}
+
+export function sanitizeBirimFiyat(val: unknown, defaultVal = 0): number {
+  if (val === null || val === undefined || val === '') return defaultVal
+  const num = Number(val)
+  return isNaN(num) || num < 0 ? defaultVal : num
+}
+
+/**
  * İhtiyaç Raporu Kalemini, Lüzum Müzekkeresi şablonunun beklediği formata eşler.
  * Alan eşleştirmesi:
  * - kalem_adi -> malzemeAdi
  * - aciklama -> ozelligi
  * - birim -> birimi
  * - tasinir_kodu || okas_kodu || poz_no -> kodu
- * - kdv_orani -> kdvOrani
+ * - kdv_orani -> kdvOrani (0 oranı korunur)
  * - miktar -> miktar
  */
 export function mapIhtiyacKalemToLuzumMuzekkeresiItem(
   kalem: IhtiyacRaporuKalem,
   index?: number
 ): LuzumMuzekkeresiKalemItem {
-  const miktar = Number(kalem.miktar) || 1
-  const birimFiyat = Number(kalem.tahmini_birim_fiyat) || 0
+  const miktar = sanitizeMiktar(kalem.miktar, 1)
+  const birimFiyat = sanitizeBirimFiyat(kalem.tahmini_birim_fiyat, 0)
   const satirTutari = miktar * birimFiyat
 
   // Kod öncelik çözümlemesi (Taşınır Kodu > OKAS Kodu > Poz No)
@@ -91,7 +113,7 @@ export function mapIhtiyacKalemToLuzumMuzekkeresiItem(
     malzemeAdi: (kalem.kalem_adi || '').trim(),
     ozelligi: (kalem.aciklama || '').trim(),
     birimi: (kalem.birim || 'Adet').trim(),
-    kdvOrani: Number(kalem.kdv_orani) || 20,
+    kdvOrani: sanitizeKdvOrani(kalem.kdv_orani, 20),
     miktar,
     tasinirKodu: (kalem.tasinir_kodu || '').trim(),
     okasKodu: (kalem.okas_kodu || '').trim(),
@@ -114,18 +136,35 @@ export function mapRaporToLuzumMuzekkeresiData(
 ): LuzumMuzekkeresiDocumentData {
   const mappedKalemler = kalemler.map((k, idx) => mapIhtiyacKalemToLuzumMuzekkeresiItem(k, idx))
 
+  // Şablonda gerekçe alanının doğrudan görünebilmesi için işin açıklaması ile gerekçeyi harmanla
+  const hasGerekce = Boolean(rapor.gerekce && rapor.gerekce.trim())
+  const formattedIsinAciklamasi = hasGerekce
+    ? `${rapor.baslik}\n\nİhtiyaç Gerekçesi:\n${rapor.gerekce!.trim()}`
+    : rapor.baslik
+
+  // Taslak durumundaki raporların onay tarihi henüz oluşmamıştır
+  const isApproved = rapor.durum === 'onaylandi' || rapor.durum === 'dosyaya_aktarildi'
+  const resolvedOnayTarihi = isApproved ? rapor.onay_tarihi || rapor.tarih : ''
+
   return {
     antetSatirlari: kurumInfo?.kurum_anteti,
     dosyaKonusu: rapor.baslik || 'Lüzum Müzekkeresi',
     evrakSayisi: rapor.rapor_no,
+    raporNo: rapor.rapor_no,
     tarih: rapor.tarih,
+    dosyaTarihi: rapor.tarih,
     onayaSunulanTarih: rapor.tarih,
-    onayTarihi: rapor.onay_tarihi || rapor.tarih,
+    onayTarihi: resolvedOnayTarihi,
     sunulacakMakamAdi: kurumInfo?.makam_adi || 'Harcama Yetkilisine',
-    isinAciklamasi: rapor.baslik,
+    isinAdi: rapor.baslik,
+    isinAciklamasi: formattedIsinAciklamasi,
     gerekce: rapor.gerekce || '',
+    aciklamaMaddeleri: hasGerekce ? [{ maddeMetni: rapor.gerekce!.trim() }] : [],
+    hasAciklamaMaddeleri: hasGerekce,
     talepEdenPersonelAdi: rapor.talep_eden_personel || '',
     talepEdenPersonelUnvan: rapor.talep_eden_unvan || '',
+    hazirlayanPersonelAdi: rapor.talep_eden_personel || '',
+    hazirlayanPersonelUnvan: rapor.talep_eden_unvan || '',
     ihtiyacYeri: rapor.birim_adi || '',
     ihtiyacKalemleri: mappedKalemler,
     tahminiButce: Number(rapor.tahmini_butce) || 0,
@@ -149,8 +188,8 @@ export function mapIhtiyacKalemToTeminKalem(
     kalem_adi: (kalem.kalem_adi || '').trim(),
     tipi: kalem.tipi || 'Mal',
     birim: (kalem.birim || 'Adet').trim(),
-    miktar: Number(kalem.miktar) || 1,
-    kdv_orani: Number(kalem.kdv_orani) || 20,
+    miktar: sanitizeMiktar(kalem.miktar, 1),
+    kdv_orani: sanitizeKdvOrani(kalem.kdv_orani, 20),
     tasinir_kodu: kalem.tasinir_kodu?.trim() || null,
     okas_kodu: kalem.okas_kodu?.trim() || null,
     poz_no: kalem.poz_no?.trim() || null,

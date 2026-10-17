@@ -6,14 +6,13 @@ import {
   FolderKanban,
   Check,
   Calendar,
-  AlertCircle,
-  Sparkles,
   Info
 } from 'lucide-react'
 import { Modal } from '../../../components/ui/Modal'
 import {
   DosyaOption,
   IhtiyacRaporu,
+  TransferKalemMode,
   ihtiyacRaporuService
 } from '../../../services/ihtiyacRaporuService'
 import { formatDate } from '../../../utils/formatters'
@@ -37,6 +36,7 @@ export function DosyaBaglamaModal({
   const [search, setSearch] = useState('')
   const [selectedDosyaId, setSelectedDosyaId] = useState<number | null>(null)
   const [copyItems, setCopyItems] = useState(true)
+  const [transferMode, setTransferMode] = useState<TransferKalemMode>('append_if_missing')
 
   useEffect(() => {
     if (!isOpen || !rapor) return
@@ -44,6 +44,7 @@ export function DosyaBaglamaModal({
     setSelectedDosyaId(rapor.temin_dosya_id || null)
     setSearch('')
     setCopyItems(true)
+    setTransferMode('append_if_missing')
     setLoading(true)
 
     ihtiyacRaporuService
@@ -80,9 +81,17 @@ export function DosyaBaglamaModal({
 
     try {
       setSubmitting(true)
-      await ihtiyacRaporuService.linkToDosya(rapor.id, selectedDosyaId, {
-        copyItemsToDosya: copyItems
+      const res = await ihtiyacRaporuService.linkToDosya(rapor.id, selectedDosyaId, {
+        copyItemsToDosya: copyItems,
+        transferMode
       })
+
+      if (copyItems && res.skippedCount > 0) {
+        alert(
+          `Dosya bağlantısı tamamlandı:\n- ${res.transferredCount} kalem aktarıldı.\n- ${res.skippedCount} mükerrer kalem tespit edildi ve atlandı.`
+        )
+      }
+
       onSuccess()
       onClose()
     } catch (err: any) {
@@ -239,22 +248,71 @@ export function DosyaBaglamaModal({
         </div>
 
         {/* Copy Items Checkbox */}
-        <label className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/40 cursor-pointer select-none">
-          <input
-            type="checkbox"
-            checked={copyItems}
-            onChange={(e) => setCopyItems(e.target.checked)}
-            className="mt-0.5 rounded text-blue-600 focus:ring-blue-500 cursor-pointer"
-          />
-          <div className="text-xs">
-            <span className="font-bold text-slate-800 dark:text-slate-200 block">
-              Raporun ihtiyaç kalemlerini dosyanın İhtiyaç Listesi&apos;ne (DATA_TeminKalem) kopyala
-            </span>
-            <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5">
-              Dosyada önceden eklenmiş kalemler varsa korunur, rapor kalemleri sıralı olarak eklenir.
-            </span>
-          </div>
-        </label>
+        <div className="space-y-2">
+          <label className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/40 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={copyItems}
+              onChange={(e) => setCopyItems(e.target.checked)}
+              className="mt-0.5 rounded text-blue-600 focus:ring-blue-500 cursor-pointer"
+            />
+            <div className="text-xs">
+              <span className="font-bold text-slate-800 dark:text-slate-200 block">
+                Raporun ihtiyaç kalemlerini dosyanın İhtiyaç Listesi&apos;ne (DATA_TeminKalem) kopyala
+              </span>
+              <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5">
+                Raporun kalemleri alım dosyasının ihtiyaç tablosuna bağımsız olarak aktarılır.
+              </span>
+            </div>
+          </label>
+
+          {copyItems && (
+            <div className="ml-4 p-3 bg-slate-50/70 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/60 rounded-xl space-y-2 text-xs">
+              <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
+                Kalem Aktarım Tercihi:
+              </span>
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="radio"
+                  name="transferMode"
+                  value="append_if_missing"
+                  checked={transferMode === 'append_if_missing'}
+                  onChange={() => setTransferMode('append_if_missing')}
+                  className="text-blue-600 focus:ring-blue-500 cursor-pointer"
+                />
+                <span className="text-slate-700 dark:text-slate-200 font-medium">
+                  <strong>Mükerrerliği Önle</strong> (Dosyada halihazırda var olan kalemler atlanır — Önerilen)
+                </span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="radio"
+                  name="transferMode"
+                  value="replace_all"
+                  checked={transferMode === 'replace_all'}
+                  onChange={() => setTransferMode('replace_all')}
+                  className="text-blue-600 focus:ring-blue-500 cursor-pointer"
+                />
+                <span className="text-slate-700 dark:text-slate-200 font-medium">
+                  <strong>Dosyayı Baştan Yaz</strong> (Dosyadaki mevcut kalemleri sil ve rapor kalemlerini aktar)
+                </span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="radio"
+                  name="transferMode"
+                  value="append_all"
+                  checked={transferMode === 'append_all'}
+                  onChange={() => setTransferMode('append_all')}
+                  className="text-blue-600 focus:ring-blue-500 cursor-pointer"
+                />
+                <span className="text-slate-700 dark:text-slate-200 font-medium">
+                  <strong>Tümünü Ekle</strong> (Mevcut kalemlerin sırasından devam ederek hepsini ekle)
+                </span>
+              </label>
+            </div>
+          )}
+        </div>
 
         {/* Modal Actions */}
         <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2.5">

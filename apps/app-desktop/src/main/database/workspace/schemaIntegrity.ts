@@ -25,13 +25,14 @@ export function ensureSchemaIntegrity(db: Database.Database): void {
       );
       CREATE TABLE IF NOT EXISTS DATA_IhtiyacRaporu (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        rapor_no TEXT NOT NULL,
+        rapor_no TEXT NOT NULL UNIQUE,
         baslik TEXT NOT NULL,
         gerekce TEXT,
         birim_id INTEGER,
         birim_adi TEXT,
         talep_eden_personel_id INTEGER,
         talep_eden_personel TEXT,
+        talep_eden_unvan TEXT,
         durum TEXT DEFAULT 'taslak',
         temin_dosya_id INTEGER,
         tarih DATE DEFAULT CURRENT_DATE,
@@ -40,7 +41,9 @@ export function ensureSchemaIntegrity(db: Database.Database): void {
         notlar TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY(temin_dosya_id) REFERENCES DATA_TeminDosyasi(id) ON DELETE SET NULL
+        FOREIGN KEY(temin_dosya_id) REFERENCES DATA_TeminDosyasi(id) ON DELETE SET NULL,
+        FOREIGN KEY(birim_id) REFERENCES TANIM_Birim(id) ON DELETE SET NULL,
+        FOREIGN KEY(talep_eden_personel_id) REFERENCES TANIM_Personel(id) ON DELETE SET NULL
       );
       CREATE TABLE IF NOT EXISTS DATA_IhtiyacRaporuKalem (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -60,9 +63,14 @@ export function ensureSchemaIntegrity(db: Database.Database): void {
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(rapor_id) REFERENCES DATA_IhtiyacRaporu(id) ON DELETE CASCADE
       );
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_ihtiyac_raporu_no ON DATA_IhtiyacRaporu(rapor_no);
       CREATE INDEX IF NOT EXISTS idx_ihtiyac_raporu_temin_dosya ON DATA_IhtiyacRaporu(temin_dosya_id);
       CREATE INDEX IF NOT EXISTS idx_ihtiyac_raporu_kalem_rapor ON DATA_IhtiyacRaporuKalem(rapor_id);
     `)
+  } catch {}
+
+  try {
+    db.exec(`ALTER TABLE DATA_IhtiyacRaporu ADD COLUMN "talep_eden_unvan" TEXT;`)
   } catch {}
 
   try {
