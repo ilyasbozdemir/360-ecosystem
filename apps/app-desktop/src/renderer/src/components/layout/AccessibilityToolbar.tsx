@@ -1,5 +1,5 @@
 import { Minus, Plus, RotateCcw, Accessibility } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type JSX } from 'react'
 
 const STORAGE_KEY = 'temin_accessibility_font_scale'
 const MIN_SCALE = 100
@@ -17,7 +17,7 @@ function readInitialScale(): number {
   }
 }
 
-export function AccessibilityToolbar(): React.JSX.Element {
+export function AccessibilityToolbar(): JSX.Element {
   const [scale, setScale] = useState<number>(readInitialScale)
 
   useEffect(() => {
