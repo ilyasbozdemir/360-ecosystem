@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider } from '@tanstack/react-router'
 import { ThemeProvider } from './components/providers/ThemeProvider'
+import { AccessibilityToolbar } from './components/layout/AccessibilityToolbar'
 import { SplashScreen } from './components/splash/SplashScreen'
 import { router } from './routes'
 import { setGlobalQueryClient } from './utils/appEvents'
@@ -35,6 +36,7 @@ function App(): React.JSX.Element {
       <ThemeProvider defaultTheme="system" storageKey="dt-theme">
         {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
         <RouterProvider router={router} />
+        <AccessibilityToolbar />
       </ThemeProvider>
     </QueryClientProvider>
   )
