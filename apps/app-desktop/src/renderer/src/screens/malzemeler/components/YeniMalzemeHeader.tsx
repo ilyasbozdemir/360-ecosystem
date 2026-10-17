@@ -17,6 +17,7 @@ interface YeniMalzemeHeaderProps {
   isSaving: boolean
   handleSave: (stayOpen?: boolean) => void
   onCancel: () => void
+  selectedType?: 'Mal' | 'Hizmet' | 'Yapım'
 }
 
 export const YeniMalzemeHeader: React.FC<YeniMalzemeHeaderProps> = ({
@@ -25,7 +26,8 @@ export const YeniMalzemeHeader: React.FC<YeniMalzemeHeaderProps> = ({
   setEntryMode,
   isSaving,
   handleSave,
-  onCancel
+  onCancel,
+  selectedType
 }) => {
   return (
     <div className="flex-none p-4 md:p-6 pb-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
@@ -41,11 +43,10 @@ export const YeniMalzemeHeader: React.FC<YeniMalzemeHeaderProps> = ({
             <h1 className="text-2xl font-bold text-slate-850 dark:text-white flex items-center gap-2.5">
               <PackageSearch className="text-blue-600 dark:text-blue-400" size={26} />
               {editId
-                ? 'Kaydı Düzenle'
+                ? `Kalem Düzenle (${selectedType || 'Mal / Hizmet / Yapım İşi'})`
                 : entryMode === 'batch'
-                  ? 'Toplu / Hızlı Kalem Ekle'
-                  : 'Yeni Kayıt'}{' '}
-              (Mal / Hizmet / Yapım İşi)
+                  ? 'Toplu / Hızlı Kalem Ekle (Mal / Hizmet / Yapım İşi)'
+                  : 'Yeni Kayıt (Mal / Hizmet / Yapım İşi)'}
             </h1>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               {editId

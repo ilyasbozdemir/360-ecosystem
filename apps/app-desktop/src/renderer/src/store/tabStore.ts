@@ -49,7 +49,16 @@ export function getTabLabel(fullPath: string): string {
   if (path.startsWith(APP_ROUTES.AYARLAR)) return 'Ayarlar'
   if (path.startsWith(APP_ROUTES.BIRIMLER)) return 'Birim Yönetimi'
   if (path.startsWith(APP_ROUTES.AMBAR)) return 'Ambar Tanımları'
-  if (path.startsWith(APP_ROUTES.YENI_MALZEME)) return 'Yeni Kalem Tanımla (Mal/Hizmet/Yapım)'
+  if (path.startsWith(APP_ROUTES.YENI_MALZEME)) {
+    const query = fullPath.split('?')[1] || ''
+    const searchParams = new URLSearchParams(query)
+    const hasId = searchParams.has('id')
+    const typeParam = searchParams.get('tip') || searchParams.get('tur')
+    if (hasId) {
+      return typeParam ? `Kalem Düzenle (${typeParam})` : 'Kalem Düzenle (Mal/Hizmet/Yapım)'
+    }
+    return 'Yeni Kalem Tanımla (Mal/Hizmet/Yapım)'
+  }
   if (path.startsWith(APP_ROUTES.MALZEMELER)) return 'Mal, Hizmet & Yapım Kataloğu'
   if (path.startsWith(APP_ROUTES.KURUM)) {
     const query = fullPath.split('?')[1] || ''

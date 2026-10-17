@@ -72,10 +72,11 @@ export const KimlikCard: React.FC<KimlikCardProps> = ({
             autoFocus
             value={formData.barkod_id || ''}
             onChange={(e) => {
-              setFormData({
-                ...formData,
-                barkod_id: e.target.value
-              })
+              const val = e.target.value
+              setFormData((prev) => ({
+                ...prev,
+                barkod_id: val
+              }))
               setBarkodError('')
             }}
             onBlur={(e) => {
@@ -108,7 +109,10 @@ export const KimlikCard: React.FC<KimlikCardProps> = ({
         <input
           type="text"
           value={formData.kalem_adi || ''}
-          onChange={(e) => setFormData({ ...formData, kalem_adi: e.target.value })}
+          onChange={(e) => {
+            const val = e.target.value
+            setFormData((prev) => ({ ...prev, kalem_adi: val }))
+          }}
           className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder={
             selectedType === 'Mal'
@@ -135,12 +139,13 @@ export const KimlikCard: React.FC<KimlikCardProps> = ({
             <input
               type="text"
               value={formData.fiyat_donemi || ''}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  fiyat_donemi: e.target.value
-                })
-              }
+              onChange={(e) => {
+                const val = e.target.value
+                setFormData((prev) => ({
+                  ...prev,
+                  fiyat_donemi: val
+                }))
+              }}
               placeholder={selectedType === 'Yapım' ? 'Örn: 2026/1' : 'Örn: 2026-08'}
               className="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono font-bold text-slate-800 dark:text-slate-200"
             />
@@ -160,11 +165,11 @@ export const KimlikCard: React.FC<KimlikCardProps> = ({
                     key={p}
                     type="button"
                     onClick={() =>
-                      setFormData({
-                        ...formData,
+                      setFormData((prev) => ({
+                        ...prev,
                         fiyat_donemi: p,
                         poz_yili: parseInt(p, 10) || new Date().getFullYear()
-                      })
+                      }))
                     }
                     className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-blue-100 dark:hover:bg-blue-900 border border-slate-200 dark:border-slate-700 text-[10px] font-mono font-bold text-slate-700 dark:text-slate-300 transition-colors"
                   >
@@ -183,7 +188,7 @@ export const KimlikCard: React.FC<KimlikCardProps> = ({
                   <button
                     key={p}
                     type="button"
-                    onClick={() => setFormData({ ...formData, fiyat_donemi: p })}
+                    onClick={() => setFormData((prev) => ({ ...prev, fiyat_donemi: p }))}
                     className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 hover:bg-blue-100 dark:hover:bg-blue-900 border border-slate-200 dark:border-slate-700 text-[10px] font-mono font-bold text-slate-700 dark:text-slate-300 transition-colors"
                   >
                     {p}
@@ -203,7 +208,7 @@ export const KimlikCard: React.FC<KimlikCardProps> = ({
               <button
                 key={rate}
                 type="button"
-                onClick={() => setFormData({ ...formData, kdv_orani: rate })}
+                onClick={() => setFormData((prev) => ({ ...prev, kdv_orani: rate }))}
                 className={cn(
                   'flex-1 py-1.5 rounded-lg text-xs font-bold border transition-colors',
                   formData.kdv_orani === rate

@@ -32,13 +32,14 @@ export const TeknikDetayCard: React.FC<TeknikDetayCardProps> = ({
           </label>
           <select
             value={formData.birim || 'Adet'}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                birim: e.target.value,
-                olcu_birimi: e.target.value
-              })
-            }
+            onChange={(e) => {
+              const val = e.target.value
+              setFormData((prev) => ({
+                ...prev,
+                birim: val,
+                olcu_birimi: val
+              }))
+            }}
             className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             {/* Türe Göre Önerilen Resmi Birimler */}
@@ -110,7 +111,10 @@ export const TeknikDetayCard: React.FC<TeknikDetayCardProps> = ({
           </label>
           <select
             value={formData.mensei || 'Yerli'}
-            onChange={(e) => setFormData({ ...formData, mensei: e.target.value })}
+            onChange={(e) => {
+              const val = e.target.value
+              setFormData((prev) => ({ ...prev, mensei: val }))
+            }}
             className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="Yerli">🇹🇷 Yerli Malı</option>
@@ -126,13 +130,14 @@ export const TeknikDetayCard: React.FC<TeknikDetayCardProps> = ({
         </label>
         <textarea
           value={formData.ozelligi || formData.poz_tanimi || ''}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              ozelligi: e.target.value,
-              poz_tanimi: e.target.value
-            })
-          }
+          onChange={(e) => {
+            const val = e.target.value
+            setFormData((prev) => ({
+              ...prev,
+              ozelligi: val,
+              poz_tanimi: val
+            }))
+          }}
           className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[90px] resize-y"
           placeholder="Teknik detaylar, marka/model gereksinimleri veya işçilik tarifleri..."
         />
@@ -145,7 +150,10 @@ export const TeknikDetayCard: React.FC<TeknikDetayCardProps> = ({
         <input
           type="text"
           value={formData.notlar || ''}
-          onChange={(e) => setFormData({ ...formData, notlar: e.target.value })}
+          onChange={(e) => {
+            const val = e.target.value
+            setFormData((prev) => ({ ...prev, notlar: val }))
+          }}
           placeholder="Satın alma birimi için iç notlar..."
           className="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-200"
         />

@@ -75,6 +75,7 @@ export default function YeniMalzemeScreen(): React.JSX.Element {
         isSaving={isSaving}
         handleSave={handleSave}
         onCancel={() => navigate({ to: APP_ROUTES.MALZEMELER })}
+        selectedType={selectedType}
       />
 
       {/* Main Form Content */}

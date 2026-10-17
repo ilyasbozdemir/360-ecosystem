@@ -10,7 +10,6 @@ interface TurSecimiCardProps {
 }
 
 export const TurSecimiCard: React.FC<TurSecimiCardProps> = ({
-  formData,
   setFormData,
   selectedType
 }) => {
@@ -22,7 +21,7 @@ export const TurSecimiCard: React.FC<TurSecimiCardProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <button
           type="button"
-          onClick={() => setFormData({ ...formData, tipi: 'Mal', is_personel: 0 })}
+          onClick={() => setFormData((prev) => ({ ...prev, tipi: 'Mal', is_personel: 0 }))}
           className={cn(
             'flex items-center gap-3.5 p-4 rounded-xl border-2 transition-all text-left cursor-pointer',
             selectedType === 'Mal'
@@ -50,7 +49,7 @@ export const TurSecimiCard: React.FC<TurSecimiCardProps> = ({
 
         <button
           type="button"
-          onClick={() => setFormData({ ...formData, tipi: 'Hizmet' })}
+          onClick={() => setFormData((prev) => ({ ...prev, tipi: 'Hizmet' }))}
           className={cn(
             'flex items-center gap-3.5 p-4 rounded-xl border-2 transition-all text-left cursor-pointer',
             selectedType === 'Hizmet'
@@ -78,7 +77,7 @@ export const TurSecimiCard: React.FC<TurSecimiCardProps> = ({
 
         <button
           type="button"
-          onClick={() => setFormData({ ...formData, tipi: 'Yapım', is_personel: 0 })}
+          onClick={() => setFormData((prev) => ({ ...prev, tipi: 'Yapım', is_personel: 0 }))}
           className={cn(
             'flex items-center gap-3.5 p-4 rounded-xl border-2 transition-all text-left cursor-pointer',
             selectedType === 'Yapım'

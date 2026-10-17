@@ -88,7 +88,7 @@ export const MalzemeModals: React.FC<MalzemeModalsProps> = ({
                   <button
                     key={k.id}
                     onClick={() => {
-                      setFormData({ ...formData, okas_kodu: k.kod })
+                      setFormData((prev) => ({ ...prev, okas_kodu: k.kod }))
                       setIsOkasModalOpen(false)
                     }}
                     className="w-full text-left p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 flex flex-col sm:flex-row sm:items-center gap-3 transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-700"
@@ -151,7 +151,7 @@ export const MalzemeModals: React.FC<MalzemeModalsProps> = ({
                   <button
                     key={k.id}
                     onClick={() => {
-                      setFormData({ ...formData, tasinir_kodu: k.tam_kod })
+                      setFormData((prev) => ({ ...prev, tasinir_kodu: k.tam_kod }))
                       setIsTasinirModalOpen(false)
                     }}
                     className="w-full text-left p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 flex flex-col sm:flex-row sm:items-center gap-3 transition-colors border border-transparent hover:border-slate-200 dark:border-slate-700"

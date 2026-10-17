@@ -8,6 +8,7 @@ import { generateBarcode } from '../../utils/barcodeUtils'
 import { SelectedPozData } from './components/PozSecimModal'
 import { HizliKalemRow } from '../dosya/sub-screens/components/MalzemeListesi/HizliTopluKalemGrid'
 import { APP_ROUTES } from '../../constants/routeConstants'
+import { useTabStore } from '../../store/tabStore'
 
 export function useYeniMalzeme() {
   const search: any = useSearch({ strict: false })
@@ -18,6 +19,7 @@ export function useYeniMalzeme() {
   const { data: birimler = [] } = useOlcuBirimleri()
   const { okasKodList, isLoading: isOkasLoading } = useOkasKodHooks()
   const { tasinirKodList, isLoading: isTasinirLoading } = useTasinirKodHooks()
+  const { updateTabLabel, activeTabPath } = useTabStore()
 
   // Entry Mode: 'batch' for fast Excel-style multiple items or 'single' for detailed single item form
   const [entryMode, setEntryMode] = useState<'batch' | 'single'>(editId ? 'single' : 'batch')
@@ -44,37 +46,69 @@ export function useYeniMalzeme() {
   const [customImageUrl, setCustomImageUrl] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  const loadedEditIdRef = useRef<number | null>(null)
+
   useEffect(() => {
-    document.title = editId ? 'Mal/Hizmet/Yapım İşi Düzenle - DT' : 'Mal/Hizmet/Yapım İşi Ekle - DT'
     if (editId) {
-      setEntryMode('single')
-      const existing = kalemList.find((k) => k.id === editId)
-      if (existing) {
-        setFormData({
-          ...existing,
-          tipi: existing.tipi?.startsWith('Hizmet')
-            ? 'Hizmet'
-            : existing.tipi === 'Yapım'
-              ? 'Yapım'
-              : 'Mal'
-        })
-      } else {
-        window.electron.ipcRenderer
-          .invoke('db:query', 'SELECT * FROM TANIM_Kalem WHERE id = ?', [editId])
-          .then((res: any) => {
-            if (res.success && res.data?.[0]) {
-              const row = res.data[0]
-              setFormData({
-                ...row,
-                tipi: row.tipi?.startsWith('Hizmet')
-                  ? 'Hizmet'
-                  : row.tipi === 'Yapım'
-                    ? 'Yapım'
-                    : 'Mal'
-              })
-            }
-          })
+      const typeLabel = formData.tipi
+        ? `Kalem Düzenle (${formData.tipi})`
+        : 'Kalem Düzenle (Mal/Hizmet/Yapım)'
+      document.title = `${typeLabel} - DT`
+      if (activeTabPath && activeTabPath.startsWith(APP_ROUTES.YENI_MALZEME)) {
+        updateTabLabel(activeTabPath, typeLabel)
       }
+    } else {
+      document.title = 'Mal/Hizmet/Yapım İşi Ekle - DT'
+      if (activeTabPath && activeTabPath.startsWith(APP_ROUTES.YENI_MALZEME)) {
+        updateTabLabel(activeTabPath, 'Yeni Kalem Tanımla (Mal/Hizmet/Yapım)')
+      }
+    }
+  }, [editId, formData.tipi, activeTabPath, updateTabLabel])
+
+  useEffect(() => {
+    if (!editId) {
+      loadedEditIdRef.current = null
+      return
+    }
+
+    // Eğer bu editId zaten forma yüklendiyse, arka plandaki kalemList güncellemeleri formu ezmesin
+    if (loadedEditIdRef.current === editId) {
+      return
+    }
+
+    setEntryMode('single')
+
+    const populateForm = (item: Partial<Kalem>) => {
+      setFormData({
+        ...item,
+        tipi: item.tipi?.startsWith('Hizmet')
+          ? 'Hizmet'
+          : item.tipi === 'Yapım'
+            ? 'Yapım'
+            : 'Mal'
+      })
+      loadedEditIdRef.current = editId
+    }
+
+    let isMounted = true
+    const existing = kalemList.find((k) => k.id === editId)
+    if (existing) {
+      populateForm(existing)
+    } else {
+      window.electron.ipcRenderer
+        .invoke('db:query', 'SELECT * FROM TANIM_Kalem WHERE id = ?', [editId])
+        .then((res: any) => {
+          if (isMounted && res.success && res.data?.[0]) {
+            populateForm(res.data[0])
+          }
+        })
+        .catch((err: unknown) => {
+          console.error('[useYeniMalzeme] Kayıt yükleme hatası:', err)
+        })
+    }
+
+    return () => {
+      isMounted = false
     }
   }, [editId, kalemList])
 
@@ -103,12 +137,13 @@ export function useYeniMalzeme() {
   const [barkodError, setBarkodError] = useState('')
 
   const checkBarkod = async (barkod: string) => {
-    if (!barkod) return
+    const trimmed = barkod ? barkod.trim() : ''
+    if (!trimmed) return
     try {
       const res = await window.electron.ipcRenderer.invoke(
         'db:query',
         'SELECT id FROM TANIM_Kalem WHERE barkod_id = ? AND id != ?',
-        [barkod, editId || 0]
+        [trimmed, editId || 0]
       )
       if (res.success && res.data && res.data.length > 0) {
         setBarkodError('Bu Barkod / ID sistemde zaten kayıtlı!')
@@ -116,7 +151,7 @@ export function useYeniMalzeme() {
         setBarkodError('')
       }
     } catch (error) {
-      console.error(error)
+      console.error('[useYeniMalzeme] checkBarkod hatası:', error)
     }
   }
 
@@ -156,7 +191,7 @@ export function useYeniMalzeme() {
         const text = res.data.trim()
         const codeMatch = text.match(/^([\d.]+)/)
         if (codeMatch && codeMatch[1]) {
-          setFormData({ ...formData, okas_kodu: codeMatch[1] })
+          setFormData((prev) => ({ ...prev, okas_kodu: codeMatch[1] }))
           alert(`Yapay Zeka Önerisi:\n\n${text}`)
         } else {
           alert(`Yapay Zeka Önerisi:\n\n${text}\n\nLütfen listeden doğrulayarak seçin.`)
@@ -221,9 +256,27 @@ export function useYeniMalzeme() {
       return
     }
 
-    if (barkodError && !editId) {
-      alert('Barkod hatasını düzeltmeden kaydedemezsiniz!')
+    if (barkodError) {
+      alert('Barkod hatasını düzeltmeden kaydedemezsiniz: ' + barkodError)
       return
+    }
+
+    const currentBarkod = formData.barkod_id.trim()
+    try {
+      const checkRes = await window.electron.ipcRenderer.invoke(
+        'db:query',
+        'SELECT id FROM TANIM_Kalem WHERE barkod_id = ? AND id != ?',
+        [currentBarkod, editId || 0]
+      )
+      if (checkRes.success && checkRes.data && checkRes.data.length > 0) {
+        setBarkodError('Bu Barkod / ID sistemde zaten kayıtlı!')
+        alert(
+          'Bu Barkod / ID sistemde zaten kayıtlı! Lütfen farklı bir barkod giriniz veya yeni üretiniz.'
+        )
+        return
+      }
+    } catch (err: unknown) {
+      console.error('[useYeniMalzeme] Kayıt öncesi barkod kontrol hatası:', err)
     }
 
     setIsSaving(true)
@@ -249,6 +302,7 @@ export function useYeniMalzeme() {
 
       if (stayOpen) {
         // Reset form for next entry
+        loadedEditIdRef.current = null
         setFormData({
           tipi: formData.tipi || 'Mal',
           birim: 'Adet',

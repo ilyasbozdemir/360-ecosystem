@@ -37,12 +37,13 @@ export const TurOzelAlanlarCard: React.FC<TurOzelAlanlarCardProps> = ({
               <input
                 type="text"
                 value={formData.tasinir_kodu || ''}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    tasinir_kodu: e.target.value
-                  })
-                }
+                onChange={(e) => {
+                  const val = e.target.value
+                  setFormData((prev) => ({
+                    ...prev,
+                    tasinir_kodu: val
+                  }))
+                }}
                 className="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono text-slate-900 dark:text-white"
                 placeholder="Örn: 150.01.01.01"
               />
@@ -65,12 +66,13 @@ export const TurOzelAlanlarCard: React.FC<TurOzelAlanlarCardProps> = ({
               <input
                 type="text"
                 value={formData.okas_kodu || ''}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    okas_kodu: e.target.value
-                  })
-                }
+                onChange={(e) => {
+                  const val = e.target.value
+                  setFormData((prev) => ({
+                    ...prev,
+                    okas_kodu: val
+                  }))
+                }}
                 className="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono text-slate-900 dark:text-white"
                 placeholder="Örn: 30192700"
               />
@@ -136,12 +138,13 @@ export const TurOzelAlanlarCard: React.FC<TurOzelAlanlarCardProps> = ({
                   <input
                     type="text"
                     value={formData.poz_no || ''}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        poz_no: e.target.value
-                      })
-                    }
+                    onChange={(e) => {
+                      const val = e.target.value
+                      setFormData((prev) => ({
+                        ...prev,
+                        poz_no: val
+                      }))
+                    }}
                     placeholder="Örn: 15.150.1002 veya ÖZEL.01"
                     className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono font-bold text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500/40"
                   />
@@ -168,12 +171,13 @@ export const TurOzelAlanlarCard: React.FC<TurOzelAlanlarCardProps> = ({
                     formData.fiyat_donemi ||
                     `${formData.poz_yili || new Date().getFullYear()}/1`
                   }
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      fiyat_donemi: e.target.value
-                    })
-                  }
+                  onChange={(e) => {
+                    const val = e.target.value
+                    setFormData((prev) => ({
+                      ...prev,
+                      fiyat_donemi: val
+                    }))
+                  }}
                   placeholder={`Örn: ${formData.poz_yili || new Date().getFullYear()}/1`}
                   className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500"
                 />
@@ -196,12 +200,13 @@ export const TurOzelAlanlarCard: React.FC<TurOzelAlanlarCardProps> = ({
                 <input
                   type="number"
                   value={formData.poz_yili || new Date().getFullYear()}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      poz_yili: Number(e.target.value)
-                    })
-                  }
+                  onChange={(e) => {
+                    const val = Number(e.target.value)
+                    setFormData((prev) => ({
+                      ...prev,
+                      poz_yili: val
+                    }))
+                  }}
                   className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono text-slate-800 dark:text-slate-200 text-center font-bold"
                 />
               </div>
@@ -217,12 +222,13 @@ export const TurOzelAlanlarCard: React.FC<TurOzelAlanlarCardProps> = ({
               <input
                 type="text"
                 value={formData.okas_kodu || ''}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    okas_kodu: e.target.value
-                  })
-                }
+                onChange={(e) => {
+                  const val = e.target.value
+                  setFormData((prev) => ({
+                    ...prev,
+                    okas_kodu: val
+                  }))
+                }}
                 className="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono text-slate-900 dark:text-white"
                 placeholder="Örn: 45000000 veya 45261210"
               />
@@ -256,12 +262,13 @@ export const TurOzelAlanlarCard: React.FC<TurOzelAlanlarCardProps> = ({
             </label>
             <select
               value={formData.yapi_sinifi || ''}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  yapi_sinifi: e.target.value
-                })
-              }
+              onChange={(e) => {
+                const val = e.target.value
+                setFormData((prev) => ({
+                  ...prev,
+                  yapi_sinifi: val
+                }))
+              }}
               className="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-200"
             >
               <option value="">(Seçiniz veya Genel Yapım)</option>
@@ -280,12 +287,13 @@ export const TurOzelAlanlarCard: React.FC<TurOzelAlanlarCardProps> = ({
             <input
               type="text"
               value={formData.poz_grubu_ref_id || ''}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  poz_grubu_ref_id: e.target.value
-                })
-              }
+              onChange={(e) => {
+                const val = e.target.value
+                setFormData((prev) => ({
+                  ...prev,
+                  poz_grubu_ref_id: val
+                }))
+              }}
               placeholder="Örn: YPM-IZOLASYON-CATI (Yıllar arası fiyat/kod takibi için)"
               className="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono text-slate-800 dark:text-slate-200"
             />
@@ -301,12 +309,13 @@ export const TurOzelAlanlarCard: React.FC<TurOzelAlanlarCardProps> = ({
             </label>
             <select
               value={formData.hizmet_sinifi || ''}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  hizmet_sinifi: e.target.value
-                })
-              }
+              onChange={(e) => {
+                const val = e.target.value
+                setFormData((prev) => ({
+                  ...prev,
+                  hizmet_sinifi: val
+                }))
+              }}
               className="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-200"
             >
               <option value="">(Hizmet Sınıfı Seçiniz)</option>
@@ -327,12 +336,13 @@ export const TurOzelAlanlarCard: React.FC<TurOzelAlanlarCardProps> = ({
               <input
                 type="text"
                 value={formData.okas_kodu || ''}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    okas_kodu: e.target.value
-                  })
-                }
+                onChange={(e) => {
+                  const val = e.target.value
+                  setFormData((prev) => ({
+                    ...prev,
+                    okas_kodu: val
+                  }))
+                }}
                 className="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono text-slate-900 dark:text-white"
                 placeholder="Örn: 90910000 veya 79713000"
               />
@@ -368,7 +378,10 @@ export const TurOzelAlanlarCard: React.FC<TurOzelAlanlarCardProps> = ({
               <input
                 type="text"
                 value={formData.sure || ''}
-                onChange={(e) => setFormData({ ...formData, sure: e.target.value })}
+                onChange={(e) => {
+                  const val = e.target.value
+                  setFormData((prev) => ({ ...prev, sure: val }))
+                }}
                 placeholder="Örn: 12 Ay, 30 Gün"
                 className="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-200"
               />
@@ -382,12 +395,13 @@ export const TurOzelAlanlarCard: React.FC<TurOzelAlanlarCardProps> = ({
                 type="number"
                 min="0"
                 value={formData.personel_sayisi || ''}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    personel_sayisi: e.target.value ? Number(e.target.value) : null
-                  })
-                }
+                onChange={(e) => {
+                  const val = e.target.value ? Number(e.target.value) : null
+                  setFormData((prev) => ({
+                    ...prev,
+                    personel_sayisi: val
+                  }))
+                }}
                 placeholder="Örn: 3"
                 className="w-full px-3.5 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-200"
               />
@@ -405,12 +419,13 @@ export const TurOzelAlanlarCard: React.FC<TurOzelAlanlarCardProps> = ({
                   type="checkbox"
                   id="is_personel_check"
                   checked={!!formData.is_personel}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      is_personel: e.target.checked ? 1 : 0
-                    })
-                  }
+                  onChange={(e) => {
+                    const checked = e.target.checked ? 1 : 0
+                    setFormData((prev) => ({
+                      ...prev,
+                      is_personel: checked
+                    }))
+                  }}
                   className="rounded border-indigo-300 text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer"
                 />
                 <span>Personel çalıştırılacaksa ücretlendirme</span>
@@ -422,12 +437,13 @@ export const TurOzelAlanlarCard: React.FC<TurOzelAlanlarCardProps> = ({
                   <input
                     type="number"
                     value={formData.personel_asgari_fark_oran ?? 0}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        personel_asgari_fark_oran: parseFloat(e.target.value) || 0
-                      })
-                    }
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value) || 0
+                      setFormData((prev) => ({
+                        ...prev,
+                        personel_asgari_fark_oran: val
+                      }))
+                    }}
                     className="w-16 px-2 py-1 bg-white dark:bg-slate-900 border border-indigo-300 dark:border-indigo-700 rounded-lg text-xs font-bold font-mono text-center text-indigo-900 dark:text-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                   <span>fazlası</span>
@@ -444,12 +460,13 @@ export const TurOzelAlanlarCard: React.FC<TurOzelAlanlarCardProps> = ({
                   <input
                     type="text"
                     value={formData.meslek_kodu || ''}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        meslek_kodu: e.target.value
-                      })
-                    }
+                    onChange={(e) => {
+                      const val = e.target.value
+                      setFormData((prev) => ({
+                        ...prev,
+                        meslek_kodu: val
+                      }))
+                    }}
                     placeholder="Örn: 9112.01 (Temizlik Görevlisi)"
                     className="w-full px-3.5 py-1.5 bg-white dark:bg-slate-900 border border-indigo-200 dark:border-indigo-800 rounded-lg text-xs text-slate-800 dark:text-slate-200"
                   />
