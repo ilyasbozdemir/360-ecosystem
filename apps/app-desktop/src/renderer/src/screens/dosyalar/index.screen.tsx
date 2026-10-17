@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { AITextGeneratorModal } from '../../components/ui/AITextGeneratorModal'
 import { logActivity } from '../../utils/logger'
 import { formatDate } from '@renderer/utils/formatters'
@@ -8,9 +8,11 @@ import { DosyalarFilterBar } from './components/DosyalarFilterBar'
 import { DosyalarList } from './components/DosyalarList'
 import { EkapIknModal } from './components/EkapIknModal'
 import { MaliyetAyarlariPopover } from './components/MaliyetAyarlariPopover'
+import { DosyaSihirbaziModal } from '../../components/modals/DosyaSihirbaziModal'
 import { useDosyalarScreenLogic } from './components/useDosyalarScreenLogic'
 
 export default function DosyalarScreen(): React.ReactNode {
+  const [isWizardOpen, setIsWizardOpen] = useState(false)
   const {
     dosyalar,
     isLoadingDosyalar,
@@ -72,6 +74,7 @@ export default function DosyalarScreen(): React.ReactNode {
       <DosyalarPageHeader
         viewMode={viewMode}
         setViewMode={setViewMode}
+        onOpenWizard={() => setIsWizardOpen(true)}
         onOpenAI={() => {
           setSelectedFileForAI({
             konu: 'Genel Mevzuat Danışmanlığı',
@@ -188,6 +191,14 @@ export default function DosyalarScreen(): React.ReactNode {
         selectedDosya={selectedDosyaForMaliyet}
         setSelectedDosya={setSelectedDosyaForMaliyet}
         onSave={handleSaveMaliyetAyarlari}
+      />
+
+      <DosyaSihirbaziModal
+        isOpen={isWizardOpen}
+        onClose={() => setIsWizardOpen(false)}
+        onSuccess={(createdId) => {
+          setActiveDosyaId(createdId)
+        }}
       />
     </div>
   )
