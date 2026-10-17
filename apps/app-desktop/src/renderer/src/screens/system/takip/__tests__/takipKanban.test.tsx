@@ -1,9 +1,8 @@
-/* eslint-disable */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { TakipKanbanBoard } from '../components/TakipKanbanBoard'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import type { TeminDosyasi } from '../../../dosyalar/dosyalar.hooks'
 
 const mockQueryClient = new QueryClient({
   defaultOptions: {
@@ -67,7 +66,7 @@ describe('TakipKanbanBoard (Issue #11)', () => {
   const mockOpenWizard = vi.fn()
   const mockOpenSurec = vi.fn()
   const mockEdit = vi.fn()
-  const formatCurrency = (val: number) => `${val.toLocaleString('tr-TR')} ₺`
+  const formatCurrency = (val: number): string => `${val.toLocaleString('tr-TR')} ₺`
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -78,10 +77,11 @@ describe('TakipKanbanBoard (Issue #11)', () => {
         on: vi.fn(),
         removeListener: vi.fn()
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any
   })
 
-  const renderBoard = (dosyalar = mockDosyalar) => {
+  const renderBoard = (dosyalar = mockDosyalar as unknown as TeminDosyasi[]): ReturnType<typeof render> => {
     return render(
       <QueryClientProvider client={mockQueryClient}>
         <TakipKanbanBoard
@@ -139,7 +139,6 @@ describe('TakipKanbanBoard (Issue #11)', () => {
   it('sürükle-bırak işlemiyle dosya aşamasını veritabanında günceller', async () => {
     renderBoard()
 
-    const dropColumns = document.querySelectorAll('[class*="border"]')
     // Column 2 is "Teklif Toplanıyor" (stageId: 2)
     // Simulate drop of file 101 into stage 2
     const dataTransfer = {

@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React, { useState, useEffect, useMemo } from 'react'
 import {
   Sparkles,
@@ -84,7 +83,8 @@ export function DosyaSihirbaziModal({
 
   // Form Fields
   const [butceYili, setButceYili] = useState<number>(currentYear)
-  const [teminNo, setTeminNo] = useState<string>(() => `${currentYear}/1`)
+  const [customTeminNo, setCustomTeminNo] = useState<string>('')
+  const [isTeminNoManual, setIsTeminNoManual] = useState<boolean>(false)
   const [alimTuru, setAlimTuru] = useState<AlimTuru>('mal')
   const [konu, setKonu] = useState<string>('')
   const [birimId, setBirimId] = useState<number | ''>('')
@@ -99,7 +99,8 @@ export function DosyaSihirbaziModal({
   const [irtibatYetkilisiId, setIrtibatYetkilisiId] = useState<number | ''>('')
   const [onayPersonelId, setOnayPersonelId] = useState<number | ''>('')
   const [notlar, setNotlar] = useState<string>('')
-  const [secilenAsama, setSecilenAsama] = useState<number>(initialStage)
+  const [customAsama, setCustomAsama] = useState<number | null>(null)
+  const secilenAsama = customAsama ?? initialStage
 
   // DB Data
   const [birimler, setBirimler] = useState<BirimOption[]>([])
@@ -132,54 +133,71 @@ export function DosyaSihirbaziModal({
     return `${butceYili}/${maxNum + 1}`
   }, [butceYili, dosyalar])
 
-  // Set initial default teminNo when opened
-  useEffect(() => {
-    if (isOpen) {
-      setTeminNo((prev) => (prev ? prev : nextNoSuggestion))
-      setSecilenAsama(initialStage)
-      setStep(1)
-      setErrorMsg('')
-    } else {
-      setTeminNo('')
-      setKonu('')
-      setYaklasikMaliyet('')
-      setStep(1)
-      setErrorMsg('')
-    }
-  }, [isOpen])
+  const teminNo = isTeminNoManual ? customTeminNo : nextNoSuggestion
+
+  const resetForm = (): void => {
+    setCustomTeminNo('')
+    setIsTeminNoManual(false)
+    setCustomAsama(null)
+    setStep(1)
+    setKonu('')
+    setYaklasikMaliyet('')
+    setErrorMsg('')
+  }
+
+  const handleClose = (): void => {
+    resetForm()
+    onClose()
+  }
 
   // Load Birim and Personel for dropdowns
   useEffect(() => {
     if (!isOpen) return
-    async function loadOptions() {
+    let isMounted = true
+    async function loadOptions(): Promise<void> {
       try {
         if (window.electron?.ipcRenderer) {
           const resBirim = await window.electron.ipcRenderer.invoke(
             'db:query',
             'SELECT id, birim_adi FROM TANIM_Birim WHERE aktif_mi = 1 ORDER BY birim_adi ASC'
           )
-          if (resBirim?.success) setBirimler(resBirim.data || [])
+          if (isMounted && resBirim?.success) setBirimler(resBirim.data || [])
 
           const resPers = await window.electron.ipcRenderer.invoke(
             'db:query',
             'SELECT id, ad_soyad, unvan FROM TANIM_Personel WHERE aktif_mi = 1 ORDER BY ad_soyad ASC'
           )
-          if (resPers?.success) setPersoneller(resPers.data || [])
+          if (isMounted && resPers?.success) setPersoneller(resPers.data || [])
         }
-      } catch (err) {
+      } catch (err: unknown) {
         console.warn('Sihirbaz veri yükleme uyarısı:', err)
       }
     }
-    loadOptions()
+    void loadOptions()
+    return () => {
+      isMounted = false
+    }
   }, [isOpen])
 
-  // Budget Limit Calculation
+  // KİK 22/d Check & Statutory Limit Calculation
+  const is22d = useMemo(() => {
+    return ihaleSekli.startsWith('22/d')
+  }, [ihaleSekli])
+
   const activeLimit = useMemo(() => {
-    if (!donemler || donemler.length === 0) return null
+    if (!is22d || !donemler || donemler.length === 0) return null
     const yearStr = butceYili.toString()
     const donem = donemler.find((d) => d.donem_kodu.startsWith(yearStr)) || donemler[0]
-    return limitType === 'buyuksehir' ? donem.buyuksehir_limit : donem.diger_limit
-  }, [donemler, butceYili, limitType])
+    if (!donem) return null
+
+    if (ihaleSekli === '22/d*') {
+      return donem.buyuksehir_limit
+    } else if (ihaleSekli === '22/d**') {
+      return donem.diger_limit
+    } else {
+      return limitType === 'buyuksehir' ? donem.buyuksehir_limit : donem.diger_limit
+    }
+  }, [is22d, ihaleSekli, donemler, butceYili, limitType])
 
   const parsedMaliyet = useMemo(() => {
     const val = parseFloat(yaklasikMaliyet.replace(/\./g, '').replace(',', '.'))
@@ -193,14 +211,14 @@ export function DosyaSihirbaziModal({
   }, [parsedMaliyet, kdvDahilMi, kdvOrani])
 
   const isLimitExceeded = useMemo(() => {
-    if (!activeLimit || netMaliyetHaric <= 0) return false
+    if (!is22d || !activeLimit || netMaliyetHaric <= 0) return false
     return netMaliyetHaric > activeLimit
-  }, [activeLimit, netMaliyetHaric])
+  }, [is22d, activeLimit, netMaliyetHaric])
 
   const limitUsagePercent = useMemo(() => {
-    if (!activeLimit || activeLimit <= 0) return 0
+    if (!is22d || !activeLimit || activeLimit <= 0) return 0
     return Math.min(100, Number(((netMaliyetHaric / activeLimit) * 100).toFixed(1)))
-  }, [activeLimit, netMaliyetHaric])
+  }, [is22d, activeLimit, netMaliyetHaric])
 
   // Step Validations
   const validateStep1 = (): boolean => {
@@ -208,7 +226,8 @@ export function DosyaSihirbaziModal({
       setErrorMsg('Lütfen doğrudan temin konusunu (İşin Adı) giriniz.')
       return false
     }
-    if (!teminNo.trim()) {
+    const currentNo = teminNo.trim() || nextNoSuggestion
+    if (!currentNo) {
       setErrorMsg('Lütfen doğrudan temin dosya numarasını giriniz.')
       return false
     }
@@ -221,24 +240,30 @@ export function DosyaSihirbaziModal({
       setErrorMsg('Lütfen geçerli bir tahmini / yaklaşık maliyet tutarı giriniz.')
       return false
     }
+    if (is22d && isLimitExceeded && activeLimit) {
+      setErrorMsg(
+        `Seçilen ihale şekli (${ihaleSekli}) için yasal KİK 22/d parasal limiti (${formatCurrency(activeLimit)}) aşılamaz. Lütfen yaklaşık maliyeti düşürünüz veya uygun ihale / bent usulünü seçiniz.`
+      )
+      return false
+    }
     setErrorMsg('')
     return true
   }
 
-  const handleNext = () => {
+  const handleNext = (): void => {
     if (step === 1 && !validateStep1()) return
     if (step === 2 && !validateStep2()) return
     setErrorMsg('')
     setStep((prev) => Math.min(4, prev + 1))
   }
 
-  const handlePrev = () => {
+  const handlePrev = (): void => {
     setErrorMsg('')
     setStep((prev) => Math.max(1, prev - 1))
   }
 
   // Final Submit Handler
-  const handleSubmit = async () => {
+  const handleSubmit = async (): Promise<void> => {
     if (!validateStep1() || !validateStep2()) return
 
     setIsSubmitting(true)
@@ -246,9 +271,10 @@ export function DosyaSihirbaziModal({
 
     try {
       const selectedBirim = birimler.find((b) => b.id === Number(birimId))
+      const finalTeminNo = teminNo.trim() || nextNoSuggestion
 
       const payload = {
-        temin_no: teminNo.trim(),
+        temin_no: finalTeminNo,
         konu: konu.trim(),
         tur: alimTuru,
         butce_yili: butceYili,
@@ -284,10 +310,11 @@ export function DosyaSihirbaziModal({
         if (onSuccess) onSuccess(newId)
       }
 
-      onClose()
-    } catch (err: any) {
+      handleClose()
+    } catch (err: unknown) {
       console.error('Sihirbaz kayıt hatası:', err)
-      setErrorMsg(err.message || 'Kayıt sırasında bir hata oluştu.')
+      const message = err instanceof Error ? err.message : 'Kayıt sırasında bir hata oluştu.'
+      setErrorMsg(message)
     } finally {
       setIsSubmitting(false)
     }
@@ -303,7 +330,7 @@ export function DosyaSihirbaziModal({
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       title="Doğrudan Temin Dosyası Oluşturma Sihirbazı"
       description="Yasal limit denetimli akıllı sihirbaz ile adım adım yeni doğrudan temin dosyası başlatın."
       className="max-w-3xl"
@@ -326,7 +353,7 @@ export function DosyaSihirbaziModal({
                           : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
                     }`}
                   >
-                    {isPassed ? <Check size={14} className="stroke-[3]" /> : s.num}
+                    {isPassed ? <Check size={14} className="stroke-3" /> : s.num}
                   </div>
                   <span
                     className={`text-xs font-bold ${
@@ -413,8 +440,11 @@ export function DosyaSihirbaziModal({
                 <input
                   type="text"
                   value={teminNo}
-                  onChange={(e) => setTeminNo(e.target.value)}
-                  placeholder="Örn: 2026/1"
+                  onChange={(e) => {
+                    setIsTeminNoManual(true)
+                    setCustomTeminNo(e.target.value)
+                  }}
+                  placeholder={nextNoSuggestion || 'Örn: 2026/1'}
                   className="w-full px-3 py-2 text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -526,66 +556,82 @@ export function DosyaSihirbaziModal({
               </div>
             </div>
 
-            {/* AKILLI KİK BÜTÇE LİMİT DENETİM KARTI */}
-            <div className="mt-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/80 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                    KİK 22/d Bütçe Limit Kontrolü ({butceYili} Yılı)
-                  </span>
-                </div>
-                {activeLimit ? (
-                  <span className="text-[11px] font-mono font-bold text-slate-600 dark:text-slate-400">
-                    Geçerli Yasal Sınır: {formatCurrency(activeLimit)}
-                  </span>
-                ) : (
-                  <span className="text-[11px] text-amber-600 font-semibold">
-                    Limit tanımlı değil
-                  </span>
-                )}
-              </div>
-
-              {parsedMaliyet > 0 && activeLimit && (
-                <>
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-400">
-                      <span>KDV Hariç Tutar: {formatCurrency(netMaliyetHaric)}</span>
-                      <span>Limit Kullanım Oranı: %{limitUsagePercent}</span>
-                    </div>
-                    <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
-                      <div
-                        className={`h-full transition-all duration-300 ${
-                          isLimitExceeded ? 'bg-rose-500' : 'bg-emerald-500'
-                        }`}
-                        style={{ width: `${limitUsagePercent}%` }}
-                      />
-                    </div>
+            {/* AKILLI KİK BÜTÇE LİMİT DENETİM KARTI (22/d için limit, diğer bentler için muafiyet bilgisi) */}
+            {is22d ? (
+              <div className="mt-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/80 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                      KİK 22/d Bütçe Limit Kontrolü ({butceYili} Yılı - {ihaleSekli})
+                    </span>
                   </div>
+                  {activeLimit ? (
+                    <span className="text-[11px] font-mono font-bold text-slate-600 dark:text-slate-400">
+                      Geçerli Yasal Sınır: {formatCurrency(activeLimit)}
+                    </span>
+                  ) : (
+                    <span className="text-[11px] text-amber-600 font-semibold">
+                      Limit tanımlı değil
+                    </span>
+                  )}
+                </div>
 
-                  {isLimitExceeded ? (
-                    <div className="flex items-start gap-2.5 p-3 rounded-xl bg-rose-100/60 dark:bg-rose-950/60 border border-rose-300 dark:border-rose-900 text-rose-800 dark:text-rose-200 text-xs">
-                      <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
-                      <div>
-                        <strong className="block font-bold">KİK 22/d Parasal Limiti Aşıldı!</strong>
-                        KDV hariç yaklaşık maliyet ({formatCurrency(netMaliyetHaric)}), idareniz için
-                        tanımlı olan {formatCurrency(activeLimit)} limitini aşmaktadır. 4734 sayılı
-                        Kanun uyarınca doğrudan temin yapılamaz; açık ihale veya 21/f usulü
-                        uygulanmalıdır.
+                {parsedMaliyet > 0 && activeLimit && (
+                  <>
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                        <span>KDV Hariç Tutar: {formatCurrency(netMaliyetHaric)}</span>
+                        <span>Limit Kullanım Oranı: %{limitUsagePercent}</span>
+                      </div>
+                      <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                        <div
+                          className={`h-full transition-all duration-300 ${
+                            isLimitExceeded ? 'bg-rose-500' : 'bg-emerald-500'
+                          }`}
+                          style={{ width: `${limitUsagePercent}%` }}
+                        />
                       </div>
                     </div>
-                  ) : (
-                    <div className="flex items-center gap-2 p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60 text-emerald-800 dark:text-emerald-200 text-xs">
-                      <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
-                      <span>
-                        Tutar yasal limit dahilindedir. Kalan limit marjı:{' '}
-                        <strong>{formatCurrency(activeLimit - netMaliyetHaric)}</strong>
-                      </span>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
+
+                    {isLimitExceeded ? (
+                      <div className="flex items-start gap-2.5 p-3 rounded-xl bg-rose-100/60 dark:bg-rose-950/60 border border-rose-300 dark:border-rose-900 text-rose-800 dark:text-rose-200 text-xs">
+                        <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
+                        <div>
+                          <strong className="block font-bold">KİK 22/d Parasal Limiti Aşıldı!</strong>
+                          KDV hariç yaklaşık maliyet ({formatCurrency(netMaliyetHaric)}), {ihaleSekli}{' '}
+                          için tanımlı olan yasal {formatCurrency(activeLimit)} limitini aşmaktadır.{' '}
+                          4734 sayılı Kanun uyarınca doğrudan temin yapılamaz; açık ihale veya 21/f
+                          usulü uygulanmalıdır.
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60 text-emerald-800 dark:text-emerald-200 text-xs">
+                        <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+                        <span>
+                          Tutar yasal limit dahilindedir. Kalan limit marjı:{' '}
+                          <strong>{formatCurrency(activeLimit - netMaliyetHaric)}</strong>
+                        </span>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            ) : (
+              <div className="mt-4 p-4 rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 space-y-1.5">
+                <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
+                  <Info className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                  <span className="text-xs font-bold">
+                    4734 Sayılı Kanun Madde {ihaleSekli} Özel Hükmü
+                  </span>
+                </div>
+                <p className="text-[11px] leading-relaxed text-amber-700 dark:text-amber-300">
+                  Seçilen <strong>{ihaleSekli}</strong> alım usulü parasal limite tabi değildir. Bu
+                  bent kapsamında yapılacak teminlerde mevzuatta öngörülen gerekçe raporu, yetkili
+                  makam onayı ve piyasa fiyat araştırması tutanağı düzenlenmelidir.
+                </p>
+              </div>
+            )}
           </div>
         )}
 
@@ -711,13 +757,19 @@ export function DosyaSihirbaziModal({
                 </div>
                 <div>
                   <span className="text-slate-400 block text-[10px]">Limit Uygunluğu</span>
-                  {isLimitExceeded ? (
-                    <span className="text-rose-600 font-bold flex items-center gap-1">
-                      <AlertTriangle size={12} /> Limit Aşımı
-                    </span>
+                  {is22d ? (
+                    isLimitExceeded ? (
+                      <span className="text-rose-600 font-bold flex items-center gap-1">
+                        <AlertTriangle size={12} /> Limit Aşımı
+                      </span>
+                    ) : (
+                      <span className="text-emerald-600 font-bold flex items-center gap-1">
+                        <CheckCircle2 size={12} /> Yasal Limit Dahilinde
+                      </span>
+                    )
                   ) : (
-                    <span className="text-emerald-600 font-bold flex items-center gap-1">
-                      <CheckCircle2 size={12} /> Uygun
+                    <span className="text-blue-600 dark:text-blue-400 font-bold flex items-center gap-1">
+                      <CheckCircle2 size={12} /> Parasal Limitten Muaf
                     </span>
                   )}
                 </div>
@@ -738,7 +790,7 @@ export function DosyaSihirbaziModal({
                   <button
                     key={asama.id}
                     type="button"
-                    onClick={() => setSecilenAsama(asama.id)}
+                    onClick={() => setCustomAsama(asama.id)}
                     className={`p-2.5 rounded-xl border text-left cursor-pointer transition-all ${
                       secilenAsama === asama.id
                         ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300'
@@ -781,7 +833,7 @@ export function DosyaSihirbaziModal({
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               disabled={isSubmitting}
               className="px-4 py-2 rounded-xl text-slate-500 hover:text-slate-700 text-xs font-bold transition-all cursor-pointer"
             >

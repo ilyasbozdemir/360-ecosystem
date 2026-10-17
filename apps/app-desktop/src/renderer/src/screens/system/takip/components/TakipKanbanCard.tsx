@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React from 'react'
 import {
   Package,
@@ -11,12 +10,13 @@ import {
   CheckCircle2,
   GripVertical
 } from 'lucide-react'
+import type { TeminDosyasi } from '../../../dosyalar/dosyalar.hooks'
 
 export interface TakipKanbanCardProps {
-  dosya: any
+  dosya: TeminDosyasi
   formatCurrency: (val: number) => string
   onSelect: (dosyaId: number) => void
-  onOpenSurec: (dosya: any) => void
+  onOpenSurec: (dosya: TeminDosyasi) => void
   onEdit: (dosyaId: number) => void
   isActive?: boolean
 }
@@ -29,7 +29,9 @@ export function TakipKanbanCard({
   onEdit,
   isActive = false
 }: TakipKanbanCardProps): React.JSX.Element {
-  const getTurBadge = (tur: string) => {
+  const getTurBadge = (
+    tur: string
+  ): { label: string; icon: React.ElementType; classes: string } => {
     switch (tur) {
       case 'mal':
         return {
@@ -67,7 +69,7 @@ export function TakipKanbanCard({
   const turInfo = getTurBadge(dosya.tur)
   const TurIcon = turInfo.icon
 
-  const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>): void => {
     e.dataTransfer.setData('text/plain', String(dosya.id))
     e.dataTransfer.effectAllowed = 'move'
     // Optional semi-transparent drag image
@@ -76,7 +78,7 @@ export function TakipKanbanCard({
     }
   }
 
-  const handleDragEnd = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDragEnd = (e: React.DragEvent<HTMLDivElement>): void => {
     if (e.currentTarget) {
       e.currentTarget.style.opacity = '1'
     }

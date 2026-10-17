@@ -1,6 +1,4 @@
-/* eslint-disable */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { DosyaSihirbaziModal } from '../DosyaSihirbaziModal'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -94,10 +92,11 @@ describe('DosyaSihirbaziModal (Issue #9)', () => {
         on: vi.fn(),
         removeListener: vi.fn()
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any
   })
 
-  const renderModal = (isOpen = true) => {
+  const renderModal = (isOpen = true): ReturnType<typeof render> => {
     return render(
       <QueryClientProvider client={mockQueryClient}>
         <DosyaSihirbaziModal
@@ -230,6 +229,66 @@ describe('DosyaSihirbaziModal (Issue #9)', () => {
       )
       expect(mockOnSuccess).toHaveBeenCalledWith(201)
       expect(mockOnClose).toHaveBeenCalled()
+    })
+  })
+
+  it('KİK 22/d limitini aşan yaklaşık maliyette Adım 3\'e geçişi engeller ve hukuki kısıt uyarısı verir', async () => {
+    renderModal()
+
+    // Step 1
+    const konuInput = screen.getByPlaceholderText(/Örn: Hizmet Binaları İçin/i)
+    fireEvent.change(konuInput, { target: { value: 'Limit Üstü Malzeme Alımı' } })
+    fireEvent.click(screen.getByRole('button', { name: /İleri/i }))
+
+    // Step 2
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/Örn: 150000/i)).toBeTruthy()
+    })
+
+    const maliyetInput = screen.getByPlaceholderText(/Örn: 150000/i)
+    // 2.000.000 TL exceeds 1.021.827 TL
+    fireEvent.change(maliyetInput, { target: { value: '2000000' } })
+
+    // Click Next
+    fireEvent.click(screen.getByRole('button', { name: /İleri/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText(/yasal KİK 22\/d parasal limiti/i)).toBeTruthy()
+      expect(screen.getByText(/aşılamaz/i)).toBeTruthy()
+    })
+  })
+
+  it('22/a veya 22/b gibi parasal limite tabi olmayan bentlerde limit denetim kartı yerine muafiyet panelini görüntüler ve geçişe izin verir', async () => {
+    renderModal()
+
+    // Step 1
+    const konuInput = screen.getByPlaceholderText(/Örn: Hizmet Binaları İçin/i)
+    fireEvent.change(konuInput, { target: { value: 'Tek Satıcıdan Lisans Alımı' } })
+    fireEvent.click(screen.getByRole('button', { name: /İleri/i }))
+
+    // Step 2
+    await waitFor(() => {
+      expect(screen.getByDisplayValue(/22\/d\*/i)).toBeTruthy()
+    })
+
+    // Select 22/a
+    const selectSekli = screen.getByDisplayValue(/22\/d\*/i)
+    fireEvent.change(selectSekli, { target: { value: '22/a' } })
+
+    // Enter high amount (5.000.000 TL)
+    const maliyetInput = screen.getByPlaceholderText(/Örn: 150000/i)
+    fireEvent.change(maliyetInput, { target: { value: '5000000' } })
+
+    await waitFor(() => {
+      expect(screen.getByText(/Madde 22\/a Özel Hükmü/i)).toBeTruthy()
+      expect(screen.getByText(/parasal limite tabi değildir/i)).toBeTruthy()
+    })
+
+    // Click Next - it should proceed to Step 3 because 22/a has no statutory price limit
+    fireEvent.click(screen.getByRole('button', { name: /İleri/i }))
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/Örn: Fen İşleri Şantiyesi/i)).toBeTruthy()
     })
   })
 })

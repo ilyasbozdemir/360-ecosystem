@@ -1,29 +1,24 @@
-/* eslint-disable */
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useMemo } from 'react'
 import {
   Search,
-  Filter,
   Plus,
   Layers,
   Sparkles,
-  AlertCircle,
-  FileSearch,
-  CheckCircle2,
-  Clock,
-  ArrowRight
+  AlertCircle
 } from 'lucide-react'
 import { TakipKanbanCard } from './TakipKanbanCard'
 import { logActivity } from '../../../../utils/logger'
 import { emitAppEvent } from '../../../../utils/appEvents'
 import { useQueryClient } from '@tanstack/react-query'
+import type { TeminDosyasi } from '../../../dosyalar/dosyalar.hooks'
 
 export interface TakipKanbanBoardProps {
-  dosyalar: any[]
+  dosyalar: TeminDosyasi[]
   activeDosyaId: number | null
   setActiveDosyaId: (id: number) => void
   formatCurrency: (val: number) => string
   onOpenWizard: (targetStage?: number) => void
-  onOpenSurec: (dosya: any) => void
+  onOpenSurec: (dosya: TeminDosyasi) => void
   onEdit: (dosyaId: number) => void
 }
 
@@ -87,8 +82,10 @@ export function TakipKanbanBoard({
 }: TakipKanbanBoardProps): React.JSX.Element {
   const queryClient = useQueryClient()
 
-  // Local state to handle optimistic drag & drop updates
-  const [localDosyalar, setLocalDosyalar] = useState<any[]>(dosyalar)
+  // Optimistic overrides for smooth drag & drop without cascading renders
+  const [optimisticOverrides, setOptimisticOverrides] = useState<
+    Record<number, { durum_asama_id: number; status: string }>
+  >({})
   const [activeDropStage, setActiveDropStage] = useState<number | null>(null)
   const [errorMessage, setErrorMessage] = useState<string>('')
 
@@ -97,10 +94,13 @@ export function TakipKanbanBoard({
   const [selectedYil, setSelectedYil] = useState<string>('all')
   const [selectedTur, setSelectedTur] = useState<string>('all')
 
-  // Keep localDosyalar in sync with incoming dosyalar prop
-  useEffect(() => {
-    setLocalDosyalar(dosyalar)
-  }, [dosyalar])
+  // Apply optimistic overrides on top of incoming dosyalar
+  const activeDosyalar = useMemo(() => {
+    return dosyalar.map((d) => {
+      const override = optimisticOverrides[d.id]
+      return override ? { ...d, ...override } : d
+    })
+  }, [dosyalar, optimisticOverrides])
 
   // Extract unique years for filter
   const uniqueYillar = useMemo(() => {
@@ -115,7 +115,7 @@ export function TakipKanbanBoard({
 
   // Filtered Dossiers
   const filteredDosyalar = useMemo(() => {
-    return localDosyalar.filter((d) => {
+    return activeDosyalar.filter((d) => {
       // Exclude soft deleted files
       if (d.is_deleted === 1) return false
 
@@ -124,7 +124,13 @@ export function TakipKanbanBoard({
         const q = searchQuery.toLowerCase().trim()
         const matchKonu = (d.konu || '').toLowerCase().includes(q)
         const matchNo = (d.temin_no || '').toLowerCase().includes(q)
-        const matchBirim = (d.birim_adi || '').toLowerCase().includes(q)
+        const matchBirim = (
+          (d as { birim_adi?: string; birim?: string }).birim_adi ||
+          (d as { birim?: string }).birim ||
+          ''
+        )
+          .toLowerCase()
+          .includes(q)
         if (!matchKonu && !matchNo && !matchBirim) return false
       }
 
@@ -143,10 +149,10 @@ export function TakipKanbanBoard({
 
       return true
     })
-  }, [localDosyalar, searchQuery, selectedYil, selectedTur])
+  }, [activeDosyalar, searchQuery, selectedYil, selectedTur])
 
   // Drag & Drop Handlers
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>, stageId: number) => {
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>, stageId: number): void => {
     e.preventDefault()
     e.dataTransfer.dropEffect = 'move'
     if (activeDropStage !== stageId) {
@@ -154,7 +160,7 @@ export function TakipKanbanBoard({
     }
   }
 
-  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>, stageId: number) => {
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>, stageId: number): void => {
     // Only clear if actually leaving the container
     if (e.currentTarget.contains(e.relatedTarget as Node)) return
     if (activeDropStage === stageId) {
@@ -162,7 +168,10 @@ export function TakipKanbanBoard({
     }
   }
 
-  const handleDrop = async (e: React.DragEvent<HTMLDivElement>, targetStageId: number) => {
+  const handleDrop = async (
+    e: React.DragEvent<HTMLDivElement>,
+    targetStageId: number
+  ): Promise<void> => {
     e.preventDefault()
     setActiveDropStage(null)
 
@@ -170,7 +179,7 @@ export function TakipKanbanBoard({
     const dosyaId = parseInt(rawId, 10)
     if (!dosyaId || isNaN(dosyaId)) return
 
-    const targetDosya = localDosyalar.find((d) => d.id === dosyaId)
+    const targetDosya = activeDosyalar.find((d) => d.id === dosyaId)
     if (!targetDosya) return
 
     // Normalizing current stage
@@ -179,21 +188,13 @@ export function TakipKanbanBoard({
 
     if (currentStage === targetStageId) return
 
-    // 1. Optimistic Update
-    const previousDosyalar = [...localDosyalar]
     const newStatus = targetStageId === 4 ? 'tamamlandi' : 'devam_ediyor'
 
-    setLocalDosyalar((prev) =>
-      prev.map((d) =>
-        d.id === dosyaId
-          ? {
-              ...d,
-              durum_asama_id: targetStageId,
-              status: newStatus
-            }
-          : d
-      )
-    )
+    // 1. Optimistic Update via overrides map
+    setOptimisticOverrides((prev) => ({
+      ...prev,
+      [dosyaId]: { durum_asama_id: targetStageId, status: newStatus }
+    }))
 
     // 2. Persist to SQLite via IPC
     try {
@@ -221,13 +222,16 @@ export function TakipKanbanBoard({
         // Invalidate react-query cache
         queryClient.invalidateQueries({ queryKey: ['temin_dosyalari'] })
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Kanban aşama güncelleme hatası:', err)
-      // Rollback on error
-      setLocalDosyalar(previousDosyalar)
-      setErrorMessage(
-        `Aşama güncellenirken hata oluştu: ${err.message || 'Lütfen tekrar deneyiniz.'}`
-      )
+      // Rollback optimistic override on error
+      setOptimisticOverrides((prev) => {
+        const updated = { ...prev }
+        delete updated[dosyaId]
+        return updated
+      })
+      const message = err instanceof Error ? err.message : 'Lütfen tekrar deneyiniz.'
+      setErrorMessage(`Aşama güncellenirken hata oluştu: ${message}`)
       setTimeout(() => setErrorMessage(''), 5000)
     }
   }
@@ -319,7 +323,7 @@ export function TakipKanbanBoard({
               onDragOver={(e) => handleDragOver(e, col.stageId)}
               onDragLeave={(e) => handleDragLeave(e, col.stageId)}
               onDrop={(e) => handleDrop(e, col.stageId)}
-              className={`flex flex-col rounded-3xl border transition-all duration-200 min-h-[560px] bg-slate-50/60 dark:bg-slate-900/40 p-3.5 ${
+              className={`flex flex-col rounded-3xl border transition-all duration-200 min-h-140 bg-slate-50/60 dark:bg-slate-900/40 p-3.5 ${
                 col.borderColor
               } ${
                 isHovered
@@ -370,7 +374,7 @@ export function TakipKanbanBoard({
               </div>
 
               {/* Dossier Cards List */}
-              <div className="flex-1 flex flex-col gap-2.5 overflow-y-auto max-h-[680px] custom-scrollbar pr-0.5">
+              <div className="flex-1 flex flex-col gap-2.5 overflow-y-auto max-h-170 custom-scrollbar pr-0.5">
                 {columnDosyalar.length > 0 ? (
                   columnDosyalar.map((dosya) => (
                     <TakipKanbanCard
@@ -386,7 +390,7 @@ export function TakipKanbanBoard({
                 ) : (
                   /* Empty Column State */
                   <div
-                    className={`flex-1 flex flex-col items-center justify-center p-6 rounded-2xl border-2 border-dashed text-center min-h-[220px] transition-colors ${
+                    className={`flex-1 flex flex-col items-center justify-center p-6 rounded-2xl border-2 border-dashed text-center min-h-55 transition-colors ${
                       isHovered
                         ? 'border-blue-400 bg-blue-50/30 text-blue-600'
                         : 'border-slate-200/80 dark:border-slate-800 text-slate-400'
@@ -398,7 +402,7 @@ export function TakipKanbanBoard({
                     <p className="text-xs font-bold text-slate-600 dark:text-slate-400">
                       Bu Aşamada Dosya Yok
                     </p>
-                    <p className="text-[10px] text-slate-400 max-w-[150px] mt-1">
+                    <p className="text-[10px] text-slate-400 max-w-37.5 mt-1">
                       Dosyaları bu sütuna sürükleyip bırakabilirsiniz.
                     </p>
                     <button
