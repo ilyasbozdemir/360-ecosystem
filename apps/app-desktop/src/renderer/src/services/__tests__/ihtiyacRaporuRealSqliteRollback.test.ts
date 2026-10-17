@@ -40,6 +40,7 @@ describe('Gerçek SQLite Motoru: İhtiyaç Raporu Transaction & Rollback Güvenc
         temin_no TEXT,
         dosya_no TEXT,
         konu TEXT,
+        tur TEXT DEFAULT 'mal',
         evrak_sayisi TEXT,
         isin_aciklamasi TEXT,
         talep_eden_personel_id INTEGER,
