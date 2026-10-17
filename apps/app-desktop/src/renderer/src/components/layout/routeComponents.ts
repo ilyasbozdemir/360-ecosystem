@@ -20,7 +20,7 @@ export const routeComponents: Record<string, () => React.ReactElement> = {
   '/sablonlar': lazyRoute(() => import('../../screens/sablonlar/index.screen')),
   '/form-builder': lazyRoute(() => import('../../screens/sablonlar/formBuilder.screen')),
   '/degiskenler': lazyRoute(() => import('../../screens/sablonlar/degiskenler.screen')),
-  '/komisyonlar': lazyRoute(() => import('../../screens/komisyonlar/index.screen')),
+  '/komisyonlar': lazyRoute(() => import('../../screens/komisyonlar/index.v2.screen')),
   '/komisyonlar/detay': lazyRoute(() => import('../../screens/komisyonlar/detay.screen')),
   '/komisyon-gorevleri': lazyRoute(
     () => import('../../screens/komisyon-gorevleri/index.screen')

@@ -376,3 +376,216 @@ export async function seedDossierCommission(
     return { success: false, error: err.message }
   }
 }
+
+/**
+ * Belirli bir kaynak dosyanın komisyon kadrosunu hedef dosyaya atomik olarak kopyalar.
+ */
+export async function copyCommissionBetweenDossiers(
+  targetDosyaId: number,
+  sourceDosyaId: number
+): Promise<{ success: boolean; error?: string; count?: number }> {
+  try {
+    if (!targetDosyaId || !sourceDosyaId || targetDosyaId === sourceDosyaId) {
+      return { success: false, error: 'Geçersiz hedef veya kaynak dosya' }
+    }
+
+    const sourceRes = await (window as any).electron.ipcRenderer.invoke(
+      'db:query',
+      'SELECT * FROM DATA_TeminKomisyon WHERE temin_dosya_id = ? ORDER BY id ASC',
+      [sourceDosyaId]
+    )
+    if (!sourceRes?.success || !Array.isArray(sourceRes.data) || sourceRes.data.length === 0) {
+      return { success: false, error: 'Kaynak dosyada kopyalanacak komisyon üyesi bulunamadı' }
+    }
+
+    const sourceDosyaRes = await (window as any).electron.ipcRenderer.invoke(
+      'db:query',
+      "SELECT COALESCE(dosya_no, temin_no, '#' || id) as dosya_no FROM DATA_TeminDosyasi WHERE id = ? LIMIT 1",
+      [sourceDosyaId]
+    )
+    const sourceDosyaNo = sourceDosyaRes?.data?.[0]?.dosya_no || `#${sourceDosyaId}`
+
+    const txStatements: { sql: string; params: any[] }[] = []
+
+    // 1. Hedef dosyanın mevcut komisyonlarını temizle
+    txStatements.push({
+      sql: 'DELETE FROM DATA_TeminKomisyon WHERE temin_dosya_id = ?',
+      params: [targetDosyaId]
+    })
+
+    // 2. Kaynaktaki üyeleri ekle
+    const snapshotMembers: any[] = []
+    for (const m of sourceRes.data) {
+      txStatements.push({
+        sql: `INSERT INTO DATA_TeminKomisyon 
+              (temin_dosya_id, komisyon_id, personel_id, ad_soyad, unvan, gorev, rol, komisyon_turu, belgede_goster, vekalet_unvani, baslangic_tarihi, bitis_tarihi, belge_kapsami, hedef_belgeler, asli_yedek, kaynak)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        params: [
+          targetDosyaId,
+          m.komisyon_id || 1,
+          m.personel_id,
+          m.ad_soyad,
+          m.unvan || null,
+          m.gorev || 'Üye',
+          m.rol || 'Üye',
+          m.komisyon_turu || 'Komisyon',
+          m.belgede_goster !== undefined ? m.belgede_goster : 1,
+          m.vekalet_unvani || null,
+          m.baslangic_tarihi || null,
+          m.bitis_tarihi || null,
+          m.belge_kapsami || 'tumu',
+          m.hedef_belgeler || '["*"]',
+          m.asli_yedek || 'Asil',
+          `kopyalandi:${sourceDosyaId}`
+        ]
+      })
+
+      snapshotMembers.push({
+        personelId: m.personel_id,
+        ad_soyad: m.ad_soyad,
+        unvan: m.unvan,
+        gorev: m.gorev,
+        rol: m.rol,
+        asli_yedek: m.asli_yedek,
+        komisyon_turu: m.komisyon_turu
+      })
+    }
+
+    // 3. Dosyayı tohumlandı işaretle
+    txStatements.push({
+      sql: 'UPDATE DATA_TeminDosyasi SET komisyon_seed_edildi = 1 WHERE id = ?',
+      params: [targetDosyaId]
+    })
+
+    // 4. Revizyon Geçmişi Snapshot'ı ekle
+    txStatements.push({
+      sql: `INSERT INTO DATA_TeminKomisyonHistory (temin_dosya_id, komisyon_turu, islem_turu, islem_yapan, snapshot_data) VALUES (?, ?, ?, ?, ?)`,
+      params: [
+        targetDosyaId,
+        'Genel Kadro',
+        `Kadro Kopyalandı (${sourceDosyaNo} no'lu dosyadan)`,
+        'Kullanıcı',
+        JSON.stringify(snapshotMembers)
+      ]
+    })
+
+    const txRes = await (window as any).electron.ipcRenderer.invoke('db:transaction', txStatements)
+    if (!txRes?.success) {
+      throw new Error(txRes?.error || 'Transaction başarısız oldu')
+    }
+
+    return { success: true, count: sourceRes.data.length }
+  } catch (err: any) {
+    console.error('copyCommissionBetweenDossiers error:', err)
+    return { success: false, error: err.message }
+  }
+}
+
+/**
+ * Kurumsal Genel Şablon üyelerini (TANIM_KomisyonUye) hedef dosyaya aktarır.
+ */
+export async function applyInstitutionalTemplateToDossier(
+  targetDosyaId: number
+): Promise<{ success: boolean; error?: string; count?: number }> {
+  try {
+    if (!targetDosyaId) {
+      return { success: false, error: 'Geçersiz hedef dosya' }
+    }
+
+    const defRes = await (window as any).electron.ipcRenderer.invoke(
+      'db:query',
+      `SELECT u.*, p.ad_soyad, p.unvan, g.ad as gorev_adi, k.ad as komisyon_adi, k.tur as komisyon_tur_kodu
+       FROM TANIM_KomisyonUye u
+       JOIN TANIM_Personel p ON u.personel_id = p.id
+       JOIN TANIM_KomisyonGorevi g ON u.gorev_id = g.id
+       JOIN TANIM_Komisyon k ON u.komisyon_id = k.id
+       WHERE u.personel_id IS NOT NULL
+       ORDER BY u.komisyon_id ASC, u.sira ASC`
+    )
+
+    if (!defRes?.success || !Array.isArray(defRes.data) || defRes.data.length === 0) {
+      return { success: false, error: 'Kurumsal şablonda tanımlı komisyon üyesi bulunamadı' }
+    }
+
+    const txStatements: { sql: string; params: any[] }[] = []
+
+    // 1. Hedef dosyanın mevcut komisyonlarını temizle
+    txStatements.push({
+      sql: 'DELETE FROM DATA_TeminKomisyon WHERE temin_dosya_id = ?',
+      params: [targetDosyaId]
+    })
+
+    const snapshotMembers: any[] = []
+    for (const m of defRes.data) {
+      const rol =
+        m.asil_mi === 0
+          ? 'Yedek Üye'
+          : m.gorev_adi?.toLowerCase().includes('başkan') || m.gorev_adi?.toLowerCase().includes('baskan')
+            ? 'Başkan'
+            : 'Üye'
+
+      const isShow = m.belgede_goster !== 0 && m.belgede_goster !== false ? 1 : 0
+      const scope = m.belge_kapsami || 'tumu'
+      const hedefJson = m.hedef_belgeler || '["*"]'
+
+      txStatements.push({
+        sql: `INSERT INTO DATA_TeminKomisyon 
+              (temin_dosya_id, komisyon_id, personel_id, ad_soyad, unvan, gorev, rol, komisyon_turu, belgede_goster, belge_kapsami, hedef_belgeler, asli_yedek, kaynak)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'kurumsal')`,
+        params: [
+          targetDosyaId,
+          m.komisyon_id,
+          m.personel_id,
+          m.ad_soyad,
+          m.unvan || null,
+          m.gorev_adi || 'Üye',
+          rol,
+          m.komisyon_adi || 'Komisyon',
+          isShow,
+          scope,
+          hedefJson,
+          m.asil_mi === 1 ? 'Asil' : 'Yedek'
+        ]
+      })
+
+      snapshotMembers.push({
+        personelId: m.personel_id,
+        ad_soyad: m.ad_soyad,
+        unvan: m.unvan,
+        gorev: m.gorev_adi,
+        rol,
+        asli_yedek: m.asil_mi === 1 ? 'Asil' : 'Yedek',
+        komisyon_turu: m.komisyon_adi
+      })
+    }
+
+    // 2. Dosya bayrağını güncelle
+    txStatements.push({
+      sql: 'UPDATE DATA_TeminDosyasi SET komisyon_seed_edildi = 1 WHERE id = ?',
+      params: [targetDosyaId]
+    })
+
+    // 3. Snapshot ekle
+    txStatements.push({
+      sql: `INSERT INTO DATA_TeminKomisyonHistory (temin_dosya_id, komisyon_turu, islem_turu, islem_yapan, snapshot_data) VALUES (?, ?, ?, ?, ?)`,
+      params: [
+        targetDosyaId,
+        'Genel Kadro',
+        'Kurumsal Genel Şablondan Aktarıldı',
+        'Kullanıcı',
+        JSON.stringify(snapshotMembers)
+      ]
+    })
+
+    const txRes = await (window as any).electron.ipcRenderer.invoke('db:transaction', txStatements)
+    if (!txRes?.success) {
+      throw new Error(txRes?.error || 'Transaction başarısız oldu')
+    }
+
+    return { success: true, count: defRes.data.length }
+  } catch (err: any) {
+    console.error('applyInstitutionalTemplateToDossier error:', err)
+    return { success: false, error: err.message }
+  }
+}
+

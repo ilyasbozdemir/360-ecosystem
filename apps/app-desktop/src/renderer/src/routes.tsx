@@ -43,7 +43,7 @@ const PersonelScreen = lazyRoute(() =>
   import("./screens/personel/index.screen")
 );
 const KomisyonlarScreen = lazyRoute(() =>
-  import("./screens/komisyonlar/index.screen")
+  import("./screens/komisyonlar/index.v2.screen")
 );
 const KomisyonGorevleriScreen = lazyRoute(
   () => import("./screens/komisyon-gorevleri/index.screen"),
