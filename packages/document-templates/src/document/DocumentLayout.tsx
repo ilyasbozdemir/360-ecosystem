@@ -93,6 +93,8 @@ export const DocumentLayout = React.forwardRef<
           position: "relative",
           pageBreakAfter: isLastPage ? "avoid" : "always",
           pageBreakInside: "avoid",
+          breakAfter: isLastPage ? "avoid" : "page",
+          breakInside: "avoid",
           boxSizing: "border-box",
           boxShadow: "0 4px 20px -2px rgba(0,0,0,0.12)",
         }}

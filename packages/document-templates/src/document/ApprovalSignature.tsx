@@ -314,6 +314,7 @@ export const PersonelCard: React.FC<PersonelCardProps> = ({
         display: "flex",
         width: "100%",
         pageBreakInside: "avoid",
+        breakInside: "avoid",
         justifyContent: align === "center"
           ? "center"
           : align === "right"
@@ -462,6 +463,7 @@ export const ApprovalSignature: React.FC<ApprovalSignatureProps> = ({
         display: "flex",
         width: "100%",
         pageBreakInside: "avoid",
+        breakInside: "avoid",
         justifyContent: align === "center"
           ? "center"
           : align === "right"
@@ -574,7 +576,7 @@ export const CommissionList: React.FC<CommissionListProps> = ({
   if (!members || members.length === 0) return null;
 
   return (
-    <div style={{ marginTop: `${marginTop}px`, pageBreakInside: "avoid" }}>
+    <div style={{ marginTop: `${marginTop}px`, pageBreakInside: "avoid", breakInside: "avoid" }}>
       <div
         style={{ fontWeight: "bold", fontSize: "12pt", marginBottom: "15px" }}
       >
@@ -635,6 +637,7 @@ export const MetadataBlock: React.FC<MetadataBlockProps> = ({
         paddingBottom: showBorder ? "8px" : 0,
         borderBottom: showBorder ? `1px solid #ccc` : "none",
         pageBreakInside: "avoid",
+        breakInside: "avoid",
       }}
     >
       <div style={{ maxWidth: "65%", flex: "1 1 auto" }}>
