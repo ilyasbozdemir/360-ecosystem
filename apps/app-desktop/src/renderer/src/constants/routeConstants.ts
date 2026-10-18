@@ -6,6 +6,7 @@ export const APP_ROUTES = {
   // Dosyalar
   DOSYALAR: '/dosyalar',
   YENI_DOSYA: '/dosyalar/yeni',
+  DOSYA_SIHIRBAZ: '/dosyalar/sihirbaz',
   DOSYA_MANAGE: '/dosyalar/manage',
   DOSYA_DETAY: '/dosya',
   CIKTI_MERKEZI_DASHBOARD: '/cikti-merkezi',

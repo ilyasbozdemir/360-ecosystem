@@ -3,6 +3,11 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { DosyaSihirbaziModal } from '../DosyaSihirbaziModal'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
+vi.mock('@tanstack/react-router', () => ({
+  useNavigate: () => vi.fn(),
+  useSearch: () => ({})
+}))
+
 const mockQueryClient = new QueryClient({
   defaultOptions: {
     queries: { retry: false }

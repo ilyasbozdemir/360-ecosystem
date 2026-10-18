@@ -88,6 +88,10 @@ const DosyaManageScreen = lazyRoute(
   () => import("./screens/dosyalar/manage.screen"),
   "DosyaManageScreen",
 );
+const DosyaSihirbaziScreen = lazyRoute(
+  () => import("./screens/dosyalar/sihirbaz.screen"),
+  "DosyaSihirbaziScreen",
+);
 const KomisyonDetayScreen = lazyRoute(() =>
   import("./screens/komisyonlar/detay.screen")
 );
@@ -222,6 +226,12 @@ const dosyaManageRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: APP_ROUTES.DOSYA_MANAGE,
   component: DosyaManageScreen,
+});
+
+const dosyaSihirbazRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: APP_ROUTES.DOSYA_SIHIRBAZ,
+  component: DosyaSihirbaziScreen,
 });
 
 const firmalarRoute = createRoute({
@@ -573,6 +583,7 @@ const routeTree = rootRoute.addChildren([
   devletIhale2886Route,
   dosyalarRoute,
   yeniDosyaRoute,
+  dosyaSihirbazRoute,
   dosyaManageRoute,
   firmalarRoute,
   personelRoute,

@@ -26,7 +26,6 @@ import { TakipDosyaDetayBilgileri } from "./components/TakipDosyaDetayBilgileri"
 import { TakipAsamaAciklamalari } from "./components/TakipAsamaAciklamalari";
 import { TakipGenelMetrikView } from "./components/TakipGenelMetrikView";
 import { TakipKanbanBoard } from "./components/TakipKanbanBoard";
-import { DosyaSihirbaziModal } from "../../../components/modals/DosyaSihirbaziModal";
 import { DosyaNotlariWidget } from "../../notlar/components/DosyaNotlariWidget";
 
 export function TakipScreen(): React.JSX.Element {
@@ -72,10 +71,6 @@ export function TakipScreen(): React.JSX.Element {
   // Ana Görünüm Modu: Varsayılan olarak Kanban İş Akışı
   const [viewMode, setViewMode] = useState<TakipViewMode>("kanban");
 
-  // Sihirbaz Modal Durumu
-  const [isWizardOpen, setIsWizardOpen] = useState(false);
-  const [wizardInitialStage, setWizardInitialStage] = useState(1);
-
   // Tabbed Görünüm (Dosya Detayı alt sekmeleri)
   const [activeTab, setActiveTab] = useState<"ozet" | "kalemler" | "komisyon" | "mevzuat">("ozet");
 
@@ -115,8 +110,7 @@ export function TakipScreen(): React.JSX.Element {
         activeView={viewMode}
         setActiveView={setViewMode}
         onOpenWizard={() => {
-          setWizardInitialStage(1);
-          setIsWizardOpen(true);
+          navigate({ to: APP_ROUTES.DOSYA_SIHIRBAZ, search: { initialStage: 1 } });
         }}
       />
 
@@ -131,8 +125,10 @@ export function TakipScreen(): React.JSX.Element {
           }}
           formatCurrency={formatCurrency}
           onOpenWizard={(targetStage) => {
-            setWizardInitialStage(targetStage || 1);
-            setIsWizardOpen(true);
+            navigate({
+              to: APP_ROUTES.DOSYA_SIHIRBAZ,
+              search: { initialStage: targetStage || 1 },
+            });
           }}
           onOpenSurec={(d) => {
             setActiveDosyaId(d.id);
@@ -372,16 +368,6 @@ export function TakipScreen(): React.JSX.Element {
           }}
         />
       )}
-
-      {/* DOĞRUDAN TEMİN DOSYASI OLUŞTURMA SİHİRBAZI MODAL */}
-      <DosyaSihirbaziModal
-        isOpen={isWizardOpen}
-        onClose={() => setIsWizardOpen(false)}
-        initialStage={wizardInitialStage}
-        onSuccess={(createdId) => {
-          setActiveDosyaId(createdId);
-        }}
-      />
     </div>
   );
 }
