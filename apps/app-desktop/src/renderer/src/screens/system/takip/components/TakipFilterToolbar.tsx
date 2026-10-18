@@ -1,4 +1,4 @@
-import { FilePlus2, Filter, Search, X } from "lucide-react";
+import { Filter, Search, X } from "lucide-react";
 
 export interface TakipFilterToolbarProps {
   searchQuery: string;
@@ -23,7 +23,6 @@ export function TakipFilterToolbar({
   uniqueYillar,
   totalCount,
   filteredCount,
-  onOpenWizard,
 }: TakipFilterToolbarProps): React.JSX.Element {
   const isFiltered = searchQuery.trim() !== "" || selectedYil !== "all" ||
     selectedTur !== "all";
@@ -110,19 +109,6 @@ export function TakipFilterToolbar({
               ? `/ ${totalCount}`
               : ""} dosya
           </div>
-        )}
-
-        {/* New Dossier Wizard */}
-        {onOpenWizard && (
-          <button
-            type="button"
-            onClick={() => onOpenWizard(1)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-500/20 cursor-pointer ml-1"
-            title="Adım adım yönlendirmeli sihirbaz ile yeni dosya oluştur"
-          >
-            <FilePlus2 size={17} strokeWidth={2} />
-            <span>Yeni Dosya Oluştur</span>
-          </button>
         )}
       </div>
     </div>

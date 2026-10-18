@@ -113,13 +113,6 @@ describe("Ortak Görünüm Sistemi & Kart Detay Dialog (Issue #9, #10, #11)", ()
 
       fireEvent.change(turSelect, { target: { value: "mal" } });
       expect(setSelectedTur).toHaveBeenCalledWith("mal");
-
-      // Wizard button
-      const wizardBtn = screen.getByRole("button", {
-        name: /Yeni Dosya Oluştur/i,
-      });
-      fireEvent.click(wizardBtn);
-      expect(onOpenWizard).toHaveBeenCalledWith(1);
     });
 
     it("filtre aktifken Temizle butonu filtreleri sıfırlar", () => {
