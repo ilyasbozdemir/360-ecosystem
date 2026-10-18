@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useSettingsStore } from '../../../../../store/settingsStore'
+import { useWorkspaceStore } from '../../../../../store/workspaceStore'
 import { KatalogSenkronizasyonModal } from './components/KatalogSenkronizasyonModal'
 import { IhtiyacRaporuBaglaModal } from './components/IhtiyacRaporuBaglaModal'
 import { ihtiyacRaporuService } from '../../../../../services/ihtiyacRaporuService'
@@ -57,17 +58,19 @@ export function MalzemeTablosu({
   } = state
 
   const { disableDocumentGuidance } = useSettingsStore()
+  const workspaceDosyaId = useWorkspaceStore((s) => s.activeDosyaId)
+  const effectiveDosyaId = activeDosyaId || activeDosya?.id || workspaceDosyaId || null
 
   const [isIhtiyacModalOpen, setIsIhtiyacModalOpen] = useState(false)
   const [hasLinkedIhtiyacRaporu, setHasLinkedIhtiyacRaporu] = useState(false)
 
   useEffect(() => {
     let isMounted = true
-    if (!activeDosyaId) {
+    if (!effectiveDosyaId) {
       return
     }
     ihtiyacRaporuService
-      .getLinkedRaporForDosya(activeDosyaId)
+      .getLinkedRaporForDosya(effectiveDosyaId)
       .then((rapor) => {
         if (isMounted) setHasLinkedIhtiyacRaporu(Boolean(rapor))
       })
@@ -77,7 +80,7 @@ export function MalzemeTablosu({
     return () => {
       isMounted = false
     }
-  }, [activeDosyaId])
+  }, [effectiveDosyaId])
 
   const handleIhtiyacSuccess = async (): Promise<void> => {
     if (state.loadData) {
@@ -194,19 +197,19 @@ export function MalzemeTablosu({
       />
 
       {/* İhtiyaç Raporunu Bağla & Kalemleri Aktar Modalı */}
-      {activeDosyaId && (
+      {effectiveDosyaId && (
         <IhtiyacRaporuBaglaModal
           isOpen={isIhtiyacModalOpen}
           onClose={() => {
             setIsIhtiyacModalOpen(false)
-            if (activeDosyaId) {
+            if (effectiveDosyaId) {
               ihtiyacRaporuService
-                .getLinkedRaporForDosya(activeDosyaId)
+                .getLinkedRaporForDosya(effectiveDosyaId)
                 .then((rapor) => setHasLinkedIhtiyacRaporu(Boolean(rapor)))
                 .catch(() => {})
             }
           }}
-          dosyaId={activeDosyaId}
+          dosyaId={effectiveDosyaId}
           activeDosya={activeDosya}
           onSuccess={handleIhtiyacSuccess}
         />

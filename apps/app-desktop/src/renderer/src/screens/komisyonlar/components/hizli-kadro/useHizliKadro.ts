@@ -67,49 +67,6 @@ export function useHizliKadro({
     setStatusMessage(null)
 
     const fetchCurrentMembers = async () => {
-      try {
-        await window.electron.ipcRenderer
-          .invoke(
-            'db:run',
-            'ALTER TABLE TANIM_KomisyonUye ADD COLUMN belgede_goster INTEGER DEFAULT 1'
-          )
-          .catch(() => {})
-        await window.electron.ipcRenderer
-          .invoke(
-            'db:run',
-            "ALTER TABLE TANIM_KomisyonUye ADD COLUMN belge_kapsami TEXT DEFAULT 'tumu'"
-          )
-          .catch(() => {})
-        await window.electron.ipcRenderer
-          .invoke(
-            'db:run',
-            'ALTER TABLE TANIM_KomisyonUye ADD COLUMN hedef_belgeler TEXT DEFAULT \'["*"]\''
-          )
-          .catch(() => {})
-        await window.electron.ipcRenderer
-          .invoke('db:run', 'ALTER TABLE DATA_TeminKomisyon ADD COLUMN komisyon_turu TEXT')
-          .catch(() => {})
-        await window.electron.ipcRenderer
-          .invoke(
-            'db:run',
-            'ALTER TABLE DATA_TeminKomisyon ADD COLUMN belgede_goster INTEGER DEFAULT 1'
-          )
-          .catch(() => {})
-        await window.electron.ipcRenderer
-          .invoke(
-            'db:run',
-            "ALTER TABLE DATA_TeminKomisyon ADD COLUMN belge_kapsami TEXT DEFAULT 'tumu'"
-          )
-          .catch(() => {})
-        await window.electron.ipcRenderer
-          .invoke(
-            'db:run',
-            'ALTER TABLE DATA_TeminKomisyon ADD COLUMN hedef_belgeler TEXT DEFAULT \'["*"]\''
-          )
-          .catch(() => {})
-      } catch {
-        /* zaten mevcut */
-      }
 
       try {
         // 1. Her durumda kurumsal TANIM_KomisyonUye kayıtlarını al (Master şablon)
@@ -379,22 +336,6 @@ export function useHizliKadro({
     mutationFn: async () => {
       if (!komisyonId) throw new Error('Komisyon kimliği bulunamadı.')
 
-      try {
-        await window.electron.ipcRenderer.invoke(
-          'db:run',
-          'ALTER TABLE TANIM_KomisyonUye ADD COLUMN belgede_goster INTEGER DEFAULT 1'
-        )
-        await window.electron.ipcRenderer.invoke(
-          'db:run',
-          "ALTER TABLE TANIM_KomisyonUye ADD COLUMN belge_kapsami TEXT DEFAULT 'tumu'"
-        )
-        await window.electron.ipcRenderer.invoke(
-          'db:run',
-          'ALTER TABLE TANIM_KomisyonUye ADD COLUMN hedef_belgeler TEXT DEFAULT \'["*"]\''
-        )
-      } catch {
-        /* zaten mevcut */
-      }
 
       // Görev isimlerini tamamla
       for (const row of rows) {

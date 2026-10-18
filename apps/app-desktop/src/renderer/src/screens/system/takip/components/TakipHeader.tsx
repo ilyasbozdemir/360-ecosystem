@@ -7,7 +7,8 @@ import {
   LayoutGrid,
   List,
   BarChart3,
-  Sparkles
+  Sparkles,
+  FileText
 } from 'lucide-react'
 
 export type TakipViewMode = 'kanban' | 'grid' | 'list' | 'metrik' | 'detay'
@@ -82,6 +83,20 @@ export function TakipHeader({
           >
             <List size={14} />
             <span>Liste</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveView('detay')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeView === 'detay'
+                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-2xs'
+                : 'text-slate-500 hover:text-slate-750 dark:hover:text-slate-300'
+            }`}
+            title="Aktif Dosya Detayı ve Evrakları (Özet, Kalemler, Komisyon, Yönerge)"
+          >
+            <FileText size={14} />
+            <span>Dosya Detayı</span>
           </button>
 
           <button

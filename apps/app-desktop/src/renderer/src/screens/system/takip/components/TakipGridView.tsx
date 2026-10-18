@@ -136,12 +136,17 @@ export function TakipGridView({
         return (
           <div
             key={dosya.id}
-            onClick={() => onOpenDetail(dosya)}
+            onClick={() => {
+              setActiveDosyaId(dosya.id)
+              onOpenDetail(dosya)
+            }}
+            onDoubleClick={() => onOpenSurec(dosya)}
             className={`group relative flex flex-col justify-between p-4.5 rounded-2xl border transition-all duration-200 cursor-pointer select-none bg-white dark:bg-slate-900 shadow-2xs hover:shadow-md hover:-translate-y-0.5 ${
               isActive
                 ? 'border-blue-500 ring-2 ring-blue-500/20 dark:ring-blue-500/30 shadow-blue-500/10'
-                : 'border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+                : 'border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-750'
             }`}
+            title="Detay dialog'u için tıklayın, süreç ekranını açmak için çift tıklayın."
           >
             {/* Top Header */}
             <div>
@@ -171,7 +176,10 @@ export function TakipGridView({
               </div>
 
               {/* Title / Konu */}
-              <h4 className="text-xs font-bold text-slate-850 dark:text-slate-100 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+              <h4
+                className="text-xs font-bold text-slate-850 dark:text-slate-100 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
+                title={dosya.konu || 'İsimsiz Temin Dosyası'}
+              >
                 {dosya.konu || 'İsimsiz Temin Dosyası'}
               </h4>
 

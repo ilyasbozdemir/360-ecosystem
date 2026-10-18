@@ -91,12 +91,17 @@ export function TakipKanbanCard({
       draggable
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
-      onClick={() => (onOpenDetail ? onOpenDetail(dosya) : onSelect(dosya.id))}
+      onClick={() => {
+        onSelect(dosya.id)
+        if (onOpenDetail) onOpenDetail(dosya)
+      }}
+      onDoubleClick={() => onOpenSurec(dosya)}
       className={`group relative flex flex-col gap-2.5 p-3.5 rounded-2xl border transition-all duration-200 cursor-pointer select-none bg-white dark:bg-slate-900 shadow-2xs hover:shadow-md hover:-translate-y-0.5 ${
         isActive
           ? 'border-blue-500 ring-2 ring-blue-500/20 dark:ring-blue-500/30 shadow-blue-500/10'
           : 'border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
       }`}
+      title="Tıklayarak detay dialog'unu, çift tıklayarak süreç ekranını açabilirsiniz."
     >
       {/* Top Header Row */}
       <div className="flex items-center justify-between gap-2">
@@ -120,8 +125,8 @@ export function TakipKanbanCard({
 
       {/* Subject / Konu */}
       <h4
-        className="text-xs font-bold text-slate-850 dark:text-slate-100 line-clamp-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-        title={dosya.konu}
+        className="text-xs font-bold text-slate-855 dark:text-slate-100 line-clamp-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+        title={dosya.konu || 'İsimsiz Temin Dosyası'}
       >
         {dosya.konu || 'İsimsiz Temin Dosyası'}
       </h4>

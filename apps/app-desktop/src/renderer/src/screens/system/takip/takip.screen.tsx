@@ -97,11 +97,19 @@ export function TakipScreen(): React.JSX.Element {
     }
   };
 
+  // Detay modu seçildiğinde aktif dosya yoksa mevcut ilk dosyayı otomatik seç
+  React.useEffect(() => {
+    if (viewMode === "detay" && !activeDosyaId && dosyalar.length > 0) {
+      setActiveDosyaId(dosyalar[0].id);
+    }
+  }, [viewMode, activeDosyaId, dosyalar, setActiveDosyaId]);
+
   // Trello Benzeri Kart Detay Dialog'u State'i
   const [selectedDetailDosya, setSelectedDetailDosya] = useState<TeminDosyasi | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   const handleOpenDetailModal = (dosya: TeminDosyasi) => {
+    setActiveDosyaId(dosya.id);
     setSelectedDetailDosya(dosya);
     setIsDetailModalOpen(true);
   };

@@ -109,10 +109,15 @@ export function TakipListView({
               return (
                 <tr
                   key={dosya.id}
-                  onClick={() => onOpenDetail(dosya)}
+                  onClick={() => {
+                    setActiveDosyaId(dosya.id)
+                    onOpenDetail(dosya)
+                  }}
+                  onDoubleClick={() => onOpenSurec(dosya)}
                   className={`group transition-colors cursor-pointer hover:bg-blue-50/30 dark:hover:bg-blue-950/20 ${
                     isActive ? 'bg-blue-50/50 dark:bg-blue-950/30 font-semibold' : ''
                   }`}
+                  title="Detay dialog'u için tıklayın, süreç ekranını açmak için çift tıklayın."
                 >
                   {/* Dosya No */}
                   <td className="py-3 px-4 font-mono font-black text-slate-700 dark:text-slate-300 whitespace-nowrap">

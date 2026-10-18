@@ -208,8 +208,8 @@ export function TakipKanbanBoard({
     if (!targetDosya) return
 
     // Normalizing current stage
-    const currentStage =
-      targetDosya.status === 'tamamlandi' ? 4 : targetDosya.durum_asama_id || 1
+    const rawCurrentStage = Number(targetDosya.durum_asama_id) || 1
+    const currentStage = targetDosya.status === 'tamamlandi' ? 4 : rawCurrentStage
 
     if (currentStage === targetStageId) return
 
@@ -290,7 +290,8 @@ export function TakipKanbanBoard({
         {KANBAN_STAGES.map((col) => {
           // Filter dossiers for this column
           const columnDosyalar = filteredDosyalar.filter((d) => {
-            const stage = d.status === 'tamamlandi' ? 4 : d.durum_asama_id || 1
+            const rawStage = Number(d.durum_asama_id) || 1
+            const stage = d.status === 'tamamlandi' ? 4 : rawStage
             return stage === col.stageId
           })
 

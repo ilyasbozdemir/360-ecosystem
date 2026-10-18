@@ -42,24 +42,6 @@ export interface PersonelWithRoles extends Partial<Personel> {
 }
 
 const ensureUnvanGecmisiTable = async (): Promise<void> => {
-  // TANIM_Personel tablosunda gorev kolonu yoksa ekle (Self-healing)
-  try {
-    const tableInfo = await window.electron.ipcRenderer.invoke(
-      'db:query',
-      'PRAGMA table_info(TANIM_Personel)'
-    )
-    if (tableInfo.success && Array.isArray(tableInfo.data)) {
-      const cols = tableInfo.data.map((c: { name: string }) => c.name)
-      if (!cols.includes('gorev')) {
-        await window.electron.ipcRenderer.invoke(
-          'db:run',
-          'ALTER TABLE TANIM_Personel ADD COLUMN gorev TEXT;'
-        )
-      }
-    }
-  } catch {
-    // Ignore if column already exists or table doesn't exist yet
-  }
 
   await window.electron.ipcRenderer.invoke(
     'db:run',
