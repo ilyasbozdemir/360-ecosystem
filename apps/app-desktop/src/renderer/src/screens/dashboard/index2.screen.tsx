@@ -4,7 +4,7 @@ import { persist2886ActiveDosya } from '../../components/layout/temin-selector/t
 
 // Modular Subcomponents & Helpers
 import { ActiveDosyaCard } from './components/ActiveDosyaCard'
-import { DashboardHeroV2 } from './components/DashboardHeroV2'
+import { DashboardHeroV3 } from './components/DashboardHeroV3'
 import { TeminPillarsMatrix } from './components/TeminPillarsMatrix'
 import { ProcurementMethodsSummary } from './components/ProcurementMethodsSummary'
 import { DashboardKpiCardsV2 } from './components/DashboardKpiCardsV2'
@@ -96,8 +96,10 @@ export default function DashboardScreenV2(): React.JSX.Element {
         />
       )}
 
-      {/* 2. TEMİN 360 HERO HEADER */}
-      <DashboardHeroV2
+      {/* 2. TEMİN 360 HERO HEADER (V3 Dinamik Modül & Komuta Merkezi) */}
+      <DashboardHeroV3
+        procurementMode={procurementMode}
+        onSwitchMode={switchProcurementMode}
         isIhale={isIhale || procurementMode === 'devlet_ihale_2886'}
         currentDate={currentDate}
         greeting={greeting}
