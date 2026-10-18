@@ -40,7 +40,7 @@ export function getTabLabel(fullPath: string): string {
     const hasId = new URLSearchParams(query).has('id')
     return hasId ? 'DT Dosyasını Düzenle' : 'Yeni DT Dosyası Ekle'
   }
-  if (path === APP_ROUTES.DOSYA_SIHIRBAZ) return 'Yeni Dosya Sihirbazı'
+  if (path === APP_ROUTES.DOSYA_SIHIRBAZ) return 'Yeni Dosya Oluştur'
   if (path.startsWith(APP_ROUTES.DOSYALAR)) return 'Doğrudan Temin'
   if (path.startsWith(APP_ROUTES.BELGELERIM)) return 'Belgelerim & Şablonlar'
   if (path.startsWith(APP_ROUTES.PROJELER)) return 'Proje Yönetimi'

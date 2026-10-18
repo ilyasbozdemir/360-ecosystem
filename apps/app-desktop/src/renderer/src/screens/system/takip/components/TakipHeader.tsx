@@ -1,141 +1,154 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import React from 'react'
+import React from "react";
 import {
+  BarChart3,
   ClipboardList,
-  Edit,
   Columns3,
+  FilePlus2,
+  FileText,
   LayoutGrid,
   List,
-  BarChart3,
-  Sparkles,
-  FileText
-} from 'lucide-react'
+  Pencil,
+} from "lucide-react";
 
-export type TakipViewMode = 'kanban' | 'grid' | 'list' | 'metrik' | 'detay'
+export type TakipViewMode = "kanban" | "grid" | "list" | "metrik" | "detay";
 
 interface TakipHeaderProps {
-  activeDosya?: any
-  onEditClick: () => void
-  activeView: TakipViewMode
-  setActiveView: (view: TakipViewMode) => void
-  onOpenWizard: () => void
+  activeDosya?: any;
+  onEditClick: () => void;
+  activeView: TakipViewMode;
+  setActiveView: (view: TakipViewMode) => void;
+  onOpenWizard: () => void;
 }
+
+const VIEW_OPTIONS: {
+  id: TakipViewMode;
+  label: string;
+  icon: typeof Columns3;
+  title: string;
+}[] = [
+  {
+    id: "kanban",
+    label: "Kanban",
+    icon: Columns3,
+    title: "Aşamalara göre iş akışı",
+  },
+  {
+    id: "grid",
+    label: "Kartlar",
+    icon: LayoutGrid,
+    title: "Dosyaları kart görünümünde listele",
+  },
+  {
+    id: "list",
+    label: "Liste",
+    icon: List,
+    title: "Dosyaları kompakt listede görüntüle",
+  },
+  {
+    id: "detay",
+    label: "Dosya Detayı",
+    icon: FileText,
+    title: "Aktif dosyanın detaylarını görüntüle",
+  },
+  {
+    id: "metrik",
+    label: "Metrikler",
+    icon: BarChart3,
+    title: "Süreç istatistikleri ve grafikler",
+  },
+];
 
 export function TakipHeader({
   activeDosya,
   onEditClick,
   activeView,
   setActiveView,
-  onOpenWizard
+  onOpenWizard,
 }: TakipHeaderProps): React.JSX.Element {
   return (
-    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
-      <div>
-        <h1 className="text-2xl font-extrabold text-slate-855 dark:text-slate-100 tracking-tight flex items-center gap-2">
-          <ClipboardList className="w-6 h-6 text-blue-600" />
-          Süreç Takip & İş Akışı Paneli
-        </h1>
-        <p className="text-xs text-slate-500 mt-1">
-          Doğrudan temin dosyalarınızın yasal işlem adımlarını, kanban iş akışını ve belge tamamlama durumlarını buradan izleyebilirsiniz.
-        </p>
-      </div>
+    <header className="flex flex-col gap-5 border-b border-slate-200/80 pb-5 dark:border-slate-800">
+      {/* Başlık ve ana aksiyonlar */}
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+        <div className="flex min-w-0 items-start gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 text-blue-700 dark:border-blue-900/50 dark:bg-blue-950/50 dark:text-blue-400">
+            <ClipboardList size={23} strokeWidth={1.8} />
+          </div>
 
-      <div className="flex items-center gap-2.5 flex-wrap">
-        {/* VIEW MODE TOGGLE (ORTAK GÖRÜNÜM SİSTEMİ: KANBAN, GRID, LİSTE, METRİK) */}
-        <div className="flex bg-slate-100/90 dark:bg-slate-800/80 p-1 rounded-2xl border border-slate-200/60 dark:border-slate-700/60">
-          <button
-            type="button"
-            onClick={() => setActiveView('kanban')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              activeView === 'kanban'
-                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-2xs'
-                : 'text-slate-500 hover:text-slate-750 dark:hover:text-slate-300'
-            }`}
-            title="Kanban İş Akışı Tahtası (Aşamalara göre sürükle-bırak panosu)"
-          >
-            <Columns3 size={14} />
-            <span>Kanban</span>
-          </button>
+          <div className="min-w-0">
+            <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-2xl">
+              Süreç Takip Paneli
+            </h1>
 
-          <button
-            type="button"
-            onClick={() => setActiveView('grid')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              activeView === 'grid'
-                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-2xs'
-                : 'text-slate-500 hover:text-slate-750 dark:hover:text-slate-300'
-            }`}
-            title="Grid / Kart Görünümü (Tüm dosyaların düzenli kart ızgarası)"
-          >
-            <LayoutGrid size={14} />
-            <span>Kart / Grid</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveView('list')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              activeView === 'list'
-                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-2xs'
-                : 'text-slate-500 hover:text-slate-750 dark:hover:text-slate-300'
-            }`}
-            title="Kompakt Liste / Tablo Görünümü (Yoğun bilgi sunan taranabilir liste)"
-          >
-            <List size={14} />
-            <span>Liste</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveView('detay')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              activeView === 'detay'
-                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-2xs'
-                : 'text-slate-500 hover:text-slate-750 dark:hover:text-slate-300'
-            }`}
-            title="Aktif Dosya Detayı ve Evrakları (Özet, Kalemler, Komisyon, Yönerge)"
-          >
-            <FileText size={14} />
-            <span>Dosya Detayı</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveView('metrik')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              activeView === 'metrik'
-                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-2xs'
-                : 'text-slate-500 hover:text-slate-750 dark:hover:text-slate-300'
-            }`}
-            title="Süreç Metrikleri ve Grafikler"
-          >
-            <BarChart3 size={14} />
-            <span>Metrikler</span>
-          </button>
+            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+              Doğrudan temin dosyalarını, işlem aşamalarını ve belge tamamlama
+              durumlarını tek noktadan takip edin.
+            </p>
+          </div>
         </div>
 
-        {/* WIZARD BUTTON */}
-        <button
-          type="button"
-          onClick={onOpenWizard}
-          className="px-4 py-2 bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-md shadow-blue-500/20 transition-all cursor-pointer shrink-0"
-        >
-          <Sparkles size={14} />
-          Dosya Sihirbazı
-        </button>
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          {activeDosya && activeView === "detay" && (
+            <button
+              type="button"
+              onClick={onEditClick}
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:focus-visible:ring-offset-slate-950"
+            >
+              <Pencil size={15} />
+              Düzenle
+            </button>
+          )}
 
-        {activeDosya && activeView === 'detay' && (
           <button
             type="button"
-            onClick={onEditClick}
-            className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
+            onClick={onOpenWizard}
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm shadow-blue-600/15 transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 active:bg-blue-800 dark:focus-visible:ring-offset-slate-950"
           >
-            <Edit size={14} />
-            Düzenle
+            <FilePlus2 size={17} strokeWidth={2} />
+            Yeni Dosya Oluştur
           </button>
-        )}
+        </div>
       </div>
-    </div>
+
+      {/* Görünüm seçici */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+            Görünüm
+          </span>
+          <span className="hidden h-1 w-1 rounded-full bg-slate-300 sm:block dark:bg-slate-700" />
+          <span className="text-xs text-slate-500 dark:text-slate-400">
+            Dosyaları görüntüleme biçimi
+          </span>
+        </div>
+
+        <nav
+          aria-label="Dosya görünüm seçenekleri"
+          className="flex w-full flex-wrap items-center gap-1 rounded-xl border border-slate-200/80 bg-slate-100/70 p-1 dark:border-slate-800 dark:bg-slate-900/70 sm:w-fit"
+        >
+          {VIEW_OPTIONS.map(({ id, label, icon: Icon, title }) => {
+            const isActive = activeView === id;
+
+            return (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setActiveView(id)}
+                title={title}
+                aria-label={label}
+                aria-pressed={isActive}
+                className={`inline-flex min-h-9 flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:flex-none sm:px-3.5 ${
+                  isActive
+                    ? "border border-slate-200/80 bg-white text-blue-700 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-blue-400"
+                    : "border border-transparent text-slate-500 hover:bg-white/70 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-slate-200"
+                }`}
+              >
+                <Icon size={15} strokeWidth={isActive ? 2.2 : 1.8} />
+                <span className="whitespace-nowrap">{label}</span>
+              </button>
+            );
+          })}
+        </nav>
+      </div>
+    </header>
   );
 }
-

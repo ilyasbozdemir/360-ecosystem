@@ -1,17 +1,17 @@
-import React from 'react'
-import { Search, Sparkles, Filter, X } from 'lucide-react'
+import React from "react";
+import { FilePlus2, Filter, Search, Sparkles, X } from "lucide-react";
 
 export interface TakipFilterToolbarProps {
-  searchQuery: string
-  setSearchQuery: (query: string) => void
-  selectedYil: string
-  setSelectedYil: (yil: string) => void
-  selectedTur: string
-  setSelectedTur: (tur: string) => void
-  uniqueYillar: number[]
-  totalCount?: number
-  filteredCount?: number
-  onOpenWizard?: (stageId?: number) => void
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  selectedYil: string;
+  setSelectedYil: (yil: string) => void;
+  selectedTur: string;
+  setSelectedTur: (tur: string) => void;
+  uniqueYillar: number[];
+  totalCount?: number;
+  filteredCount?: number;
+  onOpenWizard?: (stageId?: number) => void;
 }
 
 export function TakipFilterToolbar({
@@ -24,15 +24,16 @@ export function TakipFilterToolbar({
   uniqueYillar,
   totalCount,
   filteredCount,
-  onOpenWizard
+  onOpenWizard,
 }: TakipFilterToolbarProps): React.JSX.Element {
-  const isFiltered = searchQuery.trim() !== '' || selectedYil !== 'all' || selectedTur !== 'all'
+  const isFiltered = searchQuery.trim() !== "" || selectedYil !== "all" ||
+    selectedTur !== "all";
 
   const handleResetFilters = (): void => {
-    setSearchQuery('')
-    setSelectedYil('all')
-    setSelectedTur('all')
-  }
+    setSearchQuery("");
+    setSelectedYil("all");
+    setSelectedTur("all");
+  };
 
   return (
     <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-3 rounded-2xl shadow-2xs">
@@ -49,7 +50,7 @@ export function TakipFilterToolbar({
         {searchQuery && (
           <button
             type="button"
-            onClick={() => setSearchQuery('')}
+            onClick={() => setSearchQuery("")}
             className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
             title="Aramayı Temizle"
           >
@@ -103,9 +104,12 @@ export function TakipFilterToolbar({
         )}
 
         {/* Dossier Count Badge */}
-        {typeof filteredCount === 'number' && (
+        {typeof filteredCount === "number" && (
           <div className="px-2.5 py-1 rounded-xl text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-slate-700/60">
-            {filteredCount} {typeof totalCount === 'number' && totalCount !== filteredCount ? `/ ${totalCount}` : ''} dosya
+            {filteredCount}{" "}
+            {typeof totalCount === "number" && totalCount !== filteredCount
+              ? `/ ${totalCount}`
+              : ""} dosya
           </div>
         )}
 
@@ -117,11 +121,11 @@ export function TakipFilterToolbar({
             className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-500/20 cursor-pointer ml-1"
             title="Adım adım yönlendirmeli sihirbaz ile yeni dosya oluştur"
           >
-            <Sparkles size={14} />
-            <span>Yeni Dosya Sihirbazı</span>
+            <FilePlus2 size={17} strokeWidth={2} />
+            <span>Yeni Dosya Oluştur</span>
           </button>
         )}
       </div>
     </div>
-  )
+  );
 }
