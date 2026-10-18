@@ -1,11 +1,38 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Zap } from 'lucide-react'
+import packageJson from '../../../../../../package.json'
 
 interface AnnouncementsCardV2Props {
   announcements?: Array<{ title: string; content: string }>
+  version?: string
 }
 
-export const AnnouncementsCardV2: React.FC<AnnouncementsCardV2Props> = ({ announcements }) => {
+export const AnnouncementsCardV2: React.FC<AnnouncementsCardV2Props> = ({
+  announcements,
+  version: propVersion
+}) => {
+  const [appVersion, setAppVersion] = useState<string>(() => {
+    return propVersion || packageJson.version || '1.0.0'
+  })
+
+  useEffect(() => {
+    if (propVersion) {
+      setAppVersion(propVersion)
+      return
+    }
+
+    if (window.api?.getAppVersion) {
+      window.api
+        .getAppVersion()
+        .then((v: string) => {
+          if (v) setAppVersion(v)
+        })
+        .catch(console.error)
+    }
+  }, [propVersion])
+
+  const formattedVersion = appVersion.startsWith('v') ? appVersion : `v${appVersion}`
+
   return (
     <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
       <div className="flex items-center justify-between mb-3">
@@ -14,7 +41,7 @@ export const AnnouncementsCardV2: React.FC<AnnouncementsCardV2Props> = ({ announ
           Sürüm & Mevzuat Bülteni
         </h4>
         <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded-md border border-blue-200 dark:border-blue-900/40">
-          v1.0.0-beta.111
+          {formattedVersion}
         </span>
       </div>
 
