@@ -107,6 +107,76 @@ export function TakipKanbanBoard({
   const [internalSelectedYil, setInternalSelectedYil] = useState<string>('all')
   const [internalSelectedTur, setInternalSelectedTur] = useState<string>('all')
 
+  // Kanban View Density: 'cards' | 'compact'
+  const [cardMode, setCardModeState] = useState<'cards' | 'compact'>(() => {
+    try {
+      const saved = localStorage.getItem('temin_kanban_card_mode')
+      if (saved === 'cards' || saved === 'compact') return saved
+    } catch {
+      // ignore
+    }
+    return 'cards'
+  })
+
+  const setCardMode = (mode: 'cards' | 'compact'): void => {
+    setCardModeState(mode)
+    try {
+      localStorage.setItem('temin_kanban_card_mode', mode)
+    } catch {
+      // ignore
+    }
+  }
+
+  // Column Height / Scroll Sınırı: '3cards' | '5cards' | 'auto'
+  const [columnHeightMode, setColumnHeightModeState] = useState<'3cards' | '5cards' | 'auto'>(() => {
+    try {
+      const saved = localStorage.getItem('temin_kanban_height_mode')
+      if (saved === '3cards' || saved === '5cards' || saved === 'auto') return saved
+    } catch {
+      // ignore
+    }
+    return '3cards'
+  })
+
+  const setColumnHeightMode = (mode: '3cards' | '5cards' | 'auto'): void => {
+    setColumnHeightModeState(mode)
+    try {
+      localStorage.setItem('temin_kanban_height_mode', mode)
+    } catch {
+      // ignore
+    }
+  }
+
+  // Infinite Scroll / Kademeli Yükleme
+  const INITIAL_BATCH = columnHeightMode === '3cards' ? 5 : 8
+  const [visibleCounts, setVisibleCounts] = useState<Record<number, number>>({
+    1: INITIAL_BATCH,
+    2: INITIAL_BATCH,
+    3: INITIAL_BATCH,
+    4: INITIAL_BATCH
+  })
+
+  const handleLoadMore = (stageId: number, step = 5): void => {
+    setVisibleCounts((prev) => ({
+      ...prev,
+      [stageId]: (prev[stageId] || INITIAL_BATCH) + step
+    }))
+  }
+
+  const handleColumnScroll = (
+    e: React.UIEvent<HTMLDivElement>,
+    stageId: number,
+    totalCount: number
+  ): void => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget
+    if (scrollHeight - scrollTop - clientHeight < 60) {
+      const current = visibleCounts[stageId] || INITIAL_BATCH
+      if (current < totalCount) {
+        handleLoadMore(stageId, 5)
+      }
+    }
+  }
+
   const effectiveSearchQuery =
     externalSearchQuery !== undefined ? externalSearchQuery : internalSearchQuery
   const setEffectiveSearchQuery = externalSetSearchQuery || setInternalSearchQuery
@@ -283,6 +353,10 @@ export function TakipKanbanBoard({
         totalCount={dosyalar.length}
         filteredCount={filteredDosyalar.length}
         onOpenWizard={onOpenWizard}
+        cardMode={cardMode}
+        setCardMode={setCardMode}
+        columnHeightMode={columnHeightMode}
+        setColumnHeightMode={setColumnHeightMode}
       />
 
       {/* 4-COLUMN KANBAN BOARD */}
@@ -357,50 +431,94 @@ export function TakipKanbanBoard({
                 </div>
               </div>
 
-              {/* Dossier Cards List */}
-              <div className="flex-1 flex flex-col gap-2.5 overflow-y-auto max-h-170 custom-scrollbar pr-0.5">
-                {columnDosyalar.length > 0 ? (
-                  columnDosyalar.map((dosya) => (
-                    <TakipKanbanCard
-                      key={dosya.id}
-                      dosya={dosya}
-                      formatCurrency={formatCurrency}
-                      onSelect={setActiveDosyaId}
-                      onOpenSurec={onOpenSurec}
-                      onEdit={onEdit}
-                      isActive={activeDosyaId === dosya.id}
-                      onOpenDetail={onOpenDetail}
-                    />
-                  ))
-                ) : (
-                  /* Empty Column State */
+              {/* Dossier Cards List with Infinite Scroll */}
+              {(() => {
+                const limit = visibleCounts[col.stageId] || INITIAL_BATCH
+                const renderedDosyalar = columnDosyalar.slice(0, limit)
+                const hasMore = renderedDosyalar.length < columnDosyalar.length
+                const heightClass =
+                  columnHeightMode === 'auto'
+                    ? 'max-h-none'
+                    : columnHeightMode === '5cards'
+                      ? 'max-h-[760px]'
+                      : cardMode === 'compact'
+                        ? 'max-h-[390px]'
+                        : 'max-h-[490px]'
+
+                return (
                   <div
-                    className={`flex-1 flex flex-col items-center justify-center p-6 rounded-2xl border-2 border-dashed text-center min-h-55 transition-colors ${
-                      isHovered
-                        ? 'border-blue-400 bg-blue-50/30 text-blue-600'
-                        : 'border-slate-200/80 dark:border-slate-800 text-slate-400'
-                    }`}
+                    onScroll={(e) => handleColumnScroll(e, col.stageId, columnDosyalar.length)}
+                    className={`flex-1 flex flex-col gap-2.5 overflow-y-auto ${heightClass} custom-scrollbar pr-0.5`}
                   >
-                    <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-2">
-                      <Layers className="w-5 h-5 text-slate-400" />
-                    </div>
-                    <p className="text-xs font-bold text-slate-600 dark:text-slate-400">
-                      Bu Aşamada Dosya Yok
-                    </p>
-                    <p className="text-[10px] text-slate-400 max-w-37.5 mt-1">
-                      Dosyaları bu sütuna sürükleyip bırakabilirsiniz.
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => onOpenWizard(col.stageId)}
-                      className="mt-3 text-[10px] font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400 flex items-center gap-1 cursor-pointer"
-                    >
-                      <Plus size={12} />
-                      Dosya Ekle
-                    </button>
+                    {columnDosyalar.length > 0 ? (
+                      <>
+                        {renderedDosyalar.map((dosya) => (
+                          <TakipKanbanCard
+                            key={dosya.id}
+                            dosya={dosya}
+                            formatCurrency={formatCurrency}
+                            onSelect={setActiveDosyaId}
+                            onOpenSurec={onOpenSurec}
+                            onEdit={onEdit}
+                            isActive={activeDosyaId === dosya.id}
+                            onOpenDetail={onOpenDetail}
+                            mode={cardMode}
+                          />
+                        ))}
+
+                        {/* Infinite Scroll / Daha Fazla Yükle Alanı */}
+                        {hasMore && (
+                          <div className="py-2 px-3 my-1 flex flex-col items-center justify-center gap-1.5 bg-slate-100/70 dark:bg-slate-800/50 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 animate-in fade-in">
+                            <span className="text-[10.5px] font-semibold text-slate-500 dark:text-slate-400">
+                              {renderedDosyalar.length} / {columnDosyalar.length} dosya gösteriliyor
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleLoadMore(col.stageId, 5)}
+                              className="text-[10px] font-extrabold text-blue-600 hover:text-blue-700 dark:text-blue-400 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-blue-300 px-3 py-1 rounded-xl shadow-2xs hover:bg-blue-50/50 dark:hover:bg-blue-950/30 transition-all cursor-pointer"
+                            >
+                              +5 Daha Yükle (veya aşağı kaydırın)
+                            </button>
+                          </div>
+                        )}
+
+                        {!hasMore && columnDosyalar.length > 5 && (
+                          <div className="text-[10px] text-slate-400 dark:text-slate-500 font-medium text-center py-1">
+                            Tüm dosyalar yüklendi ({columnDosyalar.length})
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      /* Empty Column State */
+                      <div
+                        className={`flex-1 flex flex-col items-center justify-center p-6 rounded-2xl border-2 border-dashed text-center min-h-55 transition-colors ${
+                          isHovered
+                            ? 'border-blue-400 bg-blue-50/30 text-blue-600'
+                            : 'border-slate-200/80 dark:border-slate-800 text-slate-400'
+                        }`}
+                      >
+                        <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-2">
+                          <Layers className="w-5 h-5 text-slate-400" />
+                        </div>
+                        <p className="text-xs font-bold text-slate-600 dark:text-slate-400">
+                          Bu Aşamada Dosya Yok
+                        </p>
+                        <p className="text-[10px] text-slate-400 max-w-37.5 mt-1">
+                          Dosyaları bu sütuna sürükleyip bırakabilirsiniz.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => onOpenWizard(col.stageId)}
+                          className="mt-3 text-[10px] font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400 flex items-center gap-1 cursor-pointer"
+                        >
+                          <Plus size={12} />
+                          Dosya Ekle
+                        </button>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
+                )
+              })()}
             </div>
           )
         })}

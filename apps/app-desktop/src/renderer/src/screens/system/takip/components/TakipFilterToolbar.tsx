@@ -1,4 +1,4 @@
-import { Filter, Search, X } from "lucide-react";
+import { Filter, Search, X, LayoutGrid, List } from "lucide-react";
 
 export interface TakipFilterToolbarProps {
   searchQuery: string;
@@ -11,6 +11,10 @@ export interface TakipFilterToolbarProps {
   totalCount?: number;
   filteredCount?: number;
   onOpenWizard?: (stageId?: number) => void;
+  cardMode?: 'cards' | 'compact';
+  setCardMode?: (mode: 'cards' | 'compact') => void;
+  columnHeightMode?: '3cards' | '5cards' | 'auto';
+  setColumnHeightMode?: (mode: '3cards' | '5cards' | 'auto') => void;
 }
 
 export function TakipFilterToolbar({
@@ -23,6 +27,10 @@ export function TakipFilterToolbar({
   uniqueYillar,
   totalCount,
   filteredCount,
+  cardMode,
+  setCardMode,
+  columnHeightMode,
+  setColumnHeightMode
 }: TakipFilterToolbarProps): React.JSX.Element {
   const isFiltered = searchQuery.trim() !== "" || selectedYil !== "all" ||
     selectedTur !== "all";
@@ -59,7 +67,7 @@ export function TakipFilterToolbar({
 
       {/* Filters and Action Buttons */}
       <div className="flex items-center gap-2 flex-wrap">
-        {/* Year Filter */}
+        {/* Year Filter - Keep as 1st combobox for tests */}
         <select
           value={selectedYil}
           onChange={(e) => setSelectedYil(e.target.value)}
@@ -74,7 +82,7 @@ export function TakipFilterToolbar({
           ))}
         </select>
 
-        {/* Tur Filter */}
+        {/* Tur Filter - Keep as 2nd combobox for tests */}
         <select
           value={selectedTur}
           onChange={(e) => setSelectedTur(e.target.value)}
@@ -108,6 +116,54 @@ export function TakipFilterToolbar({
             {typeof totalCount === "number" && totalCount !== filteredCount
               ? `/ ${totalCount}`
               : ""} dosya
+          </div>
+        )}
+
+        <div className="h-5 w-px bg-slate-200 dark:bg-slate-700 hidden sm:block mx-0.5" />
+
+        {/* Column Height & Scroll Sınırı */}
+        {columnHeightMode && setColumnHeightMode && (
+          <select
+            value={columnHeightMode}
+            onChange={(e) => setColumnHeightMode(e.target.value as '3cards' | '5cards' | 'auto')}
+            className="px-2.5 py-1.5 text-xs font-semibold bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/80 rounded-xl text-slate-700 dark:text-slate-200 cursor-pointer focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+            title="Sütun Kaydırma ve Kart Yükseklik Sınırı"
+          >
+            <option value="3cards">3 Kart Kaydırma</option>
+            <option value="5cards">5 Kart Kaydırma</option>
+            <option value="auto">Serbest / Tümü</option>
+          </select>
+        )}
+
+        {/* Kanban Card Mode: Kartlar vs Liste */}
+        {cardMode && setCardMode && (
+          <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
+            <button
+              type="button"
+              onClick={() => setCardMode('cards')}
+              className={`flex items-center gap-1.5 px-2 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                cardMode === 'cards'
+                  ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-2xs'
+                  : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+              }`}
+              title="Kart Görünümü"
+            >
+              <LayoutGrid size={13} />
+              <span>Kart</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setCardMode('compact')}
+              className={`flex items-center gap-1.5 px-2 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                cardMode === 'compact'
+                  ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-2xs'
+                  : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+              }`}
+              title="Kompakt Liste Görünümü"
+            >
+              <List size={13} />
+              <span>Liste</span>
+            </button>
           </div>
         )}
       </div>

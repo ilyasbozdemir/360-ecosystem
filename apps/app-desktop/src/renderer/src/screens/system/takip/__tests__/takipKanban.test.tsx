@@ -208,4 +208,48 @@ describe("TakipKanbanBoard (Issue #11)", () => {
 
     expect(mockOpenWizard).toHaveBeenCalledWith(1);
   });
+
+  it("Kart ve Liste görünüm modları arasında geçiş yapılabilir", () => {
+    renderBoard();
+
+    const listeBtn = screen.getByRole("button", { name: /Liste/i });
+    expect(listeBtn).toBeTruthy();
+
+    fireEvent.click(listeBtn);
+    // After clicking Liste, the button remains active/selected
+    expect(listeBtn.className).toContain("text-blue-600");
+
+    const kartBtn = screen.getByRole("button", { name: /Kart/i });
+    fireEvent.click(kartBtn);
+    expect(kartBtn.className).toContain("text-blue-600");
+  });
+
+  it("sütunda çok sayıda dosya olduğunda kademeli yükleme ve +5 Daha Yükle butonu çalışır", () => {
+    // Generate 12 dossiers in stage 1
+    const manyDosyalar = Array.from({ length: 12 }, (_, i) => ({
+      id: 200 + i,
+      temin_no: `2026/${200 + i}`,
+      konu: `Toplu Alım Kalemi #${i + 1}`,
+      tur: "mal",
+      durum_asama_id: 1,
+      status: "devam_ediyor",
+      yaklasik_maliyet: 1000 * (i + 1),
+      birim_adi: "Destek Hizmetleri",
+      butce_yili: 2026,
+      is_deleted: 0,
+    })) as unknown as TeminDosyasi[];
+
+    renderBoard(manyDosyalar);
+
+    // Initial batch is 5
+    expect(screen.getByText(/5 \/ 12 dosya gösteriliyor/i)).toBeTruthy();
+
+    const loadMoreBtn = screen.getByRole("button", {
+      name: /\+5 Daha Yükle/i,
+    });
+    fireEvent.click(loadMoreBtn);
+
+    // After loading more (+5), it now shows 10 / 12
+    expect(screen.getByText(/10 \/ 12 dosya gösteriliyor/i)).toBeTruthy();
+  });
 });

@@ -20,6 +20,7 @@ export interface TakipKanbanCardProps {
   onEdit: (dosyaId: number) => void
   isActive?: boolean
   onOpenDetail?: (dosya: TeminDosyasi) => void
+  mode?: 'cards' | 'compact'
 }
 
 export function TakipKanbanCard({
@@ -29,7 +30,8 @@ export function TakipKanbanCard({
   onOpenSurec,
   onEdit,
   isActive = false,
-  onOpenDetail
+  onOpenDetail,
+  mode = 'cards'
 }: TakipKanbanCardProps): React.JSX.Element {
   const getTurBadge = (
     tur: string
@@ -84,6 +86,106 @@ export function TakipKanbanCard({
     if (e.currentTarget) {
       e.currentTarget.style.opacity = '1'
     }
+  }
+
+  if (mode === 'compact') {
+    return (
+      <div
+        draggable
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onClick={() => {
+          onSelect(dosya.id)
+          if (onOpenDetail) onOpenDetail(dosya)
+        }}
+        onDoubleClick={() => onOpenSurec(dosya)}
+        className={`group relative flex items-center justify-between gap-2 p-2.5 rounded-xl border transition-all duration-200 cursor-pointer select-none bg-white dark:bg-slate-900 shadow-2xs hover:shadow-sm hover:-translate-y-0.5 ${
+          isActive
+            ? 'border-blue-500 ring-2 ring-blue-500/20 dark:ring-blue-500/30 shadow-blue-500/10 bg-blue-50/15 dark:bg-blue-950/20'
+            : 'border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+        }`}
+        title="Tıklayarak detay dialog'unu, çift tıklayarak süreç ekranını açabilirsiniz."
+      >
+        {/* Sol: Grip + No + Tur + Konu */}
+        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+          <GripVertical className="w-3 h-3 text-slate-300 dark:text-slate-600 group-hover:text-slate-400 shrink-0 cursor-grab active:cursor-grabbing" />
+          <span className="font-mono text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60 shrink-0">
+            {dosya.temin_no || `#${dosya.id}`}
+          </span>
+          <span
+            className={`flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.2 rounded-full ${turInfo.classes} shrink-0`}
+          >
+            <TurIcon size={10} />
+            {turInfo.label}
+          </span>
+          <div className="min-w-0 flex-1">
+            <h4
+              className="text-xs font-bold text-slate-850 dark:text-slate-100 truncate hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+              title={dosya.konu || 'İsimsiz Temin Dosyası'}
+            >
+              {dosya.konu || 'İsimsiz Temin Dosyası'}
+            </h4>
+            {dosya.birim_adi && (
+              <p className="text-[10px] text-slate-400 truncate -mt-0.5">
+                {dosya.birim_adi}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Sağ: Maliyet + Aksiyonlar */}
+        <div
+          className="flex items-center gap-2 shrink-0"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <span className="font-mono text-xs font-bold text-slate-800 dark:text-slate-200">
+            {formatCurrency(dosya.yaklasik_maliyet || 0)}
+          </span>
+
+          <div className="flex items-center gap-0.5">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                onSelect(dosya.id)
+              }}
+              className={`p-1 rounded-lg transition-colors cursor-pointer ${
+                isActive
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 dark:bg-slate-800 dark:hover:bg-blue-950/40 dark:text-slate-300'
+              }`}
+              title={isActive ? 'Aktif Dosya' : 'Seç'}
+            >
+              <CheckCircle2 size={12} />
+            </button>
+
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                onOpenSurec(dosya)
+              }}
+              className="p-1 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-950/40 text-slate-400 hover:text-purple-600 dark:hover:text-purple-300 transition-colors cursor-pointer"
+              title="Süreç Aşamasına Git"
+            >
+              <ExternalLink size={12} />
+            </button>
+
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                onEdit(dosya.id)
+              }}
+              className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
+              title="Dosyayı Düzenle"
+            >
+              <Edit size={12} />
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
