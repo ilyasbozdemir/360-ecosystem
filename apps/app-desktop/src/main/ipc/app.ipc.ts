@@ -1,4 +1,4 @@
-import { ipcMain, app, BrowserWindow } from 'electron'
+import { ipcMain, app, BrowserWindow, clipboard } from 'electron'
 import { join } from 'path'
 import fs from 'fs'
 import { manifests } from '@dt/database'
@@ -178,4 +178,13 @@ export function registerAppIpcHandlers(
 
   ipcMain.handle('app:get-changelog', changelogHandler)
   ipcMain.handle('get-changelog', changelogHandler)
+
+  ipcMain.handle('clipboard:readText', (): string => {
+    return clipboard.readText()
+  })
+
+  ipcMain.handle('clipboard:writeText', (_event, text: string): boolean => {
+    clipboard.writeText(text || '')
+    return true
+  })
 }

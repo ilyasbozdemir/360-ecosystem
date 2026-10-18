@@ -7,10 +7,12 @@ import {
   reverseMapStatus,
   mapStatus,
   mapTur,
+  normalizeTeminTuru,
   formatDateOnly,
   formatDateTimeLocal,
   getDefaultDates
 } from './hizliDosyaEkle.types'
+import { readFromClipboard } from '../../../../utils/copyToClipboard'
 
 export function useHizliDosyaEkle() {
   const queryClient = useQueryClient()
@@ -261,13 +263,62 @@ export function useHizliDosyaEkle() {
 
   const handlePaste = async () => {
     try {
-      const text = await navigator.clipboard.readText()
-      const lines = text.trim().split('\n').filter(Boolean)
-      const newRows: DosyaRow[] = lines.map((line) => {
-        const c = line.split('\t')
-        // Eğer 10 sütunlu yeni format yapıştırıldıysa:
-        // [0] Dosya No, [1] DT No, [2] Adı, [3] Açıklama, [4] Tür, [5] Şekli, [6] Açılış, [7] Son Teklif, [8] Teslim, [9] Aşama
-        if (c.length >= 9) {
+      const text = await readFromClipboard()
+      if (!text || !text.trim()) {
+        alert('Panoda yapıştırılacak metin veya tablo bulunamadı.')
+        return
+      }
+      const rawLines = text.trim().split(/\r?\n/).filter((l) => l.trim().length > 0)
+      if (rawLines.length === 0) return
+
+      // Başlık satırı kontrolü: Eğer ilk satır "dosya no", "dt no", "dosya adı" gibi başlık kelimeleri içeriyorsa atla
+      const isHeaderLine = (line: string): boolean => {
+        const lower = line.toLowerCase()
+        return (
+          (lower.includes('dosya') && lower.includes('no')) ||
+          lower.includes('dosya adı') ||
+          lower.includes('temin türü') ||
+          lower.includes('ihale türü') ||
+          lower.includes('süreç aşaması')
+        )
+      }
+
+      const lines = isHeaderLine(rawLines[0]) ? rawLines.slice(1) : rawLines
+
+      const newRows: DosyaRow[] = lines
+        .map((line) => {
+          let c = line.split('\t')
+          if (c.length === 1 && line.includes(';')) {
+            c = line.split(';')
+          }
+
+          // Eğer ilk sütun #1 veya ID sütunu ise (11 sütun veya ID + 10):
+          if (c.length >= 11 || (c[0]?.trim().startsWith('#') && c.length >= 8)) {
+            c = c.slice(1) // ID sütununu kaydır
+          }
+
+          // 10 sütunlu yeni süreç tarihli format:
+          // [0] Dosya No, [1] DT No, [2] Adı, [3] Açıklama, [4] Tür, [5] Şekli, [6] Açılış, [7] Son Teklif, [8] Teslim, [9] Aşama
+          if (c.length >= 9) {
+            return {
+              _key: Math.random().toString(36).slice(2),
+              id: null,
+              dosya_no: c[0]?.trim() || '',
+              dt_no: c[1]?.trim() || '',
+              dosya_adi: c[2]?.trim() || '',
+              aciklama: c[3]?.trim() || '',
+              temin_turu: normalizeTeminTuru(c[4]),
+              temin_sekli: c[5]?.trim() || '22/d',
+              dosya_acilis_tarihi: formatDateOnly(c[6]?.trim()) || defaultDates.dosya_acilis_tarihi,
+              son_teklif_verme_tarihi:
+                formatDateTimeLocal(c[7]?.trim()) || defaultDates.son_teklif_verme_tarihi,
+              teslim_tarihi: formatDateOnly(c[8]?.trim()) || defaultDates.teslim_tarihi,
+              surec_asamasi: c[9]?.trim() || 'Hazırlık',
+              _dirty: true
+            }
+          }
+
+          // 7-8 sütunlu format (Örn: Dosya No, DT No, Dosya Adı, Açıklama, Tür, Şekli, Açılış Tarihi, Aşama):
           return {
             _key: Math.random().toString(36).slice(2),
             id: null,
@@ -275,41 +326,27 @@ export function useHizliDosyaEkle() {
             dt_no: c[1]?.trim() || '',
             dosya_adi: c[2]?.trim() || '',
             aciklama: c[3]?.trim() || '',
-            temin_turu: c[4]?.trim() || 'Mal',
+            temin_turu: normalizeTeminTuru(c[4]),
             temin_sekli: c[5]?.trim() || '22/d',
             dosya_acilis_tarihi: formatDateOnly(c[6]?.trim()) || defaultDates.dosya_acilis_tarihi,
-            son_teklif_verme_tarihi:
-              formatDateTimeLocal(c[7]?.trim()) || defaultDates.son_teklif_verme_tarihi,
-            teslim_tarihi: formatDateOnly(c[8]?.trim()) || defaultDates.teslim_tarihi,
-            surec_asamasi: c[9]?.trim() || 'Hazırlık',
+            son_teklif_verme_tarihi: defaultDates.son_teklif_verme_tarihi,
+            teslim_tarihi: defaultDates.teslim_tarihi,
+            surec_asamasi: c[7]?.trim() || 'Hazırlık',
             _dirty: true
           }
-        }
-        // Eski 8 sütunlu format için geriye dönük uyumlu:
-        return {
-          _key: Math.random().toString(36).slice(2),
-          id: null,
-          dosya_no: c[0]?.trim() || '',
-          dt_no: c[1]?.trim() || '',
-          dosya_adi: c[2]?.trim() || '',
-          aciklama: c[3]?.trim() || '',
-          temin_turu: c[4]?.trim() || 'Mal',
-          temin_sekli: c[5]?.trim() || '22/d',
-          dosya_acilis_tarihi: formatDateOnly(c[6]?.trim()) || defaultDates.dosya_acilis_tarihi,
-          son_teklif_verme_tarihi: defaultDates.son_teklif_verme_tarihi,
-          teslim_tarihi: defaultDates.teslim_tarihi,
-          surec_asamasi: c[7]?.trim() || 'Hazırlık',
-          _dirty: true
-        }
-      })
+        })
+        .filter((r) => r.dosya_adi.trim() !== '' || r.dosya_no.trim() !== '')
+
       if (newRows.length > 0) {
         setRows((prev) => {
           const allEmpty = prev.every((r) => r.dosya_adi === '' && r.id === null)
           return allEmpty ? newRows : [...prev, ...newRows]
         })
       }
-    } catch {
-      alert('Pano okuma başarısız.')
+    } catch (err: unknown) {
+      console.error('Pano okuma hatası:', err)
+      const msg = err instanceof Error ? err.message : String(err)
+      alert(`Pano okuma başarısız: ${msg}`)
     }
   }
 

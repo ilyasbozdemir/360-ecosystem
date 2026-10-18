@@ -29,3 +29,28 @@ export async function copyToClipboard(text: string): Promise<boolean> {
     return false
   }
 }
+
+export async function readFromClipboard(): Promise<string> {
+  // 1. Electron native clipboard IPC (tam yetkili, odak bağımsız)
+  try {
+    if (window.electron?.ipcRenderer) {
+      const res = await window.electron.ipcRenderer.invoke('clipboard:readText')
+      if (typeof res === 'string') {
+        return res
+      }
+    }
+  } catch (err) {
+    console.warn('Native clipboard read error:', err)
+  }
+
+  // 2. Web API fallback
+  if (navigator?.clipboard?.readText) {
+    try {
+      return await navigator.clipboard.readText()
+    } catch (webErr) {
+      console.warn('Web clipboard.readText error:', webErr)
+    }
+  }
+
+  return ''
+}

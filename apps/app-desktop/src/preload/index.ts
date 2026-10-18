@@ -196,7 +196,10 @@ const allowedChannels = new Set([
   'kutuphane:yertutucu:renameKey',
   'kutuphane:dosyaya-bagla',
   'kutuphane:dosya-ek-belgeleri:list',
-  'kutuphane:sablona-yayinla'
+  'kutuphane:sablona-yayinla',
+  // Clipboard
+  'clipboard:readText',
+  'clipboard:writeText'
 ])
 
 // Secure gated wrapper exposing only authorized channels to renderer

@@ -59,26 +59,59 @@ export const reverseMapStatus = (s: string) => {
   return 'Hazırlık'
 }
 
+export const normalizeTeminTuru = (raw?: string | null): string => {
+  if (!raw) return 'Mal'
+  const lower = raw.trim().toLowerCase()
+  if (lower.startsWith('mal')) return 'Mal'
+  if (lower.startsWith('hizmet')) return 'Hizmet'
+  if (lower.startsWith('yap') || lower.includes('yapım') || lower.includes('insaat') || lower.includes('inşaat')) return 'Yapım İşi'
+  if (lower.startsWith('dan') || lower.includes('danışman')) return 'Danışmanlık'
+  return teminKisaLabel(raw, 'Mal')
+}
+
 export function formatDateOnly(raw?: string | null): string {
   if (!raw) return ''
   const str = String(raw).trim().split('T')[0].split(' ')[0]
   if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str
   const m = str.match(/^(\d{4})\d+-(\d{2})-(\d{2})/)
   if (m) return `${m[1]}-${m[2]}-${m[3]}`
+
+  // Türkçe format desteği: GG.AA.YYYY veya GG/AA/YYYY veya GG-AA-YYYY
+  const trMatch = str.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/)
+  if (trMatch) {
+    const dd = trMatch[1].padStart(2, '0')
+    const mm = trMatch[2].padStart(2, '0')
+    const yyyy = trMatch[3]
+    return `${yyyy}-${mm}-${dd}`
+  }
+
   return ''
 }
 
 export function formatDateTimeLocal(raw?: string | null): string {
   if (!raw) return ''
-  const str = String(raw).trim().replace(' ', 'T')
-  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
-    return `${str}T10:00`
+  const str = String(raw).trim()
+
+  // Türkçe format desteği: GG.AA.YYYY HH:mm veya GG/AA/YYYY HH:mm
+  const trMatch = str.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})(?:[ T](\d{1,2})(?::(\d{1,2}))?)?/)
+  if (trMatch) {
+    const dd = trMatch[1].padStart(2, '0')
+    const mm = trMatch[2].padStart(2, '0')
+    const yyyy = trMatch[3]
+    const hh = (trMatch[4] || '10').padStart(2, '0')
+    const min = (trMatch[5] || '00').padStart(2, '0')
+    return `${yyyy}-${mm}-${dd}T${hh}:${min}`
   }
-  const standardMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/)
+
+  const isoClean = str.replace(' ', 'T')
+  if (/^\d{4}-\d{2}-\d{2}$/.test(isoClean)) {
+    return `${isoClean}T10:00`
+  }
+  const standardMatch = isoClean.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/)
   if (standardMatch) {
     return `${standardMatch[1]}-${standardMatch[2]}-${standardMatch[3]}T${standardMatch[4]}:${standardMatch[5]}`
   }
-  const malformedMatch = str.match(/^(\d{4})\d+-(\d{2})-(\d{2})(?:T(\d{1,2})(?::(\d{1,2}))?)?/)
+  const malformedMatch = isoClean.match(/^(\d{4})\d+-(\d{2})-(\d{2})(?:T(\d{1,2})(?::(\d{1,2}))?)?/)
   if (malformedMatch) {
     const hh = (malformedMatch[4] || '10').padStart(2, '0')
     const mm = (malformedMatch[5] || '00').padStart(2, '0')
