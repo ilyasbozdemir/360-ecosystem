@@ -231,9 +231,9 @@ const dosyaManageRoute = createRoute({
 const dosyaSihirbazRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: APP_ROUTES.DOSYA_SIHIRBAZ,
-  validateSearch: (search: Record<string, unknown>) => ({
-    stage: Number(search?.stage || search?.initialStage || 1),
-    initialStage: Number(search?.initialStage || search?.stage || 1),
+  validateSearch: (search: Record<string, unknown>): { stage?: number; initialStage?: number } => ({
+    stage: search?.stage != null ? Number(search.stage) : undefined,
+    initialStage: search?.initialStage != null ? Number(search.initialStage) : undefined,
   }),
   component: DosyaSihirbaziScreen,
 });

@@ -13,6 +13,8 @@ export const DATA_TeminBelge = {
     { name: 'olusturan_personel_id', type: 'INTEGER', description: 'Olusturan Personel ID' },
     { name: 'belge_tarihi', type: 'TEXT', description: 'Belge/Tutanak Tarihi' },
     { name: 'veri_json', type: 'TEXT', description: 'Belgeye ait dondurulmus JSON taslagi' },
+    { name: 'durum', type: 'TEXT', default: "'hazirlaniyor'", description: 'Operasyonel Kanban Durumu (hazirlanacak, hazirlaniyor, beklemede, tamamlandi)' },
+    { name: 'bekleme_nedeni', type: 'TEXT', description: 'Belgenin beklemede olma aciklamasi/nedeni' },
     {
       name: 'created_at',
       type: 'DATETIME',

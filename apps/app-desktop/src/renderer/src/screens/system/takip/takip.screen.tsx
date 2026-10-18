@@ -26,7 +26,12 @@ import { TakipDosyaDetayBilgileri } from "./components/TakipDosyaDetayBilgileri"
 import { TakipAsamaAciklamalari } from "./components/TakipAsamaAciklamalari";
 import { TakipGenelMetrikView } from "./components/TakipGenelMetrikView";
 import { TakipKanbanBoard } from "./components/TakipKanbanBoard";
+import { TakipGridView } from "./components/TakipGridView";
+import { TakipListView } from "./components/TakipListView";
+import { TakipDosyaDetayDialog } from "./components/TakipDosyaDetayDialog";
 import { DosyaNotlariWidget } from "../../notlar/components/DosyaNotlariWidget";
+import { useQueryClient } from "@tanstack/react-query";
+import type { TeminDosyasi } from "../../dosyalar/dosyalar.hooks";
 
 export function TakipScreen(): React.JSX.Element {
   const navigate = useNavigate();
@@ -68,8 +73,97 @@ export function TakipScreen(): React.JSX.Element {
     formatCurrency,
   } = useTakip();
 
-  // Ana Görünüm Modu: Varsayılan olarak Kanban İş Akışı
-  const [viewMode, setViewMode] = useState<TakipViewMode>("kanban");
+  const queryClient = useQueryClient();
+
+  // Ana Görünüm Modu: Kullanıcının son seçtiği görünüm (localStorage ile korunur)
+  const [viewMode, setViewModeState] = useState<TakipViewMode>(() => {
+    try {
+      const saved = localStorage.getItem("temin_takip_view_mode") as TakipViewMode;
+      if (saved && ["kanban", "grid", "list", "metrik", "detay"].includes(saved)) {
+        return saved;
+      }
+    } catch {
+      // ignore
+    }
+    return "kanban";
+  });
+
+  const setViewMode = (mode: TakipViewMode) => {
+    setViewModeState(mode);
+    try {
+      localStorage.setItem("temin_takip_view_mode", mode);
+    } catch {
+      // ignore
+    }
+  };
+
+  // Trello Benzeri Kart Detay Dialog'u State'i
+  const [selectedDetailDosya, setSelectedDetailDosya] = useState<TeminDosyasi | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+  const handleOpenDetailModal = (dosya: TeminDosyasi) => {
+    setSelectedDetailDosya(dosya);
+    setIsDetailModalOpen(true);
+  };
+
+  const handleCloseDetailModal = () => {
+    setIsDetailModalOpen(false);
+  };
+
+  const handleDosyaUpdatedInModal = (updated: Partial<TeminDosyasi> & { id: number }) => {
+    queryClient.invalidateQueries({ queryKey: ["temin_dosyalari"] });
+    if (selectedDetailDosya && selectedDetailDosya.id === updated.id) {
+      setSelectedDetailDosya((prev) => (prev ? { ...prev, ...updated } : null));
+    }
+  };
+
+  // Ortak Arama ve Filtreleme Durumu (Görünüm değişiminde sıfırlanmaz)
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedYil, setSelectedYil] = useState("all");
+  const [selectedTur, setSelectedTur] = useState("all");
+
+  const uniqueYillar = React.useMemo(() => {
+    const years = new Set<number>();
+    dosyalar.forEach((d) => {
+      const y =
+        d.butce_yili || (d.dosya_acilis_tarihi ? new Date(d.dosya_acilis_tarihi).getFullYear() : null);
+      if (y) years.add(y);
+    });
+    return Array.from(years).sort((a, b) => b - a);
+  }, [dosyalar]);
+
+  const filteredDosyalar = React.useMemo(() => {
+    return dosyalar.filter((d) => {
+      if (d.is_deleted === 1) return false;
+
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        const matchKonu = (d.konu || "").toLowerCase().includes(q);
+        const matchNo = (d.temin_no || "").toLowerCase().includes(q);
+        const matchBirim = (
+          (d as { birim_adi?: string; birim?: string }).birim_adi ||
+          (d as { birim?: string }).birim ||
+          ""
+        )
+          .toLowerCase()
+          .includes(q);
+        if (!matchKonu && !matchNo && !matchBirim) return false;
+      }
+
+      if (selectedYil !== "all") {
+        const dYear =
+          d.butce_yili ||
+          (d.dosya_acilis_tarihi ? new Date(d.dosya_acilis_tarihi).getFullYear() : null);
+        if (String(dYear) !== selectedYil) return false;
+      }
+
+      if (selectedTur !== "all") {
+        if (d.tur !== selectedTur) return false;
+      }
+
+      return true;
+    });
+  }, [dosyalar, searchQuery, selectedYil, selectedTur]);
 
   // Tabbed Görünüm (Dosya Detayı alt sekmeleri)
   const [activeTab, setActiveTab] = useState<"ozet" | "kalemler" | "komisyon" | "mevzuat">("ozet");
@@ -121,7 +215,6 @@ export function TakipScreen(): React.JSX.Element {
           activeDosyaId={activeDosyaId}
           setActiveDosyaId={(id) => {
             setActiveDosyaId(id);
-            setViewMode("detay");
           }}
           formatCurrency={formatCurrency}
           onOpenWizard={(targetStage) => {
@@ -137,6 +230,77 @@ export function TakipScreen(): React.JSX.Element {
           }}
           onEdit={(dosyaId) => {
             navigate({ to: `${APP_ROUTES.YENI_DOSYA}?id=${dosyaId}` });
+          }}
+          onOpenDetail={handleOpenDetailModal}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          selectedYil={selectedYil}
+          setSelectedYil={setSelectedYil}
+          selectedTur={selectedTur}
+          setSelectedTur={setSelectedTur}
+        />
+      )}
+
+      {/* GÖRÜNÜM 2: GRID / KART GÖRÜNÜMÜ */}
+      {viewMode === "grid" && (
+        <TakipGridView
+          dosyalar={filteredDosyalar}
+          activeDosyaId={activeDosyaId}
+          setActiveDosyaId={(id) => {
+            setActiveDosyaId(id);
+          }}
+          formatCurrency={formatCurrency}
+          onOpenDetail={handleOpenDetailModal}
+          onOpenSurec={(d) => {
+            setActiveDosyaId(d.id);
+            const route = STAGE_ROUTES[d.durum_asama_id || 1] || "/dosya/hazirlik-ve-ihtiyac";
+            navigate({ to: route });
+          }}
+          onEdit={(dosyaId) => {
+            navigate({ to: `${APP_ROUTES.YENI_DOSYA}?id=${dosyaId}` });
+          }}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          selectedYil={selectedYil}
+          setSelectedYil={setSelectedYil}
+          selectedTur={selectedTur}
+          setSelectedTur={setSelectedTur}
+          uniqueYillar={uniqueYillar}
+          totalCount={dosyalar.length}
+          onOpenWizard={() => {
+            navigate({ to: APP_ROUTES.DOSYA_SIHIRBAZ, search: { initialStage: 1 } });
+          }}
+        />
+      )}
+
+      {/* GÖRÜNÜM 3: KOMPAKT LİSTE GÖRÜNÜMÜ */}
+      {viewMode === "list" && (
+        <TakipListView
+          dosyalar={filteredDosyalar}
+          activeDosyaId={activeDosyaId}
+          setActiveDosyaId={(id) => {
+            setActiveDosyaId(id);
+          }}
+          formatCurrency={formatCurrency}
+          onOpenDetail={handleOpenDetailModal}
+          onOpenSurec={(d) => {
+            setActiveDosyaId(d.id);
+            const route = STAGE_ROUTES[d.durum_asama_id || 1] || "/dosya/hazirlik-ve-ihtiyac";
+            navigate({ to: route });
+          }}
+          onEdit={(dosyaId) => {
+            navigate({ to: `${APP_ROUTES.YENI_DOSYA}?id=${dosyaId}` });
+          }}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          selectedYil={selectedYil}
+          setSelectedYil={setSelectedYil}
+          selectedTur={selectedTur}
+          setSelectedTur={setSelectedTur}
+          uniqueYillar={uniqueYillar}
+          totalCount={dosyalar.length}
+          onOpenWizard={() => {
+            navigate({ to: APP_ROUTES.DOSYA_SIHIRBAZ, search: { initialStage: 1 } });
           }}
         />
       )}
@@ -368,6 +532,25 @@ export function TakipScreen(): React.JSX.Element {
           }}
         />
       )}
+
+      {/* TRELLO BENZERI KART DETAY DIALOG'U */}
+      <TakipDosyaDetayDialog
+        isOpen={isDetailModalOpen}
+        onClose={handleCloseDetailModal}
+        dosya={selectedDetailDosya}
+        formatCurrency={formatCurrency}
+        onEdit={(dosyaId) => {
+          handleCloseDetailModal();
+          navigate({ to: `${APP_ROUTES.YENI_DOSYA}?id=${dosyaId}` });
+        }}
+        onOpenSurec={(d) => {
+          handleCloseDetailModal();
+          setActiveDosyaId(d.id);
+          const route = STAGE_ROUTES[d.durum_asama_id || 1] || "/dosya/hazirlik-ve-ihtiyac";
+          navigate({ to: route });
+        }}
+        onDosyaUpdated={handleDosyaUpdatedInModal}
+      />
     </div>
   );
 }

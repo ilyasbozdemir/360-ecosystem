@@ -19,6 +19,7 @@ export interface TakipKanbanCardProps {
   onOpenSurec: (dosya: TeminDosyasi) => void
   onEdit: (dosyaId: number) => void
   isActive?: boolean
+  onOpenDetail?: (dosya: TeminDosyasi) => void
 }
 
 export function TakipKanbanCard({
@@ -27,7 +28,8 @@ export function TakipKanbanCard({
   onSelect,
   onOpenSurec,
   onEdit,
-  isActive = false
+  isActive = false,
+  onOpenDetail
 }: TakipKanbanCardProps): React.JSX.Element {
   const getTurBadge = (
     tur: string
@@ -89,7 +91,8 @@ export function TakipKanbanCard({
       draggable
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
-      className={`group relative flex flex-col gap-2.5 p-3.5 rounded-2xl border transition-all duration-200 cursor-grab active:cursor-grabbing select-none bg-white dark:bg-slate-900 shadow-2xs hover:shadow-md hover:-translate-y-0.5 ${
+      onClick={() => (onOpenDetail ? onOpenDetail(dosya) : onSelect(dosya.id))}
+      className={`group relative flex flex-col gap-2.5 p-3.5 rounded-2xl border transition-all duration-200 cursor-pointer select-none bg-white dark:bg-slate-900 shadow-2xs hover:shadow-md hover:-translate-y-0.5 ${
         isActive
           ? 'border-blue-500 ring-2 ring-blue-500/20 dark:ring-blue-500/30 shadow-blue-500/10'
           : 'border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
@@ -97,8 +100,11 @@ export function TakipKanbanCard({
     >
       {/* Top Header Row */}
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 min-w-0">
-          <GripVertical className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600 group-hover:text-slate-400 shrink-0" />
+        <div
+          className="flex items-center gap-1.5 min-w-0"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <GripVertical className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600 group-hover:text-slate-400 shrink-0 cursor-grab active:cursor-grabbing" />
           <span className="font-mono text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60 truncate">
             {dosya.temin_no || `#${dosya.id}`}
           </span>
@@ -114,8 +120,7 @@ export function TakipKanbanCard({
 
       {/* Subject / Konu */}
       <h4
-        onClick={() => onSelect(dosya.id)}
-        className="text-xs font-bold text-slate-850 dark:text-slate-100 line-clamp-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+        className="text-xs font-bold text-slate-850 dark:text-slate-100 line-clamp-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
         title={dosya.konu}
       >
         {dosya.konu || 'İsimsiz Temin Dosyası'}
@@ -141,16 +146,22 @@ export function TakipKanbanCard({
       </div>
 
       {/* Card Action Buttons */}
-      <div className="flex items-center justify-between gap-1 pt-1.5 border-t border-slate-100 dark:border-slate-800/60">
+      <div
+        className="flex items-center justify-between gap-1 pt-1.5 border-t border-slate-100 dark:border-slate-800/60"
+        onClick={(e) => e.stopPropagation()}
+      >
         <button
           type="button"
-          onClick={() => onSelect(dosya.id)}
+          onClick={(e) => {
+            e.stopPropagation()
+            onSelect(dosya.id)
+          }}
           className={`text-[10px] font-bold px-2 py-1 rounded-lg transition-colors flex items-center gap-1 cursor-pointer ${
             isActive
               ? 'bg-blue-600 text-white'
               : 'bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 dark:bg-slate-800 dark:hover:bg-blue-950/40 dark:text-slate-300 dark:hover:text-blue-300'
           }`}
-          title="Dosyayı aktif hale getir ve detayları incele"
+          title="Dosyayı aktif hale getir"
         >
           <CheckCircle2 size={11} />
           {isActive ? 'Aktif Dosya' : 'Seç'}
@@ -159,7 +170,10 @@ export function TakipKanbanCard({
         <div className="flex items-center gap-1">
           <button
             type="button"
-            onClick={() => onOpenSurec(dosya)}
+            onClick={(e) => {
+              e.stopPropagation()
+              onOpenSurec(dosya)
+            }}
             className="p-1 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-950/40 text-slate-400 hover:text-purple-600 dark:hover:text-purple-300 transition-colors cursor-pointer"
             title="Süreç Aşamasına Git"
           >
@@ -168,7 +182,10 @@ export function TakipKanbanCard({
 
           <button
             type="button"
-            onClick={() => onEdit(dosya.id)}
+            onClick={(e) => {
+              e.stopPropagation()
+              onEdit(dosya.id)
+            }}
             className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
             title="Dosyayı Düzenle"
           >

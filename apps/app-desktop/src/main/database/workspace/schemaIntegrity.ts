@@ -329,6 +329,14 @@ export function ensureSchemaIntegrity(db: Database.Database): void {
     try { db.exec(`ALTER TABLE DATA_IhtiyacRaporu ADD COLUMN "${c.name}" ${c.def};`) } catch {}
   }
 
+  const belgeCols = [
+    { name: 'durum', def: "TEXT DEFAULT 'hazirlaniyor'" },
+    { name: 'bekleme_nedeni', def: 'TEXT' }
+  ]
+  for (const c of belgeCols) {
+    try { db.exec(`ALTER TABLE DATA_TeminBelge ADD COLUMN "${c.name}" ${c.def};`) } catch {}
+  }
+
   // Schema Table & Column self-repair
   for (const table of schema.tables as any[]) {
     try {

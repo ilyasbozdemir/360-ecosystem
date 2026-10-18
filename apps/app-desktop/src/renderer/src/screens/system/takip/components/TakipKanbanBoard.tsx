@@ -1,12 +1,11 @@
 import React, { useState, useMemo } from 'react'
 import {
-  Search,
-  Plus,
   Layers,
-  Sparkles,
+  Plus,
   AlertCircle
 } from 'lucide-react'
 import { TakipKanbanCard } from './TakipKanbanCard'
+import { TakipFilterToolbar } from './TakipFilterToolbar'
 import { logActivity } from '../../../../utils/logger'
 import { emitAppEvent } from '../../../../utils/appEvents'
 import { useQueryClient } from '@tanstack/react-query'
@@ -20,6 +19,13 @@ export interface TakipKanbanBoardProps {
   onOpenWizard: (targetStage?: number) => void
   onOpenSurec: (dosya: TeminDosyasi) => void
   onEdit: (dosyaId: number) => void
+  onOpenDetail?: (dosya: TeminDosyasi) => void
+  searchQuery?: string
+  setSearchQuery?: (q: string) => void
+  selectedYil?: string
+  setSelectedYil?: (y: string) => void
+  selectedTur?: string
+  setSelectedTur?: (t: string) => void
 }
 
 interface StageColumnDef {
@@ -78,7 +84,14 @@ export function TakipKanbanBoard({
   formatCurrency,
   onOpenWizard,
   onOpenSurec,
-  onEdit
+  onEdit,
+  onOpenDetail,
+  searchQuery: externalSearchQuery,
+  setSearchQuery: externalSetSearchQuery,
+  selectedYil: externalSelectedYil,
+  setSelectedYil: externalSetSelectedYil,
+  selectedTur: externalSelectedTur,
+  setSelectedTur: externalSetSelectedTur
 }: TakipKanbanBoardProps): React.JSX.Element {
   const queryClient = useQueryClient()
 
@@ -89,10 +102,22 @@ export function TakipKanbanBoard({
   const [activeDropStage, setActiveDropStage] = useState<number | null>(null)
   const [errorMessage, setErrorMessage] = useState<string>('')
 
-  // Search & Filter state
-  const [searchQuery, setSearchQuery] = useState<string>('')
-  const [selectedYil, setSelectedYil] = useState<string>('all')
-  const [selectedTur, setSelectedTur] = useState<string>('all')
+  // Search & Filter state (controlled or uncontrolled fallback)
+  const [internalSearchQuery, setInternalSearchQuery] = useState<string>('')
+  const [internalSelectedYil, setInternalSelectedYil] = useState<string>('all')
+  const [internalSelectedTur, setInternalSelectedTur] = useState<string>('all')
+
+  const effectiveSearchQuery =
+    externalSearchQuery !== undefined ? externalSearchQuery : internalSearchQuery
+  const setEffectiveSearchQuery = externalSetSearchQuery || setInternalSearchQuery
+
+  const effectiveSelectedYil =
+    externalSelectedYil !== undefined ? externalSelectedYil : internalSelectedYil
+  const setEffectiveSelectedYil = externalSetSelectedYil || setInternalSelectedYil
+
+  const effectiveSelectedTur =
+    externalSelectedTur !== undefined ? externalSelectedTur : internalSelectedTur
+  const setEffectiveSelectedTur = externalSetSelectedTur || setInternalSelectedTur
 
   // Apply optimistic overrides on top of incoming dosyalar
   const activeDosyalar = useMemo(() => {
@@ -120,8 +145,8 @@ export function TakipKanbanBoard({
       if (d.is_deleted === 1) return false
 
       // Search Query
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase().trim()
+      if (effectiveSearchQuery.trim()) {
+        const q = effectiveSearchQuery.toLowerCase().trim()
         const matchKonu = (d.konu || '').toLowerCase().includes(q)
         const matchNo = (d.temin_no || '').toLowerCase().includes(q)
         const matchBirim = (
@@ -135,21 +160,21 @@ export function TakipKanbanBoard({
       }
 
       // Year Filter
-      if (selectedYil !== 'all') {
+      if (effectiveSelectedYil !== 'all') {
         const dYear =
           d.butce_yili ||
           (d.dosya_acilis_tarihi ? new Date(d.dosya_acilis_tarihi).getFullYear() : null)
-        if (String(dYear) !== selectedYil) return false
+        if (String(dYear) !== effectiveSelectedYil) return false
       }
 
       // Type Filter
-      if (selectedTur !== 'all') {
-        if (d.tur !== selectedTur) return false
+      if (effectiveSelectedTur !== 'all') {
+        if (d.tur !== effectiveSelectedTur) return false
       }
 
       return true
     })
-  }, [activeDosyalar, searchQuery, selectedYil, selectedTur])
+  }, [activeDosyalar, effectiveSearchQuery, effectiveSelectedYil, effectiveSelectedTur])
 
   // Drag & Drop Handlers
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>, stageId: number): void => {
@@ -247,60 +272,18 @@ export function TakipKanbanBoard({
       )}
 
       {/* TOOLBAR: SEARCH, FILTERS & WIZARD ACTION */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-3 rounded-2xl shadow-2xs">
-        {/* Search Input */}
-        <div className="relative flex-1 max-w-md">
-          <Search className="w-4 h-4 absolute left-3.5 top-2.5 text-slate-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Konu, dosya no veya birim adına göre ara..."
-            className="w-full pl-9 pr-3 py-1.5 text-xs font-semibold bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/80 rounded-xl focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        {/* Filters and Action Buttons */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Year Filter */}
-          <select
-            value={selectedYil}
-            onChange={(e) => setSelectedYil(e.target.value)}
-            className="px-3 py-1.5 text-xs font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-300 cursor-pointer"
-          >
-            <option value="all">Tüm Yıllar</option>
-            {uniqueYillar.map((y) => (
-              <option key={y} value={String(y)}>
-                {y} Yılı
-              </option>
-            ))}
-          </select>
-
-          {/* Type Filter */}
-          <select
-            value={selectedTur}
-            onChange={(e) => setSelectedTur(e.target.value)}
-            className="px-3 py-1.5 text-xs font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-300 cursor-pointer"
-          >
-            <option value="all">Tüm Alım Türleri</option>
-            <option value="mal">Mal Alımı</option>
-            <option value="hizmet">Hizmet Alımı</option>
-            <option value="yapim_isi">Yapım İşi</option>
-            <option value="danismanlik">Danışmanlık</option>
-          </select>
-
-          {/* New Dossier Wizard Button */}
-          <button
-            type="button"
-            onClick={() => onOpenWizard(1)}
-            className="flex items-center gap-1.5 px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-500/20 cursor-pointer shrink-0"
-            title="Adım adım yönlendirmeli sihirbaz ile yeni dosya oluştur"
-          >
-            <Sparkles size={14} />
-            <span>Yeni Dosya Sihirbazı</span>
-          </button>
-        </div>
-      </div>
+      <TakipFilterToolbar
+        searchQuery={effectiveSearchQuery}
+        setSearchQuery={setEffectiveSearchQuery}
+        selectedYil={effectiveSelectedYil}
+        setSelectedYil={setEffectiveSelectedYil}
+        selectedTur={effectiveSelectedTur}
+        setSelectedTur={setEffectiveSelectedTur}
+        uniqueYillar={uniqueYillar}
+        totalCount={dosyalar.length}
+        filteredCount={filteredDosyalar.length}
+        onOpenWizard={onOpenWizard}
+      />
 
       {/* 4-COLUMN KANBAN BOARD */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-start select-none">
@@ -385,6 +368,7 @@ export function TakipKanbanBoard({
                       onOpenSurec={onOpenSurec}
                       onEdit={onEdit}
                       isActive={activeDosyaId === dosya.id}
+                      onOpenDetail={onOpenDetail}
                     />
                   ))
                 ) : (

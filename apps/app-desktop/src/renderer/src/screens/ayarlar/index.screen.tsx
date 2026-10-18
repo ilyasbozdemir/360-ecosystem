@@ -24,40 +24,42 @@ export default function AyarlarScreen(): React.ReactNode {
   const { loadSettings: reloadSettingsStore } = useSettingsStore()
 
   const location = useLocation()
+  const searchRecord =
+    typeof location.search === 'object' && location.search !== null
+      ? (location.search as Record<string, unknown>)
+      : {}
+  const searchTab = typeof searchRecord.tab === 'string' ? (searchRecord.tab as TabType) : undefined
+
   const [activeTab, setActiveTab] = useState<TabType>(() => {
-    const params = new URLSearchParams(location.search)
-    const tabParam = params.get('tab') as TabType
     if (
-      tabParam === 'genel' ||
-      tabParam === 'smtp' ||
-      tabParam === 'tema' ||
-      tabParam === 'belge-tema' ||
-      tabParam === 'developer' ||
-      tabParam === 'ai' ||
-      tabParam === 'archive' ||
-      tabParam === 'sync'
+      searchTab === 'genel' ||
+      searchTab === 'smtp' ||
+      searchTab === 'tema' ||
+      searchTab === 'belge-tema' ||
+      searchTab === 'developer' ||
+      searchTab === 'ai' ||
+      searchTab === 'archive' ||
+      searchTab === 'sync'
     ) {
-      return tabParam
+      return searchTab
     }
     return 'genel'
   })
 
-  const params = new URLSearchParams(location.search as any)
-  const currentTabParam = params.get('tab') as TabType
   useEffect(() => {
     if (
-      currentTabParam === 'genel' ||
-      currentTabParam === 'smtp' ||
-      currentTabParam === 'tema' ||
-      currentTabParam === 'belge-tema' ||
-      currentTabParam === 'developer' ||
-      currentTabParam === 'ai' ||
-      currentTabParam === 'archive' ||
-      currentTabParam === 'sync'
+      searchTab === 'genel' ||
+      searchTab === 'smtp' ||
+      searchTab === 'tema' ||
+      searchTab === 'belge-tema' ||
+      searchTab === 'developer' ||
+      searchTab === 'ai' ||
+      searchTab === 'archive' ||
+      searchTab === 'sync'
     ) {
-      setActiveTab(currentTabParam)
+      setActiveTab(searchTab)
     }
-  }, [currentTabParam])
+  }, [searchTab])
 
   const [saving, setSaving] = useState(false)
 

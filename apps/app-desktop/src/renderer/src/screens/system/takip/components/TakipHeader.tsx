@@ -1,8 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
-import { ClipboardList, Edit, Columns3, FileText, BarChart3, Sparkles } from 'lucide-react'
+import {
+  ClipboardList,
+  Edit,
+  Columns3,
+  LayoutGrid,
+  List,
+  BarChart3,
+  Sparkles
+} from 'lucide-react'
 
-export type TakipViewMode = 'kanban' | 'detay' | 'metrik'
+export type TakipViewMode = 'kanban' | 'grid' | 'list' | 'metrik' | 'detay'
 
 interface TakipHeaderProps {
   activeDosya?: any
@@ -32,7 +40,7 @@ export function TakipHeader({
       </div>
 
       <div className="flex items-center gap-2.5 flex-wrap">
-        {/* VIEW MODE TOGGLE */}
+        {/* VIEW MODE TOGGLE (ORTAK GÖRÜNÜM SİSTEMİ: KANBAN, GRID, LİSTE, METRİK) */}
         <div className="flex bg-slate-100/90 dark:bg-slate-800/80 p-1 rounded-2xl border border-slate-200/60 dark:border-slate-700/60">
           <button
             type="button"
@@ -42,6 +50,7 @@ export function TakipHeader({
                 ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-2xs'
                 : 'text-slate-500 hover:text-slate-750 dark:hover:text-slate-300'
             }`}
+            title="Kanban İş Akışı Tahtası (Aşamalara göre sürükle-bırak panosu)"
           >
             <Columns3 size={14} />
             <span>Kanban</span>
@@ -49,15 +58,30 @@ export function TakipHeader({
 
           <button
             type="button"
-            onClick={() => setActiveView('detay')}
+            onClick={() => setActiveView('grid')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              activeView === 'detay'
+              activeView === 'grid'
                 ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-2xs'
                 : 'text-slate-500 hover:text-slate-750 dark:hover:text-slate-300'
             }`}
+            title="Grid / Kart Görünümü (Tüm dosyaların düzenli kart ızgarası)"
           >
-            <FileText size={14} />
-            <span>Dosya Detayı</span>
+            <LayoutGrid size={14} />
+            <span>Kart / Grid</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveView('list')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeView === 'list'
+                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-2xs'
+                : 'text-slate-500 hover:text-slate-750 dark:hover:text-slate-300'
+            }`}
+            title="Kompakt Liste / Tablo Görünümü (Yoğun bilgi sunan taranabilir liste)"
+          >
+            <List size={14} />
+            <span>Liste</span>
           </button>
 
           <button
@@ -68,6 +92,7 @@ export function TakipHeader({
                 ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-2xs'
                 : 'text-slate-500 hover:text-slate-750 dark:hover:text-slate-300'
             }`}
+            title="Süreç Metrikleri ve Grafikler"
           >
             <BarChart3 size={14} />
             <span>Metrikler</span>
