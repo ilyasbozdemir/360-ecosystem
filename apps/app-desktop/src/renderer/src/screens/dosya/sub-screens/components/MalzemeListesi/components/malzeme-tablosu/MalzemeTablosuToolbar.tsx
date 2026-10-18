@@ -2,6 +2,7 @@ import React from 'react'
 import {
   FileSpreadsheet,
   History as HistoryIcon,
+  Link2,
   Package,
   Plus
 } from 'lucide-react'
@@ -33,6 +34,8 @@ interface MalzemeTablosuToolbarProps {
   handleDownloadTemplate: () => Promise<void>
   handleExportToLibrary: () => Promise<void>
   handleTriggerKatalogSync: () => void
+  onOpenIhtiyacRaporuModal?: () => void
+  hasLinkedIhtiyacRaporu?: boolean
 }
 
 export function MalzemeTablosuToolbar({
@@ -59,7 +62,9 @@ export function MalzemeTablosuToolbar({
   handleExcelImport,
   handleDownloadTemplate,
   handleExportToLibrary,
-  handleTriggerKatalogSync
+  handleTriggerKatalogSync,
+  onOpenIhtiyacRaporuModal,
+  hasLinkedIhtiyacRaporu
 }: MalzemeTablosuToolbarProps): React.JSX.Element {
   return (
     <div className="flex items-center justify-between mb-4">
@@ -75,6 +80,25 @@ export function MalzemeTablosuToolbar({
         </span>
       </h3>
       <div className="flex items-center gap-2 relative">
+        {onOpenIhtiyacRaporuModal && (
+          <button
+            type="button"
+            onClick={onOpenIhtiyacRaporuModal}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 h-8.5 rounded-xl text-xs font-semibold border transition-all shadow-2xs hover:shadow-xs cursor-pointer active:scale-98 ${
+              hasLinkedIhtiyacRaporu
+                ? 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/60 dark:text-indigo-300 border-indigo-200/90 dark:border-indigo-800/70'
+                : 'bg-indigo-50/60 hover:bg-indigo-100/80 text-indigo-700 dark:bg-indigo-950/30 dark:hover:bg-indigo-900/50 dark:text-indigo-300 border-indigo-200/70 dark:border-indigo-800/50'
+            }`}
+            title="İhtiyaç Raporunu Bu Doğrudan Temin Dosyasına Bağla & Kalemleri Otomatik Aktar"
+          >
+            <Link2 className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+            <span>{hasLinkedIhtiyacRaporu ? 'İhtiyaç Raporu (Bağlı)' : 'İhtiyaç Raporu Bağla'}</span>
+            {hasLinkedIhtiyacRaporu && (
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            )}
+          </button>
+        )}
+
         <button
           type="button"
           onClick={handleExportMasterExcel}
@@ -138,6 +162,7 @@ export function MalzemeTablosuToolbar({
           onDownloadTemplate={handleDownloadTemplate}
           onExportToLibrary={handleExportToLibrary}
           onKatalogSync={handleTriggerKatalogSync}
+          onIhtiyacRaporuBagla={onOpenIhtiyacRaporuModal}
           disableDocumentGuidance={disableDocumentGuidance}
           onIhtiyacListesi={() => handleOpenSablonByDosyaAdi('ihtiyac-listesi')}
           onIhtiyacTalepFormu={() => handleOpenSablonByDosyaAdi('ihtiyac-talep-formu')}

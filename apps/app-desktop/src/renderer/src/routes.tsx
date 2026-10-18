@@ -231,6 +231,10 @@ const dosyaManageRoute = createRoute({
 const dosyaSihirbazRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: APP_ROUTES.DOSYA_SIHIRBAZ,
+  validateSearch: (search: Record<string, unknown>) => ({
+    stage: Number(search?.stage || search?.initialStage || 1),
+    initialStage: Number(search?.initialStage || search?.stage || 1),
+  }),
   component: DosyaSihirbaziScreen,
 });
 

@@ -131,17 +131,6 @@ export async function ensureIhtiyacRaporuTables(): Promise<void> {
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY(rapor_id) REFERENCES DATA_IhtiyacRaporu(id) ON DELETE CASCADE
     )`)
-    // Self-healing: Mevcut veritabanında sütun eksikse ekle
-    try {
-      await dbClient.run(`ALTER TABLE DATA_IhtiyacRaporu ADD COLUMN talep_eden_unvan TEXT`)
-    } catch {
-      // Sütun zaten mevcutsa hatayı yut
-    }
-    try {
-      await dbClient.run(`ALTER TABLE DATA_IhtiyacRaporu ADD COLUMN evrak_sayisi TEXT`)
-    } catch {
-      // Sütun zaten mevcutsa hatayı yut
-    }
     // İndeksler
     await dbClient.run(
       `CREATE UNIQUE INDEX IF NOT EXISTS idx_ihtiyac_raporu_no ON DATA_IhtiyacRaporu(rapor_no)`
@@ -761,5 +750,27 @@ export const ihtiyacRaporuService = {
       ORDER BY id DESC
     `
     return dbClient.query<DosyaOption>(sql)
+  },
+
+  /**
+   * Belirli bir alım dosyasına bağlı ihtiyaç raporunu getirir
+   */
+  async getLinkedRaporForDosya(dosyaId: number): Promise<IhtiyacRaporu | null> {
+    await ensureIhtiyacRaporuTables()
+    const sql = `
+      SELECT 
+        r.*,
+        COUNT(k.id) AS kalem_sayisi,
+        COALESCE(d.temin_no, d.dosya_no) AS dosya_no,
+        d.konu AS dosya_konu,
+        d.tur AS dosya_tur
+      FROM DATA_IhtiyacRaporu r
+      LEFT JOIN DATA_IhtiyacRaporuKalem k ON k.rapor_id = r.id
+      LEFT JOIN DATA_TeminDosyasi d ON d.id = r.temin_dosya_id
+      WHERE r.temin_dosya_id = ?
+      GROUP BY r.id
+      LIMIT 1
+    `
+    return dbClient.queryFirst<IhtiyacRaporu>(sql, [dosyaId])
   }
 }

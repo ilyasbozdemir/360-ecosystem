@@ -1,6 +1,8 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { useSettingsStore } from '../../../../../store/settingsStore'
 import { KatalogSenkronizasyonModal } from './components/KatalogSenkronizasyonModal'
+import { IhtiyacRaporuBaglaModal } from './components/IhtiyacRaporuBaglaModal'
+import { ihtiyacRaporuService } from '../../../../../services/ihtiyacRaporuService'
 import { useMalzemeTablosuActions } from './components/malzeme-tablosu/useMalzemeTablosuActions'
 import { MalzemeTablosuToolbar } from './components/malzeme-tablosu/MalzemeTablosuToolbar'
 import { MalzemeTablosuRehber } from './components/malzeme-tablosu/MalzemeTablosuRehber'
@@ -55,6 +57,37 @@ export function MalzemeTablosu({
   } = state
 
   const { disableDocumentGuidance } = useSettingsStore()
+
+  const [isIhtiyacModalOpen, setIsIhtiyacModalOpen] = useState(false)
+  const [hasLinkedIhtiyacRaporu, setHasLinkedIhtiyacRaporu] = useState(false)
+
+  useEffect(() => {
+    let isMounted = true
+    if (!activeDosyaId) {
+      return
+    }
+    ihtiyacRaporuService
+      .getLinkedRaporForDosya(activeDosyaId)
+      .then((rapor) => {
+        if (isMounted) setHasLinkedIhtiyacRaporu(Boolean(rapor))
+      })
+      .catch(() => {
+        if (isMounted) setHasLinkedIhtiyacRaporu(false)
+      })
+    return () => {
+      isMounted = false
+    }
+  }, [activeDosyaId])
+
+  const handleIhtiyacSuccess = async (): Promise<void> => {
+    if (state.loadData) {
+      await state.loadData()
+    }
+    if (activeDosyaId) {
+      const rapor = await ihtiyacRaporuService.getLinkedRaporForDosya(activeDosyaId)
+      setHasLinkedIhtiyacRaporu(Boolean(rapor))
+    }
+  }
 
   const {
     selectedIds,
@@ -115,6 +148,8 @@ export function MalzemeTablosu({
         handleDownloadTemplate={handleDownloadTemplate}
         handleExportToLibrary={handleExportToLibrary}
         handleTriggerKatalogSync={() => handleTriggerKatalogSync()}
+        onOpenIhtiyacRaporuModal={() => setIsIhtiyacModalOpen(true)}
+        hasLinkedIhtiyacRaporu={hasLinkedIhtiyacRaporu}
       />
 
       {/* 1. Aşama Süreç & Ekler Rehberi (Mevzuat & Deneyim Notu) */}
@@ -157,6 +192,25 @@ export function MalzemeTablosu({
           setKatalogModalOpen(false)
         }}
       />
+
+      {/* İhtiyaç Raporunu Bağla & Kalemleri Aktar Modalı */}
+      {activeDosyaId && (
+        <IhtiyacRaporuBaglaModal
+          isOpen={isIhtiyacModalOpen}
+          onClose={() => {
+            setIsIhtiyacModalOpen(false)
+            if (activeDosyaId) {
+              ihtiyacRaporuService
+                .getLinkedRaporForDosya(activeDosyaId)
+                .then((rapor) => setHasLinkedIhtiyacRaporu(Boolean(rapor)))
+                .catch(() => {})
+            }
+          }}
+          dosyaId={activeDosyaId}
+          activeDosya={activeDosya}
+          onSuccess={handleIhtiyacSuccess}
+        />
+      )}
     </div>
   )
 }

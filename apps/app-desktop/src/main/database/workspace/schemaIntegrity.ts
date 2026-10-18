@@ -74,6 +74,10 @@ export function ensureSchemaIntegrity(db: Database.Database): void {
   } catch {}
 
   try {
+    db.exec(`ALTER TABLE DATA_IhtiyacRaporu ADD COLUMN "evrak_sayisi" TEXT;`)
+  } catch {}
+
+  try {
     const row = db.prepare("SELECT value FROM settings WHERE key = 'dbSchemaVersion'").get() as
       | { value?: string }
       | undefined
@@ -315,6 +319,14 @@ export function ensureSchemaIntegrity(db: Database.Database): void {
   ]
   for (const c of personelCols) {
     try { db.exec(`ALTER TABLE TANIM_Personel ADD COLUMN "${c.name}" ${c.def};`) } catch {}
+  }
+
+  const ihtiyacCols = [
+    { name: 'talep_eden_unvan', def: 'TEXT' },
+    { name: 'evrak_sayisi', def: 'TEXT' }
+  ]
+  for (const c of ihtiyacCols) {
+    try { db.exec(`ALTER TABLE DATA_IhtiyacRaporu ADD COLUMN "${c.name}" ${c.def};`) } catch {}
   }
 
   // Schema Table & Column self-repair

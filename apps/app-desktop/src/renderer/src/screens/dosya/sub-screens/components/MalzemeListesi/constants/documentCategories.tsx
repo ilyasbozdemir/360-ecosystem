@@ -12,6 +12,7 @@ import {
   FileText,
   FolderPlus,
   Layers,
+  Link2,
   RefreshCw,
   Send,
   ShieldAlert,
@@ -341,6 +342,13 @@ export function buildTableActionItems(
         ? "text-red-600 focus:text-red-600 dark:focus:text-red-400 focus:bg-red-50 dark:focus:bg-red-950/30 font-semibold"
         : "text-slate-400 dark:text-slate-500",
       onClick: onDeleteSelected,
+    },
+    {
+      id: "ihtiyacRaporuBagla",
+      label: "İhtiyaç Raporunu Bağla & Aktar",
+      icon: Link2,
+      iconColorClass: "text-indigo-600 font-semibold",
+      onClick: (props as any).onIhtiyacRaporuBagla,
     },
     {
       id: "katalogSync",

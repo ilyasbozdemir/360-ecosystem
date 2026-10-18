@@ -11,6 +11,7 @@ export interface MalzemeTabloPopoverProps {
   onDownloadTemplate?: () => void
   onExportToLibrary?: () => void
   onKatalogSync?: () => void
+  onIhtiyacRaporuBagla?: () => void
   // Talep & Başlangıç Belgeleri
   onIhtiyacListesi?: () => void
   onIhtiyacTalepFormu?: () => void
