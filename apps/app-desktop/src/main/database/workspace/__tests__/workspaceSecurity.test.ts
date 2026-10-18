@@ -137,7 +137,7 @@ describe('Workspace Security & Path Traversal Protections', () => {
   })
 
   describe('DtmWorkspace Zip Slip protection', () => {
-    it('detects and rejects zip files with path traversal entries', () => {
+    it('detects and rejects zip files with path traversal entries and safely cleans up lock files', () => {
       const maliciousZipPath = path.join(testDir, 'malicious.temin')
       const zip = new AdmZip()
       zip.addFile(
@@ -155,6 +155,19 @@ describe('Workspace Security & Path Traversal Protections', () => {
       zip.getEntries()[1].entryName = '../../malicious_file.txt'
       fs.writeFileSync(maliciousZipPath, zip.toBuffer())
 
+      // 1. Verify that the written archive physically contains the traversal entry
+      const writtenZip = new AdmZip(maliciousZipPath)
+      const zipSlipEntry = writtenZip.getEntries().find((e) => e.entryName === '../../malicious_file.txt')
+      expect(zipSlipEntry).toBeDefined()
+      expect(zipSlipEntry!.entryName).toContain('../')
+
+      // Possible path traversal escape locations
+      const escapedInTestDir = path.join(testDir, 'malicious_file.txt')
+      const escapedAboveTestDir = path.resolve(testDir, '..', 'malicious_file.txt')
+      expect(fs.existsSync(escapedInTestDir)).toBe(false)
+      expect(fs.existsSync(escapedAboveTestDir)).toBe(false)
+
+      const lockPath = maliciousZipPath + '.lock'
       const ws = new DtmWorkspace()
       let thrown: Error | null = null
       try {
@@ -162,7 +175,29 @@ describe('Workspace Security & Path Traversal Protections', () => {
       } catch (err: unknown) {
         thrown = err as Error
       }
+
+      // 2. Verify opening was rejected with Zip Slip error
+      expect(thrown).not.toBeNull()
       expect(thrown?.message).toMatch(/Zip Slip/)
+
+      // 3. Verify no file was written outside the extraction root
+      expect(fs.existsSync(escapedInTestDir)).toBe(false)
+      expect(fs.existsSync(escapedAboveTestDir)).toBe(false)
+
+      // 4. Verify lock file was cleanly released on error and no stale lock remains
+      expect(fs.existsSync(lockPath)).toBe(false)
+
+      // 5. Subsequent open attempt should still detect Zip Slip and NOT fail with a LOCKED error
+      let secondError: Error | null = null
+      try {
+        ws.openWorkspace(maliciousZipPath)
+      } catch (err: unknown) {
+        secondError = err as Error
+      }
+      expect(secondError?.message).not.toContain('LOCKED|')
+      expect(secondError?.message).toMatch(/Zip Slip/)
+      expect(fs.existsSync(lockPath)).toBe(false)
+
       ws.closeWorkspace()
     })
   })

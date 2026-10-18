@@ -73,48 +73,22 @@ export class DtmWorkspace {
       throw new Error(`Kilit dosyası oluşturulamadı: ${err.message}`)
     }
 
-    this.currentFilePath = filePath
-    this.ensureTempDir()
+    try {
+      this.currentFilePath = filePath
+      this.ensureTempDir()
 
-    const zipBuffer = fs.readFileSync(filePath)
-    if (zipBuffer.length === 0) {
-      if (fs.existsSync(lockPath)) fs.unlinkSync(lockPath)
-      return this.createWorkspace(filePath, 'Yeni Kurum')
-    }
-
-    const metaPath = path.join(this.tempDir, 'meta.json')
-    let rawMeta: any = {}
-    const headerPrefix = zipBuffer.subarray(0, Math.min(zipBuffer.length, 512)).toString('latin1')
-    const isRawSqlite = headerPrefix.includes('SQLite format 3')
-
-    if (isRawSqlite) {
-      const targetDb = path.join(this.tempDir, 'database.sqlite')
-      fs.copyFileSync(filePath, targetDb)
-      const dbInfo = extractDbInfo(targetDb, path.basename(filePath, path.extname(filePath)))
-      rawMeta = {
-        dtal_version: '1.0',
-        schema_version: dbInfo.schemaVersion,
-        institution_name: dbInfo.institutionName,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        active_db_file: 'database.sqlite'
+      const zipBuffer = fs.readFileSync(filePath)
+      if (zipBuffer.length === 0) {
+        if (fs.existsSync(lockPath)) fs.unlinkSync(lockPath)
+        return this.createWorkspace(filePath, 'Yeni Kurum')
       }
-      fs.writeFileSync(metaPath, JSON.stringify(rawMeta, null, 2))
-    } else {
-      try {
-        const zip = new AdmZip(filePath)
-        const resolvedTemp = path.resolve(this.tempDir)
-        for (const entry of zip.getEntries()) {
-          const entryTarget = path.resolve(resolvedTemp, entry.entryName)
-          if (!entryTarget.startsWith(resolvedTemp + path.sep) && entryTarget !== resolvedTemp) {
-            throw new Error(`Güvensiz arşiv içeriği tespit edildi (Zip Slip): ${entry.entryName}`)
-          }
-        }
-        zip.extractAllTo(this.tempDir, true)
-      } catch (zipErr: any) {
-        if (zipErr?.message?.includes('Zip Slip')) {
-          throw zipErr
-        }
+
+      const metaPath = path.join(this.tempDir, 'meta.json')
+      let rawMeta: any = {}
+      const headerPrefix = zipBuffer.subarray(0, Math.min(zipBuffer.length, 512)).toString('latin1')
+      const isRawSqlite = headerPrefix.includes('SQLite format 3')
+
+      if (isRawSqlite) {
         const targetDb = path.join(this.tempDir, 'database.sqlite')
         fs.copyFileSync(filePath, targetDb)
         const dbInfo = extractDbInfo(targetDb, path.basename(filePath, path.extname(filePath)))
@@ -127,66 +101,113 @@ export class DtmWorkspace {
           active_db_file: 'database.sqlite'
         }
         fs.writeFileSync(metaPath, JSON.stringify(rawMeta, null, 2))
-      }
+      } else {
+        try {
+          const zip = new AdmZip(filePath)
+          const resolvedTemp = path.resolve(this.tempDir)
+          for (const entry of zip.getEntries()) {
+            const entryTarget = path.resolve(resolvedTemp, entry.entryName)
+            if (!entryTarget.startsWith(resolvedTemp + path.sep) && entryTarget !== resolvedTemp) {
+              throw new Error(`Güvensiz arşiv içeriği tespit edildi (Zip Slip): ${entry.entryName}`)
+            }
+          }
+          zip.extractAllTo(this.tempDir, true)
+        } catch (zipErr: any) {
+          if (zipErr?.message?.includes('Zip Slip')) {
+            throw zipErr
+          }
+          const targetDb = path.join(this.tempDir, 'database.sqlite')
+          fs.copyFileSync(filePath, targetDb)
+          const dbInfo = extractDbInfo(targetDb, path.basename(filePath, path.extname(filePath)))
+          rawMeta = {
+            dtal_version: '1.0',
+            schema_version: dbInfo.schemaVersion,
+            institution_name: dbInfo.institutionName,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            active_db_file: 'database.sqlite'
+          }
+          fs.writeFileSync(metaPath, JSON.stringify(rawMeta, null, 2))
+        }
 
-      if (fs.existsSync(metaPath)) {
-        rawMeta = JSON.parse(fs.readFileSync(metaPath, 'utf-8'))
-      }
-    }
-
-    const attachmentsDir = path.join(this.tempDir, 'attachments')
-    if (!fs.existsSync(attachmentsDir)) {
-      fs.mkdirSync(attachmentsDir, { recursive: true })
-    }
-
-    const meta = normalizeMeta(rawMeta)
-    const fromVersion = meta.schema_version || 1
-
-    if (fromVersion < CURRENT_SCHEMA_VERSION) {
-      if (!allowMigration) {
-        const pendingUpdates = getPendingMigrations(fromVersion)
-        if (pendingUpdates.length > 0) {
-          const payload = JSON.stringify({
-            requiresMigration: true,
-            pendingUpdates,
-            last_user_mutation_at: meta.last_user_mutation_at
-          })
-          throw new Error(`MIGRATION_REQUIRED|${payload}`)
+        if (fs.existsSync(metaPath)) {
+          rawMeta = JSON.parse(fs.readFileSync(metaPath, 'utf-8'))
         }
       }
-      const dbFileName = meta.active_db_file || 'database.sqlite'
-      const dbPath = path.join(this.tempDir, dbFileName)
-      this.db = new Database(dbPath)
-      const previousUserMutationAt = meta.last_user_mutation_at
-      runMigrations(this.db, fromVersion, schema)
-      ensureSchemaIntegrity(this.db)
-      meta.schema_version = CURRENT_SCHEMA_VERSION
-      meta.updated_at = new Date().toISOString()
-      // Schema migration does NOT alter user mutation timestamp!
-      meta.last_user_mutation_at = previousUserMutationAt
-      meta.integrity_hash = calculateIntegrityHash(meta)
-      fs.writeFileSync(metaPath, JSON.stringify(meta, null, 2))
-      this.saveWorkspace(true)
-    } else {
-      const dbFileName = meta.active_db_file || 'database.sqlite'
-      const dbPath = path.join(this.tempDir, dbFileName)
-      this.db = new Database(dbPath)
-    }
 
-    if (this.db) {
-      ensureSchemaIntegrity(this.db)
-      seedTemplates(this.db)
-    }
+      const attachmentsDir = path.join(this.tempDir, 'attachments')
+      if (!fs.existsSync(attachmentsDir)) {
+        fs.mkdirSync(attachmentsDir, { recursive: true })
+      }
 
-    this.meta = meta
-    this.initialHash = this.calculateCurrentHash()
-    this.initialDataVersion = this.getDataVersion()
-    this.userMutationCount = 0
-    this.mutationMap.clear()
-    this.lastMutationTime = null
-    this.isDirty = false
-    this.notifyDirtyChange(false)
-    return meta
+      const meta = normalizeMeta(rawMeta)
+      const fromVersion = meta.schema_version || 1
+
+      if (fromVersion < CURRENT_SCHEMA_VERSION) {
+        if (!allowMigration) {
+          const pendingUpdates = getPendingMigrations(fromVersion)
+          if (pendingUpdates.length > 0) {
+            const payload = JSON.stringify({
+              requiresMigration: true,
+              pendingUpdates,
+              last_user_mutation_at: meta.last_user_mutation_at
+            })
+            throw new Error(`MIGRATION_REQUIRED|${payload}`)
+          }
+        }
+        const dbFileName = meta.active_db_file || 'database.sqlite'
+        const dbPath = path.join(this.tempDir, dbFileName)
+        this.db = new Database(dbPath)
+        const previousUserMutationAt = meta.last_user_mutation_at
+        runMigrations(this.db, fromVersion, schema)
+        ensureSchemaIntegrity(this.db)
+        meta.schema_version = CURRENT_SCHEMA_VERSION
+        meta.updated_at = new Date().toISOString()
+        // Schema migration does NOT alter user mutation timestamp!
+        meta.last_user_mutation_at = previousUserMutationAt
+        meta.integrity_hash = calculateIntegrityHash(meta)
+        fs.writeFileSync(metaPath, JSON.stringify(meta, null, 2))
+        this.saveWorkspace(true)
+      } else {
+        const dbFileName = meta.active_db_file || 'database.sqlite'
+        const dbPath = path.join(this.tempDir, dbFileName)
+        this.db = new Database(dbPath)
+      }
+
+      if (this.db) {
+        ensureSchemaIntegrity(this.db)
+        seedTemplates(this.db)
+      }
+
+      this.meta = meta
+      this.initialHash = this.calculateCurrentHash()
+      this.initialDataVersion = this.getDataVersion()
+      this.userMutationCount = 0
+      this.mutationMap.clear()
+      this.lastMutationTime = null
+      this.isDirty = false
+      this.notifyDirtyChange(false)
+      return meta
+    } catch (openErr: any) {
+      if (fs.existsSync(lockPath)) {
+        try {
+          fs.unlinkSync(lockPath)
+        } catch {}
+      }
+      if (this.db) {
+        try {
+          this.db.close()
+        } catch {}
+        this.db = null
+      }
+      this.currentFilePath = null
+      if (this.tempDir && fs.existsSync(this.tempDir)) {
+        try {
+          fs.rmSync(this.tempDir, { recursive: true, force: true })
+        } catch {}
+      }
+      throw openErr
+    }
   }
 
   public createWorkspace(filePath: string, institutionName: string): WorkspaceMeta {

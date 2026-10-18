@@ -10,7 +10,7 @@ on:
 
 jobs:
   validate:
-    name: Lint, Typecheck & Tests
+    name: Schema Parity, Typecheck & Tests
     runs-on: windows-2022
     steps:
       - name: Check out Git repository
