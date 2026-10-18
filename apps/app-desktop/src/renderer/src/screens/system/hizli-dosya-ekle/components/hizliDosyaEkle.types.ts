@@ -1,3 +1,9 @@
+import {
+  TEMIN_TURLERI as CANONICAL_TEMIN_TURLERI,
+  teminKisaLabel,
+  getTeminTuruDef
+} from '../../../../constants/teminTurleri'
+
 export interface DosyaRow {
   _key: string
   id: number | null // null => yeni kayit, number => guncelleme
@@ -14,7 +20,8 @@ export interface DosyaRow {
   _dirty: boolean // kullanici degistirdi mi?
 }
 
-export const TEMIN_TURLERI = ['Mal', 'Hizmet', 'Yapım İşi', 'Danışmanlık']
+// Canonical TEMIN_TURLERI tek kaynaktan (constants/teminTurleri.ts) türetilir
+export const TEMIN_TURLERI = CANONICAL_TEMIN_TURLERI.map((t) => t.kisa)
 export const TEMIN_SEKILLERI = ['22/d', '22/a', '22/b', '22/c', '4734 KİK', 'Diğer']
 export const SUREC_ASAMALARI = [
   'Hazırlık',
@@ -31,24 +38,19 @@ export const IHALE_TURLERI = TEMIN_TURLERI
 export const IHALE_SEKILLERI = TEMIN_SEKILLERI
 export const IHALE_ASAMALARI = SUREC_ASAMALARI
 
-export const mapTur = (t: string) => {
-  if (t === 'Hizmet') return 'hizmet'
-  if (t === 'Yapım İşi') return 'yapim_isi'
-  if (t === 'Danışmanlık') return 'danismanlik'
-  return 'mal'
+export const mapTur = (t: string): string => {
+  const def = getTeminTuruDef(t)
+  return def ? def.id : 'mal'
+}
+
+export const reverseMapTur = (t: string): string => {
+  return teminKisaLabel(t, 'Mal')
 }
 
 export const mapStatus = (a: string) => {
   if (a === 'Tamamlandı') return 'tamamlandi'
   if (a === 'İptal') return 'iptal'
   return 'devam_ediyor'
-}
-
-export const reverseMapTur = (t: string) => {
-  if (t === 'hizmet') return 'Hizmet'
-  if (t === 'yapim_isi') return 'Yapım İşi'
-  if (t === 'danismanlik') return 'Danışmanlık'
-  return 'Mal'
 }
 
 export const reverseMapStatus = (s: string) => {
