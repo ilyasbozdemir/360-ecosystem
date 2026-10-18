@@ -1,6 +1,3 @@
-// Geliştirme ortamında Electron güvenlik uyarılarının konsolu ve log dosyasını kirletmesini engelle
-process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true'
-
 import {
   app,
   shell,
@@ -429,11 +426,20 @@ function createWindow(): void {
 
   // Navigation kilidi: Dış web sitelerine Electron içinden gidilmesini engelle
   mainWindow.webContents.on('will-navigate', (event, url) => {
-    if (!is.dev) {
+    try {
       const parsedUrl = new URL(url)
-      if (parsedUrl.origin !== 'file://') {
-        event.preventDefault()
+      if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+        const allowedOrigin = new URL(process.env['ELECTRON_RENDERER_URL']).origin
+        if (parsedUrl.origin !== allowedOrigin) {
+          event.preventDefault()
+        }
+      } else {
+        if (parsedUrl.protocol !== 'file:') {
+          event.preventDefault()
+        }
       }
+    } catch {
+      event.preventDefault()
     }
   })
 

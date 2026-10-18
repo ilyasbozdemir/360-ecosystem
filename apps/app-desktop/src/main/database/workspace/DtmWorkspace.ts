@@ -102,9 +102,19 @@ export class DtmWorkspace {
       fs.writeFileSync(metaPath, JSON.stringify(rawMeta, null, 2))
     } else {
       try {
-        const zip = new AdmZip(zipBuffer)
+        const zip = new AdmZip(filePath)
+        const resolvedTemp = path.resolve(this.tempDir)
+        for (const entry of zip.getEntries()) {
+          const entryTarget = path.resolve(resolvedTemp, entry.entryName)
+          if (!entryTarget.startsWith(resolvedTemp + path.sep) && entryTarget !== resolvedTemp) {
+            throw new Error(`Güvensiz arşiv içeriği tespit edildi (Zip Slip): ${entry.entryName}`)
+          }
+        }
         zip.extractAllTo(this.tempDir, true)
-      } catch {
+      } catch (zipErr: any) {
+        if (zipErr?.message?.includes('Zip Slip')) {
+          throw zipErr
+        }
         const targetDb = path.join(this.tempDir, 'database.sqlite')
         fs.copyFileSync(filePath, targetDb)
         const dbInfo = extractDbInfo(targetDb, path.basename(filePath, path.extname(filePath)))

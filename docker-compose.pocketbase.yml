@@ -5,7 +5,7 @@ services:
     container_name: temin360-pocketbase
     restart: always
     ports:
-      - "8090:8090"
+      - "127.0.0.1:8090:8090"
     volumes:
       - pbdata:/pb/pb_data
     healthcheck:

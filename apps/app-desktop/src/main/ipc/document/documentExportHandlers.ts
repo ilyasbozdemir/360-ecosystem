@@ -78,7 +78,13 @@ export async function printHtmlHandler(
       legacyOptions ||
       (typeof payload === 'object' ? payload : {})
 
-    const win = new BrowserWindow({ show: false })
+    const win = new BrowserWindow({
+      show: false,
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true
+      }
+    })
     await win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`)
 
     await new Promise((resolve) => setTimeout(resolve, 500))

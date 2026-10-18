@@ -31,7 +31,7 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - DATABASE_URL=postgresql://postgres:temin360pass@db:5432/temin360_db?schema=public
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-temin360pass}@db:5432/${POSTGRES_DB:-temin360_db}?schema=public
       - API_SECRET_KEY=${API_SECRET_KEY:-temin360_dev_secret_key}
     depends_on:
       db:

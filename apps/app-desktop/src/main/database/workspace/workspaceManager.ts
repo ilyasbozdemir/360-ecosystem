@@ -99,6 +99,14 @@ export const workspaceManager = {
   },
   uploadAttachment: (sourcePath: string) => {
     if (!activeWorkspace) throw new Error('Açık bir çalışma dosyası yok.')
+    if (typeof sourcePath !== 'string' || !sourcePath.trim()) {
+      throw new Error('Geçersiz kaynak dosya yolu.')
+    }
+    const resolvedSource = path.resolve(sourcePath)
+    if (!fs.existsSync(resolvedSource) || !fs.statSync(resolvedSource).isFile()) {
+      throw new Error('Kaynak dosya bulunamadı veya geçerli bir dosya değil.')
+    }
+
     const tempDir = (activeWorkspace as any).tempDir
     if (!tempDir) throw new Error('Geçici çalışma dizini bulunamadı.')
 
@@ -107,23 +115,31 @@ export const workspaceManager = {
       fs.mkdirSync(attachmentsDir, { recursive: true })
     }
 
-    const fileExt = path.extname(sourcePath)
-    const baseName = path.basename(sourcePath, fileExt)
+    const fileExt = path.extname(resolvedSource)
+    const baseName = path.basename(resolvedSource, fileExt)
     const safeName = `${baseName}_${Date.now()}${fileExt}`.replace(/[^a-zA-Z0-9_.-]/g, '_')
     const destPath = path.join(attachmentsDir, safeName)
 
-    fs.copyFileSync(sourcePath, destPath)
+    fs.copyFileSync(resolvedSource, destPath)
     activeWorkspace.recordMutation()
     activeWorkspace.saveWorkspace()
     return { fileName: safeName, relativePath: `attachments/${safeName}` }
   },
   openAttachment: async (relativePath: string) => {
     if (!activeWorkspace) throw new Error('Açık bir çalışma dosyası yok.')
+    if (typeof relativePath !== 'string' || !relativePath.trim()) {
+      throw new Error('Geçersiz ek dosya yolu.')
+    }
     const tempDir = (activeWorkspace as any).tempDir
     if (!tempDir) throw new Error('Geçici çalışma dizini bulunamadı.')
 
-    const fullPath = path.join(tempDir, relativePath)
-    if (fs.existsSync(fullPath)) {
+    const resolvedTemp = path.resolve(tempDir)
+    const fullPath = path.resolve(tempDir, relativePath)
+    if (fullPath !== resolvedTemp && !fullPath.startsWith(resolvedTemp + path.sep)) {
+      throw new Error('Geçersiz dosya yolu (path traversal engellendi).')
+    }
+
+    if (fs.existsSync(fullPath) && fs.statSync(fullPath).isFile()) {
       await shell.openPath(fullPath)
       return true
     }

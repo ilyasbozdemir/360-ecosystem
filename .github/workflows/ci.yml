@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate:
+    name: Lint, Typecheck & Tests
+    runs-on: windows-2022
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          run_install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        env:
+          npm_config_msvs_version: "2022"
+
+      - name: Build Database Package
+        run: pnpm --filter @dt/database build
+
+      - name: Database Schema & Snapshot Parity Check
+        run: pnpm check:schema
+
+      - name: Typecheck Desktop & Packages
+        run: |
+          pnpm --filter app-desktop typecheck:node
+          pnpm --filter app-desktop typecheck:web
+          pnpm --filter @temin360/document-templates typecheck
+
+      - name: Run Unit & Integration Tests
+        run: |
+          pnpm --filter @temin360/document-templates test
+          pnpm --filter app-desktop test
