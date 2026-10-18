@@ -358,12 +358,20 @@ export function IhtiyacRaporuDetailView({
 
       {/* TAB 2: Lüzum Müzekkeresi Standart Form Önizleme via DocumentPreviewModalV3 */}
       {activeTab === 'luzum_muzekkeresi' && (
-        <LuzumMuzekkeresiTab raporId={raporId} onClose={() => setActiveTab('detay')} />
+        <LuzumMuzekkeresiTab
+          raporId={raporId}
+          dosyaId={rapor.temin_dosya_id}
+          onClose={() => setActiveTab('detay')}
+        />
       )}
 
       {/* TAB 3: Lüzum Müzekkeresi Onay Eki Önizleme via DocumentPreviewModalV3 */}
       {activeTab === 'luzum_onay_eki' && (
-        <LuzumOnayEkiTab raporId={raporId} onClose={() => setActiveTab('detay')} />
+        <LuzumOnayEkiTab
+          raporId={raporId}
+          dosyaId={rapor.temin_dosya_id}
+          onClose={() => setActiveTab('detay')}
+        />
       )}
 
       {/* Bottom Sticky Action Bar (Tüm sekmelerin dışında, sayfa altında) */}
