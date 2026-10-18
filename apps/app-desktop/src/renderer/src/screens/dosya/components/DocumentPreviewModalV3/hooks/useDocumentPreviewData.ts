@@ -4,13 +4,13 @@ import { useWorkspaceStore } from '../../../../../store/workspaceStore'
 import { useSettingsStore } from '../../../../../store/settingsStore'
 import { useClickOutside } from '../../../../../hooks/useClickOutside'
 import { Personel } from '../types'
-import { resolveTemplateConfig, TEMPLATE_OPTIONS } from '../templateResolver'
+import { resolveTemplateConfig, TEMPLATE_OPTIONS, TemplateOptionItem } from '../templateResolver'
 import { documentPreloadService } from '../../../../../services/documentPreloadService'
+import { resolvers, DocumentSource } from '../document-engine'
 import {
   compileDocumentHtml,
   exportDocumentDocx,
   exportDocumentPdf,
-  loadDocumentPreviewData,
   openPdfPreview,
   refreshDocumentFromDb,
   saveDocumentToDb,
@@ -22,37 +22,63 @@ export function useDocumentPreviewData({
   isOpen,
   documentId,
   dosyaId: propDosyaId,
+  source: propSource,
+  initialTemplateId,
   invitedFirms: propInvitedFirms
 }: UseDocumentPreviewDataParams) {
   const { activeDosyaId: storeDosyaId } = useWorkspaceStore()
   const activeDosyaId =
+    (propSource?.kind === 'dosya' ? propSource.dosyaId : null) ||
     propDosyaId ||
     storeDosyaId ||
     Number(sessionStorage.getItem('workspace_dosya_id') || 0) ||
     Number(localStorage.getItem('active_dosya_id') || 0)
 
-  const [selectedDocId, setSelectedDocId] = useState<string>(() => documentId || 'ihtiyac-listesi')
-  const [prevPropDocId, setPrevPropDocId] = useState<string | null>(documentId)
+  const resolvedSource: DocumentSource =
+    propSource ||
+    ({
+      kind: 'dosya',
+      dosyaId: activeDosyaId,
+      documentId: documentId || undefined
+    } as DocumentSource)
 
-  if (documentId !== prevPropDocId) {
-    setPrevPropDocId(documentId)
-    if (documentId) {
-      setSelectedDocId(documentId)
-    }
+  const initialDocId =
+    initialTemplateId ||
+    documentId ||
+    (resolvedSource.kind === 'ihtiyacRaporu' ? 'luzum_muzekkeresi' : 'ihtiyac-listesi')
+
+  const [selectedDocId, setSelectedDocId] = useState<string>(() => initialDocId)
+  const [prevPropDocId, setPrevPropDocId] = useState<string | null>(
+    documentId || initialTemplateId || null
+  )
+
+  const currentIncomingDocId = initialTemplateId || documentId
+  if (currentIncomingDocId && currentIncomingDocId !== prevPropDocId) {
+    setPrevPropDocId(currentIncomingDocId)
+    setSelectedDocId(currentIncomingDocId)
   }
 
-  const {
-    logoLeft,
-    logoRight,
-    institutionLogo,
-    showLogoLeft,
-    showLogoRight,
-    subInstitutionType,
-    customSubInstitutionLabel,
-    customSubInstitutionKurumumuz,
-    customSubInstitutionKurumu,
-    customSubInstitutionKurumlari
-  } = useSettingsStore()
+  const [templateOptions, setTemplateOptions] = useState<TemplateOptionItem[]>(TEMPLATE_OPTIONS)
+
+  useEffect(() => {
+    let isMounted = true
+    const resolver = resolvers[resolvedSource.kind]
+    if (resolver) {
+      resolver.templates(resolvedSource).then((opts) => {
+        if (isMounted && opts && opts.length > 0) {
+          setTemplateOptions(opts)
+        }
+      })
+    }
+    return () => {
+      isMounted = false
+    }
+  }, [
+    resolvedSource.kind,
+    resolvedSource.kind === 'dosya' ? resolvedSource.dosyaId : resolvedSource.raporId
+  ])
+
+  const { logoLeft, logoRight, institutionLogo, showLogoLeft, showLogoRight } = useSettingsStore()
 
   const {
     config: activeTemplateConf,
@@ -154,48 +180,50 @@ export function useDocumentPreviewData({
     previewContainerRef
   })
 
-  // Load preview data from DB & IPC
+  // Load preview data via Resolver
+  const sourceDependencyKey =
+    resolvedSource.kind === 'dosya'
+      ? `dosya_${resolvedSource.dosyaId}`
+      : `ihtiyac_${resolvedSource.raporId}`
+
   useEffect(() => {
     if (!isOpen) return
 
     let isMounted = true
-    const preloaded = documentPreloadService.getCachedDocument(resolvedId, activeDosyaId)
+    const preloaded =
+      resolvedSource.kind === 'dosya'
+        ? documentPreloadService.getCachedDocument(resolvedId, activeDosyaId)
+        : null
+
     if (!preloaded) {
       setIsLoading(true)
     }
 
     const loadInitialData = async (): Promise<void> => {
       try {
-        const result = await loadDocumentPreviewData({
-          activeDosyaId,
-          resolvedId,
-          selectedDocId,
-          propInvitedFirms,
-          showLogoLeft,
-          showLogoRight,
-          logoLeft,
-          logoRight,
-          institutionLogo,
-          subInstitutionType,
-          customSubInstitutionLabel,
-          customSubInstitutionKurumumuz,
-          customSubInstitutionKurumu,
-          customSubInstitutionKurumlari
+        const resolver = resolvers[resolvedSource.kind]
+        if (!resolver) {
+          throw new Error(`Bilinmeyen belge kaynağı: ${resolvedSource.kind}`)
+        }
+
+        const result = await resolver.resolve(resolvedSource, resolvedId, {
+          invitedFirms: propInvitedFirms
         })
 
         if (!isMounted) return
 
-        setDosyaRecord(result.dosyaRecord)
-        setPersonelListesi(result.personelListesi)
-        setFirmaListesi(result.firmaListesi)
-        setBirimListesi(result.birimListesi || [])
-        setLocalShowLogoLeft(result.activeLogoLeft)
-        setLocalShowLogoRight(result.activeLogoRight)
-        setOrientation(result.activeOrientation)
-        setFormData(result.finalData)
-        initialSnapshotRef.current = result.initialSnapshotJson
+        if (result.dosyaRecord !== undefined) setDosyaRecord(result.dosyaRecord)
+        if (result.personelListesi) setPersonelListesi(result.personelListesi as Personel[])
+        if (result.firmaListesi) setFirmaListesi(result.firmaListesi)
+        if (result.birimListesi) setBirimListesi(result.birimListesi)
+        if (result.activeLogoLeft !== undefined) setLocalShowLogoLeft(result.activeLogoLeft)
+        if (result.activeLogoRight !== undefined) setLocalShowLogoRight(result.activeLogoRight)
+        if (result.activeOrientation) setOrientation(result.activeOrientation)
+        setFormData(result.formData || result.resolvedData || {})
+        initialSnapshotRef.current =
+          result.initialSnapshotJson || JSON.stringify(result.formData || result.resolvedData || {})
       } catch (err) {
-        console.error('Error loading V2 template data:', err)
+        console.error('Error loading template preview data via resolver:', err)
       } finally {
         if (isMounted) {
           setIsLoading(false)
@@ -204,56 +232,56 @@ export function useDocumentPreviewData({
     }
 
     loadInitialData()
-  }, [
-    isOpen,
-    activeDosyaId,
-    selectedDocId,
-    resolvedId,
-    propInvitedFirms,
-    showLogoLeft,
-    showLogoRight,
-    logoLeft,
-    logoRight,
-    institutionLogo,
-    subInstitutionType,
-    customSubInstitutionLabel,
-    customSubInstitutionKurumumuz,
-    customSubInstitutionKurumu,
-    customSubInstitutionKurumlari
-  ])
+  }, [isOpen, sourceDependencyKey, selectedDocId, resolvedId, propInvitedFirms])
 
   // Dropdown outside click handler
   useClickOutside(dropdownRef, () => setDownloadOpen(false))
 
   // Save handler
   const handleSaveToDb = async (): Promise<void> => {
-    if (!activeDosyaId || !resolvedId) return
-    setIsSaving(true)
-    try {
-      const jsonStr = await saveDocumentToDb({
-        activeDosyaId,
-        resolvedId,
-        selectedDocId,
-        activeTemplateConf,
-        formData,
-        localShowLogoLeft,
-        localShowLogoRight,
-        logoLeft,
-        logoRight,
-        institutionLogo,
-        orientation
-      })
+    if (resolvedSource.kind === 'dosya') {
+      if (!activeDosyaId || !resolvedId) return
+      setIsSaving(true)
+      try {
+        const jsonStr = await saveDocumentToDb({
+          activeDosyaId,
+          resolvedId,
+          selectedDocId,
+          activeTemplateConf,
+          formData,
+          localShowLogoLeft,
+          localShowLogoRight,
+          logoLeft,
+          logoRight,
+          institutionLogo,
+          orientation
+        })
 
-      if (jsonStr) {
-        initialSnapshotRef.current = jsonStr
+        if (jsonStr) {
+          initialSnapshotRef.current = jsonStr
+        }
+
+        setSaveSuccess(true)
+        setTimeout(() => setSaveSuccess(false), 2000)
+      } catch (e) {
+        console.error('Belge kaydetme hatası:', e)
+      } finally {
+        setIsSaving(false)
       }
-
-      setSaveSuccess(true)
-      setTimeout(() => setSaveSuccess(false), 2000)
-    } catch (e) {
-      console.error('Belge kaydetme hatası:', e)
-    } finally {
-      setIsSaving(false)
+    } else {
+      setIsSaving(true)
+      try {
+        initialSnapshotRef.current = JSON.stringify({
+          ...formData,
+          showLogoLeft: localShowLogoLeft,
+          showLogoRight: localShowLogoRight,
+          orientation
+        })
+        setSaveSuccess(true)
+        setTimeout(() => setSaveSuccess(false), 2000)
+      } finally {
+        setIsSaving(false)
+      }
     }
   }
 
@@ -346,34 +374,56 @@ export function useDocumentPreviewData({
     }
   }
 
-  // Reset and refresh data from database
+  // Reset and refresh data from database or resolver
   const handleRefreshFromDb = async (): Promise<void> => {
     const isConfirmed = confirm(
       'Belge üzerindeki tüm verileri veritabanındaki güncel değerlerle sıfırlamak istiyor musunuz? Canlı düzenlemeleriniz kaybolabilir.'
     )
-    if (!isConfirmed || !activeDosyaId || !resolvedId) return
+    if (!isConfirmed) return
 
-    try {
-      setIsLoading(true)
-      const baseData = await refreshDocumentFromDb({
-        activeDosyaId,
-        resolvedId
-      })
+    if (resolvedSource.kind === 'dosya') {
+      if (!activeDosyaId || !resolvedId) return
 
-      if (baseData) {
-        setFormData(baseData)
-        initialSnapshotRef.current = JSON.stringify({
-          ...baseData,
-          showLogoLeft: localShowLogoLeft,
-          showLogoRight: localShowLogoRight,
-          olurYazisi: baseData.olurYazisi !== false,
-          orientation
+      try {
+        setIsLoading(true)
+        const baseData = await refreshDocumentFromDb({
+          activeDosyaId,
+          resolvedId
         })
+
+        if (baseData) {
+          setFormData(baseData)
+          initialSnapshotRef.current = JSON.stringify({
+            ...baseData,
+            showLogoLeft: localShowLogoLeft,
+            showLogoRight: localShowLogoRight,
+            olurYazisi: baseData.olurYazisi !== false,
+            orientation
+          })
+        }
+      } catch (e) {
+        console.error('Failed to refresh template resolution:', e)
+      } finally {
+        setIsLoading(false)
       }
-    } catch (e) {
-      console.error('Failed to refresh template resolution:', e)
-    } finally {
-      setIsLoading(false)
+    } else {
+      try {
+        setIsLoading(true)
+        const resolver = resolvers[resolvedSource.kind]
+        if (resolver) {
+          const result = await resolver.resolve(resolvedSource, resolvedId)
+          if (result) {
+            setFormData(result.formData || result.resolvedData || {})
+            initialSnapshotRef.current =
+              result.initialSnapshotJson ||
+              JSON.stringify(result.formData || result.resolvedData || {})
+          }
+        }
+      } catch (e) {
+        console.error('Failed to reload document data:', e)
+      } finally {
+        setIsLoading(false)
+      }
     }
   }
 
@@ -384,7 +434,7 @@ export function useDocumentPreviewData({
     selectedDocId,
     setSelectedDocId,
     resolvedId,
-    templateOptions: TEMPLATE_OPTIONS,
+    templateOptions,
     activeTemplateConf,
     ActiveComponent,
     formData,

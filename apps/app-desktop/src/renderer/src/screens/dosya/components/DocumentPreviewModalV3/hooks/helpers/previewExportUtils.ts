@@ -1,6 +1,6 @@
 import React from 'react'
 import { renderToString } from 'react-dom/server'
-import { TemplateEditProvider } from '@temin360/document-templates'
+import { DocumentRenderer } from '../../document-engine/DocumentRenderer'
 import { useSettingsStore } from '../../../../../../store/settingsStore'
 import { usePrintQueueStore } from '../../../../../../store/printQueueStore'
 import { documentPreloadService } from '../../../../../../services/documentPreloadService'
@@ -9,7 +9,7 @@ import { loadDocumentPreviewData } from './previewDataLoader'
 import { Personel } from '../../types'
 
 interface CompileHtmlParams {
-  ActiveComponent: any
+  ActiveComponent?: any
   activeTemplateConf: any
   formData: Record<string, any>
   personelListesi: Personel[]
@@ -23,7 +23,6 @@ interface CompileHtmlParams {
 }
 
 export function compileDocumentHtml({
-  ActiveComponent,
   activeTemplateConf,
   formData,
   personelListesi,
@@ -35,7 +34,7 @@ export function compileDocumentHtml({
   institutionLogo,
   orientation
 }: CompileHtmlParams): string {
-  if (!ActiveComponent) return ''
+  const templateKey = activeTemplateConf?.id || 'ihtiyac_listesi'
   const storeSettings = useSettingsStore.getState()
   const activeSolLogo =
     formData.solLogo ||
@@ -46,30 +45,30 @@ export function compileDocumentHtml({
     null
   const activeSagLogo = formData.sagLogo || logoRight || storeSettings.logoRight || null
 
+  const mergedData = {
+    ...formData,
+    personelListesi,
+    firmaListesi,
+    tarih: formData.tarih || formData.onayaSunulanTarih || '',
+    onayTarihi: formData.onayTarihi || formData.dosyaTarihi || '',
+    solLogo: localShowLogoLeft ? activeSolLogo : null,
+    sagLogo: localShowLogoRight ? activeSagLogo : null,
+    olurYazisi: formData.olurYazisi !== false,
+    orientation
+  }
+
   const bodyHtml = renderToString(
-    React.createElement(
-      TemplateEditProvider,
-      {
-        isEditing: false,
-        personelListesi,
-        firmaListesi,
-        firstPageLimit: formData.firstPageLimit
-      },
-      React.createElement(ActiveComponent, {
-        data: {
-          ...formData,
-          personelListesi,
-          firmaListesi,
-          tarih: formData.tarih || formData.onayaSunulanTarih || '',
-          onayTarihi: formData.onayTarihi || formData.dosyaTarihi || '',
-          solLogo: localShowLogoLeft ? activeSolLogo : null,
-          sagLogo: localShowLogoRight ? activeSagLogo : null,
-          olurYazisi: formData.olurYazisi !== false,
-          orientation
-        },
-        orientation
-      })
-    )
+    React.createElement(DocumentRenderer, {
+      templateKey,
+      data: mergedData,
+      orientation,
+      chrome: 'bare',
+      isEditing: false,
+      personelListesi,
+      firmaListesi,
+      birimListesi: [],
+      firstPageLimit: formData.firstPageLimit
+    })
   )
 
   return `
@@ -98,6 +97,11 @@ export function compileDocumentHtml({
               background: white !important;
               padding: 0 !important;
             }
+            [data-document-page] {
+              box-shadow: none !important;
+              margin: 0 !important;
+              width: 100% !important;
+            }
             .page-break {
               page-break-before: always;
             }
@@ -105,7 +109,7 @@ export function compileDocumentHtml({
         </style>
       </head>
       <body>
-        <div class="a4-document-root ${orientation}">
+        <div class="a4-document-root ${orientation}" data-document-root="true">
           ${bodyHtml}
         </div>
       </body>

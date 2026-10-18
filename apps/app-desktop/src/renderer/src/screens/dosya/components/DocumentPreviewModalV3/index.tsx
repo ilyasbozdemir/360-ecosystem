@@ -1,16 +1,18 @@
-import React, { useState } from "react";
-import { DocumentPreviewModalV3Props } from "./types";
-import { useDocumentPreviewData } from "./hooks/useDocumentPreviewData";
-import { DocumentPreviewHeader } from "./components/DocumentPreviewHeader";
-import { DocumentPreviewTabBar } from "./components/DocumentPreviewTabBar";
-import { DocumentPreviewSidebar } from "./components/DocumentPreviewSidebar";
-import { DocumentPreviewCanvas } from "./components/DocumentPreviewCanvas";
-import { FloatingDocumentBubble } from "./components/FloatingDocumentBubble";
+import React, { useState } from 'react'
+import { DocumentPreviewModalV3Props } from './types'
+import { useDocumentPreviewData } from './hooks/useDocumentPreviewData'
+import { DocumentPreviewHeader } from './components/DocumentPreviewHeader'
+import { DocumentPreviewTabBar } from './components/DocumentPreviewTabBar'
+import { DocumentPreviewSidebar } from './components/DocumentPreviewSidebar'
+import { DocumentPreviewCanvas } from './components/DocumentPreviewCanvas'
+import { FloatingDocumentBubble } from './components/FloatingDocumentBubble'
 
 export function DocumentPreviewModalV3({
   isOpen,
   documentId,
   dosyaId: propDosyaId,
+  source,
+  initialTemplateId,
   invitedFirms: propInvitedFirms,
   onClose,
   isModal = false,
@@ -18,11 +20,15 @@ export function DocumentPreviewModalV3({
   activeTabId,
   onSwitchTab,
   onCloseTab,
-  onAddTab,
+  onAddTab
 }: DocumentPreviewModalV3Props): React.JSX.Element | null {
-  const [isBalloon, setIsBalloon] = useState(false);
-  const [prevDocKey, setPrevDocKey] = useState<string | null>(documentId);
-  const [prevIsOpen, setPrevIsOpen] = useState<boolean>(isOpen);
+  const [isBalloon, setIsBalloon] = useState(false)
+  const currentDocKey =
+    initialTemplateId ||
+    documentId ||
+    (source?.kind === 'ihtiyacRaporu' ? `rapor_${source.raporId}` : null)
+  const [prevDocKey, setPrevDocKey] = useState<string | null>(currentDocKey)
+  const [prevIsOpen, setPrevIsOpen] = useState<boolean>(isOpen)
 
   const {
     isLoading,
@@ -66,33 +72,35 @@ export function DocumentPreviewModalV3({
     handlePdf,
     handleDocx,
     handleOpenPdfInNewTab,
-    handleRefreshFromDb,
+    handleRefreshFromDb
   } = useDocumentPreviewData({
     isOpen,
     documentId,
     dosyaId: propDosyaId,
-    invitedFirms: propInvitedFirms,
-  });
+    source,
+    initialTemplateId,
+    invitedFirms: propInvitedFirms
+  })
 
   // Belge değiştiğinde veya modal yeniden açıldığında yüzen balon durumunu sıfırla
-  if (documentId !== prevDocKey || (!prevIsOpen && isOpen)) {
-    setPrevDocKey(documentId);
-    setPrevIsOpen(isOpen);
+  if (currentDocKey !== prevDocKey || (!prevIsOpen && isOpen)) {
+    setPrevDocKey(currentDocKey)
+    setPrevIsOpen(isOpen)
     if (isBalloon) {
-      setIsBalloon(false);
+      setIsBalloon(false)
     }
   } else if (prevIsOpen !== isOpen) {
-    setPrevIsOpen(isOpen);
+    setPrevIsOpen(isOpen)
   }
 
   const handleClose = React.useCallback(() => {
-    setIsBalloon(false);
-    onClose();
-  }, [onClose]);
+    setIsBalloon(false)
+    onClose()
+  }, [onClose])
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
-  const docTitle = activeTemplateConf?.name.replace(/([A-Z])/g, " $1").trim();
+  const docTitle = activeTemplateConf?.name.replace(/([A-Z])/g, ' $1').trim()
 
   // If in floating balloon mode, render only the floating bubble
   if (isBalloon) {
@@ -105,16 +113,18 @@ export function DocumentPreviewModalV3({
         onPdf={handlePdf}
         isPrinting={isPrinting}
       />
-    );
+    )
   }
 
   const mainContent = (
     <div
-      className={isFullScreen
-        ? "fixed inset-0 z-[200] w-screen h-screen max-w-none max-h-none rounded-none border-none shadow-none flex flex-col bg-white dark:bg-slate-900 overflow-hidden animate-in fade-in duration-150"
-        : isModal
-        ? "bg-white dark:bg-slate-900 w-full max-w-[95vw] h-[95vh] rounded-2xl shadow-2xl flex flex-col border border-slate-200 dark:border-slate-800 overflow-hidden"
-        : "absolute inset-0 z-40 w-full h-full max-w-none max-h-none rounded-none border-none shadow-none flex flex-col bg-slate-100 dark:bg-slate-950 overflow-hidden animate-in fade-in duration-150"}
+      className={
+        isFullScreen
+          ? 'fixed inset-0 z-[200] w-screen h-screen max-w-none max-h-none rounded-none border-none shadow-none flex flex-col bg-white dark:bg-slate-900 overflow-hidden animate-in fade-in duration-150'
+          : isModal
+            ? 'bg-white dark:bg-slate-900 w-full max-w-[95vw] h-[95vh] rounded-2xl shadow-2xl flex flex-col border border-slate-200 dark:border-slate-800 overflow-hidden'
+            : 'absolute inset-0 z-40 w-full h-full max-w-none max-h-none rounded-none border-none shadow-none flex flex-col bg-slate-100 dark:bg-slate-950 overflow-hidden animate-in fade-in duration-150'
+      }
       onClick={(e) => (isModal || isFullScreen) && e.stopPropagation()}
     >
       {/* 1. Belge Sekmeleri Çubuğu (En Üstte) */}
@@ -173,8 +183,7 @@ export function DocumentPreviewModalV3({
           setSidebarOpen={setSidebarOpen}
           selectedDocId={selectedDocId}
           supportsOlur={activeTemplateConf?.capabilities?.supportsOlur}
-          supportsLogos={activeTemplateConf?.category !==
-            "5-klasor-ve-kapaklar"}
+          supportsLogos={activeTemplateConf?.category !== '5-klasor-ve-kapaklar'}
           templateCapabilities={activeTemplateConf?.capabilities}
           onSelectTemplate={setSelectedDocId}
           templateOptions={templateOptions}
@@ -196,6 +205,7 @@ export function DocumentPreviewModalV3({
           previewScale={previewScale}
           orientation={orientation}
           ActiveComponent={ActiveComponent}
+          selectedDocId={selectedDocId}
           isEditingMode={isEditingMode}
           formData={formData}
           setFormData={setFormData}
@@ -209,20 +219,20 @@ export function DocumentPreviewModalV3({
         />
       </div>
     </div>
-  );
+  )
 
   if (isModal) {
     return (
       <div
         className="fixed inset-0 z-200 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200"
-        style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+        style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
       >
         {mainContent}
       </div>
-    );
+    )
   }
 
-  return mainContent;
+  return mainContent
 }
 
-export default DocumentPreviewModalV3;
+export default DocumentPreviewModalV3

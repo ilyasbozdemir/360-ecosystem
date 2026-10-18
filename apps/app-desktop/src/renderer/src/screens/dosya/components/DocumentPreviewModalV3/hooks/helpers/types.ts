@@ -1,9 +1,13 @@
 import { Personel } from '../../types'
 
+import { DocumentSource } from '../../document-engine/types'
+
 export interface UseDocumentPreviewDataParams {
   isOpen: boolean
-  documentId: string | null
+  documentId?: string | null
   dosyaId?: number | null
+  source?: DocumentSource
+  initialTemplateId?: string
   invitedFirms?: any[]
 }
 

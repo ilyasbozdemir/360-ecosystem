@@ -4,7 +4,7 @@ import { Building2 } from 'lucide-react'
 function normalizeLogoUrl(src?: string | null): string | null {
   if (!src || typeof src !== 'string') return null
   const trimmed = src.trim()
-  if (!trimmed || trimmed === 'null' || trimmed === 'undefined') return null
+  if (!trimmed || trimmed === 'null' || trimmed === 'undefined' || trimmed === '""' || trimmed === "''") return null
 
   // If already full data URI or valid URL protocol
   if (

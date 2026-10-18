@@ -31,6 +31,7 @@ export interface TemplateCapabilities {
   supportsEk?: boolean;
   supportsDagitim?: boolean;
   supportsRota?: boolean;
+  supportsLogos?: boolean;
   roleVisibility?: Partial<Record<RoleCode, RoleVisibility>>;
   commissionRoleVisibility?: Record<string, RoleVisibility>;
 }

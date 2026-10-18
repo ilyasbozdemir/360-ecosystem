@@ -10,6 +10,7 @@ import {
   sanitizeKdvOrani,
   sanitizeBirimFiyat
 } from './adapter'
+import { calculateTotals } from '../../utils/ihtiyacRaporuTotals'
 
 export const ihtiyacRaporuRepository = {
   /**
@@ -131,11 +132,7 @@ export const ihtiyacRaporuRepository = {
     kalemler: IhtiyacRaporuKalem[] = []
   ): Promise<number> {
     await ensureIhtiyacRaporuTables()
-    const totalEst = kalemler.reduce(
-      (sum, item) =>
-        sum + sanitizeMiktar(item.miktar, 0) * sanitizeBirimFiyat(item.tahmini_birim_fiyat, 0),
-      0
-    )
+    const totals = calculateTotals(kalemler)
 
     const insertSql = `
       INSERT INTO DATA_IhtiyacRaporu (
@@ -158,7 +155,7 @@ export const ihtiyacRaporuRepository = {
       rapor.temin_dosya_id || null,
       rapor.tarih || new Date().toISOString().split('T')[0],
       rapor.onay_tarihi || null,
-      rapor.tahmini_butce ?? totalEst,
+      rapor.tahmini_butce ?? totals.genelToplam,
       rapor.notlar || null,
       rapor.evrak_sayisi || null
     ])

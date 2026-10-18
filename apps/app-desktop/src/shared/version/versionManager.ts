@@ -264,11 +264,33 @@ function getYamlParser(): any {
   return null
 }
 
+export interface LoadVersionPolicyOptions {
+  /**
+   * Eğer politika dosyası hiçbir aday konumda bulunamazsa DEFAULT_VERSION_POLICY'ye geri dönülsün mü?
+   * Varsayılan: false (sessizce varsayılana dönmeyi engeller, açık hata fırlatır).
+   */
+  fallbackToDefault?: boolean
+}
+
 /**
  * YAML veya JSON dosyasından sürüm politikasını yükler ve doğrular.
- * Dosya mevcutsa ancak bozuk/geçersizse hata fırlatır (hatayı sessizce gizlemez).
+ * - Dosya bulunamazsa açık hata fırlatır (sessizce varsayılana geri dönmez, fallbackToDefault: true hariç).
+ * - Dosya mevcutsa ancak bozuk/geçersizse açık hata fırlatır.
  */
-export function loadVersionPolicy(customPath?: string): VersionPolicy {
+export function loadVersionPolicy(
+  customPathOrOptions?: string | LoadVersionPolicyOptions,
+  maybeOptions?: LoadVersionPolicyOptions
+): VersionPolicy {
+  let customPath: string | undefined
+  let options: LoadVersionPolicyOptions = {}
+
+  if (typeof customPathOrOptions === 'string') {
+    customPath = customPathOrOptions
+    if (maybeOptions) options = maybeOptions
+  } else if (customPathOrOptions && typeof customPathOrOptions === 'object') {
+    options = customPathOrOptions
+  }
+
   const yamlLib = getYamlParser()
   if (!yamlLib || typeof yamlLib.load !== 'function') {
     throw new Error('YAML ayrıştırıcı (js-yaml) yüklenemedi.')
@@ -276,6 +298,9 @@ export function loadVersionPolicy(customPath?: string): VersionPolicy {
 
   if (customPath) {
     if (!fs.existsSync(customPath)) {
+      if (options.fallbackToDefault) {
+        return DEFAULT_VERSION_POLICY
+      }
       throw new Error(`Belirtilen sürüm politikası dosyası bulunamadı: "${customPath}"`)
     }
     const content = fs.readFileSync(customPath, 'utf-8')
@@ -302,9 +327,29 @@ export function loadVersionPolicy(customPath?: string): VersionPolicy {
   // 2. Electron packaged resources dizini
   if (typeof process !== 'undefined' && (process as any).resourcesPath) {
     candidatePaths.push(path.join((process as any).resourcesPath, 'version-policy.yaml'))
+    candidatePaths.push(path.join((process as any).resourcesPath, 'resources', 'version-policy.yaml'))
   }
 
-  for (const p of candidatePaths) {
+  // 3. Electron app path
+  try {
+    if (typeof process !== 'undefined' && (process as any).type) {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { app } = require('electron')
+      if (app && typeof app.getAppPath === 'function') {
+        const appPath = app.getAppPath()
+        candidatePaths.push(path.join(appPath, 'version-policy.yaml'))
+        candidatePaths.push(path.join(appPath, 'resources', 'version-policy.yaml'))
+        candidatePaths.push(path.join(path.dirname(appPath), 'version-policy.yaml'))
+        candidatePaths.push(path.join(path.dirname(appPath), 'resources', 'version-policy.yaml'))
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  const uniqueCandidatePaths = Array.from(new Set(candidatePaths))
+
+  for (const p of uniqueCandidatePaths) {
     if (fs.existsSync(p)) {
       try {
         const content = fs.readFileSync(p, 'utf-8')
@@ -317,7 +362,16 @@ export function loadVersionPolicy(customPath?: string): VersionPolicy {
     }
   }
 
-  return DEFAULT_VERSION_POLICY
+  if (options.fallbackToDefault) {
+    return DEFAULT_VERSION_POLICY
+  }
+
+  const checkedList = uniqueCandidatePaths.map((p) => `  - ${p}`).join('\n')
+  throw new Error(
+    `[VersionManager] Sürüm politikası dosyası (version-policy.yaml) bulunamadı.\n` +
+      `Uygulamanın yapılandırma dosyası eksik olduğunda sessizce varsayılan ayarlarla çalışması engellenmiştir.\n` +
+      `Kontrol edilen aday konumlar:\n${checkedList}`
+  )
 }
 
 /**

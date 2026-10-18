@@ -62,3 +62,5 @@ export * from "./services/memberVisibilityResolver";
 export * from "./services/commissionResolver";
 export * from "./services/documentValidationService";
 export * from "./types";
+export * from "./registry";
+export * from "./DocumentPage";

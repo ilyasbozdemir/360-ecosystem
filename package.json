@@ -35,6 +35,7 @@
     "typecheck": "pnpm typecheck:desktop && pnpm typecheck:web",
     "test": "pnpm --filter app-desktop test",
     "test:watch": "pnpm --filter app-desktop test:watch",
+    "test:e2e": "pnpm --filter app-desktop test:e2e",
     "format": "pnpm --filter app-desktop format",
     "lint": "pnpm --filter app-desktop lint && pnpm --filter app-web lint",
     "rebuild:electron": "npx @electron/rebuild -v 39.8.10 -f -w better-sqlite3",

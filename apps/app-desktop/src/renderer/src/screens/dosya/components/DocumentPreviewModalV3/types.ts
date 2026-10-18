@@ -1,9 +1,16 @@
 import { DocumentPreviewTab } from '../../../../store/globalDocumentPreviewStore'
+import { DocumentSource } from './document-engine/types'
+
+export type { DocumentSource } from './document-engine/types'
 
 export interface DocumentPreviewModalV3Props {
   isOpen: boolean
-  documentId: string | null
+  documentId?: string | null
   dosyaId?: number | null
+  /** Yeni nesil genel belge kaynağı (ihtiyacRaporu veya dosya) */
+  source?: DocumentSource
+  /** Başlangıçta açılacak şablon kimliği */
+  initialTemplateId?: string
   invitedFirms?: unknown[]
   selectedFirma?: unknown
   initialData?: Record<string, unknown>

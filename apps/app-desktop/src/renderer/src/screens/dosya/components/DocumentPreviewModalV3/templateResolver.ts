@@ -1,10 +1,12 @@
 import {
-  TEMPLATE_REGISTRY,
+  templateRegistry,
+  getTemplateDefinition,
+  getAllTemplateDefinitions,
+  TemplateKey,
   TemplateComponentType,
-  TemplateType
+  TemplateDefinition,
+  normalizeTemplateKey
 } from '@temin360/document-templates'
-import * as Templates from '@temin360/document-templates'
-import { V2_TEMPLATES_MAP } from './constants'
 
 export interface TemplateOptionItem {
   id: string
@@ -19,775 +21,119 @@ export interface TemplateOptionItem {
   standartFormAdi?: string
 }
 
-export const TEMPLATE_OPTIONS: TemplateOptionItem[] = [
-  // 1. İhtiyaç Tespiti ve Başlangıç
-  {
-    id: 'ihtiyac-listesi',
-    name: 'IhtiyacListesi',
-    title: 'Standart Form (MYHBY m.4/e): İhtiyaç Listesi Cetveli',
-    category: '1-ihtiyac-tespiti-ve-baslangic',
-    categoryLabel: 'Hazırlık & İhtiyaç',
-    description: 'Alımı yapılacak kalemlerin teknik özellikleri ve adetleri'
-  },
-  {
-    id: 'son-alim-fiyat-cetveli',
-    name: 'SonAlimFiyatCetveli',
-    title: 'Standart Form: Son Alım Fiyat Araştırma ve Mukayese Cetveli',
-    category: '1-ihtiyac-tespiti-ve-baslangic',
-    categoryLabel: 'Hazırlık & İhtiyaç',
-    description: 'Belirtilen kalemlerin geçmiş alım fiyatları ve yaklaşık maliyet araştırma cetveli'
-  },
-  {
-    id: 'ihtiyac-talep-formu',
-    name: 'IhtiyacTalepFormu',
-    title: 'Standart Form (MYHBY m.4/e - 4734 KİK m.22): İhtiyaç Belgesi ve Harcama Talep Müzekkeresi',
-    category: '1-ihtiyac-tespiti-ve-baslangic',
-    categoryLabel: 'Hazırlık & İhtiyaç',
-    description: 'Birimlerin ihtiyaç talebini resmi olarak ilettiği form'
-  },
-  {
-    id: 'tasinir-kayit-yetkilisi-gorusu',
-    name: 'TasinirKayitYetkilisiGorusu',
-    title: 'Standart Form: Taşınır Kayıt ve Kontrol Yetkilisi Görüş Belgesi',
-    category: '1-ihtiyac-tespiti-ve-baslangic',
-    categoryLabel: 'Hazırlık & İhtiyaç',
-    description: 'Ambar stok durumu ve taşınır malzeme ihtiyacı değerlendirme görüşü'
-  },
-  {
-    id: 'teknik-sartname',
-    name: 'TeknikSartname',
-    title: 'Standart Form-KİK: Teknik Şartname Belgesi (Mal / Hizmet / Yapım)',
-    category: '1-ihtiyac-tespiti-ve-baslangic',
-    categoryLabel: 'Hazırlık & İhtiyaç',
-    description: 'Alım türüne göre dinamik şekillenen teknik şartname formu'
-  },
-  {
-    id: 'luzum-muzekkeresi',
-    name: 'LuzumMuzekkeresi',
-    title: 'Standart Form (MYHBY m.4/e): Lüzum Müzekkeresi',
-    category: '1-ihtiyac-tespiti-ve-baslangic',
-    categoryLabel: 'Hazırlık & İhtiyaç',
-    description: 'İhtiyacın gerekçesini ve alım kararını belirten müzekkere'
-  },
-  {
-    id: 'luzum-muzekkeresi-onay-eki',
-    name: 'LuzumMuzekkeresiOnayEki',
-    title: 'Standart Form: Lüzum Müzekkeresi Onay Eki',
-    category: '1-ihtiyac-tespiti-ve-baslangic',
-    categoryLabel: 'Hazırlık & İhtiyaç',
-    description: 'Müzekkereye eklenen harcama yetkilisi onay formu'
-  },
-  {
-    id: 'luzum-muzekkeresi-teslim-tesellum',
-    name: 'LuzumMuzekkeresiTeslimTesellum',
-    title: 'Standart Form: Lüzum Müzekkeresi Teslim Tesellüm Tutanağı',
-    category: '1-ihtiyac-tespiti-ve-baslangic',
-    categoryLabel: 'Hazırlık & İhtiyaç',
-    description: 'Alınan malzemelerin ilgili birime teslim tutanağı'
-  },
-  {
-    id: 'harcama-talimati',
-    name: 'HarcamaTalimati',
-    title: 'Standart Form-KİK024.0/M: Doğrudan Temin Onay Belgesi (Harcama Talimatı)',
-    category: '1-ihtiyac-tespiti-ve-baslangic',
-    categoryLabel: 'Hazırlık & İhtiyaç',
-    description: 'Harcama yetkilisinden alınan ihale/harcama onay belgesi'
-  },
-  {
-    id: 'dogrudan-temin-onay-belgesi',
-    name: 'DogrudanTeminOnayBelgesi',
-    title: 'Standart Form-KİK024.0/M: Doğrudan Temin Onay Belgesi (Harcama Talimatı)',
-    category: '1-ihtiyac-tespiti-ve-baslangic',
-    categoryLabel: 'Hazırlık & İhtiyaç',
-    description: '4734 Sayılı Kanun 22. madde uyarınca Doğrudan Temin Onay Belgesi'
-  },
-  {
-    id: 'komisyon-gorevlendirme-onayi',
-    name: 'KomisyonGorevlendirmeOnayi',
-    title: 'Standart Form (4734 KİK m.22): Piyasa Fiyat Araştırması ve Muayene Kabul Görevlendirme Onayı',
-    category: '1-ihtiyac-tespiti-ve-baslangic',
-    categoryLabel: 'Hazırlık & İhtiyaç',
-    description: 'Piyasa fiyat araştırması yapacak personellerin atama yazısı'
-  },
-  {
-    id: 'komisyon-gorevlendirme-onayi-eki',
-    name: 'KomisyonGorevlendirmeOnayiEki',
-    title: 'Standart Form: Görevlendirilen Komisyon ve Personel Listesi Eki',
-    category: '1-ihtiyac-tespiti-ve-baslangic',
-    categoryLabel: 'Hazırlık & İhtiyaç',
-    description: 'Görevlendirilen personellerin liste eki'
-  },
-  {
-    id: 'piyasa-fiyat-arastirma-gorevlendirmesi',
-    name: 'PiyasaFiyatArastirmaGorevlendirmesi',
-    title: 'Standart Form (4734 KİK m.22): Piyasa Fiyat Araştırma Görevlendirme Onayı',
-    category: '1-ihtiyac-tespiti-ve-baslangic',
-    categoryLabel: 'Hazırlık & İhtiyaç',
-    description: 'Fiyat araştırması görevlendirme yazısı'
-  },
+/**
+ * Registry'den türetilen şablon seçenek listesi
+ */
+export const TEMPLATE_OPTIONS: TemplateOptionItem[] = getAllTemplateDefinitions().map((def) => ({
+  id: def.id,
+  name: def.name,
+  title: def.title,
+  category: def.category,
+  categoryLabel: def.categoryLabel,
+  description: def.description,
+  kikKodu: def.kikKodu,
+  kikAdi: def.kikAdi,
+  standartFormKodu: def.standartFormKodu,
+  standartFormAdi: def.standartFormAdi
+}))
 
-  // 2. Piyasa Fiyat Araştırması
-  {
-    id: 'fiyat-arastirma-mektubu',
-    name: 'FiyatArastirmaMektubu',
-    title: 'Standart Form-KİK027.0/M: Birim Fiyat Teklif Mektubu ve Fiyat İsteme Formu',
-    category: '2-piyasa-fiyat-arastirmasi',
-    categoryLabel: 'Teklifler & Piyasa',
-    description: 'Firmalardan fiyat teklifi talep mektubu'
-  },
-  {
-    id: 'birim-fiyat-teklif-mektubu',
-    name: 'BirimFiyatTeklifMektubu',
-    title: 'Standart Form-KİK015.1/M: Birim Fiyat Teklif Mektubu',
-    category: '2-piyasa-fiyat-arastirmasi',
-    categoryLabel: 'Teklifler & Piyasa',
-    description: 'İsteklilerin kaşe/imza ile verdiği teklif cetveli'
-  },
-  {
-    id: 'arastirma-mektubu',
-    name: 'ArastirmaMektubu',
-    title: 'Standart Form-KİK027.0/M: Piyasa Fiyat Araştırma ve Teklif İsteme Mektubu',
-    category: '2-piyasa-fiyat-arastirmasi',
-    categoryLabel: 'Teklifler & Piyasa',
-    description: 'Resmi kurumlardan veya esnaftan teklif isteme mektubu'
-  },
-  {
-    id: 'piyasa-fiyat-arastirma-tutanagi',
-    name: 'PiyasaFiyatArastirmaTutanagi',
-    title: 'Standart Form (MYHBY Örnek No: 2): Piyasa Fiyat Araştırması Tutanağı',
-    category: '2-piyasa-fiyat-arastirmasi',
-    categoryLabel: 'Teklifler & Piyasa',
-    description: 'Tüm tekliflerin karşılaştırıldığı ve en avantajlı teklifin belirlendiği tutanak'
-  },
-  {
-    id: 'yaklasik-maliyet-cetveli',
-    name: 'YaklasikMaliyetCetveli',
-    title: 'Standart Form-KİK002.0/M: Yaklaşık Maliyet Hesap Cetveli',
-    category: '2-piyasa-fiyat-arastirmasi',
-    categoryLabel: 'Teklifler & Piyasa',
-    description: 'Alımın tahmini yaklaşık maliyet hesap tablosu'
-  },
-
-  // 3. Sipariş ve Sözleşme
-  {
-    id: 'dogrudan-temin-sonuc-onay-belgesi',
-    name: 'DogrudanTeminSonucOnayBelgesi',
-    title: 'Standart Form (4734 KİK m.22): Piyasa Fiyat Araştırması Sonuç Onay Belgesi',
-    category: '3-siparis-ve-sozlesme',
-    categoryLabel: 'Sipariş & Sözleşme',
-    description: 'Piyasa araştırması sonucunda alımın onaylandığı sonuç belgesi'
-  },
-  {
-    id: 'butce-sorgusu',
-    name: 'ButceSorgusu',
-    title: 'Standart Form: Bütçe Ödenek Kontrol ve Bloke Belgesi',
-    category: '3-siparis-ve-sozlesme',
-    categoryLabel: 'Sipariş & Sözleşme',
-    description: 'Mali Hizmetler / Muhasebe Bütçe ve Ödenek Kontrol Formu'
-  },
-  {
-    id: 'kabul-edilen-teklif',
-    name: 'KabulEdilenTeklif',
-    title: 'Standart Form (KİK Tebliği m.22): Sipariş Mektubu ve Tebliğ-Tebellüğ Belgesi',
-    category: '3-siparis-ve-sozlesme',
-    categoryLabel: 'Sipariş & Sözleşme',
-    description: 'Kazanan firmaya sipariş ve kabul tebliğ yazısı'
-  },
-  {
-    id: 'dogrudan-temin-sozlesmesi',
-    name: 'DogrudanTeminSozlesmesi',
-    title: 'Standart Form-KİK: Doğrudan Temin Mal / Hizmet Alımı Tip Sözleşmesi',
-    category: '3-siparis-ve-sozlesme',
-    categoryLabel: 'Sipariş & Sözleşme',
-    description: 'İdare ile yüklenici arasında imzalanan alım sözleşmesi'
-  },
-  {
-    id: 'sozlesmeye-davet',
-    name: 'SozlesmeyeDavet',
-    title: 'Standart Form-KİK023.0/M: Sözleşmeye Davet Mektubu',
-    category: '3-siparis-ve-sozlesme',
-    categoryLabel: 'Sipariş & Sözleşme',
-    description: 'Kazanan firmanın sözleşme imzalamaya davet edildiği resmi yazı'
-  },
-  {
-    id: 'ihale-komisyon-karari',
-    name: 'IhaleKomisyonKarari',
-    title: 'Standart Form-KİK018.0/M: İhale Komisyonu Kararı',
-    category: '3-siparis-ve-sozlesme',
-    categoryLabel: 'Sipariş & Sözleşme',
-    description: 'İhale komisyonu tarafından alınan nihai karar tutanağı'
-  },
-
-  // 4. Kabul ve Ödeme İşlemleri
-  {
-    id: 'harcama-pusulasi',
-    name: 'HarcamaPusulasi',
-    title: 'Standart Form (MYHBY Örnek No: 3): Harcama Pusulası ve Klasör Dizi Fihristi',
-    category: '4-kabul-ve-odeme-islemleri',
-    categoryLabel: 'Muayene & Kabul & Ödeme',
-    description: 'Ödeme ve harcama pusulası belgesi'
-  },
-  {
-    id: 'muayene-kabul-komisyonu',
-    name: 'MuayeneKabulKomisyonu',
-    title: 'Standart Form-KİK054.0/M: Muayene ve Kabul Komisyon Kararı',
-    category: '4-kabul-ve-odeme-islemleri',
-    categoryLabel: 'Muayene & Kabul & Ödeme',
-    description: 'Muayene ve kabul işlemlerini yürütecek komisyon görevlendirme belgesi'
-  },
-  {
-    id: 'muayene-kabul-tutanagi',
-    name: 'MuayeneKabulTutanagi',
-    title: 'Standart Form-KİK054.0/M: Mal Alımları Muayene ve Kabul Komisyonu Tutanağı',
-    category: '4-kabul-ve-odeme-islemleri',
-    categoryLabel: 'Muayene & Kabul & Ödeme',
-    description: 'Mal alımı teslimat ve muayene kabul tutanağı'
-  },
-  {
-    id: 'hizmet-isleri-kabul-tutanagi',
-    name: 'HizmetIsleriKabulTutanagi',
-    title: 'Standart Form-KİK048.0/H: Hizmet İşleri Kabul Tutanağı',
-    category: '4-kabul-ve-odeme-islemleri',
-    categoryLabel: 'Muayene & Kabul & Ödeme',
-    description: 'Hizmet alımı iş bitimi ve komisyon kabul tutanağı'
-  },
-  {
-    id: 'hizmet-isleri-kabul-teklif-belgesi',
-    name: 'HizmetIsleriKabulTeklifBelgesi',
-    title: 'Standart Form-KİK047.0/H: Hizmet İşleri Kabul Teklif Belgesi',
-    category: '4-kabul-ve-odeme-islemleri',
-    categoryLabel: 'Muayene & Kabul & Ödeme',
-    description:
-      'Hizmet alımı yüklenici iş bitirme dilekçesi sonrası ön inceleme ve kabul teklif belgesi'
-  },
-  {
-    id: 'kik048-yapim-gecici-kabul-teklif',
-    name: 'Kik048YapimGeciciKabulTeklif',
-    title: 'Standart Form-KİK048.0/Y: Yapım İşleri Geçici Kabul Teklif Belgesi',
-    category: '4-kabul-ve-odeme-islemleri',
-    categoryLabel: 'Muayene & Kabul & Ödeme',
-    description: 'Yapım işleri yüklenici iş bitirme dilekçesi sonrası ön inceleme ve geçici kabul teklif belgesi'
-  },
-  {
-    id: 'kik049-yapim-gecici-kabul-tutanagi',
-    name: 'Kik049YapimGeciciKabulTutanagi',
-    title: 'Standart Form-KİK049.0/Y: Yapım İşleri Geçici Kabul Tutanağı',
-    category: '4-kabul-ve-odeme-islemleri',
-    categoryLabel: 'Muayene & Kabul & Ödeme',
-    description: 'Yapım işleri geçici kabul komisyonu heyeti ve yüklenici inceleme tutanağı'
-  },
-  {
-    id: 'kik050-yapim-kesin-kabul-teklif',
-    name: 'Kik050YapimKesinKabulTeklif',
-    title: 'Standart Form-KİK050.0/Y: Yapım İşleri Kesin Kabul Teklif Belgesi',
-    category: '4-kabul-ve-odeme-islemleri',
-    categoryLabel: 'Muayene & Kabul & Ödeme',
-    description: 'Yapım işleri teminat süresi sonu kesin kabul heyeti teşkili teklif belgesi'
-  },
-  {
-    id: 'kik051-yapim-kesin-kabul-tutanagi',
-    name: 'Kik051YapimKesinKabulTutanagi',
-    title: 'Standart Form-KİK051.0/Y: Yapım İşleri Kesin Kabul Tutanağı',
-    category: '4-kabul-ve-odeme-islemleri',
-    categoryLabel: 'Muayene & Kabul & Ödeme',
-    description: 'Yapım işleri kesin kabul komisyonu heyeti ve yüklenici kesin kabul onay tutanağı'
-  },
-  {
-    id: 'hakedis-raporu',
-    name: 'HakedisRaporu',
-    title: 'Standart Form (MYHBY Örnek No: 4): Hakediş Raporu ve İcmal Cetveli',
-    category: '4-kabul-ve-odeme-islemleri',
-    categoryLabel: 'Muayene & Kabul & Ödeme',
-    description: 'Fiyat farkı, kesinti ve damga vergisi dahil hakediş raporu'
-  },
-  {
-    id: 'tasinir-islem-fisi',
-    name: 'TasinirIslemFisi',
-    title: 'Standart Form (TKKY Örnek No: 5): Taşınır İşlem Fişi (TİF)',
-    category: '4-kabul-ve-odeme-islemleri',
-    categoryLabel: 'Muayene & Kabul & Ödeme',
-    description: 'Ambara malzeme giriş ve taşınır işlem fişi'
-  },
-  {
-    id: 'odeme-emri-belgesi',
-    name: 'OdemeEmriBelgesi',
-    title: 'Standart Form (MYHBY Örnek No: 1): Ödeme Emri Belgesi (MYS/MİF)',
-    category: '4-kabul-ve-odeme-islemleri',
-    categoryLabel: 'Muayene & Kabul & Ödeme',
-    description: 'Muhasebe birimine iletilen resmi ödeme emri belgesi'
-  },
-  {
-    id: 'odeme-yazisi',
-    name: 'OdemeYazisi',
-    title: 'Standart Form: Muhasebe / Malmüdürlüğü Ödeme Gönderme Müzekkeresi',
-    category: '4-kabul-ve-odeme-islemleri',
-    categoryLabel: 'Muayene & Kabul & Ödeme',
-    description: 'Mali hizmetler / muhasebe müdürlüğüne yazılan ödeme üst yazısı'
-  }
-]
-
-export const TEMPLATE_ALIASES: Record<string, string> = {
-  // Aşama 1 - Doğrudan Temin Onay Belgesi (22. Madde)
-  '1-ihtiyac-tespiti-ve-baslangic-dogrudan-temin-onay-belgesi': 'dogrudan-temin-onay-belgesi',
-  'dogrudan-temin-onay-belgesi': 'dogrudan-temin-onay-belgesi',
-  'dogrudan-temin-onay': 'dogrudan-temin-onay-belgesi',
-  'dt-onay': 'dogrudan-temin-onay-belgesi',
-  'dt-onay-belgesi': 'dogrudan-temin-onay-belgesi',
-
-  // İhale Onay Belgesi / Harcama Talimatı
-  'harcama-talimati': 'harcama-talimati',
-  'idare-onay-belgesi': 'harcama-talimati',
-  'ihale-onay-belgesi': 'harcama-talimati',
-  'onay-belgesi': 'dogrudan-temin-onay-belgesi',
-  onaybelgesi: 'dogrudan-temin-onay-belgesi',
-  'ihale-onay': 'harcama-talimati',
-  harcama: 'harcama-talimati',
-  talimat: 'harcama-talimati',
-  'harcama-onay-belgesi': 'harcama-talimati',
-
-  // Bütçe Sorgusu (Aşama 3 / Mali Kontrol)
-  'butce-sorgusu': 'butce-sorgusu',
-  'butce-sorgu': 'butce-sorgusu',
-  butcesorgusu: 'butce-sorgusu',
-  'odenek-uygunluk': 'butce-sorgusu',
-  'butce-onay': 'butce-sorgusu',
-
-  // Sonuç Onay Belgeleri (Aşama 3 - Sonuç Onay Belgesi)
-  '3-siparis-ve-sozlesme-dogrudan-temin-onay-belgesi': 'dogrudan-temin-sonuc-onay-belgesi',
-  '3-siparis-ve-sozlesme-dogrudan-temin-sonuc-onay-belgesi': 'dogrudan-temin-sonuc-onay-belgesi',
-  'siparis-ve-sozlesme-dogrudan-temin-onay-belgesi': 'dogrudan-temin-sonuc-onay-belgesi',
-  'siparis-dogrudan-temin-onay-belgesi': 'dogrudan-temin-sonuc-onay-belgesi',
-  'dogrudan-temin-sonuc-onay-belgesi': 'dogrudan-temin-sonuc-onay-belgesi',
-  'sonuc-onay-belgesi': 'dogrudan-temin-sonuc-onay-belgesi',
-  sonuconaybelgesi: 'dogrudan-temin-sonuc-onay-belgesi',
-  'sonuc-onay': 'dogrudan-temin-sonuc-onay-belgesi',
-  sonuconay: 'dogrudan-temin-sonuc-onay-belgesi',
-
-  // İhtiyaç & Talep
-  ihtiyac: 'ihtiyac-listesi',
-  'ihtiyac-listesi': 'ihtiyac-listesi',
-  ihtiyaclistesi: 'ihtiyac-listesi',
-  'malzeme-hizmet-kalem-listesi': 'ihtiyac-listesi',
-  'malzeme-listesi': 'ihtiyac-listesi',
-  liste: 'ihtiyac-listesi',
-  'hazirlik-ve-ihtiyac': 'ihtiyac-listesi',
-  'ihtiyac-talep-formu': 'ihtiyac-talep-formu',
-  ihtiyactalepformu: 'ihtiyac-talep-formu',
-  'ihtiyac-talep': 'ihtiyac-talep-formu',
-  talep: 'ihtiyac-talep-formu',
-
-  // Taşınır Kayıt Yetkilisi Görüşü
-  'tasinir-kayit-yetkilisi-gorusu': 'tasinir-kayit-yetkilisi-gorusu',
-  tasinirkayityetkilisigorusu: 'tasinir-kayit-yetkilisi-gorusu',
-  'tasinir-kayit-yetkilisi': 'tasinir-kayit-yetkilisi-gorusu',
-  'tasinir-gorusu': 'tasinir-kayit-yetkilisi-gorusu',
-  'tasinir-kayit': 'tasinir-kayit-yetkilisi-gorusu',
-  tasinir: 'tasinir-kayit-yetkilisi-gorusu',
-  'ambar-gorusu': 'tasinir-kayit-yetkilisi-gorusu',
-
-  // Teknik Şartname
-  'teknik-sartname': 'teknik-sartname',
-  tekniksartname: 'teknik-sartname',
-  'teknik-sartnamesi': 'teknik-sartname',
-  'teknik-sartnameler': 'teknik-sartname',
-  sartname: 'teknik-sartname',
-  teknik: 'teknik-sartname',
-
-  // Lüzum
-  luzum: 'luzum-muzekkeresi',
-  'luzum-muzekkere': 'luzum-muzekkeresi',
-  'luzum-muzekkeresi': 'luzum-muzekkeresi',
-  luzummuzekkeresi: 'luzum-muzekkeresi',
-  'luzum-onay-eki': 'luzum-muzekkeresi-onay-eki',
-  'luzum-muzekkeresi-onay-eki': 'luzum-muzekkeresi-onay-eki',
-  luzummuzekkeresionayeki: 'luzum-muzekkeresi-onay-eki',
-  'luzum-teslim-tesellum': 'luzum-muzekkeresi-teslim-tesellum',
-  'luzum-muzekkeresi-teslim-tesellum': 'luzum-muzekkeresi-teslim-tesellum',
-  luzummuzekkeresiteslimtesellum: 'luzum-muzekkeresi-teslim-tesellum',
-  'teslim-tesellum': 'luzum-muzekkeresi-teslim-tesellum',
-  'teslim-tesellum-belgesi': 'luzum-muzekkeresi-teslim-tesellum',
-
-  // Komisyon & Görevlendirme
-  'komisyon-gorevlendirme': 'komisyon-gorevlendirme-onayi',
-  'komisyon-gorevlendirme-onayi': 'komisyon-gorevlendirme-onayi',
-  komisyongorevlendirmeonayi: 'komisyon-gorevlendirme-onayi',
-  'komisyon-atama': 'komisyon-gorevlendirme-onayi',
-  'komisyon-onayi': 'komisyon-gorevlendirme-onayi',
-  'komisyon-karari': 'komisyon-gorevlendirme-onayi',
-  'ihale-komisyon-karari': 'ihale-komisyon-karari',
-  ihalekomisyonkarari: 'ihale-komisyon-karari',
-  'ihale-karari': 'ihale-komisyon-karari',
-  'yaklasik-maliyet-tespit-komisyonu': 'komisyon-gorevlendirme-onayi',
-  'yaklasik-maliyet-komisyonu': 'komisyon-gorevlendirme-onayi',
-  yaklasikmaliyetkomisyonu: 'komisyon-gorevlendirme-onayi',
-  'fiyat-arastirma-komisyonu': 'piyasa-fiyat-arastirma-gorevlendirmesi',
-  fiyatarastirmakomisyonu: 'piyasa-fiyat-arastirma-gorevlendirmesi',
-  'komisyon-gorevlendirme-onayi-eki': 'komisyon-gorevlendirme-onayi-eki',
-  komisyongorevlendirmeonayieki: 'komisyon-gorevlendirme-onayi-eki',
-  'komisyon-onay-eki': 'komisyon-gorevlendirme-onayi-eki',
-  'komisyon-eki': 'komisyon-gorevlendirme-onayi-eki',
-
-  // Teklif & Mektuplar
-  'fiyat-arastirma-mektubu': 'fiyat-arastirma-mektubu',
-  fiyatarastirmamektubu: 'fiyat-arastirma-mektubu',
-  'fiyat-arastirma': 'fiyat-arastirma-mektubu',
-  'fiyat-arastirmasi': 'fiyat-arastirma-mektubu',
-  'teklif-mektubu-dagitim-karma': 'fiyat-arastirma-mektubu',
-  'dagitim-cizelgesi-karma': 'fiyat-arastirma-mektubu',
-  'birim-fiyat-teklif-mektubu': 'birim-fiyat-teklif-mektubu',
-  birimfiyatteklifmektubu: 'birim-fiyat-teklif-mektubu',
-  'birim-fiyat-teklif-cetveli': 'birim-fiyat-teklif-mektubu',
-  'teklif-mektubu': 'birim-fiyat-teklif-mektubu',
-  teklifmektubu: 'birim-fiyat-teklif-mektubu',
-  'arastirma-mektubu': 'arastirma-mektubu',
-  arastirmamektubu: 'arastirma-mektubu',
-  'teklif-mektubu-dagitim': 'arastirma-mektubu',
-  'teklif-mektubu-dagitim-cizelgesi': 'arastirma-mektubu',
-  'dagitim-cizelgesi': 'arastirma-mektubu',
-  'yasaklilik-sorgulama-tutanagi': 'piyasa-fiyat-arastirma-gorevlendirmesi',
-  'yasaklilik-sorgulama': 'piyasa-fiyat-arastirma-gorevlendirmesi',
-  yasaklilik: 'piyasa-fiyat-arastirma-gorevlendirmesi',
-  'ekap-yasaklilik': 'piyasa-fiyat-arastirma-gorevlendirmesi',
-
-  // Piyasa Fiyat Araştırma & Yaklaşık Maliyet
-  'piyasa-fiyat-arastirma-tutanagi': 'piyasa-fiyat-arastirma-tutanagi',
-  piyasafiyatarastirmatutanagi: 'piyasa-fiyat-arastirma-tutanagi',
-  'piyasa-fiyat-arastirmasi': 'piyasa-fiyat-arastirma-tutanagi',
-  'piyasa-arastirma-tutanagi': 'piyasa-fiyat-arastirma-tutanagi',
-  'fiyat-arastirma-tutanagi': 'piyasa-fiyat-arastirma-tutanagi',
-  tutanak: 'piyasa-fiyat-arastirma-tutanagi',
-  'piyasa-fiyat-arastirma-gorevlendirmesi': 'piyasa-fiyat-arastirma-gorevlendirmesi',
-  piyasafiyatarastirmagorevlendirmesi: 'piyasa-fiyat-arastirma-gorevlendirmesi',
-  'piyasa-fiyat-arastirma-gorevlendirme': 'piyasa-fiyat-arastirma-gorevlendirmesi',
-  'arastirma-gorevlendirmesi': 'piyasa-fiyat-arastirma-gorevlendirmesi',
-  gorevlendirme: 'piyasa-fiyat-arastirma-gorevlendirmesi',
-  'yaklasik-maliyet-cetveli': 'yaklasik-maliyet-cetveli',
-  yaklasikmaliyetcetveli: 'yaklasik-maliyet-cetveli',
-  'yaklasik-maliyet-hesap-cetveli': 'yaklasik-maliyet-cetveli',
-  'yaklasik-maliyet': 'yaklasik-maliyet-cetveli',
-  yaklasik: 'yaklasik-maliyet-cetveli',
-  'son-alim-fiyat-cetveli': 'son-alim-fiyat-cetveli',
-  'son-alim': 'son-alim-fiyat-cetveli',
-  'son-alim-fiyatlari': 'son-alim-fiyat-cetveli',
-  sonalimfiyatcetveli: 'son-alim-fiyat-cetveli',
-  sonalim: 'son-alim-fiyat-cetveli',
-  'fiyat-cetveli': 'son-alim-fiyat-cetveli',
-  'maliyet-cetveli': 'yaklasik-maliyet-cetveli',
-
-  // Kabul Edilen Teklif, Sipariş Formu, Sözleşme (Aşama 3)
-  'kabul-edilen-teklif': 'kabul-edilen-teklif',
-  kabuledilenteklif: 'kabul-edilen-teklif',
-  'kabul-edilen-teklif-alternatif': 'kabul-edilen-teklif',
-  'kabul-yazisi': 'kabul-edilen-teklif',
-  kabulyazisi: 'kabul-edilen-teklif',
-  'siparis-formu': 'kabul-edilen-teklif',
-  siparisformu: 'kabul-edilen-teklif',
-  'siparis-mektubu': 'kabul-edilen-teklif',
-  siparismektubu: 'kabul-edilen-teklif',
-  siparis: 'kabul-edilen-teklif',
-
-  'dogrudan-temin-sozlesmesi': 'dogrudan-temin-sozlesmesi',
-  'dogrudan-temin-sozlesmesi-alternatif': 'dogrudan-temin-sozlesmesi',
-  'dogrudan-temin-sozlesmesi-uzun': 'dogrudan-temin-sozlesmesi',
-  sozlesme: 'dogrudan-temin-sozlesmesi',
-
-  'sozlesmeye-davet': 'sozlesmeye-davet',
-  sozlesmedavet: 'sozlesmeye-davet',
-  'davet-mektubu': 'sozlesmeye-davet',
-
-  // Muayene, Kabul, Ödeme (Aşama 4)
-  'harcama-pusulasi': 'harcama-pusulasi',
-  harcamapusulasi: 'harcama-pusulasi',
-  pusula: 'harcama-pusulasi',
-  'muayene-kabul-komisyonu': 'muayene-kabul-komisyonu',
-  muayenekabulkomisyonu: 'muayene-kabul-komisyonu',
-  'muayene-kabul-belgesi': 'muayene-kabul-komisyonu',
-  'muayene-kabul-tutanagi': 'muayene-kabul-tutanagi',
-  muayenekabultutanagi: 'muayene-kabul-tutanagi',
-  'muayene-kabul': 'muayene-kabul-tutanagi',
-  muayenekabul: 'muayene-kabul-tutanagi',
-  'kabul-tutanagi': 'muayene-kabul-tutanagi',
-  'hizmet-isleri-kabul-tutanagi': 'muayene-kabul-komisyonu',
-  hizmetislerikabultutanagi: 'muayene-kabul-komisyonu',
-  'hizmet-kabul-tutanagi': 'muayene-kabul-komisyonu',
-  'hizmet-isleri-kabul-teklif-belgesi': 'muayene-kabul-komisyonu',
-  hizmetislerikabulteklifbelgesi: 'hizmet-isleri-kabul-teklif-belgesi',
-  'hizmet-kabul-teklif': 'hizmet-isleri-kabul-teklif-belgesi',
-  'odeme-emri-belgesi': 'odeme-emri-belgesi',
-  odemeemribelgesi: 'odeme-emri-belgesi',
-  'odeme-emri': 'odeme-emri-belgesi',
-  'odeme-yazisi': 'odeme-yazisi',
-  odemeyazisi: 'odeme-yazisi',
-  'tasinir-islem-fisi': 'tasinir-islem-fisi',
-  tasinirislemfisi: 'tasinir-islem-fisi',
-  tif: 'tasinir-islem-fisi',
-  'hakedis-raporu': 'hakedis-raporu',
-  hakedisraporu: 'hakedis-raporu',
-  hakedis: 'hakedis-raporu',
-
-  // Yapım İşleri Kabul Belgeleri (KİK Standart Formları)
-  'kik048-yapim-gecici-kabul-teklif': 'kik048-yapim-gecici-kabul-teklif',
-  kik048: 'kik048-yapim-gecici-kabul-teklif',
-  'kik-048': 'kik048-yapim-gecici-kabul-teklif',
-  'kik048-0-y': 'kik048-yapim-gecici-kabul-teklif',
-  'standart-form-kik048-0-y': 'kik048-yapim-gecici-kabul-teklif',
-  'tandart-form-kik048-0-y': 'kik048-yapim-gecici-kabul-teklif',
-  'yapim-isleri-gecici-kabul-teklif-belgesi': 'kik048-yapim-gecici-kabul-teklif',
-  'yapim-gecici-kabul-teklif-belgesi': 'kik048-yapim-gecici-kabul-teklif',
-  'yapim-gecici-kabul-teklif': 'kik048-yapim-gecici-kabul-teklif',
-  'gecici-kabul-teklif-belgesi': 'kik048-yapim-gecici-kabul-teklif',
-  'gecici-kabul-teklif': 'kik048-yapim-gecici-kabul-teklif',
-
-  'kik049-yapim-gecici-kabul-tutanagi': 'kik049-yapim-gecici-kabul-tutanagi',
-  kik049: 'kik049-yapim-gecici-kabul-tutanagi',
-  'kik-049': 'kik049-yapim-gecici-kabul-tutanagi',
-  'kik049-0-y': 'kik049-yapim-gecici-kabul-tutanagi',
-  'standart-form-kik049-0-y': 'kik049-yapim-gecici-kabul-tutanagi',
-  'tandart-form-kik049-0-y': 'kik049-yapim-gecici-kabul-tutanagi',
-  'yapim-isleri-gecici-kabul-tutanagi': 'kik049-yapim-gecici-kabul-tutanagi',
-  'yapim-gecici-kabul-tutanagi': 'kik049-yapim-gecici-kabul-tutanagi',
-  'gecici-kabul-tutanagi': 'kik049-yapim-gecici-kabul-tutanagi',
-  gecicikabultutanagi: 'kik049-yapim-gecici-kabul-tutanagi',
-
-  'kik050-yapim-kesin-kabul-teklif': 'kik050-yapim-kesin-kabul-teklif',
-  kik050: 'kik050-yapim-kesin-kabul-teklif',
-  'kik-050': 'kik050-yapim-kesin-kabul-teklif',
-  'kik050-0-y': 'kik050-yapim-kesin-kabul-teklif',
-  'standart-form-kik050-0-y': 'kik050-yapim-kesin-kabul-teklif',
-  'tandart-form-kik050-0-y': 'kik050-yapim-kesin-kabul-teklif',
-  'yapim-isleri-kesin-kabul-teklif-belgesi': 'kik050-yapim-kesin-kabul-teklif',
-  'yapim-kesin-kabul-teklif-belgesi': 'kik050-yapim-kesin-kabul-teklif',
-  'yapim-kesin-kabul-teklif': 'kik050-yapim-kesin-kabul-teklif',
-  'kesin-kabul-teklif-belgesi': 'kik050-yapim-kesin-kabul-teklif',
-  'kesin-kabul-teklif': 'kik050-yapim-kesin-kabul-teklif',
-
-  'kik051-yapim-kesin-kabul-tutanagi': 'kik051-yapim-kesin-kabul-tutanagi',
-  kik051: 'kik051-yapim-kesin-kabul-tutanagi',
-  'kik-051': 'kik051-yapim-kesin-kabul-tutanagi',
-  'kik051-0-y': 'kik051-yapim-kesin-kabul-tutanagi',
-  'standart-form-kik051-0-y': 'kik051-yapim-kesin-kabul-tutanagi',
-  'tandart-form-kik051-0-y': 'kik051-yapim-kesin-kabul-tutanagi',
-  'yapim-isleri-kesin-kabul-tutanagi': 'kik051-yapim-kesin-kabul-tutanagi',
-  'yapim-kesin-kabul-tutanagi': 'kik051-yapim-kesin-kabul-tutanagi',
-  'kesin-kabul-tutanagi': 'kik051-yapim-kesin-kabul-tutanagi',
-  kesinkabultutanagi: 'kik051-yapim-kesin-kabul-tutanagi',
-
-  // Klasör & Kapak
-  'klasor-sirtligi-3cm': 'ihtiyac-listesi',
-  'klasor-sirtligi-5cm': 'ihtiyac-listesi',
-  'klasor-sirtligi-7-5cm': 'ihtiyac-listesi',
-  'klasor-sirtligi': 'ihtiyac-listesi',
-  'ihale-kapagi': 'ihtiyac-listesi',
-  'kapak-ici-indeks-sablonu': 'ihtiyac-listesi'
-}
-
-import { normalizeTemplateKey } from '@temin360/document-templates'
 export { normalizeTemplateKey }
 
+/**
+ * Verilen documentId veya şablon anahtarına göre registry'den tanım ve bileşeni çözümler.
+ */
 export function resolveTemplateConfig(documentId: string | null | undefined): {
-  config: TemplateType
+  config: TemplateDefinition<React.ComponentType<any>>
   component: TemplateComponentType
   resolvedId: string
 } {
-  const defaultTemplate = TEMPLATE_REGISTRY[0] // IhtiyacListesi
-  const defaultComponent = Templates.IhtiyacListesi as TemplateComponentType
+  const defaultKey: TemplateKey = 'ihtiyac_listesi'
+  const defaultDef = templateRegistry[defaultKey]
 
   if (!documentId) {
     return {
-      config: defaultTemplate,
-      component: defaultComponent,
-      resolvedId: defaultTemplate.id
+      config: defaultDef,
+      component: defaultDef.component as unknown as TemplateComponentType,
+      resolvedId: defaultDef.id
     }
   }
 
-  // 1. Direct exact match in TEMPLATE_REGISTRY by id or name
-  const exactMatch = TEMPLATE_REGISTRY.find((t) => t.id === documentId || t.name === documentId)
-  if (exactMatch && V2_TEMPLATES_MAP[exactMatch.name]) {
+  // 1. Registry'den doğrudan veya normalize edilmiş anahtarla bul
+  const def = getTemplateDefinition(documentId)
+  if (def) {
     return {
-      config: exactMatch,
-      component: V2_TEMPLATES_MAP[exactMatch.name],
-      resolvedId: exactMatch.id
+      config: def,
+      component: def.component as unknown as TemplateComponentType,
+      resolvedId: def.id
     }
   }
 
-  // 2. Normalized key
+  // 2. Sezgisel (Heuristic) anahtar eşleştirme
   const cleanKey = normalizeTemplateKey(documentId)
+  let heuristicKey: TemplateKey = 'ihtiyac_listesi'
 
-  // Direct normalized match in registry
-  const normalizedMatch = TEMPLATE_REGISTRY.find(
-    (t) => normalizeTemplateKey(t.id) === cleanKey || normalizeTemplateKey(t.name) === cleanKey
-  )
-  if (normalizedMatch && V2_TEMPLATES_MAP[normalizedMatch.name]) {
-    return {
-      config: normalizedMatch,
-      component: V2_TEMPLATES_MAP[normalizedMatch.name],
-      resolvedId: normalizedMatch.id
-    }
-  }
-
-  // 3. Alias match
-  const aliasedId = TEMPLATE_ALIASES[cleanKey]
-  if (aliasedId) {
-    const aliasMatch = TEMPLATE_REGISTRY.find((t) => t.id === aliasedId)
-    if (aliasMatch && V2_TEMPLATES_MAP[aliasMatch.name]) {
-      return {
-        config: aliasMatch,
-        component: V2_TEMPLATES_MAP[aliasMatch.name],
-        resolvedId: aliasMatch.id
-      }
-    }
-  }
-
-  // 4. Substring / Keyword heuristic matching
-  let resolvedId = 'ihtiyac-listesi'
-  if (cleanKey.includes('hizmet-isleri-kabul-teklif') || cleanKey.includes('hizmet-kabul-teklif')) {
-    resolvedId = 'muayene-kabul-komisyonu'
-  } else if (cleanKey.includes('hizmet-isleri-kabul') || cleanKey.includes('hizmet-kabul')) {
-    resolvedId = 'muayene-kabul-komisyonu'
-  } else if (
-    cleanKey.includes('muayene-kabul-tutanagi') ||
-    cleanKey.includes('kabul-tutanagi') ||
-    (cleanKey.includes('muayene') && cleanKey.includes('tutanak'))
-  ) {
-    resolvedId = 'muayene-kabul-komisyonu'
-  } else if (
-    cleanKey.includes('muayene-kabul-komisyonu') ||
-    (cleanKey.includes('muayene') && cleanKey.includes('komisyon'))
-  ) {
-    resolvedId = 'muayene-kabul-komisyonu'
-  } else if (cleanKey.includes('ihale-komisyon-karari') || cleanKey.includes('ihale-karari')) {
-    resolvedId = 'ihale-komisyon-karari'
-  } else if (cleanKey.includes('odeme-yazisi') || cleanKey.includes('odemeyazisi')) {
-    resolvedId = 'odeme-yazisi'
-  } else if (cleanKey.includes('odeme-emri') || cleanKey.includes('mif')) {
-    resolvedId = 'odeme-emri-belgesi'
-  } else if (cleanKey.includes('hakedis')) {
-    resolvedId = 'hakedis-raporu'
-  } else if (cleanKey.includes('son-alim') || cleanKey.includes('sonalim')) {
-    resolvedId = 'son-alim-fiyat-cetveli'
-  } else if (cleanKey.includes('tasinir-islem-fisi') || cleanKey.includes('tif')) {
-    resolvedId = 'tasinir-islem-fisi'
-  } else if (cleanKey.includes('tasinir') || cleanKey.includes('ambar')) {
-    resolvedId = 'tasinir-kayit-yetkilisi-gorusu'
-  } else if (cleanKey.includes('sartname') || cleanKey.includes('teknik')) {
-    resolvedId = 'teknik-sartname'
-  } else if (cleanKey.includes('talep')) {
-    resolvedId = 'ihtiyac-talep-formu'
-  } else if (
-    cleanKey.includes('ihtiyac') ||
-    cleanKey.includes('malzeme') ||
-    cleanKey.includes('kalem')
-  ) {
-    resolvedId = 'ihtiyac-listesi'
-  } else if (cleanKey.includes('luzum')) {
+  if (cleanKey.includes('luzum')) {
     if (cleanKey.includes('onay') || cleanKey.includes('ek')) {
-      resolvedId = 'luzum-muzekkeresi-onay-eki'
+      heuristicKey = 'luzum_onay_eki'
     } else if (cleanKey.includes('teslim') || cleanKey.includes('tesellum')) {
-      resolvedId = 'luzum-muzekkeresi-teslim-tesellum'
+      heuristicKey = 'luzum_muzekkeresi_teslim_tesellum'
     } else {
-      resolvedId = 'luzum-muzekkeresi'
+      heuristicKey = 'luzum_muzekkeresi'
     }
-  } else if (
-    cleanKey.includes('komisyon') ||
-    cleanKey.includes('atama') ||
-    cleanKey.includes('gorev')
-  ) {
-    if (cleanKey.includes('piyasa')) {
-      resolvedId = 'piyasa-fiyat-arastirma-gorevlendirmesi'
-    } else if (cleanKey.includes('muayene') || cleanKey.includes('kabul')) {
-      resolvedId = 'muayene-kabul-komisyonu'
-    } else if (cleanKey.includes('ek') || cleanKey.includes('onay-eki')) {
-      resolvedId = 'komisyon-gorevlendirme-onayi-eki'
-    } else {
-      resolvedId = 'komisyon-gorevlendirme-onayi'
-    }
-  } else if (cleanKey.includes('yasak')) {
-    resolvedId = 'piyasa-fiyat-arastirma-gorevlendirmesi'
-  } else if (cleanKey.includes('yaklasik') || cleanKey.includes('maliyet')) {
-    resolvedId = 'yaklasik-maliyet-cetveli'
-  } else if (
-    cleanKey.includes('piyasa-fiyat-arastirma-tutanagi') ||
-    (cleanKey.includes('piyasa') && !cleanKey.includes('mektup')) ||
-    cleanKey === 'tutanak'
-  ) {
-    resolvedId = 'piyasa-fiyat-arastirma-tutanagi'
-  } else if (cleanKey.includes('arastirma') || cleanKey.includes('dagitim')) {
-    if (cleanKey.includes('karma')) {
-      resolvedId = 'fiyat-arastirma-mektubu'
-    } else {
-      resolvedId = 'arastirma-mektubu'
-    }
-  } else if (
-    cleanKey.includes('teklif') ||
-    cleanKey.includes('birim-fiyat') ||
-    cleanKey.includes('cetvel')
-  ) {
-    resolvedId = 'birim-fiyat-teklif-mektubu'
-  } else if (cleanKey.includes('sonuc')) {
-    resolvedId = 'dogrudan-temin-sonuc-onay-belgesi'
-  } else if (
-    cleanKey.includes('siparis') ||
-    cleanKey.includes('kabul-edilen') ||
-    cleanKey.includes('kabul-yazi')
-  ) {
-    resolvedId = 'kabul-edilen-teklif'
-  } else if (cleanKey.includes('davet')) {
-    resolvedId = 'sozlesmeye-davet'
-  } else if (cleanKey.includes('sozlesme')) {
-    resolvedId = 'dogrudan-temin-sozlesmesi'
-  } else if (cleanKey.includes('muayene') || cleanKey.includes('kabul')) {
-    resolvedId = 'muayene-kabul-komisyonu'
-  } else if (cleanKey.includes('pusula')) {
-    resolvedId = 'harcama-pusulasi'
-  } else if (cleanKey.includes('butce') || cleanKey.includes('odenek')) {
-    resolvedId = 'butce-sorgusu'
+  } else if (cleanKey.includes('harcama') && cleanKey.includes('talimat')) {
+    heuristicKey = 'harcama_talimati'
+  } else if (cleanKey.includes('harcama') && cleanKey.includes('pusula')) {
+    heuristicKey = 'harcama_pusulasi'
   } else if (cleanKey.includes('dogrudan-temin-onay') || cleanKey.includes('dt-onay')) {
-    resolvedId = 'dogrudan-temin-onay-belgesi'
-  } else if (
-    cleanKey.includes('onay') ||
-    cleanKey.includes('talimat') ||
-    cleanKey.includes('harcama')
-  ) {
-    resolvedId = 'dogrudan-temin-onay-belgesi'
-  }
-
-  const found = TEMPLATE_REGISTRY.find((t) => t.id === resolvedId)
-  if (found) {
-    const comp =
-      V2_TEMPLATES_MAP[found.name] ||
-      ((found.category === '4-kabul-ve-odeme-islemleri'
-        ? Templates.MuayeneKabulKomisyonu
-        : found.category === '3-siparis-ve-sozlesme'
-          ? Templates.DogrudanTeminOnayBelgesi
-          : found.category === '2-piyasa-fiyat-arastirmasi'
-            ? Templates.PiyasaFiyatArastirmaTutanagi
-            : defaultComponent) as TemplateComponentType)
-    return {
-      config: found,
-      component: comp,
-      resolvedId: found.id
+    heuristicKey = 'dogrudan_temin_onay_belgesi'
+  } else if (cleanKey.includes('sonuc')) {
+    heuristicKey = 'dogrudan_temin_sonuc_onay_belgesi'
+  } else if (cleanKey.includes('komisyon') || cleanKey.includes('atama')) {
+    if (cleanKey.includes('ek')) {
+      heuristicKey = 'komisyon_gorevlendirme_onayi_eki'
+    } else if (cleanKey.includes('piyasa')) {
+      heuristicKey = 'piyasa_fiyat_arastirma_gorevlendirmesi'
+    } else {
+      heuristicKey = 'komisyon_gorevlendirme_onayi'
     }
+  } else if (cleanKey.includes('teklif') || cleanKey.includes('birim-fiyat')) {
+    heuristicKey = 'birim_fiyat_teklif_mektubu'
+  } else if (cleanKey.includes('fiyat-arastirma-mektubu') || cleanKey.includes('karma')) {
+    heuristicKey = 'fiyat_arastirma_mektubu'
+  } else if (cleanKey.includes('arastirma-mektubu') || cleanKey.includes('isteme')) {
+    heuristicKey = 'arastirma_mektubu'
+  } else if (cleanKey.includes('piyasa-fiyat') || cleanKey.includes('tutanak')) {
+    heuristicKey = 'piyasa_fiyat_arastirma_tutanagi'
+  } else if (cleanKey.includes('yaklasik') || cleanKey.includes('maliyet')) {
+    heuristicKey = 'yaklasik_maliyet_cetveli'
+  } else if (cleanKey.includes('son-alim') || cleanKey.includes('mukayese')) {
+    heuristicKey = 'son_alim_fiyat_cetveli'
+  } else if (cleanKey.includes('butce') || cleanKey.includes('bloke')) {
+    heuristicKey = 'butce_sorgusu'
+  } else if (cleanKey.includes('siparis') || cleanKey.includes('kabul-edilen')) {
+    heuristicKey = 'kabul_edilen_teklif'
+  } else if (cleanKey.includes('davet')) {
+    heuristicKey = 'sozlesmeye_davet'
+  } else if (cleanKey.includes('sozlesme')) {
+    heuristicKey = 'dogrudan_temin_sozlesmesi'
+  } else if (cleanKey.includes('muayene') && cleanKey.includes('tutanak')) {
+    heuristicKey = 'muayene_kabul_tutanagi'
+  } else if (cleanKey.includes('muayene') || cleanKey.includes('kabul')) {
+    heuristicKey = 'muayene_kabul_komisyonu'
+  } else if (cleanKey.includes('odeme') && cleanKey.includes('yazi')) {
+    heuristicKey = 'odeme_yazisi'
+  } else if (cleanKey.includes('tasinir') && cleanKey.includes('gorus')) {
+    heuristicKey = 'tasinir_kayit_yetkilisi_gorusu'
+  } else if (cleanKey.includes('sartname') || cleanKey.includes('teknik')) {
+    heuristicKey = 'teknik_sartname'
+  } else if (cleanKey.includes('talep')) {
+    heuristicKey = 'ihtiyac_talep_formu'
   }
 
-  // 5. Ultimate fallback: check cleanKey hints before returning IhtiyacListesi
-  if (
-    cleanKey.includes('odeme') ||
-    cleanKey.includes('kabul') ||
-    cleanKey.includes('muayene') ||
-    cleanKey.includes('tutanak')
-  ) {
-    const kabulTemplate =
-      TEMPLATE_REGISTRY.find((t) => t.id === 'muayene-kabul-komisyonu') || defaultTemplate
-    return {
-      config: kabulTemplate,
-      component: Templates.MuayeneKabulKomisyonu as TemplateComponentType,
-      resolvedId: kabulTemplate.id
-    }
-  }
-
+  const resolvedDef = templateRegistry[heuristicKey] || defaultDef
   return {
-    config: defaultTemplate,
-    component: defaultComponent,
-    resolvedId: defaultTemplate.id
+    config: resolvedDef,
+    component: resolvedDef.component as unknown as TemplateComponentType,
+    resolvedId: resolvedDef.id
   }
 }

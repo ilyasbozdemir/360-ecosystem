@@ -386,6 +386,90 @@ describe('Merkezi Version Manager & Sürüm Karşılaştırma Testleri', () => {
       }
     })
 
+    it('loadVersionPolicy hiçbir aday konumda dosya bulunamazsa sessizce varsayılana dönmez ve aranılan yolları listeleyerek hata fırlatır', () => {
+      const originalExistsSync = fs.existsSync
+      try {
+        // version-policy.yaml arayan tüm aday yol çağrılarını false yap
+        fs.existsSync = (p: fs.PathLike) => {
+          if (String(p).includes('version-policy.yaml')) {
+            return false
+          }
+          return originalExistsSync(p)
+        }
+
+        // 1. fallbackToDefault belirtilmediğinde (katı mod) açık hata fırlatmalı
+        expect(() => loadVersionPolicy()).toThrow(
+          /\[VersionManager\] Sürüm politikası dosyası \(version-policy\.yaml\) bulunamadı/
+        )
+
+        // 2. fallbackToDefault: true verildiğinde kontrollü fallback yapmalı
+        expect(loadVersionPolicy({ fallbackToDefault: true })).toEqual(DEFAULT_VERSION_POLICY)
+
+        // 3. customPath için fallbackToDefault: true
+        expect(
+          loadVersionPolicy('/non/existent/policy.yaml', { fallbackToDefault: true })
+        ).toEqual(DEFAULT_VERSION_POLICY)
+      } finally {
+        fs.existsSync = originalExistsSync
+      }
+    })
+
+    it('loadVersionPolicy paketlenmiş Electron uygulamasında (process.resourcesPath) dosyayı doğru konumdan bulur', () => {
+      const originalResourcesPath = (process as any).resourcesPath
+      const tempResourcesDir = fs.mkdtempSync(path.join(GIT_ROOT, 'temp-electron-res-'))
+      const tempPolicyFile = path.join(tempResourcesDir, 'version-policy.yaml')
+
+      try {
+        // Paket içi resources dizinine geçerli politika kopyala
+        const realPolicyContent = fs.readFileSync(path.join(GIT_ROOT, 'version-policy.yaml'), 'utf-8')
+        fs.writeFileSync(tempPolicyFile, realPolicyContent, 'utf-8')
+
+        // Electron packaged resourcesPath taklit et
+        ;(process as any).resourcesPath = tempResourcesDir
+
+        // 1. Doğrudan resourcesPath üzerindeki aday yol üzerinden yükleme testi
+        const loadedDirect = loadVersionPolicy(tempPolicyFile)
+        expect(loadedDirect.versioning.channels).toEqual(['alpha', 'beta', 'rc', 'stable'])
+        expect(loadedDirect.versioning.defaultChannel).toBe('rc')
+
+        // 2. Diğer tüm yollar bulunamazken sadece process.resourcesPath mevcut olduğunda otomatik bulma testi
+        const originalExistsSync = fs.existsSync
+        try {
+          fs.existsSync = (p: fs.PathLike) => {
+            const pStr = String(p)
+            // Sadece process.resourcesPath altındaki version-policy.yaml'e izin ver
+            if (pStr === tempPolicyFile) {
+              return true
+            }
+            if (pStr.includes('version-policy.yaml')) {
+              return false
+            }
+            return originalExistsSync(p)
+          }
+
+          const discoveredFromPackaged = loadVersionPolicy()
+          expect(discoveredFromPackaged.versioning.channels).toEqual(['alpha', 'beta', 'rc', 'stable'])
+          expect(discoveredFromPackaged.versioning.defaultChannel).toBe('rc')
+        } finally {
+          fs.existsSync = originalExistsSync
+        }
+      } finally {
+        ;(process as any).resourcesPath = originalResourcesPath
+        if (fs.existsSync(tempResourcesDir)) {
+          fs.rmSync(tempResourcesDir, { recursive: true, force: true })
+        }
+      }
+    })
+
+    it('DEFAULT_VERSION_POLICY parseVersion ve compareVersions fonksiyonlarında varsayılan parametre olarak çalışmaya devam eder', () => {
+      const parsed = parseVersion('1.0.0-beta.1')
+      expect(parsed.channel).toBe('beta')
+      expect(parsed.iteration).toBe(1)
+
+      const cmp = compareVersions('1.0.0-beta.1', '1.0.0-rc.1')
+      expect(cmp).toBe(-1)
+    })
+
     it('getReleaseHeader tüm kanallar için doğru başlık ve açıklamayı üretir', () => {
       const rcHeader = getReleaseHeader('v1.0.0-rc.1')
       expect(rcHeader).toContain('🎯 **TEMİN 360 v1.0.0-rc.1 (Sürüm Adayı / Release Candidate)**')

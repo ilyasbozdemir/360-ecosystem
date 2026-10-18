@@ -5,6 +5,7 @@ import {
   LuzumMuzekkeresiDocumentData,
   TeminKalemInsertPayload
 } from './types'
+import { calculateTotals, resolveKdvOrani } from '../../utils/ihtiyacRaporuTotals'
 
 /**
  * Güvenli sayı ve değer dönüştürücüleri (0 KDV oranı ve özel miktarlar için)
@@ -60,7 +61,7 @@ export function mapIhtiyacKalemToLuzumMuzekkeresiItem(
     malzemeAdi: (kalem.kalem_adi || '').trim(),
     ozelligi: (kalem.aciklama || '').trim(),
     birimi: (kalem.birim || 'Adet').trim(),
-    kdvOrani: sanitizeKdvOrani(kalem.kdv_orani, 20),
+    kdvOrani: resolveKdvOrani(kalem.kdv_orani),
     miktar,
     tasinirKodu: (kalem.tasinir_kodu || '').trim(),
     okasKodu: (kalem.okas_kodu || '').trim(),
@@ -93,6 +94,9 @@ export function mapRaporToLuzumMuzekkeresiData(
   // Onay tarihi: Sadece raporda gerçek bir onay_tarihi kayıtlıysa kullanılır.
   const resolvedOnayTarihi = rapor.onay_tarihi ? String(rapor.onay_tarihi).trim() : ''
 
+  // Tutar hesabı: Tek kaynaktan calculateTotals ile kuruş hassasiyetinde hesaplanır
+  const totals = calculateTotals(kalemler)
+
   return {
     antetSatirlari: kurumInfo?.kurum_anteti,
     dosyaKonusu: rapor.baslik || 'Lüzum Müzekkeresi',
@@ -118,7 +122,7 @@ export function mapRaporToLuzumMuzekkeresiData(
     hazirlayanPersonelUnvan: rapor.talep_eden_unvan || '',
     ihtiyacYeri: rapor.birim_adi || '',
     ihtiyacKalemleri: mappedKalemler,
-    tahminiButce: Number(rapor.tahmini_butce) || 0,
+    tahminiButce: totals.genelToplam,
     notlar: rapor.notlar || '',
     olurYazisi: true,
     kurumIci: true
