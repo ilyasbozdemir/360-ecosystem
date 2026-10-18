@@ -1,3 +1,4 @@
+import rc3 from "./versions/rc/rc.3";
 import rc2 from "./versions/rc/rc.2";
 /* eslint-disable */
 // ============================================================
@@ -7,6 +8,7 @@ import rc2 from "./versions/rc/rc.2";
 import rc1 from "./versions/rc/rc.1";
 
 export const rcManifests: any[] = [
+  rc3,
   rc2,
   rc1
 ];
