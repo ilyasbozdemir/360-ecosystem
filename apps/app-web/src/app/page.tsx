@@ -149,7 +149,7 @@ export default function Home(): React.JSX.Element {
     downloadUrlDmg: string;
   }>({
     tag: "v1.0.0-rc.1",
-    size: "68.5 MB",
+    size: "157 MB",
     date: "18.10.2026",
     url: "https://github.com/ilyasbozdemir/temin-360-app/releases/latest",
     downloadUrlExe:
