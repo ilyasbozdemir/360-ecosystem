@@ -211,7 +211,8 @@ const releaseTargets = [
   'packages/document-templates/package.json',
   'packages/database/versions.json',
   'packages/database/src/schema-manifest',
-  'packages/database/src/schema-snapshot'
+  'packages/database/src/schema-snapshot',
+  'apps/app-desktop/src/renderer/src/generated-loc.json'
 ]
 
 function stageReleaseFiles() {
@@ -228,16 +229,30 @@ function main() {
   // 0. Ön Kontrol: Çalışma Alanı Temizlik Kontrolü
   const initialStatus = execSilent('git status --porcelain')
   if (initialStatus.length > 0 && !flags.allowDirty && !flags.dryRun) {
-    console.error(
-      c.red('\n❌ Çalışma alanında commit edilmemiş veya stage edilmemiş değişiklikler var!')
-    )
-    console.error(c.yellow('Release işlemi temiz bir git çalışma alanı gerektirir.'))
-    console.error(c.dim('Değişen dosyalar:\n' + initialStatus + '\n'))
-    console.error(c.yellow('Lütfen release öncesi değişikliklerinizi commit edin veya stash yapın.'))
-    console.error(
-      c.dim('Mevcut değişikliklerle zorlamak için: node scripts/release.js --allow-dirty')
-    )
-    process.exit(1)
+    const dirtyFiles = initialStatus
+      .split('\n')
+      .filter(Boolean)
+      .map((line) => line.substring(3).trim())
+      .filter(
+        (file) =>
+          !releaseTargets.some(
+            (target) =>
+              file.replace(/\\/g, '/').startsWith(target) || file.replace(/\\/g, '/') === target
+          )
+      )
+
+    if (dirtyFiles.length > 0) {
+      console.error(
+        c.red('\n❌ Çalışma alanında release dışı commit edilmemiş veya stage edilmemiş değişiklikler var!')
+      )
+      console.error(c.yellow('Release işlemi temiz bir git çalışma alanı gerektirir.'))
+      console.error(c.dim('Değişen dosyalar:\n' + dirtyFiles.join('\n') + '\n'))
+      console.error(c.yellow('Lütfen release öncesi değişikliklerinizi commit edin veya stash yapın.'))
+      console.error(
+        c.dim('Mevcut değişikliklerle zorlamak için: node scripts/release.js --allow-dirty')
+      )
+      process.exit(1)
+    }
   }
 
   // 0.1 Ön Kontroller: Şema Snapshot Eşitleme
