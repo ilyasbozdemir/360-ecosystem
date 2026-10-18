@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { execSync } from 'child_process'
 import path from 'path'
+import fs from 'fs'
 import {
   parseVersion,
   tryParseVersion,
@@ -10,8 +11,11 @@ import {
   isUpdateEligible,
   getReleaseHeader,
   loadVersionPolicy,
+  validateVersionPolicy,
+  checkTagExists,
   DEFAULT_VERSION_POLICY,
-  VersionManager
+  VersionManager,
+  VersionPolicy
 } from '../../src/shared/version/versionManager'
 
 const GIT_ROOT = path.resolve(__dirname, '../../../..')
@@ -49,12 +53,9 @@ describe('Merkezi Version Manager & Sürüm Karşılaştırma Testleri', () => {
     })
 
     it('taban sürüm artışında (major/minor/patch) prerelease kararlıdan büyük olabilir', () => {
-      // 1.0.0 < 1.0.1-alpha.1
       expect(compareVersions('1.0.0', '1.0.1-alpha.1')).toBe(-1)
       expect(compareVersions('1.0.1-alpha.1', '1.0.0')).toBe(1)
-      // 1.0.0 < 1.1.0-alpha.1
       expect(compareVersions('1.0.0', '1.1.0-alpha.1')).toBe(-1)
-      // 1.0.0 < 2.0.0-alpha.1
       expect(compareVersions('1.0.0', '2.0.0-alpha.1')).toBe(-1)
     })
 
@@ -141,6 +142,29 @@ describe('Merkezi Version Manager & Sürüm Karşılaştırma Testleri', () => {
     it('kanal düşürme teşebbüslerini engeller (örn: rc -> beta)', () => {
       expect(() => computeNextVersion('1.0.0-rc.1', { channel: 'beta' })).toThrow(/Kanal düşürme engellendi/)
     })
+
+    it('allowChannelUpgrade: false olduğunda kanal yükseltmeyi engeller', () => {
+      const noUpgradePolicy: VersionPolicy = {
+        ...DEFAULT_VERSION_POLICY,
+        versioning: {
+          ...DEFAULT_VERSION_POLICY.versioning,
+          prerelease: {
+            ...DEFAULT_VERSION_POLICY.versioning.prerelease,
+            allowChannelUpgrade: false
+          }
+        }
+      }
+
+      // beta -> rc geçişi engellenmeli
+      expect(() =>
+        computeNextVersion('1.0.0-beta.256', { channel: 'rc', policy: noUpgradePolicy })
+      ).toThrow(/Kanal yükseltme engellendi/)
+
+      // rc -> stable geçişi engellenmeli
+      expect(() =>
+        computeNextVersion('1.0.0-rc.1', { channel: 'stable', policy: noUpgradePolicy })
+      ).toThrow(/Kanal yükseltme engellendi/)
+    })
   })
 
   describe('4. Electron Updater Uygunluk Doğrulaması (isUpdateEligible)', () => {
@@ -149,7 +173,7 @@ describe('Merkezi Version Manager & Sürüm Karşılaştırma Testleri', () => {
       expect(res.eligible).toBe(true)
     })
 
-    it('RC sürümünden Stable sürüme geçişi onaylar', () => {
+    it('RC sürümünden Stable sürüme geçişi onaylar (kanal yükseltme açıkken)', () => {
       const res = isUpdateEligible('1.0.0-rc.3', '1.0.0')
       expect(res.eligible).toBe(true)
     })
@@ -173,21 +197,178 @@ describe('Merkezi Version Manager & Sürüm Karşılaştırma Testleri', () => {
     it('aynı temel sürümde kanal düşürmeyi reddeder (örn: rc.1 iken beta.256 gelmesi)', () => {
       const downgrade = isUpdateEligible('1.0.0-rc.1', '1.0.0-beta.256')
       expect(downgrade.eligible).toBe(false)
+      expect(downgrade.reason).toMatch(/Kanal düşürme engellendi/)
+    })
+
+    it('Stable → RC geçişi taban sürüm farklı olsa bile reddedilir (1.0.0 stable -> 1.0.1-rc.1)', () => {
+      // Kurulu uygulama stable (1.0.0), gelen yeni sürüm rc (1.0.1-rc.1)
+      const res = isUpdateEligible('1.0.0', '1.0.1-rc.1')
+      expect(res.eligible).toBe(false)
+      expect(res.reason).toMatch(/Kanal düşürme engellendi: stable -> rc/)
+
+      // 1.0.0 stable -> 1.1.0-rc.1 veya 2.0.0-beta.1 geçişleri de kanal düşürme sebebiyle engellenir
+      const minorRc = isUpdateEligible('1.0.0', '1.1.0-rc.1')
+      expect(minorRc.eligible).toBe(false)
+      expect(minorRc.reason).toMatch(/Kanal düşürme engellendi: stable -> rc/)
+
+      const majorBeta = isUpdateEligible('1.0.0', '2.0.0-beta.1')
+      expect(majorBeta.eligible).toBe(false)
+      expect(majorBeta.reason).toMatch(/Kanal düşürme engellendi: stable -> beta/)
+    })
+
+    it('allowChannelDowngrade: true ayarlandığında Stable → RC geçişine izin verir', () => {
+      const downgradeAllowedPolicy: VersionPolicy = {
+        ...DEFAULT_VERSION_POLICY,
+        versioning: {
+          ...DEFAULT_VERSION_POLICY.versioning,
+          prerelease: {
+            ...DEFAULT_VERSION_POLICY.versioning.prerelease,
+            allowChannelDowngrade: true
+          }
+        }
+      }
+
+      const res = isUpdateEligible('1.0.0', '1.0.1-rc.1', downgradeAllowedPolicy)
+      expect(res.eligible).toBe(true)
+    })
+
+    it('allowChannelUpgrade: false ayarlandığında updater kanal yükseltmelerini engeller', () => {
+      const noUpgradePolicy: VersionPolicy = {
+        ...DEFAULT_VERSION_POLICY,
+        versioning: {
+          ...DEFAULT_VERSION_POLICY.versioning,
+          prerelease: {
+            ...DEFAULT_VERSION_POLICY.versioning.prerelease,
+            allowChannelUpgrade: false
+          }
+        }
+      }
+
+      // beta -> rc geçişi engellenmeli
+      const betaToRc = isUpdateEligible('1.0.0-beta.256', '1.0.0-rc.1', noUpgradePolicy)
+      expect(betaToRc.eligible).toBe(false)
+      expect(betaToRc.reason).toMatch(/Kanal yükseltme engellendi: beta -> rc/)
+
+      // rc -> stable geçişi engellenmeli
+      const rcToStable = isUpdateEligible('1.0.0-rc.3', '1.0.0', noUpgradePolicy)
+      expect(rcToStable.eligible).toBe(false)
+      expect(rcToStable.reason).toMatch(/Kanal yükseltme engellendi: rc -> stable/)
+
+      // Aynı kanal içinde iterasyon artışına (rc.1 -> rc.2) izin verilir
+      const sameChannel = isUpdateEligible('1.0.0-rc.1', '1.0.0-rc.2', noUpgradePolicy)
+      expect(sameChannel.eligible).toBe(true)
     })
   })
 
-  describe('5. Merkezi Yapılandırma ve Politika Yükleyici (loadVersionPolicy)', () => {
-    it('version-policy.yaml dosyasını yükler ve kanalları doğrular', () => {
+  describe('5. Politika Doğrulama & Katı Hata Yönetimi (validateVersionPolicy & loadVersionPolicy)', () => {
+    it('version-policy.yaml dosyasını kök dizinden yükler ve doğrular', () => {
       const policy = loadVersionPolicy()
       expect(policy.versioning.scheme).toBe('semver')
       expect(policy.versioning.channels).toEqual(['alpha', 'beta', 'rc', 'stable'])
       expect(policy.versioning.defaultChannel).toBe('rc')
+      expect(policy.versioning.prerelease.allowChannelUpgrade).toBe(true)
+      expect(policy.versioning.prerelease.allowChannelDowngrade).toBe(false)
     })
 
-    it('dosya bulunamadığında veya bozuk olduğunda güvenli fallback DEFAULT_VERSION_POLICY döner', () => {
-      const fallback = loadVersionPolicy('/non/existent/path/policy.yaml')
-      expect(fallback).toBeDefined()
-      expect(fallback.versioning.defaultChannel).toBe(DEFAULT_VERSION_POLICY.versioning.defaultChannel)
+    it('validateVersionPolicy zorunlu alanlar eksik olduğunda açık ve net hata fırlatır', () => {
+      // 1. null nesne
+      expect(() => validateVersionPolicy(null)).toThrow(/Yapılandırma nesnesi bulunamadı/)
+
+      // 2. versioning bloğu eksik
+      expect(() => validateVersionPolicy({})).toThrow(/versioning.*yapılandırma bloğu eksik/)
+
+      // 3. Geçersiz scheme
+      expect(() =>
+        validateVersionPolicy({
+          versioning: { scheme: 'custom' }
+        })
+      ).toThrow(/Desteklenmeyen sürüm şeması/)
+
+      // 4. channels eksik
+      expect(() =>
+        validateVersionPolicy({
+          versioning: { scheme: 'semver', channels: [] }
+        })
+      ).toThrow(/channels.*geçerli bir dizi olmalıdır/)
+
+      // 5. channelOrder eksik
+      expect(() =>
+        validateVersionPolicy({
+          versioning: {
+            scheme: 'semver',
+            channels: ['beta', 'stable'],
+            channelOrder: null
+          }
+        })
+      ).toThrow(/channelOrder.*nesnesi eksik/)
+
+      // 6. Bir kanalın channelOrder sıralaması eksik
+      expect(() =>
+        validateVersionPolicy({
+          versioning: {
+            scheme: 'semver',
+            channels: ['beta', 'stable'],
+            channelOrder: { beta: 1 }
+          }
+        })
+      ).toThrow(/"stable" kanalı için "channelOrder" sıralaması tanımlanmamış/)
+
+      // 7. defaultChannel tanımsız
+      expect(() =>
+        validateVersionPolicy({
+          versioning: {
+            scheme: 'semver',
+            channels: ['beta', 'stable'],
+            channelOrder: { beta: 1, stable: 2 },
+            defaultChannel: 'unknown'
+          }
+        })
+      ).toThrow(/Geçersiz varsayılan kanal/)
+
+      // 8. prerelease boolean alanları eksik
+      expect(() =>
+        validateVersionPolicy({
+          versioning: {
+            scheme: 'semver',
+            channels: ['beta', 'stable'],
+            channelOrder: { beta: 1, stable: 2 },
+            defaultChannel: 'beta',
+            prerelease: { allowChannelUpgrade: 'yes' }
+          }
+        })
+      ).toThrow(/allowChannelUpgrade.*boolean olmalıdır/)
+
+      // 9. channelMeta eksik
+      expect(() =>
+        validateVersionPolicy({
+          versioning: {
+            scheme: 'semver',
+            channels: ['beta', 'stable'],
+            channelOrder: { beta: 1, stable: 2 },
+            defaultChannel: 'beta',
+            prerelease: { allowChannelUpgrade: true, allowChannelDowngrade: false },
+            channelMeta: {}
+          }
+        })
+      ).toThrow(/meta veriler.*eksik/)
+    })
+
+    it('loadVersionPolicy bulunamayan veya bozuk dosyalarda açık hata fırlatır', () => {
+      // Bulunamayan dosya
+      expect(() => loadVersionPolicy('/non/existent/path/policy.yaml')).toThrow(
+        /Belirtilen sürüm politikası dosyası bulunamadı/
+      )
+
+      // Bozuk YAML dosyası testi
+      const tempCorruptYaml = path.join(__dirname, 'temp-corrupt.yaml')
+      try {
+        fs.writeFileSync(tempCorruptYaml, 'versioning: [unclosed bracket')
+        expect(() => loadVersionPolicy(tempCorruptYaml)).toThrow()
+      } finally {
+        if (fs.existsSync(tempCorruptYaml)) {
+          fs.unlinkSync(tempCorruptYaml)
+        }
+      }
     })
 
     it('getReleaseHeader tüm kanallar için doğru başlık ve açıklamayı üretir', () => {
@@ -209,7 +390,18 @@ describe('Merkezi Version Manager & Sürüm Karşılaştırma Testleri', () => {
     })
   })
 
-  describe('6. CLI & Dry-run Entegrasyonu', () => {
+  describe('6. Git Hata Yönetimi & checkTagExists', () => {
+    it('var olmayan bir etiket için false döner', () => {
+      expect(checkTagExists('v999.999.999-nonexistent', GIT_ROOT)).toBe(false)
+    })
+
+    it('geçersiz veya var olmayan bir dizin verildiğinde Git hatasını açıkça fırlatır', () => {
+      const invalidPath = path.join(GIT_ROOT, 'non/existent/folder/path')
+      expect(() => checkTagExists('v1.0.0', invalidPath)).toThrow(/Git etiket kontrolü başarısız oldu/)
+    })
+  })
+
+  describe('7. CLI & Dry-run Entegrasyonu', () => {
     it('--channel rc --dry-run çalıştırıldığında 1.0.0-rc.1 geçişini simüle eder', () => {
       const raw = execSync('node apps/app-desktop/scripts/release.js --channel rc --dry-run', {
         cwd: GIT_ROOT,

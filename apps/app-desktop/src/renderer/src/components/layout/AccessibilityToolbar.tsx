@@ -25,14 +25,24 @@ export function AccessibilityToolbar(): JSX.Element {
   const [scale, setScale] = useState<number>(readInitialScale);
 
   useEffect(() => {
+    const factor = scale / 100;
     const root = document.documentElement;
-    root.style.fontSize = `${16 * scale / 100}px`;
-    root.dataset.fontScale = String(scale);
+
+    // Electron: tarayıcıdaki Ctrl +/- ile birebir aynı gerçek sayfa zoom'u.
+    // Electron dışında (web/önizleme) CSS zoom'a düşer.
+    const webFrame = window.electron?.webFrame;
+    if (webFrame) {
+      webFrame.setZoomFactor(factor);
+      root.style.removeProperty("zoom");
+    } else {
+      root.style.setProperty("zoom", String(factor));
+    }
+    root.dataset.zoomScale = String(scale);
 
     try {
       localStorage.setItem(STORAGE_KEY, String(scale));
     } catch {
-      // Font scaling still works when persistent storage is unavailable.
+      // Zoom still works when persistent storage is unavailable.
     }
   }, [scale]);
 
@@ -52,8 +62,8 @@ export function AccessibilityToolbar(): JSX.Element {
             onClick={() =>
               setScale((current) => Math.max(MIN_SCALE, current - STEP))}
             disabled={scale <= MIN_SCALE}
-            aria-label="Yazı boyutunu küçült"
-            title="Yazı boyutunu küçült"
+            aria-label="Uzaklaştır"
+            title="Uzaklaştır"
             className={iconBtn}
           >
             <Minus size={16} aria-hidden="true" />
@@ -62,7 +72,7 @@ export function AccessibilityToolbar(): JSX.Element {
           <output
             className="min-w-12 text-center text-sm font-semibold tabular-nums"
             aria-live="polite"
-            aria-label={`Yazı boyutu yüzde ${scale}`}
+            aria-label={`Yakınlaştırma yüzde ${scale}`}
           >
             {scale}%
           </output>
@@ -72,8 +82,8 @@ export function AccessibilityToolbar(): JSX.Element {
             onClick={() =>
               setScale((current) => Math.min(MAX_SCALE, current + STEP))}
             disabled={scale >= MAX_SCALE}
-            aria-label="Yazı boyutunu büyüt"
-            title="Yazı boyutunu büyüt"
+            aria-label="Yakınlaştır"
+            title="Yakınlaştır"
             className={iconBtn}
           >
             <Plus size={16} aria-hidden="true" />
@@ -83,8 +93,8 @@ export function AccessibilityToolbar(): JSX.Element {
             type="button"
             onClick={() => setScale(100)}
             disabled={scale === 100}
-            aria-label="Yazı boyutunu varsayılana döndür"
-            title="Varsayılan yazı boyutu"
+            aria-label="Yakınlaştırmayı sıfırla"
+            title="Yakınlaştırmayı sıfırla (%100)"
             className={`${iconBtn} ml-1`}
           >
             <RotateCcw size={15} aria-hidden="true" />
@@ -95,7 +105,7 @@ export function AccessibilityToolbar(): JSX.Element {
       {/* Tetikleyici ikon */}
       <button
         type="button"
-        aria-label={`Erişilebilirlik araçları, yazı boyutu yüzde ${scale}`}
+        aria-label={`Erişilebilirlik araçları, yakınlaştırma yüzde ${scale}`}
         title="Erişilebilirlik"
         className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-md transition-shadow hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
       >

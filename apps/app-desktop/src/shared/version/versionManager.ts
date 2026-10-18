@@ -10,6 +10,7 @@
 import fs from 'fs'
 import path from 'path'
 import { execSync } from 'child_process'
+import { createRequire } from 'module'
 
 export type Channel = 'alpha' | 'beta' | 'rc' | 'stable'
 
@@ -129,22 +130,166 @@ function getCurrentDir(): string {
 }
 
 /**
- * YAML veya JSON dosyasından sürüm politikasını yükler.
- * Bulunamaz veya hata verirse güvenli DEFAULT_VERSION_POLICY döner.
+ * Yüklenen sürüm politikasının tüm zorunlu alanlarını doğrular.
+ * Eksik veya geçersiz bir alan varsa açık ve açıklayıcı bir hata fırlatır.
  */
-export function loadVersionPolicy(customPath?: string): VersionPolicy {
-  const candidatePaths: string[] = []
+export function validateVersionPolicy(policy: any): VersionPolicy {
+  if (!policy || typeof policy !== 'object') {
+    throw new Error('Geçersiz sürüm politikası: Yapılandırma nesnesi bulunamadı.')
+  }
 
-  if (customPath) {
-    candidatePaths.push(customPath)
+  const v = policy.versioning
+  if (!v || typeof v !== 'object') {
+    throw new Error('Geçersiz sürüm politikası: "versioning" yapılandırma bloğu eksik.')
+  }
+
+  if (v.scheme !== 'semver') {
+    throw new Error(`Desteklenmeyen sürüm şeması: "${v.scheme}". Yalnızca "semver" desteklenir.`)
+  }
+
+  if (!Array.isArray(v.channels) || v.channels.length === 0) {
+    throw new Error('Geçersiz sürüm politikası: "versioning.channels" geçerli bir dizi olmalıdır.')
+  }
+
+  if (!v.channelOrder || typeof v.channelOrder !== 'object') {
+    throw new Error('Geçersiz sürüm politikası: "versioning.channelOrder" nesnesi eksik.')
+  }
+
+  for (const ch of v.channels) {
+    if (typeof v.channelOrder[ch] !== 'number') {
+      throw new Error(`Geçersiz sürüm politikası: "${ch}" kanalı için "channelOrder" sıralaması tanımlanmamış.`)
+    }
+  }
+
+  if (!v.defaultChannel || !v.channels.includes(v.defaultChannel)) {
+    throw new Error(
+      `Geçersiz varsayılan kanal: "${v.defaultChannel}". Tanımlı kanallardan biri olmalıdır: ${v.channels.join(', ')}`
+    )
+  }
+
+  if (!v.prerelease || typeof v.prerelease !== 'object') {
+    throw new Error('Geçersiz sürüm politikası: "versioning.prerelease" yapılandırması eksik.')
+  }
+
+  if (typeof v.prerelease.allowChannelUpgrade !== 'boolean') {
+    throw new Error('Geçersiz sürüm politikası: "versioning.prerelease.allowChannelUpgrade" boolean olmalıdır.')
+  }
+
+  if (typeof v.prerelease.allowChannelDowngrade !== 'boolean') {
+    throw new Error('Geçersiz sürüm politikası: "versioning.prerelease.allowChannelDowngrade" boolean olmalıdır.')
+  }
+
+  if (!v.channelMeta || typeof v.channelMeta !== 'object') {
+    throw new Error('Geçersiz sürüm politikası: "versioning.channelMeta" nesnesi eksik.')
+  }
+
+  for (const ch of v.channels) {
+    const meta = v.channelMeta[ch]
+    if (!meta || typeof meta.header !== 'string' || typeof meta.description !== 'string') {
+      throw new Error(`Geçersiz sürüm politikası: "${ch}" kanalı için meta veriler (header, description) eksik.`)
+    }
+  }
+
+  return policy as VersionPolicy
+}
+
+function findGitRoot(startDir: string): string | null {
+  let curr = startDir
+  while (curr && curr !== path.dirname(curr)) {
+    if (fs.existsSync(path.join(curr, '.git')) || fs.existsSync(path.join(curr, 'pnpm-workspace.yaml'))) {
+      return curr
+    }
+    curr = path.dirname(curr)
+  }
+  return null
+}
+
+function getYamlParser(): any {
+  if (typeof require !== 'undefined') {
+    try {
+      return require('js-yaml')
+    } catch {
+      // ignore
+    }
   }
 
   const baseDir = getCurrentDir()
+  const gitRoot = findGitRoot(baseDir) || findGitRoot(process.cwd()) || process.cwd()
+  const candidateDirs = [
+    baseDir,
+    path.resolve(baseDir, '../../../'),
+    path.resolve(gitRoot, 'apps/app-desktop'),
+    path.resolve(gitRoot, 'packages/database'),
+    gitRoot
+  ]
 
-  // 1. Proje kök dizini (scripts veya geliştirme ortamı)
-  candidatePaths.push(path.resolve(baseDir, '../../../../../version-policy.yaml'))
+  let reqFn: any = null
+  let reqResolve: any = null
+
+  if (typeof require !== 'undefined') {
+    reqFn = require
+    reqResolve = require.resolve.bind(require)
+  } else {
+    try {
+      const req = createRequire(import.meta.url)
+      reqFn = req
+      reqResolve = req.resolve.bind(req)
+    } catch {
+      // ignore
+    }
+  }
+
+  if (reqFn && reqResolve) {
+    for (const dir of candidateDirs) {
+      try {
+        const resolved = reqResolve('js-yaml', { paths: [dir] })
+        const loaded = reqFn(resolved)
+        if (loaded && typeof loaded.load === 'function') {
+          return loaded
+        }
+      } catch {
+        // try next directory
+      }
+    }
+  }
+
+  return null
+}
+
+/**
+ * YAML veya JSON dosyasından sürüm politikasını yükler ve doğrular.
+ * Dosya mevcutsa ancak bozuk/geçersizse hata fırlatır (hatayı sessizce gizlemez).
+ */
+export function loadVersionPolicy(customPath?: string): VersionPolicy {
+  const yamlLib = getYamlParser()
+  if (!yamlLib || typeof yamlLib.load !== 'function') {
+    throw new Error('YAML ayrıştırıcı (js-yaml) yüklenemedi.')
+  }
+
+  if (customPath) {
+    if (!fs.existsSync(customPath)) {
+      throw new Error(`Belirtilen sürüm politikası dosyası bulunamadı: "${customPath}"`)
+    }
+    const content = fs.readFileSync(customPath, 'utf-8')
+    const loaded = yamlLib.load(content)
+    return validateVersionPolicy(loaded)
+  }
+
+  const baseDir = getCurrentDir()
+  const gitRoot = findGitRoot(baseDir) || findGitRoot(process.cwd())
+
+  const candidatePaths: string[] = []
+
+  // 1. Monorepo kök dizini (Tek Doğruluk Kaynağı / Single Source of Truth)
+  if (gitRoot) {
+    candidatePaths.push(path.join(gitRoot, 'version-policy.yaml'))
+    candidatePaths.push(path.join(gitRoot, 'apps/app-desktop/resources/version-policy.yaml'))
+  }
+
   candidatePaths.push(path.resolve(process.cwd(), 'version-policy.yaml'))
   candidatePaths.push(path.resolve(process.cwd(), 'resources/version-policy.yaml'))
+  candidatePaths.push(path.resolve(baseDir, '../../../../../version-policy.yaml'))
+  candidatePaths.push(path.resolve(baseDir, '../../../resources/version-policy.yaml'))
 
   // 2. Electron packaged resources dizini
   if (typeof process !== 'undefined' && (process as any).resourcesPath) {
@@ -155,27 +300,11 @@ export function loadVersionPolicy(customPath?: string): VersionPolicy {
     if (fs.existsSync(p)) {
       try {
         const content = fs.readFileSync(p, 'utf-8')
-        // js-yaml varsa kullan
-        let yamlLib: any = null
-        try {
-          yamlLib = require('js-yaml')
-        } catch {
-          try {
-            const resolved = require.resolve('js-yaml', { paths: [path.resolve(baseDir, '../../../')] })
-            yamlLib = require(resolved)
-          } catch {
-            yamlLib = null
-          }
-        }
-
-        if (yamlLib && typeof yamlLib.load === 'function') {
-          const loaded = yamlLib.load(content) as Partial<VersionPolicy>
-          if (loaded && loaded.versioning && Array.isArray(loaded.versioning.channels)) {
-            return loaded as VersionPolicy
-          }
-        }
-      } catch (err) {
-        console.warn(`[VersionManager] version-policy.yaml yüklenirken hata oluştu (${p}), varsayılan kullanılıyor:`, err)
+        const loaded = yamlLib.load(content)
+        return validateVersionPolicy(loaded)
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err)
+        throw new Error(`[VersionManager] Politika dosyası (${p}) bozuk veya geçersiz: ${msg}`)
       }
     }
   }
@@ -358,6 +487,20 @@ export function computeNextVersion(
   const currentRank = order[current.channel]
   const targetRank = order[targetChannel]
 
+  // Kanal düşürme kuralı: Prerelease kanalları arasında hedef kanal mevcut kanaldan daha düşükse denetlenir (örn: rc -> beta)
+  if (current.channel !== 'stable' && targetRank < currentRank && !policy.versioning.prerelease.allowChannelDowngrade) {
+    throw new Error(
+      `Kanal düşürme engellendi: "${current.channel}" kanalından daha düşük bir kanal olan "${targetChannel}" kanalına geçişe izin verilmiyor.`
+    )
+  }
+
+  // Kanal yükseltme kuralı: Hedef kanal mevcut kanaldan daha yüksekse denetlenir
+  if (targetRank > currentRank && !policy.versioning.prerelease.allowChannelUpgrade) {
+    throw new Error(
+      `Kanal yükseltme engellendi: "${current.channel}" kanalından daha yüksek bir kanal olan "${targetChannel}" kanalına geçişe izin verilmiyor.`
+    )
+  }
+
   // Senaryo 1: Mevcut sürüm zaten Stable (Örn: 1.0.0)
   if (current.channel === 'stable') {
     if (targetChannel === 'stable') {
@@ -380,18 +523,6 @@ export function computeNextVersion(
   }
 
   // Senaryo 4: Kanal geçişi (Örn: alpha -> beta, beta -> rc)
-  if (targetRank > currentRank) {
-    // İleri kanal geçişinde iterasyon 1 ile başlar
-    return `${current.baseVersion}-${targetChannel}.1`
-  }
-
-  // Senaryo 5: Kanal düşürme (Örn: rc -> beta)
-  if (!policy.versioning.prerelease.allowChannelDowngrade) {
-    throw new Error(
-      `Kanal düşürme engellendi: "${current.channel}" kanalından daha düşük bir kanal olan "${targetChannel}" kanalına geçişe izin verilmiyor.`
-    )
-  }
-
   return `${current.baseVersion}-${targetChannel}.1`
 }
 
@@ -420,24 +551,36 @@ export function isUpdateEligible(
     return { eligible: false, reason: `Geçersiz gelen sürüm formatı: "${incomingVersionStr}"` }
   }
 
+  const order = policy.versioning.channelOrder
+  const currentRank = order[current.channel] ?? 0
+  const incomingRank = order[incoming.channel] ?? 0
+
+  // 1. Kanal düşürme (Downgrade) kontrolü:
+  // BaseVersion farklı olsa dahi (örn: 1.0.0 stable -> 1.0.1-rc.1 rc),
+  // daha yüksek bir kanaldan daha düşük kanala geçişe allowChannelDowngrade kapalıysa ASLA izin verilmez.
+  if (incomingRank < currentRank && !policy.versioning.prerelease.allowChannelDowngrade) {
+    return {
+      eligible: false,
+      reason: `Kanal düşürme engellendi: ${current.channel} -> ${incoming.channel}`
+    }
+  }
+
+  // 2. Kanal yükseltme (Upgrade) kontrolü:
+  // Daha düşük seviyeli bir kanaldan daha yüksek seviyeli bir kanala geçişe (örn: beta -> rc)
+  // allowChannelUpgrade kapalıysa izin verilmez.
+  if (incomingRank > currentRank && !policy.versioning.prerelease.allowChannelUpgrade) {
+    return {
+      eligible: false,
+      reason: `Kanal yükseltme engellendi: ${current.channel} -> ${incoming.channel}`
+    }
+  }
+
+  // 3. Genel Sürüm Karşılaştırması
   const comparison = compareVersions(incoming, current, policy)
   if (comparison <= 0) {
     return {
       eligible: false,
       reason: `Gelen sürüm (${incoming.raw}) mevcut sürümden (${current.raw}) daha eski veya aynı.`
-    }
-  }
-
-  // Kanal düşürme kontrolü (aynı baseVersion üzerinde rc -> beta gibi)
-  const order = policy.versioning.channelOrder
-  if (
-    current.baseVersion === incoming.baseVersion &&
-    order[incoming.channel] < order[current.channel] &&
-    !policy.versioning.prerelease.allowChannelDowngrade
-  ) {
-    return {
-      eligible: false,
-      reason: `Kanal düşürme engellendi: ${current.channel} -> ${incoming.channel}`
     }
   }
 
@@ -459,16 +602,25 @@ export function getReleaseHeader(tag: string, policy: VersionPolicy = DEFAULT_VE
 }
 
 /**
- * Git deposunda belirtilen etiketin mevcut olup olmadığını kontrol eder
+ * Git deposunda belirtilen etiketin mevcut olup olmadığını kontrol eder.
+ * Git çalıştırılamazsa veya depo yolu geçersizse açıkça hata fırlatır (hatayı sessizce yok saymaz).
  */
 export function checkTagExists(tag: string, cwd?: string): boolean {
+  const gitCwd = cwd || path.resolve(getCurrentDir(), '../../../../..')
   try {
-    const gitCwd = cwd || path.resolve(getCurrentDir(), '../../../../..')
-    const existing = execSync('git tag --list', { cwd: gitCwd, encoding: 'utf-8', stdio: 'pipe' })
-    const list = existing.split('\n').map((t) => t.trim())
+    const output = execSync(`git tag -l "${tag}"`, {
+      cwd: gitCwd,
+      encoding: 'utf-8',
+      stdio: 'pipe'
+    }).trim()
+    const list = output
+      .split('\n')
+      .map((t) => t.trim())
+      .filter(Boolean)
     return list.includes(tag)
-  } catch {
-    return false
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err)
+    throw new Error(`Git etiket kontrolü başarısız oldu (depo: "${gitCwd}", etiket: "${tag}"): ${msg}`)
   }
 }
 

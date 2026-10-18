@@ -21,8 +21,14 @@ export function registerUpdaterIpcHandlers(): void {
     })
   }
 
-  // Sürüm politikasına göre prerelease ayarları
-  autoUpdater.allowPrerelease = true
+  // Sürüm politikasına göre dinamik autoUpdater yapılandırması:
+  // Kurulu uygulama Stable ise GitHub Prerelease sürümleri aranmaz (Stable -> RC geçişi engellenir).
+  // Yalnızca kullanıcı zaten Prerelease kanalındaysa (Beta, RC) prerelease aramasına izin verilir.
+  const currentAppVersion = app.getVersion()
+  const parsedCurrent = tryParseVersion(currentAppVersion, policy)
+  const isCurrentPrerelease = parsedCurrent ? parsedCurrent.isPrerelease : false
+
+  autoUpdater.allowPrerelease = isCurrentPrerelease
   autoUpdater.allowDowngrade = policy.versioning.prerelease.allowChannelDowngrade
 
   // Güvenli indirme kontrolü: Otomatik indirmeyi kapatıp önce doğrulamadan geçiriyoruz.
@@ -49,6 +55,7 @@ export function registerUpdaterIpcHandlers(): void {
       try {
         const parsed = tryParseVersion(devUpdateVersionOverride, policy)
         if (parsed) {
+          autoUpdater.allowPrerelease = parsed.isPrerelease
           Object.defineProperty(autoUpdater, 'currentVersion', {
             get: () => ({ version: parsed.raw }),
             configurable: true
