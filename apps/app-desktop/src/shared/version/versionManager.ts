@@ -167,6 +167,10 @@ export function validateVersionPolicy(policy: any): VersionPolicy {
     )
   }
 
+  if (typeof v.tagPrefix !== 'string' || v.tagPrefix.length === 0) {
+    throw new Error('Geçersiz sürüm politikası: "versioning.tagPrefix" geçerli ve boş olmayan bir dize olmalıdır.')
+  }
+
   if (!v.prerelease || typeof v.prerelease !== 'object') {
     throw new Error('Geçersiz sürüm politikası: "versioning.prerelease" yapılandırması eksik.')
   }
@@ -177,6 +181,10 @@ export function validateVersionPolicy(policy: any): VersionPolicy {
 
   if (typeof v.prerelease.allowChannelDowngrade !== 'boolean') {
     throw new Error('Geçersiz sürüm politikası: "versioning.prerelease.allowChannelDowngrade" boolean olmalıdır.')
+  }
+
+  if (typeof v.prerelease.allowAutoUpdate !== 'boolean') {
+    throw new Error('Geçersiz sürüm politikası: "versioning.prerelease.allowAutoUpdate" boolean olmalıdır.')
   }
 
   if (!v.channelMeta || typeof v.channelMeta !== 'object') {
@@ -606,9 +614,13 @@ export function getReleaseHeader(tag: string, policy: VersionPolicy = DEFAULT_VE
  * Git çalıştırılamazsa veya depo yolu geçersizse açıkça hata fırlatır (hatayı sessizce yok saymaz).
  */
 export function checkTagExists(tag: string, cwd?: string): boolean {
+  if (!tag || typeof tag !== 'string' || !tag.trim()) {
+    throw new Error('Geçersiz etiket: Etiket adı boş veya string olmayan bir değer olamaz.')
+  }
+  const cleanTag = tag.trim()
   const gitCwd = cwd || path.resolve(getCurrentDir(), '../../../../..')
   try {
-    const output = execSync(`git tag -l "${tag}"`, {
+    const output = execSync(`git tag -l "${cleanTag}"`, {
       cwd: gitCwd,
       encoding: 'utf-8',
       stdio: 'pipe'
@@ -617,7 +629,7 @@ export function checkTagExists(tag: string, cwd?: string): boolean {
       .split('\n')
       .map((t) => t.trim())
       .filter(Boolean)
-    return list.includes(tag)
+    return list.includes(cleanTag)
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err)
     throw new Error(`Git etiket kontrolü başarısız oldu (depo: "${gitCwd}", etiket: "${tag}"): ${msg}`)

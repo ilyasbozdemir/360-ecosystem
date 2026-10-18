@@ -395,11 +395,16 @@ function main() {
   }
 
   // 1.1 Mevcut tag kontrolü (dosyalar güncellenmeden önce)
-  if (checkTagExists(tag, GIT_ROOT)) {
-    console.error(c.red(`\n❌ Tag "${tag}" zaten mevcut!`))
-    console.error(
-      c.dim("Versiyon numarasını artırın veya uygun parametreleri (--patch / --rc / --channel) kullanın.")
-    )
+  try {
+    if (checkTagExists(tag, GIT_ROOT)) {
+      console.error(c.red(`\n❌ Tag "${tag}" zaten mevcut!`))
+      console.error(
+        c.dim("Versiyon numarasını artırın veya uygun parametreleri (--patch / --rc / --channel) kullanın.")
+      )
+      process.exit(1)
+    }
+  } catch (err) {
+    console.error(c.red(`\n❌ ${err.message}`))
     process.exit(1)
   }
 

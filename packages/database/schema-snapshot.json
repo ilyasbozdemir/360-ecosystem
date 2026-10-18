@@ -151,11 +151,13 @@
       "vade_tarihi"
     ],
     "DATA_TeminBelge": [
+      "bekleme_nedeni",
       "belge_adi",
       "belge_tarihi",
       "created_at",
       "dosya_id",
       "dosya_yolu",
+      "durum",
       "id",
       "imzali_dosya_yolu",
       "is_signed",

@@ -325,6 +325,19 @@ describe('Merkezi Version Manager & Sürüm Karşılaştırma Testleri', () => {
         })
       ).toThrow(/Geçersiz varsayılan kanal/)
 
+      // 7.1 tagPrefix eksik veya geçersiz
+      expect(() =>
+        validateVersionPolicy({
+          versioning: {
+            scheme: 'semver',
+            channels: ['beta', 'stable'],
+            channelOrder: { beta: 1, stable: 2 },
+            defaultChannel: 'beta',
+            tagPrefix: ''
+          }
+        })
+      ).toThrow(/tagPrefix.*geçerli ve boş olmayan/)
+
       // 8. prerelease boolean alanları eksik
       expect(() =>
         validateVersionPolicy({
@@ -333,6 +346,7 @@ describe('Merkezi Version Manager & Sürüm Karşılaştırma Testleri', () => {
             channels: ['beta', 'stable'],
             channelOrder: { beta: 1, stable: 2 },
             defaultChannel: 'beta',
+            tagPrefix: 'v',
             prerelease: { allowChannelUpgrade: 'yes' }
           }
         })
@@ -346,7 +360,8 @@ describe('Merkezi Version Manager & Sürüm Karşılaştırma Testleri', () => {
             channels: ['beta', 'stable'],
             channelOrder: { beta: 1, stable: 2 },
             defaultChannel: 'beta',
-            prerelease: { allowChannelUpgrade: true, allowChannelDowngrade: false },
+            tagPrefix: 'v',
+            prerelease: { allowChannelUpgrade: true, allowChannelDowngrade: false, allowAutoUpdate: true },
             channelMeta: {}
           }
         })
@@ -395,9 +410,39 @@ describe('Merkezi Version Manager & Sürüm Karşılaştırma Testleri', () => {
       expect(checkTagExists('v999.999.999-nonexistent', GIT_ROOT)).toBe(false)
     })
 
+    it('boş veya geçersiz etiket verildiğinde açıkça hata fırlatır', () => {
+      expect(() => checkTagExists('', GIT_ROOT)).toThrow(/Geçersiz etiket/)
+      expect(() => checkTagExists('   ', GIT_ROOT)).toThrow(/Geçersiz etiket/)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect(() => checkTagExists(null as any, GIT_ROOT)).toThrow(/Geçersiz etiket/)
+    })
+
     it('geçersiz veya var olmayan bir dizin verildiğinde Git hatasını açıkça fırlatır', () => {
       const invalidPath = path.join(GIT_ROOT, 'non/existent/folder/path')
       expect(() => checkTagExists('v1.0.0', invalidPath)).toThrow(/Git etiket kontrolü başarısız oldu/)
+    })
+  })
+
+  describe('6.1 Kök ve Paket İçi version-policy.yaml Dosyalarının Tutarlılığı', () => {
+    it('kök (root) ve paket içi (resources) version-policy.yaml dosyaları birebir aynı ve tutarlıdır', () => {
+      const rootPolicyPath = path.join(GIT_ROOT, 'version-policy.yaml')
+      const packagePolicyPath = path.join(GIT_ROOT, 'apps/app-desktop/resources/version-policy.yaml')
+
+      expect(fs.existsSync(rootPolicyPath)).toBe(true)
+      expect(fs.existsSync(packagePolicyPath)).toBe(true)
+
+      const rootContent = fs.readFileSync(rootPolicyPath, 'utf-8').trim()
+      const packageContent = fs.readFileSync(packagePolicyPath, 'utf-8').trim()
+
+      expect(packageContent).toBe(rootContent)
+
+      const rootPolicy = loadVersionPolicy(rootPolicyPath)
+      const packagePolicy = loadVersionPolicy(packagePolicyPath)
+
+      expect(rootPolicy).toEqual(packagePolicy)
+      expect(rootPolicy.versioning.channels).toEqual(['alpha', 'beta', 'rc', 'stable'])
+      expect(rootPolicy.versioning.prerelease.allowChannelUpgrade).toBe(true)
+      expect(rootPolicy.versioning.prerelease.allowChannelDowngrade).toBe(false)
     })
   })
 

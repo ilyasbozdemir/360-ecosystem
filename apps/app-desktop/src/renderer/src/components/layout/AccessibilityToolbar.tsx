@@ -28,6 +28,9 @@ export function AccessibilityToolbar(): JSX.Element {
     const factor = scale / 100;
     const root = document.documentElement;
 
+    root.style.fontSize = `${16 * factor}px`;
+    root.dataset.fontScale = String(scale);
+
     // Electron: tarayıcıdaki Ctrl +/- ile birebir aynı gerçek sayfa zoom'u.
     // Electron dışında (web/önizleme) CSS zoom'a düşer.
     const webFrame = window.electron?.webFrame;
@@ -62,7 +65,7 @@ export function AccessibilityToolbar(): JSX.Element {
             onClick={() =>
               setScale((current) => Math.max(MIN_SCALE, current - STEP))}
             disabled={scale <= MIN_SCALE}
-            aria-label="Uzaklaştır"
+            aria-label="Yazı boyutunu küçült"
             title="Uzaklaştır"
             className={iconBtn}
           >
@@ -82,7 +85,7 @@ export function AccessibilityToolbar(): JSX.Element {
             onClick={() =>
               setScale((current) => Math.min(MAX_SCALE, current + STEP))}
             disabled={scale >= MAX_SCALE}
-            aria-label="Yakınlaştır"
+            aria-label="Yazı boyutunu büyüt"
             title="Yakınlaştır"
             className={iconBtn}
           >
@@ -93,7 +96,7 @@ export function AccessibilityToolbar(): JSX.Element {
             type="button"
             onClick={() => setScale(100)}
             disabled={scale === 100}
-            aria-label="Yakınlaştırmayı sıfırla"
+            aria-label="Yazı boyutunu varsayılana döndür"
             title="Yakınlaştırmayı sıfırla (%100)"
             className={`${iconBtn} ml-1`}
           >
