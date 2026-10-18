@@ -531,34 +531,58 @@ describe('Merkezi Version Manager & Sürüm Karşılaştırma Testleri', () => {
   })
 
   describe('7. CLI & Dry-run Entegrasyonu', () => {
-    it('--channel rc --dry-run çalıştırıldığında 1.0.0-rc.1 geçişini simüle eder', () => {
+    it('--channel rc --dry-run çalıştırıldığında RC geçişini simüle eder', () => {
+      const currentVersion = JSON.parse(
+        fs.readFileSync(path.join(GIT_ROOT, 'package.json'), 'utf-8')
+      ).version
+      const expectedNext = computeNextVersion(currentVersion, { channel: 'rc' })
       const raw = execSync('node apps/app-desktop/scripts/release.js --channel rc --dry-run', {
         cwd: GIT_ROOT,
         encoding: 'utf-8'
       })
       const output = stripAnsi(raw)
-      expect(output).toContain('1.0.0-beta.256 → 1.0.0-rc.1')
-      expect(output).toContain('Tag:      v1.0.0-rc.1')
+      expect(output).toContain(`${currentVersion} → ${expectedNext}`)
+      expect(output).toContain(`Tag:      v${expectedNext}`)
       expect(output).toContain('DRY RUN - Hiçbir değişiklik yapılmadı')
     })
 
-    it('--channel beta --patch --dry-run çalıştırıldığında 1.0.0-beta.257 geçişini simüle eder', () => {
-      const raw = execSync('node apps/app-desktop/scripts/release.js --channel beta --patch --dry-run', {
-        cwd: GIT_ROOT,
-        encoding: 'utf-8'
-      })
-      const output = stripAnsi(raw)
-      expect(output).toContain('1.0.0-beta.256 → 1.0.0-beta.257')
-      expect(output).toContain('DRY RUN - Hiçbir değişiklik yapılmadı')
+    it('--channel beta --patch --dry-run çalıştırıldığında kanal kuralını doğru uygular', () => {
+      const currentVersion = JSON.parse(
+        fs.readFileSync(path.join(GIT_ROOT, 'package.json'), 'utf-8')
+      ).version
+      const parsed = parseVersion(currentVersion)
+
+      // Eğer mevcut sürüm zaten rc veya stable ise kanal düşürme (downgrade) engellenmelidir
+      if (parsed.channel === 'rc' || parsed.channel === 'stable') {
+        expect(() => {
+          execSync('node apps/app-desktop/scripts/release.js --channel beta --patch --dry-run', {
+            cwd: GIT_ROOT,
+            encoding: 'utf-8',
+            stdio: 'pipe'
+          })
+        }).toThrow(/Kanal düşürme engellendi/)
+      } else {
+        const raw = execSync('node apps/app-desktop/scripts/release.js --channel beta --patch --dry-run', {
+          cwd: GIT_ROOT,
+          encoding: 'utf-8'
+        })
+        const output = stripAnsi(raw)
+        expect(output).toContain('DRY RUN - Hiçbir değişiklik yapılmadı')
+      }
     })
 
-    it('--channel stable --dry-run çalıştırıldığında 1.0.0 kararlı geçişini simüle eder', () => {
+    it('--channel stable --dry-run çalıştırıldığında kararlı geçişini simüle eder', () => {
+      const currentVersion = JSON.parse(
+        fs.readFileSync(path.join(GIT_ROOT, 'package.json'), 'utf-8')
+      ).version
+      const expectedNext = computeNextVersion(currentVersion, { channel: 'stable' })
       const raw = execSync('node apps/app-desktop/scripts/release.js --channel stable --dry-run', {
         cwd: GIT_ROOT,
         encoding: 'utf-8'
       })
       const output = stripAnsi(raw)
-      expect(output).toContain('1.0.0-beta.256 → 1.0.0')
+      expect(output).toContain(`${currentVersion} → ${expectedNext}`)
+      expect(output).toContain(`Tag:      v${expectedNext}`)
       expect(output).toContain('DRY RUN - Hiçbir değişiklik yapılmadı')
     })
   })

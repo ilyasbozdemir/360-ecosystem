@@ -84,7 +84,11 @@ describe('Release Script RC & Versioning (Release Candidate Support)', () => {
   })
 
   describe('Dry-run Güvenlik Kontrolleri & Dosya Bütünlüğü', () => {
-    it('--rc --dry-run çalıştırıldığında exit code 0 döner ve 1.0.0-rc.1 simülasyonunu görüntüler', () => {
+    it('--rc --dry-run çalıştırıldığında exit code 0 döner ve RC simülasyonunu görüntüler', () => {
+      const currentVersion = JSON.parse(
+        fs.readFileSync(path.join(GIT_ROOT, 'package.json'), 'utf-8')
+      ).version
+      const expectedNext = computeNextVersion(currentVersion, { rc: true })
       const rawOutput = execSync('node apps/app-desktop/scripts/release.js --rc --dry-run', {
         cwd: GIT_ROOT,
         encoding: 'utf-8'
@@ -93,8 +97,8 @@ describe('Release Script RC & Versioning (Release Candidate Support)', () => {
 
       expect(output).toContain('TEMİN 360 - Release Script')
       expect(output).toContain('DRY RUN modu - hiçbir değişiklik yapılmayacak')
-      expect(output).toContain('1.0.0-rc.1')
-      expect(output).toContain('Tag:      v1.0.0-rc.1')
+      expect(output).toContain(expectedNext)
+      expect(output).toContain(`Tag:      v${expectedNext}`)
       expect(output).toContain('DRY RUN - Hiçbir değişiklik yapılmadı')
     })
 
