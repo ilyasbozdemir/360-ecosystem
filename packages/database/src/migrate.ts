@@ -73,6 +73,25 @@ export function getPendingMigrations(fromVersion: number): PendingMigrationInfo[
   return pending
 }
 
+function formatSqlDefault(defaultVal: any): string {
+  if (typeof defaultVal === 'string') {
+    const trimmed = defaultVal.trim()
+    const upper = trimmed.toUpperCase()
+    const isSqlKeywordOrExpr =
+      upper === 'CURRENT_TIMESTAMP' ||
+      upper === 'NULL' ||
+      upper === 'CURRENT_DATE' ||
+      upper === 'CURRENT_TIME' ||
+      (trimmed.startsWith("'") && trimmed.endsWith("'")) ||
+      !isNaN(Number(trimmed))
+    if (!isSqlKeywordOrExpr) {
+      return `'${trimmed.replace(/'/g, "''")}'`
+    }
+    return trimmed
+  }
+  return String(defaultVal)
+}
+
 export function runMigrations(db: Database.Database, fromVersion: number, dbSchemaDef: any): void {
   const MAX_SCHEMA = getMaxSchemaVersion()
   if (fromVersion >= MAX_SCHEMA) return
@@ -120,8 +139,7 @@ export function runMigrations(db: Database.Database, fromVersion: number, dbSche
                 if (col.unique) colDef += ' UNIQUE'
                 if (col.notNull) colDef += ' NOT NULL'
                 if (col.default !== undefined) {
-                  colDef +=
-                    ' DEFAULT ' + (typeof col.default === 'string' ? col.default : col.default)
+                  colDef += ' DEFAULT ' + formatSqlDefault(col.default)
                 }
                 return colDef
               })
@@ -176,13 +194,11 @@ export function runMigrations(db: Database.Database, fromVersion: number, dbSche
                   upper === 'CURRENT_TIME'
                 ) {
                   // SQLite ALTER TABLE ADD COLUMN does NOT allow non-constant defaults like CURRENT_TIMESTAMP
-                } else if (d.startsWith("'") || d.startsWith('"')) {
-                  sqlDef += ' DEFAULT ' + d
                 } else {
-                  sqlDef += " DEFAULT '" + d.replace(/'/g, "''") + "'"
+                  sqlDef += ' DEFAULT ' + formatSqlDefault(d)
                 }
               } else {
-                sqlDef += ' DEFAULT ' + d
+                sqlDef += ' DEFAULT ' + formatSqlDefault(d)
               }
             }
 

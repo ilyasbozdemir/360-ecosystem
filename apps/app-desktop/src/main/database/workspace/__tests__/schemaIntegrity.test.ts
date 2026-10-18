@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { schema, manifests, CURRENT_SCHEMA_VERSION, getMaxSchemaVersion } from '@dt/database'
+import { schema, manifests, CURRENT_SCHEMA_VERSION, getMaxSchemaVersion, runMigrations } from '@dt/database'
 
 describe('Database Schema Integrity & Manifest Tests', () => {
   it('should have all tables properly defined in @dt/database schema', () => {
@@ -110,5 +110,31 @@ describe('Database Schema Integrity & Manifest Tests', () => {
     const latestManifest = manifests[manifests.length - 1]
     expect(latestManifest.app).toBeDefined()
     expect(latestManifest.schema_max).toBe(CURRENT_SCHEMA_VERSION)
+  })
+
+  it('should run migrations including Sürüm 11 without syntax error (near "/" bug fix)', () => {
+    const executedSqls: string[] = []
+    const dbLike: any = {
+      exec: (sql: string) => {
+        executedSqls.push(sql)
+      },
+      prepare: () => ({
+        run: () => ({}),
+        all: () => [],
+        get: () => ({})
+      }),
+      transaction: (fn: any) => fn
+    }
+
+    expect(() => {
+      runMigrations(dbLike, 10, schema)
+    }).not.toThrow()
+
+    // TANIM_OlcuBirimi should be created with properly quoted default value
+    const olcuCreate = executedSqls.find((s) => s.includes('TANIM_OlcuBirimi'))
+    expect(olcuCreate).toBeDefined()
+    expect(olcuCreate).toContain('"kategori" TEXT DEFAULT \'Adet/Miktar\'')
+    expect(olcuCreate).toContain('"donusum_tipi" TEXT DEFAULT \'linear\'')
+    expect(olcuCreate).not.toContain('DEFAULT Adet/Miktar')
   })
 })
