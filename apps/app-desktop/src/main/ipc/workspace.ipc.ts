@@ -1,5 +1,5 @@
 import { ipcMain, BrowserWindow, dialog } from 'electron'
-import { basename } from 'path'
+import { basename, resolve } from 'path'
 import fs from 'fs'
 import { workspaceManager } from '../database/workspace'
 import {
@@ -165,7 +165,17 @@ export function registerWorkspaceIpcHandlers(closeAllSecondaryWindows: () => voi
         return { success: false, error: 'Yedekleme iptal edildi' }
       }
 
+      if (resolve(filePath) === resolve(destPath)) {
+        return { success: false, error: 'Yedekleme konumu aktif çalışma dosyası ile aynı olamaz.' }
+      }
+
       fs.copyFileSync(filePath, destPath)
+      const srcStat = fs.statSync(filePath)
+      const destStat = fs.statSync(destPath)
+      if (srcStat.size !== destStat.size) {
+        throw new Error('Yedek dosya boyutu kaynak dosya ile eşleşmiyor.')
+      }
+
       return { success: true, backupPath: destPath }
     } catch (error: any) {
       console.error('Backup workspace error:', error)

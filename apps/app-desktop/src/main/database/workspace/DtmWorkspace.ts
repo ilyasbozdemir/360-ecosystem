@@ -258,7 +258,25 @@ export class DtmWorkspace {
 
     const zip = new AdmZip()
     zip.addLocalFolder(this.tempDir)
-    zip.writeZip(this.currentFilePath)
+
+    // Atomik ve güvenli kaydetme: Önce aynı dizinde geçici bir dosyaya yaz,
+    // boyutu doğrula, ardından asıl hedefi güncelle.
+    const targetDir = path.dirname(this.currentFilePath)
+    const tempFile = path.join(targetDir, `.${path.basename(this.currentFilePath)}.tmp.${Date.now()}`)
+    try {
+      zip.writeZip(tempFile)
+      if (!fs.existsSync(tempFile) || fs.statSync(tempFile).size === 0) {
+        throw new Error('Geçici arşiv dosyası oluşturulamadı veya boş.')
+      }
+      fs.copyFileSync(tempFile, this.currentFilePath)
+      try { fs.unlinkSync(tempFile) } catch {}
+    } catch (saveErr) {
+      if (fs.existsSync(tempFile)) {
+        try { fs.unlinkSync(tempFile) } catch {}
+      }
+      throw saveErr
+    }
+
     this.initialHash = this.calculateCurrentHash()
     this.resetDirty()
   }

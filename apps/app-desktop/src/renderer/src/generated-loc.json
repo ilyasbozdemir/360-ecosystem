@@ -1,16 +1,16 @@
 {
   "totalFiles": 1511,
-  "totalLines": 255975,
-  "codeLines": 237956,
-  "timestamp": "2026-10-18T13:39:34.822Z",
+  "totalLines": 256056,
+  "codeLines": 238033,
+  "timestamp": "2026-10-18T13:50:51.943Z",
   "scope": "app+deps",
   "breakdown": [
     {
       "name": "app-desktop",
       "path": "apps/app-desktop",
       "files": 1217,
-      "totalLines": 226355,
-      "codeLines": 210197
+      "totalLines": 226436,
+      "codeLines": 210274
     },
     {
       "name": "@dt/database",

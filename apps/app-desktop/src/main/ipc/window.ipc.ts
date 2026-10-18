@@ -42,13 +42,27 @@ export function registerWindowIpcHandlers(options: WindowIpcOptions): void {
   // Shell / URL Handlers
   ipcMain.on('open-external-url', (_event, url) => {
     if (url && typeof url === 'string') {
-      shell.openExternal(url)
+      try {
+        const parsed = new URL(url)
+        if (['http:', 'https:', 'mailto:'].includes(parsed.protocol)) {
+          shell.openExternal(url)
+        }
+      } catch {
+        // Invalid URL
+      }
     }
   })
 
   ipcMain.handle('shell:openExternal', async (_event, url: string) => {
     if (url && typeof url === 'string') {
-      return shell.openExternal(url)
+      try {
+        const parsed = new URL(url)
+        if (['http:', 'https:', 'mailto:'].includes(parsed.protocol)) {
+          return shell.openExternal(url)
+        }
+      } catch {
+        // Invalid URL
+      }
     }
     return Promise.resolve()
   })
@@ -84,6 +98,16 @@ export function registerWindowIpcHandlers(options: WindowIpcOptions): void {
   })
 
   ipcMain.on('window:open-external', (_, data: { url: string; title?: string }) => {
+    if (!data?.url || typeof data.url !== 'string') return
+    try {
+      const parsed = new URL(data.url)
+      if (!['http:', 'https:'].includes(parsed.protocol)) {
+        return
+      }
+    } catch {
+      return
+    }
+
     const newWindow = new BrowserWindow({
       width: 1200,
       height: 800,
@@ -121,7 +145,9 @@ export function registerWindowIpcHandlers(options: WindowIpcOptions): void {
         icon: getAppIcon(),
         webPreferences: {
           preload: join(__dirname, '../preload/index.js'),
-          sandbox: false
+          sandbox: false,
+          contextIsolation: true,
+          nodeIntegration: false
         }
       })
 
@@ -169,7 +195,9 @@ export function registerWindowIpcHandlers(options: WindowIpcOptions): void {
         icon: getAppIcon(),
         webPreferences: {
           preload: join(__dirname, '../preload/index.js'),
-          sandbox: false
+          sandbox: false,
+          contextIsolation: true,
+          nodeIntegration: false
         }
       })
 
@@ -215,7 +243,9 @@ export function registerWindowIpcHandlers(options: WindowIpcOptions): void {
         icon: getAppIcon(),
         webPreferences: {
           preload: join(__dirname, '../preload/index.js'),
-          sandbox: false
+          sandbox: false,
+          contextIsolation: true,
+          nodeIntegration: false
         }
       })
 

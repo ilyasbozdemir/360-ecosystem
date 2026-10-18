@@ -201,10 +201,10 @@ describe("TakipKanbanBoard (Issue #11)", () => {
   it("Yeni Dosya Oluştur butonuna tıklandığında onOpenWizard tetiklenir", () => {
     renderBoard();
 
-    const wizardBtn = screen.getByRole("button", {
+    const wizardBtns = screen.getAllByRole("button", {
       name: /Yeni Dosya Oluştur/i,
     });
-    fireEvent.click(wizardBtn);
+    fireEvent.click(wizardBtns[0]);
 
     expect(mockOpenWizard).toHaveBeenCalledWith(1);
   });

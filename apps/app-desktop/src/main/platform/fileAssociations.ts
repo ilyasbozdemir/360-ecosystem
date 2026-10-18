@@ -143,12 +143,31 @@ export function registerWindowsFileAssociations(): void {
       '/f'
     ])
 
-    // Eski uzantıları kayıt defterinden temizle
-    for (const oldExt of ['dtal', 'hkmp', 'dtm', 'dte', 'dta', 'tmn360']) {
-      execFile('reg.exe', ['delete', `HKCU\\Software\\Classes\\.${oldExt}`, '/f'])
+    // 3. Desteklenen diğer uzantıları (hkmp, dtal) OpenWithProgids ve SupportedTypes'a ekle (ezmeden/silmeden)
+    for (const supExt of ['hkmp', 'dtal']) {
+      execFile('reg.exe', [
+        'add',
+        `HKCU\\Software\\Classes\\.${supExt}\\OpenWithProgids`,
+        '/v',
+        'Temin360.Document',
+        '/t',
+        'REG_SZ',
+        '/d',
+        '',
+        '/f'
+      ])
+      execFile('reg.exe', [
+        'add',
+        'HKCU\\Software\\Classes\\Applications\\TEMIN360.exe\\SupportedTypes',
+        '/v',
+        `.${supExt}`,
+        '/d',
+        '',
+        '/f'
+      ])
     }
 
-    // 3. Windows Explorer İkon Önbelleğini Yenile (SHChangeNotify)
+    // 4. Windows Explorer İkon Önbelleğini Yenile (SHChangeNotify)
     const psCmd = `
       $code = '[DllImport("shell32.dll")] public static extern void SHChangeNotify(int eventId, int flags, IntPtr item1, IntPtr item2);'
       Add-Type -MemberDefinition $code -Namespace Win32 -Name Shell

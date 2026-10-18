@@ -10,13 +10,9 @@
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.temin\OpenWithProgids" "Temin360.Document" ""
   DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.temin\UserChoice"
 
-  ; Eski kayıtları temizle
-  DeleteRegKey HKCU "Software\Classes\.dtal"
-  DeleteRegKey HKCU "Software\Classes\.hkmp"
-  DeleteRegKey HKCU "Software\Classes\.dtm"
-  DeleteRegKey HKCU "Software\Classes\.dte"
-  DeleteRegKey HKCU "Software\Classes\.dta"
-  DeleteRegKey HKCU "Software\Classes\.tmn360"
+  ; Desteklenen ek formatlar (.hkmp, .dtal) için Birlikte Aç (OpenWithProgids) kaydı
+  WriteRegStr HKCU "Software\Classes\.hkmp\OpenWithProgids" "Temin360.Document" ""
+  WriteRegStr HKCU "Software\Classes\.dtal\OpenWithProgids" "Temin360.Document" ""
 
   ; --- 2. ProgID Tanımı, İkon ve Açma Komutu ---
   WriteRegStr HKCU "Software\Classes\Temin360.Document" "" "TEMİN 360 Proje Dosyası"
@@ -30,6 +26,8 @@
   WriteRegStr HKCU "Software\Classes\Applications\TEMIN360.exe\DefaultIcon" "" "$INSTDIR\resources\icon.ico"
   WriteRegStr HKCU "Software\Classes\Applications\TEMIN360.exe\shell\open\command" "" '"$INSTDIR\TEMIN360.exe" "%1"'
   WriteRegStr HKCU "Software\Classes\Applications\TEMIN360.exe\SupportedTypes" ".temin" ""
+  WriteRegStr HKCU "Software\Classes\Applications\TEMIN360.exe\SupportedTypes" ".hkmp" ""
+  WriteRegStr HKCU "Software\Classes\Applications\TEMIN360.exe\SupportedTypes" ".dtal" ""
 
   ; --- 4. Windows Explorer İkon ve İlişkilendirme Önbelleğini Yenile ---
   System::Call 'shell32.dll::SHChangeNotify(i 0x08000000, i 0, i 0, i 0)'

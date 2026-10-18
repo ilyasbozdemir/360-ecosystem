@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-temin360pass}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
@@ -32,7 +32,7 @@ services:
       - NODE_ENV=production
       - PORT=3000
       - DATABASE_URL=postgresql://postgres:temin360pass@db:5432/temin360_db?schema=public
-      - API_SECRET_KEY=dta_live_8e4a90f1b2c3d4e59071f
+      - API_SECRET_KEY=${API_SECRET_KEY:-temin360_dev_secret_key}
     depends_on:
       db:
         condition: service_healthy
@@ -56,7 +56,7 @@ services:
     container_name: temin360-pocketbase
     restart: always
     ports:
-      - "8090:8090"
+      - "127.0.0.1:8090:8090"
     volumes:
       - pbdata:/pb/pb_data
     healthcheck:
@@ -72,8 +72,8 @@ services:
     restart: always
     command: server /data --console-address ":9001"
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}

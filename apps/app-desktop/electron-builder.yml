@@ -6,6 +6,16 @@ fileAssociations:
     description: TEMİN 360 Proje Dosyası (*.temin)
     role: Editor
     icon: icon.ico
+  - ext: hkmp
+    name: Hakim Pro Dosyası
+    description: Hakim Pro Dosyası (*.hkmp)
+    role: Editor
+    icon: icon.ico
+  - ext: dtal
+    name: TEMİN 360 Veri Dosyası
+    description: TEMİN 360 / DTAL Dosyası (*.dtal)
+    role: Editor
+    icon: icon.ico
 directories:
   buildResources: build
   output: dist-local
