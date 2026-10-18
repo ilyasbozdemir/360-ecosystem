@@ -15,7 +15,14 @@ function execSilent(cmd) {
   }
 }
 
-function generateReleaseNotes(currentTag) {
+const {
+  getReleaseHeader,
+  findPreviousTag,
+  loadVersionPolicy
+} = require('../src/shared/version/versionManager.ts')
+
+function generateReleaseNotes(currentTag, customPolicy) {
+  const policy = customPolicy || loadVersionPolicy()
   let tag = currentTag
   if (!tag) {
     try {
@@ -31,7 +38,7 @@ function generateReleaseNotes(currentTag) {
   // Find previous tag
   let prevTag = ''
   try {
-    prevTag = execSilent(`git describe --tags --abbrev=0 "${tag}^"`)
+    prevTag = findPreviousTag(tag, getGitRoot())
   } catch {
     prevTag = ''
   }
@@ -91,22 +98,7 @@ function generateReleaseNotes(currentTag) {
   }
 
   const sections = []
-  const isRc = tag.includes('rc')
-  const isPrerelease = tag.includes('beta') || tag.includes('alpha') || isRc
-
-  if (isRc) {
-    sections.push(
-      `> 🎯 **TEMİN 360 ${tag} (Sürüm Adayı / Release Candidate)**\n> Kararlı sürüm öncesi test ve doğrulama sürümüdür. Bu sürümdeki değişiklikler aşağıda listelenmiştir.`
-    )
-  } else if (isPrerelease) {
-    sections.push(
-      `> 🚀 **TEMİN 360 ${tag} (Erken Erişim / Early Access)**\n> Bu sürümdeki en son değişiklikler ve geliştirmeler aşağıda listelenmiştir.`
-    )
-  } else {
-    sections.push(
-      `> ⚖️ **TEMİN 360 ${tag}**\n> Kamu Harcama, İhale, Doğrudan Temin ve Hakediş Yönetim Sistemi.`
-    )
-  }
+  sections.push(getReleaseHeader(tag, policy))
 
   sections.push('\n### 📋 Bu Sürümde Yapılan Değişiklikler\n')
 

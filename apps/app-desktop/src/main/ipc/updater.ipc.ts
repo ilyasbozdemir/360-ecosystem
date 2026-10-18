@@ -1,10 +1,16 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { ipcMain, app, BrowserWindow } from 'electron'
 import { autoUpdater } from 'electron-updater'
-import { join } from 'path'
-import fs from 'fs'
+import {
+  isUpdateEligible,
+  loadVersionPolicy,
+  tryParseVersion
+} from '../../shared/version/versionManager'
 
 export function registerUpdaterIpcHandlers(): void {
   let devUpdateVersionOverride = ''
+  const policy = loadVersionPolicy()
 
   const sendUpdaterStatus = (status: string, data: any = {}) => {
     const windows = BrowserWindow.getAllWindows()
@@ -15,12 +21,16 @@ export function registerUpdaterIpcHandlers(): void {
     })
   }
 
+  // Sürüm politikasına göre prerelease ayarları
   autoUpdater.allowPrerelease = true
-  autoUpdater.allowDowngrade = true
+  autoUpdater.allowDowngrade = policy.versioning.prerelease.allowChannelDowngrade
+
+  // Güvenli indirme kontrolü: Otomatik indirmeyi kapatıp önce doğrulamadan geçiriyoruz.
+  // Bu sayede reddedilen (eski, aynı veya uyumsuz kanaldaki) güncellemeler ASLA indirilmez.
+  autoUpdater.autoDownload = false
+  autoUpdater.autoInstallOnAppQuit = false
 
   if (!app.isPackaged) {
-    autoUpdater.autoDownload = false
-    autoUpdater.autoInstallOnAppQuit = false
     autoUpdater.logger = console
   }
 
@@ -37,11 +47,13 @@ export function registerUpdaterIpcHandlers(): void {
     devUpdateVersionOverride = mode && version ? version : ''
     if (devUpdateVersionOverride && !app.isPackaged) {
       try {
-        const semver = require('semver')
-        Object.defineProperty(autoUpdater, 'currentVersion', {
-          get: () => semver.parse(devUpdateVersionOverride) || semver.parse('0.0.0'),
-          configurable: true
-        })
+        const parsed = tryParseVersion(devUpdateVersionOverride, policy)
+        if (parsed) {
+          Object.defineProperty(autoUpdater, 'currentVersion', {
+            get: () => ({ version: parsed.raw }),
+            configurable: true
+          })
+        }
       } catch (e) {
         console.error('Mock currentVersion hatası:', e)
       }
@@ -56,35 +68,34 @@ export function registerUpdaterIpcHandlers(): void {
 
   autoUpdater.on('update-available', (info) => {
     console.log(`Yeni sürüm bulundu! Sürüm: ${info.version}`)
-    try {
-      const versionsPath = app.isPackaged
-        ? join(process.resourcesPath, 'versions.json')
-        : join(app.getAppPath(), '../../packages/database/versions.json')
-      if (fs.existsSync(versionsPath)) {
-        const versionsList: string[] = JSON.parse(fs.readFileSync(versionsPath, 'utf8'))
-        const currentV =
-          devUpdateVersionOverride ||
-          (autoUpdater.currentVersion as any)?.version ||
-          app.getVersion()
-        const incomingVersion = info.version.replace(/^v/, '')
-        const cleanCurrentV = currentV.replace(/^v/, '')
 
-        const currentIndex = versionsList.indexOf(cleanCurrentV)
-        const incomingIndex = versionsList.indexOf(incomingVersion)
+    const currentV =
+      devUpdateVersionOverride ||
+      (autoUpdater.currentVersion as any)?.version ||
+      app.getVersion()
 
-        if (currentIndex !== -1 && incomingIndex !== -1 && incomingIndex <= currentIndex) {
-          console.log(
-            `Bulunan sürüm (${incomingVersion}) mevcut sürümden (${cleanCurrentV}) daha eski veya aynı. Güncelleme reddedildi!`
-          )
-          sendUpdaterStatus('not-available', { version: cleanCurrentV, info: null })
-          return
-        }
-      }
-    } catch (err) {
-      console.error('versions.json kontrol hatası:', err)
+    const eligibility = isUpdateEligible(currentV, info.version, policy)
+
+    if (!eligibility.eligible) {
+      console.warn(
+        `[Updater] Güncelleme reddedildi: ${eligibility.reason} (Mevcut: ${currentV}, Gelen: ${info.version})`
+      )
+      sendUpdaterStatus('not-available', { version: currentV, info: null })
+      return
     }
 
+    console.log(
+      `[Updater] Güncelleme onaylandı: ${eligibility.reason} (${currentV} -> ${info.version}). İndirme başlatılıyor...`
+    )
     sendUpdaterStatus('available', { version: info.version, info })
+
+    // Doğrulanmış güncellemenin indirilmesini başlat
+    if (policy.versioning.prerelease.allowAutoUpdate) {
+      autoUpdater.downloadUpdate().catch((err) => {
+        console.error('[Updater] Güncelleme indirme hatası:', err)
+        sendUpdaterStatus('error', { error: err.message })
+      })
+    }
   })
 
   autoUpdater.on('update-not-available', (info) => {

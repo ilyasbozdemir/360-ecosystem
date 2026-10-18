@@ -37,8 +37,20 @@ const c = {
 
 // ─── Argüman Parse ────────────────────────────────────────
 const args = process.argv.slice(2)
+
+let channelArg = null
+const chanIdx = args.indexOf('--channel')
+if (chanIdx !== -1 && args[chanIdx + 1]) {
+  channelArg = args[chanIdx + 1].toLowerCase().trim()
+}
+const chanEqual = args.find((a) => a.startsWith('--channel='))
+if (chanEqual) {
+  channelArg = chanEqual.split('=')[1].toLowerCase().trim()
+}
+
 const flags = {
-  rc: args.includes('--rc'),
+  channel: channelArg,
+  rc: args.includes('--rc') || channelArg === 'rc',
   patch: args.includes('--patch'),
   dryRun: args.includes('--dry-run'),
   noPush: args.includes('--no-push'),
@@ -67,7 +79,8 @@ ${c.cyan('Kullanım:')}
   node scripts/release.js [seçenekler]
 
 ${c.cyan('Seçenekler:')}
-  ${c.yellow('--rc')}              RC (Release Candidate) kanalını seçer (örn: beta.256 → rc.1, rc.1 → rc.2)
+  ${c.yellow('--channel <ad>')}     Hedef release kanalını seçer: alpha, beta, rc, stable
+  ${c.yellow('--rc')}              RC (Release Candidate) kanalını seçer (--channel rc kısayolu)
   ${c.yellow('--patch')}           Versiyon numarasını otomatik artırır (beta.256 → beta.257 veya rc.1 → rc.2)
   ${c.yellow('--dry-run')}         Hiçbir değişiklik yapmadan ne yapılacağını gösterir
   ${c.yellow('--no-push')}         Sadece commit + tag oluşturur, push yapmaz
@@ -77,14 +90,16 @@ ${c.cyan('Seçenekler:')}
   ${c.yellow('--help, -h')}        Bu yardım mesajını gösterir
 
 ${c.cyan('Örnekler:')}
-  node scripts/release.js                          # Tam release akışı (mevcut versiyon)
-  node scripts/release.js --rc                     # RC kanalına geç / sonraki RC'ye yükselt
+  node scripts/release.js                          # Mevcut versiyonla release akışı
+  node scripts/release.js --channel rc             # RC kanalına geç / sonraki RC'ye yükselt
+  node scripts/release.js --channel beta --patch   # Beta kanalında patch sürümü yayınla
+  node scripts/release.js --channel stable         # Kararlı sürüme geç (örn: 1.0.0-rc.3 → 1.0.0)
+  node scripts/release.js --rc                     # RC kanalına geç (--channel rc)
   node scripts/release.js --rc --patch             # Sonraki RC sürümünü yayınla
   node scripts/release.js --rc --dry-run           # RC sürüm geçişini önizle
-  node scripts/release.js --patch                  # Standart beta patch release
-  node scripts/release.js --no-push                # Push'suz release
+  node scripts/release.js --patch                  # Standart patch release (mevcut kanalda artırır)
+  node scripts/release.js --no-push                # Push'suz release (yerel commit ve tag)
   node scripts/release.js --dry-run                # Önizleme modu
-  node scripts/release.js --patch --no-push        # Versiyon artır, push yapma
   node scripts/release.js -m "feat: yeni özellik"  # Özel mesaj
 `)
   process.exit(0)
@@ -130,59 +145,22 @@ function writeJSON(filePath, data) {
  * @param {object} options - { rc?: boolean, patch?: boolean }
  * @returns {string} Yeni versiyon
  */
+const {
+  VersionManager,
+  loadVersionPolicy,
+  parseVersion,
+  compareVersions,
+  computeNextVersion: vmComputeNextVersion,
+  bumpPatch: vmBumpPatch,
+  checkTagExists
+} = require('../src/shared/version/versionManager.ts')
+
 function computeNextVersion(currentVersion, options = {}) {
-  if (!currentVersion || typeof currentVersion !== 'string') {
-    throw new Error(`Geçersiz versiyon değeri: ${currentVersion}`)
-  }
-
-  const semverRegex = /^(\d+\.\d+\.\d+)(?:-([a-zA-Z]+)\.(\d+))?$/
-  const match = currentVersion.trim().match(semverRegex)
-
-  if (!match) {
-    throw new Error(`Desteklenmeyen veya geçersiz versiyon formatı: "${currentVersion}"`)
-  }
-
-  const [, baseVersion, prereleaseType, prereleaseNumStr] = match
-  const prereleaseNum = prereleaseNumStr ? parseInt(prereleaseNumStr, 10) : null
-
-  // 1. RC Kanalı İstendiğinde (--rc)
-  if (options.rc) {
-    if (!prereleaseType) {
-      throw new Error(
-        `Kararlı sürümden ("${currentVersion}") doğrudan RC kanalına geçiş desteklenmiyor.`
-      )
-    }
-
-    if (prereleaseType === 'rc') {
-      // Zaten RC kanalında: rc.1 -> rc.2
-      return `${baseVersion}-rc.${(prereleaseNum || 0) + 1}`
-    }
-
-    if (prereleaseType === 'beta' || prereleaseType === 'alpha') {
-      // Beta veya Alpha'dan RC başlangıcı: her zaman rc.1
-      return `${baseVersion}-rc.1`
-    }
-
-    throw new Error(`"${prereleaseType}" ön sürümünden RC kanalına geçiş desteklenmiyor.`)
-  }
-
-  // 2. Normal / Beta Kanalı (--patch)
-  if (options.patch) {
-    if (prereleaseType) {
-      // Örn: 1.0.0-beta.256 -> 1.0.0-beta.257 veya 1.0.0-rc.1 -> 1.0.0-rc.2
-      return `${baseVersion}-${prereleaseType}.${(prereleaseNum || 0) + 1}`
-    }
-    // Kararlı sürüm patch: 1.0.0 -> 1.0.1
-    const [maj, min, pat] = baseVersion.split('.').map(Number)
-    return `${maj}.${min}.${pat + 1}`
-  }
-
-  // Herhangi bir artırım seçilmediyse mevcut versiyonu koru
-  return currentVersion
+  return vmComputeNextVersion(currentVersion, options)
 }
 
 function bumpPatch(version) {
-  return computeNextVersion(version, { patch: true })
+  return vmBumpPatch(version)
 }
 
 function getRangeFolder(num) {
@@ -211,6 +189,7 @@ function finalizeCurrentSchemaManifest(version, dryRun) {
   if (!fs.existsSync(currentTsPath)) return
 
   const isRc = version.includes('-rc.')
+  const isAlpha = version.includes('-alpha.')
   let subFolder = ''
   let newTsName = ''
   const newYamlName = `${version}.yaml`
@@ -222,12 +201,22 @@ function finalizeCurrentSchemaManifest(version, dryRun) {
     subFolder = 'rc'
     newTsName = `rc.${rcNum}.ts`
     varName = `rc${rcNum}`
-  } else {
+  } else if (isAlpha) {
+    const alphaMatch = version.match(/-alpha\.(\d+)$/)
+    const alphaNum = alphaMatch ? alphaMatch[1] : '1'
+    subFolder = 'alpha'
+    newTsName = `alpha.${alphaNum}.ts`
+    varName = `alpha${alphaNum}`
+  } else if (version.includes('-beta.')) {
     const cleanNum = version.replace(/^.+?-beta\./, '')
     const numVal = parseInt(cleanNum, 10) || 1
     subFolder = getRangeFolder(numVal)
     newTsName = `beta.${cleanNum}.ts`
     varName = `beta${cleanNum}`
+  } else {
+    subFolder = 'stable'
+    newTsName = `stable.${version.replace(/\./g, '_')}.ts`
+    varName = `stable${version.replace(/\./g, '_')}`
   }
 
   const targetTsDir = path.join(
@@ -381,11 +370,15 @@ function main() {
   let version = pkg.version
   const oldVersion = version
 
-  const shouldBump = flags.patch || flags.rc
+  const shouldBump = flags.patch || flags.rc || Boolean(flags.channel)
 
   if (shouldBump) {
     try {
-      version = computeNextVersion(oldVersion, { rc: flags.rc, patch: flags.patch })
+      version = computeNextVersion(oldVersion, {
+        channel: flags.channel,
+        rc: flags.rc,
+        patch: flags.patch
+      })
     } catch (err) {
       console.error(c.red(`\n❌ Sürüm hesaplama hatası: ${err.message}`))
       process.exit(1)
@@ -402,11 +395,10 @@ function main() {
   }
 
   // 1.1 Mevcut tag kontrolü (dosyalar güncellenmeden önce)
-  const existingTags = execSilent('git tag --list')
-  if (existingTags.split('\n').map((t) => t.trim()).includes(tag)) {
+  if (checkTagExists(tag, GIT_ROOT)) {
     console.error(c.red(`\n❌ Tag "${tag}" zaten mevcut!`))
     console.error(
-      c.dim("Versiyon numarasını artırın veya uygun parametreleri (--patch / --rc) kullanın.")
+      c.dim("Versiyon numarasını artırın veya uygun parametreleri (--patch / --rc / --channel) kullanın.")
     )
     process.exit(1)
   }
@@ -563,5 +555,7 @@ module.exports = {
   bumpPatch,
   finalizeCurrentSchemaManifest,
   getRangeFolder,
-  releaseTargets
+  releaseTargets,
+  VersionManager,
+  loadVersionPolicy
 }

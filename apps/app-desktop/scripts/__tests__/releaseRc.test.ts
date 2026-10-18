@@ -73,9 +73,13 @@ describe('Release Script RC & Versioning (Release Candidate Support)', () => {
         /Desteklenmeyen veya geçersiz/
       )
       expect(() => computeNextVersion('', { rc: true })).toThrowError(/Geçersiz versiyon/)
-      expect(() => computeNextVersion('1.0.0', { rc: true })).toThrowError(
-        /Kararlı sürümden.*RC kanalına geçiş desteklenmiyor/
+      expect(() => computeNextVersion('1.0.0-rc.1', { channel: 'beta' })).toThrowError(
+        /Kanal düşürme engellendi/
       )
+    })
+
+    it('kararlı sürümden sonra yeniden prerelease istendiğinde sonraki patch tabanından başlar', () => {
+      expect(computeNextVersion('1.0.0', { rc: true })).toBe('1.0.1-rc.1')
     })
   })
 
