@@ -76,6 +76,35 @@ pnpm dev:web
 | `pnpm typecheck` | Tüm çalışma alanında TypeScript tip kontrollerini çalıştırır |
 | `pnpm format` | Prettier ile kod formatlamasını düzenler |
 | `pnpm lint` | ESLint ile kod kalitesi denetimini yürütür |
+| `pnpm stats:loc` | Masaüstü ve bağımlılıklarının kod satırlarını (`app+deps`) sayar |
+| `pnpm stats:loc:repo` | Monorepo bünyesindeki tüm paketlerin (`repo`) kod satırlarını sayar |
+| `pnpm analyze` | Kod büyüklüğü ve mükerrer fonksiyon analizi yürütür |
+
+### 📊 Kod Tabanı Dağılımı ve LOC Metrikleri
+
+Projede kod satırlarının ve dosya adetlerinin güvenilir biçimde takip edilmesi için otomatik sayaç altyapısı (`apps/app-desktop/scripts/count-loc.js`) bulunmaktadır. Sayaç çıktısı masaüstü uygulamasının *Hakkında* penceresine (`generated-loc.json`) otomatik olarak beslenir.
+
+- **Kapsamlar:**
+  - `app`: Yalnızca `apps/app-desktop` uygulamasını kapsar.
+  - `app+deps` *(Varsayılan)*: Masaüstü uygulaması ve doğrudan bağlı workspace paketlerini (`packages/database`, `packages/document-templates`) kapsar.
+  - `repo`: Monorepo bünyesindeki tüm paketleri (`apps/*`, `packages/*`) kapsar.
+- **Sayım Kuralı & Tanımlar:**
+  - Taranan dosyalar paketlerin `src/` dizini altındaki `.ts`, `.tsx`, `.css`, `.html`, `.js`, `.jsx` uzantılı kaynak dosyalarıdır (`.d.ts` ve `.min.*` hariçtir).
+  - `node_modules`, `dist`, `out`, `build`, `coverage`, `.git`, `.next`, `dist-local` ve `.turbo` klasörleri sayıma dahil edilmez.
+  - `totalLines`: Dosya sonundaki tekil satır sonlandırıcı karakteri normalize edilerek hesaplanan gerçek satır sayısıdır (`totalLines = nonBlankLines + blankLines`).
+  - `codeLines` / `nonBlankLines`: Yalnızca boş olmayan satırları (SLOC) ifade eder. Bu metrik satır içi/blok yorumları içerebilir; yorumlardan arındırılmış saf çalıştırılabilir kod olduğu varsayılmamalıdır.
+  - Test dosyaları (`__tests__`, `*.test.*`, `*.spec.*`, `__mocks__`, `__fixtures__`) üretim kodundan ayrı kategorize edilir.
+
+#### Doğrulanmış Güncel Kod Tabanı Dağılımı (`app+deps` Kapsamı)
+
+| Paket Adı | Konum | Dosya Sayısı | Toplam Satır | Kod Satırı (SLOC) | Üretim Kodu (SLOC) | Test Kodu (SLOC) | Boş Satır |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **app-desktop** | `apps/app-desktop` | 1.217 | 225.231 | 210.285 | 205.140 | 5.145 *(35 dosya)* | 14.946 |
+| **@temin360/document-templates** | `packages/document-templates` | 148 | 24.736 | 23.251 | 21.660 | 1.591 *(10 dosya)* | 1.485 |
+| **@dt/database** | `packages/database` | 146 | 4.592 | 4.508 | 4.508 | 0 | 84 |
+| **GENEL TOPLAM** | Monorepo (Çalışma Seti) | **1.511** | **254.559** | **238.044** | **231.308** | **6.736** *(45 dosya)* | **16.515** |
+
+*(Not: Sayım `count-loc.js` aracıyla otomatik üretilmiştir. Testler çıkarıldığında net üretim kodu 1.466 dosyada 231.308 boş olmayan satırdır.)*
 
 ---
 

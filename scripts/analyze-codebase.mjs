@@ -12,6 +12,14 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const rootDir = path.resolve(__dirname, '..')
 
+function getFileLines(content) {
+  if (!content) return []
+  let text = content
+  if (text.endsWith('\r\n')) text = text.slice(0, -2)
+  else if (text.endsWith('\n')) text = text.slice(0, -1)
+  return text.split(/\r?\n/)
+}
+
 function getFiles(dir, exts = ['.ts', '.tsx', '.js', '.jsx']) {
   let results = []
   const fullDir = path.isAbsolute(dir) ? dir : path.join(rootDir, dir)
@@ -22,7 +30,7 @@ function getFiles(dir, exts = ['.ts', '.tsx', '.js', '.jsx']) {
     const relPath = path.relative(rootDir, filePath).replace(/\\/g, '/')
     const stat = fs.statSync(filePath)
     if (stat && stat.isDirectory()) {
-      if (!['node_modules', 'dist', 'out', '.git', '.gemini', 'build', '.agents', 'dist-electron'].includes(file)) {
+      if (!['node_modules', 'dist', 'out', '.git', '.gemini', 'build', '.agents', 'dist-electron', 'coverage', '.next', 'dist-local', '.turbo'].includes(file)) {
         results = results.concat(getFiles(filePath, exts))
       }
     } else {
@@ -45,7 +53,7 @@ const files = targetDirs.flatMap(d => getFiles(d))
 // 1. Dosya Büyüklük Analizi
 const fileStats = files.map(f => {
   const content = fs.readFileSync(path.join(rootDir, f), 'utf-8')
-  const lines = content.split('\n').length
+  const lines = getFileLines(content).length
   return { path: f, lines, size: content.length }
 })
 
