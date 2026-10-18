@@ -283,16 +283,33 @@ function finalizeCurrentSchemaManifest(version, dryRun) {
       fs.writeFileSync(currentTsPath, freshCurrentTs, 'utf-8')
     }
 
-    // manifests.ts dosyasına import ve export ekle
-    let manifestsContent = fs.readFileSync(manifestsTsPath, 'utf-8')
-    if (!manifestsContent.includes(`import ${varName} `)) {
-      manifestsContent = manifestsContent
-        .replace(
-          /import betaCurrent from ["']\.\/versions\/beta\.current["'];?/,
-          `import ${varName} from "./versions/${subFolder}/${newTsName.replace(/\.ts$/, '')}";\nimport betaCurrent from "./versions/beta.current";`
+    // Kanal bazlı manifest dosyasına (manifests.rc.ts, manifests.beta.ts, manifests.alpha.ts) import ve export ekle
+    const channelFileName = isRc
+      ? 'manifests.rc.ts'
+      : isAlpha
+        ? 'manifests.alpha.ts'
+        : 'manifests.beta.ts'
+    const channelVarArray = isRc
+      ? 'rcManifests'
+      : isAlpha
+        ? 'alphaManifests'
+        : 'betaManifests'
+    const channelFilePath = path.join(
+      GIT_ROOT,
+      `packages/database/src/schema-manifest/${channelFileName}`
+    )
+
+    if (fs.existsSync(channelFilePath)) {
+      let channelContent = fs.readFileSync(channelFilePath, 'utf-8')
+      if (!channelContent.includes(`import ${varName} `)) {
+        const importStatement = `import ${varName} from "./versions/${subFolder}/${newTsName.replace(/\.ts$/, '')}";\n`
+        channelContent = importStatement + channelContent
+        channelContent = channelContent.replace(
+          new RegExp(`(export const ${channelVarArray}: any\\[\\] = \\[)`),
+          `$1\n  ${varName},`
         )
-        .replace(/betaCurrent\n\];?/, `${varName},\n  betaCurrent\n];`)
-      fs.writeFileSync(manifestsTsPath, manifestsContent, 'utf-8')
+        fs.writeFileSync(channelFilePath, channelContent, 'utf-8')
+      }
     }
   }
 }
