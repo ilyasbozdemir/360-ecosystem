@@ -1,4 +1,6 @@
-import { Filter, Search, X, LayoutGrid, List } from "lucide-react";
+import { Filter, Search, X, LayoutGrid, List } from 'lucide-react'
+
+export type ColumnHeightMode = 'fit' | '3cards' | '5cards' | 'auto'
 
 export interface TakipFilterToolbarProps {
   searchQuery: string;
@@ -13,8 +15,8 @@ export interface TakipFilterToolbarProps {
   onOpenWizard?: (stageId?: number) => void;
   cardMode?: 'cards' | 'compact';
   setCardMode?: (mode: 'cards' | 'compact') => void;
-  columnHeightMode?: '3cards' | '5cards' | 'auto';
-  setColumnHeightMode?: (mode: '3cards' | '5cards' | 'auto') => void;
+  columnHeightMode?: ColumnHeightMode;
+  setColumnHeightMode?: (mode: ColumnHeightMode) => void;
 }
 
 export function TakipFilterToolbar({
@@ -42,7 +44,7 @@ export function TakipFilterToolbar({
   };
 
   return (
-    <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-3 rounded-2xl shadow-2xs">
+    <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-3 rounded-2xl shadow-2xs shrink-0">
       {/* Search Input */}
       <div className="relative flex-1 max-w-md">
         <Search className="w-4 h-4 absolute left-3.5 top-2.5 text-slate-400" />
@@ -125,10 +127,11 @@ export function TakipFilterToolbar({
         {columnHeightMode && setColumnHeightMode && (
           <select
             value={columnHeightMode}
-            onChange={(e) => setColumnHeightMode(e.target.value as '3cards' | '5cards' | 'auto')}
+            onChange={(e) => setColumnHeightMode(e.target.value as ColumnHeightMode)}
             className="px-2.5 py-1.5 text-xs font-semibold bg-slate-50/50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/80 rounded-xl text-slate-700 dark:text-slate-200 cursor-pointer focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
             title="Sütun Kaydırma ve Kart Yükseklik Sınırı"
           >
+            <option value="fit">Ekrana Sığdır</option>
             <option value="3cards">3 Kart Kaydırma</option>
             <option value="5cards">5 Kart Kaydırma</option>
             <option value="auto">Serbest / Tümü</option>

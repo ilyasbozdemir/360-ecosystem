@@ -106,7 +106,7 @@ export const TeknikDetaylarSection: React.FC<TeknikDetaylarSectionProps> = ({
               <p className="text-xs text-slate-500 dark:text-slate-400 leading-normal font-medium font-sans">
                 Uygulama çalışırken SQLite veritabanında yaptığınız tüm işlemler anlık kaydedilir.
                 Uygulamadan çıkış yaparken veya dosya kapatılırken tüm veriler ve ekler otomatik
-                olarak tekrar sıkıştırılıp tek bir <strong>.dtal</strong> arşiv dosyası olarak
+                olarak tekrar sıkıştırılıp tek bir <strong>.temin</strong> proje dosyası olarak
                 paketlenir.
               </p>
             </div>

@@ -74,7 +74,7 @@ export default function LauncherScreen(): React.ReactNode {
               TEMİN 360&apos;a Hoş Geldiniz
             </h1>
             <p className="text-slate-500 dark:text-slate-400 text-sm max-w-md mx-auto">
-              Çalışmaya başlamak için yeni bir kurum/çalışma alanı dosyası (.dtal) oluşturun veya
+              Çalışmaya başlamak için yeni bir kurum/çalışma alanı dosyası (.temin) oluşturun veya
               mevcut bir kurumu açın.
             </p>
           </div>
@@ -102,7 +102,7 @@ export default function LauncherScreen(): React.ReactNode {
               </div>
               <div className="text-left">
                 <h3 className="font-bold text-base">Mevcut Kurumu Aç</h3>
-                <p className="text-xs opacity-80 mt-0.5">Önceden oluşturulmuş .dtal dosyasını yükle</p>
+                <p className="text-xs opacity-80 mt-0.5">Önceden oluşturulmuş .temin dosyasını yükle</p>
               </div>
             </button>
           </div>

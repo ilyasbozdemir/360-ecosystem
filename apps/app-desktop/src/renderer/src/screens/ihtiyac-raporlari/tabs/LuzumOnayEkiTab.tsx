@@ -6,12 +6,14 @@ interface LuzumOnayEkiTabProps {
   raporId: number
   dosyaId?: number | null
   onClose?: () => void
+  className?: string
 }
 
 export function LuzumOnayEkiTab({
   raporId,
   dosyaId,
-  onClose
+  onClose,
+  className
 }: LuzumOnayEkiTabProps): React.JSX.Element {
   const { tabs, activeTabId, switchTab, closeTab, openDocument, closeDocument } =
     useGlobalDocumentPreviewStore()
@@ -27,7 +29,12 @@ export function LuzumOnayEkiTab({
   }, [tabs, activeTabId])
 
   return (
-    <div className="relative w-full h-[85vh] min-h-187.5 rounded-3xl overflow-hidden border border-slate-200/80 dark:border-slate-800 shadow-xs bg-slate-100 dark:bg-slate-950">
+    <div
+      className={
+        className ||
+        'relative w-full h-[85vh] min-h-187.5 rounded-3xl overflow-hidden border border-slate-200/80 dark:border-slate-800 shadow-xs bg-slate-100 dark:bg-slate-950'
+      }
+    >
       <DocumentPreviewModalV3
         key={activeTab?.tabId || 'luzum_onay_eki'}
         isOpen={true}

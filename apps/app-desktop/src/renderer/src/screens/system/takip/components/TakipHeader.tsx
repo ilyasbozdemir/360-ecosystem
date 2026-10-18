@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  ArrowLeft,
   BarChart3,
   ClipboardList,
   Columns3,
@@ -21,7 +22,7 @@ interface TakipHeaderProps {
 }
 
 const VIEW_OPTIONS: {
-  id: TakipViewMode;
+  id: Exclude<TakipViewMode, "detay">;
   label: string;
   icon: typeof Columns3;
   title: string;
@@ -43,12 +44,6 @@ const VIEW_OPTIONS: {
     label: "Liste",
     icon: List,
     title: "Dosyaları kompakt listede görüntüle",
-  },
-  {
-    id: "detay",
-    label: "Dosya Detayı",
-    icon: FileText,
-    title: "Aktif dosyanın detaylarını görüntüle",
   },
   {
     id: "metrik",
@@ -87,6 +82,42 @@ export function TakipHeader({
         </div>
 
         <div className="flex shrink-0 flex-wrap items-center gap-2">
+          {/* Müstakil Detaya Git / Panoya Dön Butonu (En üst aksiyon alanında) */}
+          {activeView === "detay" ? (
+            <button
+              type="button"
+              onClick={() => setActiveView("kanban")}
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:focus-visible:ring-offset-slate-950"
+              title="Panoya / Listeye Geri Dön"
+            >
+              <ArrowLeft size={16} />
+              <span>Panoya Dön</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setActiveView("detay")}
+              className={`inline-flex h-10 items-center justify-center gap-2 rounded-xl border px-3.5 text-sm font-semibold shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-950 ${
+                activeDosya
+                  ? "border-blue-200 bg-blue-50/80 text-blue-700 hover:bg-blue-100 hover:border-blue-300 dark:border-blue-800/60 dark:bg-blue-950/40 dark:text-blue-300 dark:hover:bg-blue-900/60 cursor-pointer"
+                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer"
+              }`}
+              title={
+                activeDosya
+                  ? `Seçili dosyanın detayına git (${activeDosya.temin_no || activeDosya.konu || "#" + activeDosya.id})`
+                  : "Aktif dosyanın detaylarını görüntüle"
+              }
+            >
+              <FileText size={16} />
+              <span>Detaya Git</span>
+              {activeDosya?.temin_no && (
+                <span className="hidden sm:inline-block rounded-md bg-blue-100/90 px-1.5 py-0.5 text-[11px] font-bold text-blue-800 dark:bg-blue-900/70 dark:text-blue-300">
+                  {activeDosya.temin_no}
+                </span>
+              )}
+            </button>
+          )}
+
           {activeDosya && activeView === "detay" && (
             <button
               type="button"
@@ -109,7 +140,7 @@ export function TakipHeader({
         </div>
       </div>
 
-      {/* Görünüm seçici */}
+      {/* Görünüm seçici (Dosyaları toplu görüntüleme biçimleri) */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">

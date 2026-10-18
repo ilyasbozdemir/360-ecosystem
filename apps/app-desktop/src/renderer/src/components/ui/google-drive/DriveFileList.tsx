@@ -14,7 +14,7 @@ export function DriveFileList({ gd }: { gd: GoogleDriveState }): React.JSX.Eleme
         <span>
           <strong>Güvenlik ve İzolasyon Garantisi:</strong> Drive&apos;ınızdaki diğer şahsi
           dosyalarınıza kesinlikle erişilmez. Yalnızca <strong>TEMIN_360_YEDEKLER</strong>{' '}
-          klasöründeki son 7 adet <strong>.dtal</strong> çalışma dosyası listelenir ve korunur.
+          klasöründeki son 7 adet <strong>.temin</strong> çalışma dosyası listelenir ve korunur.
         </span>
       </div>
 

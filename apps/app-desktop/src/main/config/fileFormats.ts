@@ -1,12 +1,12 @@
 import fs from 'fs'
 
 /**
- * TEMİN 360 — Desteklenen Dosya Formatları
- * .hkmp ve .dtal SQLite veritabanı dosyalarıdır.
+ * TEMİN 360 — Dosya Formatları Standardizasyonu
+ * Standart ve tek aktif proje dosyası uzantısı: .temin
  */
 
 export interface FileFormat {
-  /** Uzantı (nokta olmadan, örn: 'hkmp') */
+  /** Uzantı (nokta olmadan, örn: 'temin') */
   ext: string
   /** Kullanıcıya gösterilecek açıklama */
   label: string
@@ -16,73 +16,59 @@ export interface FileFormat {
   isDefault?: boolean
 }
 
+/** Tek aktif standart dosya formatı */
+export const PRIMARY_EXTENSION = 'temin'
+
 export const SUPPORTED_FORMATS: FileFormat[] = [
   {
-    ext: 'temin',
+    ext: PRIMARY_EXTENSION,
     label: 'TEMİN 360 Proje Dosyası',
-    dialogName: 'TEMİN 360 Dosyası (*.temin)',
+    dialogName: 'TEMİN 360 Proje Dosyası (*.temin)',
     isDefault: true
-  },
-  {
-    ext: 'hkmp',
-    label: 'Hakim Pro Dosyası (Eski .hkmp)',
-    dialogName: 'Hakim Pro Dosyası (*.hkmp)'
-  },
-  {
-    ext: 'dtal',
-    label: 'TEMİN 360 Veri Dosyası (Eski .dtal)',
-    dialogName: 'TEMİN 360 / DTAL Dosyası (*.dtal)'
-  },
-  {
-    ext: 'dtm',
-    label: 'TEMİN 360 Veri Dosyası (Eski .dtm)',
-    dialogName: 'TEMİN 360 / DTM Dosyası (*.dtm)'
-  },
-  {
-    ext: 'dte',
-    label: 'TEMİN 360 Veri Aktarım Dosyası (.dte)',
-    dialogName: 'TEMİN 360 / DTE Dosyası (*.dte)'
-  },
-  {
-    ext: 'dta',
-    label: 'TEMİN 360 / DTA Dosyası (Eski .dta)',
-    dialogName: 'TEMİN 360 / DTA Dosyası (*.dta)'
-  },
-  {
-    ext: 'tmn360',
-    label: 'TEMİN 360 Arşiv Paketi (.tmn360)',
-    dialogName: 'TEMİN 360 Arşiv Paketi (*.tmn360)'
-  },
-  {
-    ext: 'sqlite',
-    label: 'SQLite Veritabanı Dosyası (*.sqlite)',
-    dialogName: 'SQLite Veritabanı (*.sqlite)'
-  },
-  {
-    ext: 'db',
-    label: 'Veritabanı Dosyası (*.db)',
-    dialogName: 'Veritabanı Dosyası (*.db)'
   }
 ]
 
-/** Tüm desteklenen uzantıları ['temin', 'hkmp', ...] olarak döner */
+/** Eski formatlar (Sadece geriye dönük tespit, açılışta algılama ve yükseltme için tutulur) */
+export const LEGACY_EXTENSIONS = [
+  'hkmp',
+  'dtal',
+  'dtm',
+  'dte',
+  'dta',
+  'tmn360',
+  'sqlite',
+  'db'
+] as const
+
+/** Tüm aktif desteklenen uzantılar: Sadece ['temin'] */
 export const allExtensions = SUPPORTED_FORMATS.map((f) => f.ext)
 
 /** Varsayılan uzantı (yeni dosya oluştururken kullanılır) */
-export const defaultFormat = SUPPORTED_FORMATS.find((f) => f.isDefault) ?? SUPPORTED_FORMATS[0]
+export const defaultFormat = SUPPORTED_FORMATS[0]
 
-/** Electron dialog filter listesi — tüm formatları tek grupta gösterir */
+/** Electron dialog filter listesi — sadece standart aktif formatı gösterir */
 export const allFormatsFilter = {
-  name: 'TEMİN 360 Dosyaları',
-  extensions: allExtensions
+  name: 'TEMİN 360 Proje Dosyası (*.temin)',
+  extensions: [PRIMARY_EXTENSION]
 }
 
-/** Her format için ayrı ayrı dialog filter listesi */
+/** Her format için ayrı ayrı dialog filter listesi (Sadece standart format) */
 export const perFormatFilters = SUPPORTED_FORMATS.map((f) => ({
   name: f.dialogName,
   extensions: [f.ext]
 }))
 
+/**
+ * Dosya adından proje uzantısını (.temin veya eski uzantıları) temizler
+ */
+export function stripProjectExtension(fileName: string): string {
+  if (!fileName) return ''
+  return fileName.replace(/\.(temin|hkmp|dtal|dtm|dte|dta|tmn360|sqlite|db)$/i, '')
+}
+
+/**
+ * Dosya yolunun geçerli bir TEMİN 360 dosyası veya yükseltilebilir eski dosya olup olmadığını doğrular
+ */
 export function isSupportedFile(filePath: string): boolean {
   if (!filePath || typeof filePath !== 'string') return false
   const cleanPath = filePath
@@ -91,9 +77,14 @@ export function isSupportedFile(filePath: string): boolean {
     .trim()
   if (cleanPath.startsWith('-')) return false
   const lower = cleanPath.toLowerCase()
-  if (allExtensions.some((ext) => lower.endsWith('.' + ext))) return true
 
-  // Ekstra akıllı algılama: Uzantı farklı olsa bile dosya geçerli SQLite veya ZIP/TEMİN ise destekle
+  // 1. Standart uzantı kontrolü (.temin)
+  if (lower.endsWith('.' + PRIMARY_EXTENSION)) return true
+
+  // 2. Geriye dönük uyumluluk: Eski uzantı kontrolü
+  if (LEGACY_EXTENSIONS.some((ext) => lower.endsWith('.' + ext))) return true
+
+  // 3. Akıllı algılama: Dosya geçerli SQLite format 3 veya PK ZIP ise destekle
   try {
     if (fs.existsSync(cleanPath) && fs.statSync(cleanPath).isFile()) {
       const fd = fs.openSync(cleanPath, 'r')

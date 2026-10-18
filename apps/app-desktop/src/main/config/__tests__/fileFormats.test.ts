@@ -2,9 +2,18 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import fs from 'fs'
 import path from 'path'
 import os from 'os'
-import { isSupportedFile, allExtensions, defaultFormat } from '../fileFormats'
+import {
+  isSupportedFile,
+  allExtensions,
+  defaultFormat,
+  allFormatsFilter,
+  perFormatFilters,
+  LEGACY_EXTENSIONS,
+  stripProjectExtension,
+  PRIMARY_EXTENSION
+} from '../fileFormats'
 
-describe('File Formats Configuration & Validation', () => {
+describe('File Formats Configuration & Validation (Standardized .temin)', () => {
   let tempDir: string
 
   beforeEach(() => {
@@ -17,18 +26,37 @@ describe('File Formats Configuration & Validation', () => {
     }
   })
 
-  it('should have a valid default format', () => {
+  it('should have .temin as single active format', () => {
+    expect(PRIMARY_EXTENSION).toBe('temin')
     expect(defaultFormat).toBeDefined()
     expect(defaultFormat.ext).toBe('temin')
     expect(defaultFormat.isDefault).toBe(true)
+    expect(allExtensions).toEqual(['temin'])
   })
 
-  it('should contain all expected extension definitions', () => {
-    expect(allExtensions).toContain('temin')
-    expect(allExtensions).toContain('hkmp')
-    expect(allExtensions).toContain('dtal')
-    expect(allExtensions).toContain('tmn360')
-    expect(allExtensions).toContain('sqlite')
+  it('should only expose .temin in dialog filters', () => {
+    expect(allFormatsFilter.extensions).toEqual(['temin'])
+    expect(perFormatFilters).toHaveLength(1)
+    expect(perFormatFilters[0].extensions).toEqual(['temin'])
+  })
+
+  it('should maintain legacy extension definitions for migration detection', () => {
+    expect(LEGACY_EXTENSIONS).toContain('hkmp')
+    expect(LEGACY_EXTENSIONS).toContain('dtal')
+    expect(LEGACY_EXTENSIONS).toContain('dtm')
+    expect(LEGACY_EXTENSIONS).toContain('dte')
+    expect(LEGACY_EXTENSIONS).toContain('dta')
+    expect(LEGACY_EXTENSIONS).toContain('tmn360')
+    expect(LEGACY_EXTENSIONS).toContain('sqlite')
+    expect(LEGACY_EXTENSIONS).toContain('db')
+  })
+
+  it('should strip project extensions accurately', () => {
+    expect(stripProjectExtension('Belediye_Projesi.temin')).toBe('Belediye_Projesi')
+    expect(stripProjectExtension('Eski_Proje.hkmp')).toBe('Eski_Proje')
+    expect(stripProjectExtension('Veri.dtal')).toBe('Veri')
+    expect(stripProjectExtension('Arsiv.tmn360')).toBe('Arsiv')
+    expect(stripProjectExtension('')).toBe('')
   })
 
   it('should return false for invalid or empty file paths', () => {
@@ -40,11 +68,12 @@ describe('File Formats Configuration & Validation', () => {
     expect(isSupportedFile('-flag-arg')).toBe(false)
   })
 
-  it('should return true for supported file extensions by path string', () => {
+  it('should return true for active and legacy supported file extensions', () => {
     expect(isSupportedFile('C:\\Projects\\test.temin')).toBe(true)
     expect(isSupportedFile('/user/docs/file.hkmp')).toBe(true)
     expect(isSupportedFile('archive.tmn360')).toBe(true)
     expect(isSupportedFile('data.dtal')).toBe(true)
+    expect(isSupportedFile('data.sqlite')).toBe(true)
   })
 
   it('should return false for unsupported file extensions', () => {

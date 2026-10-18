@@ -4,14 +4,14 @@ import {
   BadgeAlert,
   Calendar,
   CheckCircle2,
-  ChevronRight,
   Clock,
   Copy,
   Edit,
   FileSpreadsheet,
   FileText,
   Link2,
-  Package
+  Package,
+  TrendingUp
 } from 'lucide-react'
 import {
   IhtiyacRaporu,
@@ -26,6 +26,7 @@ import { APP_ROUTES } from '../../../constants/routeConstants'
 import { DetayTab } from '../tabs/DetayTab'
 import { LuzumMuzekkeresiTab } from '../tabs/LuzumMuzekkeresiTab'
 import { LuzumOnayEkiTab } from '../tabs/LuzumOnayEkiTab'
+import { YiUfeFiyatGuncellemeModal } from './YiUfeFiyatGuncellemeModal'
 
 interface DetailViewProps {
   raporId: number
@@ -49,6 +50,7 @@ export function IhtiyacRaporuDetailView({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<DetailTab>('detay')
+  const [isYiUfeModalOpen, setIsYiUfeModalOpen] = useState(false)
 
   const { setActiveDosyaId } = useWorkspaceStore()
   const navigate = useNavigate()
@@ -178,230 +180,244 @@ export function IhtiyacRaporuDetailView({
     Math.abs(Number(rapor.tahmini_butce) - totals.genelToplam) > 0.01
 
   return (
-    <div className="max-w-7xl mx-auto p-4 sm:p-8 space-y-7 animate-in fade-in duration-300">
-      {/* Top Navigation & Breadcrumbs */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/80 dark:border-slate-800">
-        <div className="flex items-center gap-3">
+    <div className="w-full max-w-462.5 mx-auto p-3 sm:p-5 space-y-4 animate-in fade-in duration-200">
+      {/* 1. ÜST BİLGİ & AKSİYON BARI (Kompakt, Modern ve Yer Tasarruflu) */}
+      <header className="bg-white dark:bg-slate-900 px-4 py-3 sm:px-5 sm:py-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        {/* Sol Taraf: Geri Dönüş, Breadcrumb, Rapor No, Başlık ve Durum */}
+        <div className="flex items-center gap-3 min-w-0 flex-wrap sm:flex-nowrap">
           <button
             onClick={onBack}
-            className="p-2.5 bg-white hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-300 transition-all shadow-xs flex items-center gap-2 cursor-pointer group"
-            title="İhtiyaç Raporları Listesine Dön"
+            className="p-2 sm:px-3 sm:py-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-700 dark:text-slate-300 transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+            title="Listeye Dön"
           >
-            <ArrowLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />
-            <span className="text-xs font-bold">Listeye Dön</span>
+            <ArrowLeft size={15} />
+            <span className="text-xs font-bold hidden sm:inline">Listeye Dön</span>
           </button>
 
-          <div className="h-5 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block" />
+          <div className="h-5 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block shrink-0" />
 
-          {/* Breadcrumb path */}
-          <nav className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-            <span
-              onClick={onBack}
-              className="hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer font-medium"
-            >
-              İhtiyaç Raporları
-            </span>
-            <ChevronRight size={14} className="text-slate-400" />
-            <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="px-2.5 py-0.5 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 font-mono text-xs font-extrabold border border-blue-400/30 shrink-0">
               {rapor.rapor_no}
             </span>
-            <ChevronRight size={14} className="text-slate-400" />
-            <span className="text-slate-400 dark:text-slate-500">
-              {activeTab === 'detay'
-                ? 'Detay ve Kalemler'
-                : activeTab === 'luzum_muzekkeresi'
-                  ? 'Lüzum Müzekkeresi Şablonu'
-                  : 'Onay Eki Şablonu'}
+
+            {getStatusBadge(rapor.durum)}
+
+            <span className="text-xs text-slate-500 dark:text-slate-400 hidden xl:flex items-center gap-1 font-medium shrink-0">
+              <Calendar size={13} className="text-slate-400" />
+              {formatDate(rapor.tarih)}
             </span>
-          </nav>
-        </div>
 
-        {/* Top Actions */}
-        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-          <button
-            onClick={() => onDuplicate(rapor.id)}
-            className="px-3.5 py-2 bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
-          >
-            <Copy size={14} className="text-slate-500" />
-            <span>Kopyala</span>
-          </button>
-
-          {!rapor.temin_dosya_id ? (
-            <button
-              onClick={() => onOpenLinkModal(rapor)}
-              className="px-3.5 py-2 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
-            >
-              <Link2 size={14} />
-              <span>Dosyaya Bağla</span>
-            </button>
-          ) : (
-            <button
-              onClick={() => onOpenLinkModal(rapor)}
-              className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
-            >
-              <Link2 size={14} />
-              <span>Bağlantıyı Değiştir</span>
-            </button>
-          )}
-
-          <button
-            onClick={() => onEdit(rapor.id)}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-500/25 flex items-center gap-1.5 cursor-pointer"
-          >
-            <Edit size={14} />
-            <span>Düzenle</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Hero Banner with Title and Key Details */}
-      <div className="bg-linear-to-r from-slate-50 via-blue-50/40 to-indigo-50/30 dark:from-slate-900 dark:via-slate-850 dark:to-slate-900 text-slate-850 dark:text-white p-6 sm:p-7 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-sm dark:shadow-xl space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-          <div className="space-y-2 max-w-3xl">
-            <div className="flex items-center gap-3 flex-wrap">
-              <span className="px-3 py-1 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 font-mono text-xs font-extrabold border border-blue-400/30">
-                {rapor.rapor_no}
+            {(rapor.evrak_sayisi || rapor.dosya_evrak_sayisi) && (
+              <span
+                className="hidden md:inline-flex px-2 py-0.5 rounded-lg bg-purple-500/10 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 font-mono text-[11px] font-bold border border-purple-400/30 shrink-0"
+                title="Resmî EBYS Evrak Sayısı"
+              >
+                EBYS: {rapor.evrak_sayisi || rapor.dosya_evrak_sayisi}
               </span>
-              {(rapor.evrak_sayisi || rapor.dosya_evrak_sayisi) && (
-                <span
-                  className="px-3 py-1 rounded-lg bg-purple-500/10 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 font-mono text-xs font-extrabold border border-purple-400/30"
-                  title="Resmî EBYS Evrak Sayısı"
-                >
-                  EBYS: {rapor.evrak_sayisi || rapor.dosya_evrak_sayisi}
-                </span>
-              )}
-              {getStatusBadge(rapor.durum)}
-              <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 font-medium">
-                <Calendar size={13} className="text-slate-400 dark:text-slate-450" />
-                {formatDate(rapor.tarih)}
-              </span>
-            </div>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-snug">
+            )}
+
+            <h1 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">
               {rapor.baslik}
             </h1>
           </div>
+        </div>
 
-          <div className="sm:text-right shrink-0 bg-white dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-700/60 sm:min-w-50 shadow-xs space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 block">
-              Hesaplanan Tahmini Bedel (KDV Dahil)
-            </span>
-            <span className="text-2xl font-mono font-black text-cyan-700 dark:text-cyan-400 block">
+        {/* Sağ Taraf: Tahmini Bedel Özeti ve Aksiyon Butonları */}
+        <div className="flex items-center gap-2.5 shrink-0 flex-wrap justify-between sm:justify-end">
+          <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/60 px-3 py-1.5 rounded-xl border border-slate-200/80 dark:border-slate-700/60">
+            <span className="text-[10px] font-bold uppercase text-slate-400">Tahmini Bedel:</span>
+            <span className="text-sm font-mono font-black text-cyan-700 dark:text-cyan-400">
               {formatCurrency(totals.genelToplam)}
             </span>
             {hasTotalDiff && (
               <span
-                className="inline-flex items-center gap-1 text-[10.5px] text-amber-600 dark:text-amber-400 font-semibold bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-md border border-amber-200 dark:border-amber-800"
-                title={`Kayıtlı Bedel: ${formatCurrency(rapor.tahmini_butce || 0)}`}
+                className="text-amber-500 cursor-help"
+                title={`Kayıtlı Bedel Farkı: ${formatCurrency(rapor.tahmini_butce || 0)}`}
               >
-                <BadgeAlert size={12} />
-                Kayıtlı Bedel ile Fark Var ({formatCurrency(rapor.tahmini_butce || 0)})
-              </span>
-            )}
-            {totals.araToplam > 0 && (
-              <span className="text-[11px] text-slate-500 dark:text-slate-400 block">
-                KDV Hariç: {formatCurrency(totals.araToplam)}
+                <BadgeAlert size={14} />
               </span>
             )}
           </div>
+
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setIsYiUfeModalOpen(true)}
+              className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+              title="TÜİK Yİ-ÜFE Endeksleri ile Birim Fiyatları Güncelle / Eskale Et"
+            >
+              <TrendingUp size={13} className="text-emerald-600 dark:text-emerald-400" />
+              <span>TÜİK Fiyat Güncelle</span>
+            </button>
+
+            <button
+              onClick={() => onDuplicate(rapor.id)}
+              className="px-3 py-1.5 bg-white hover:bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+              title="Raporu Kopyala"
+            >
+              <Copy size={13} className="text-slate-500" />
+              <span className="hidden sm:inline">Kopyala</span>
+            </button>
+
+            {!rapor.temin_dosya_id ? (
+              <button
+                onClick={() => onOpenLinkModal(rapor)}
+                className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+              >
+                <Link2 size={13} />
+                <span>Dosyaya Bağla</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => onOpenLinkModal(rapor)}
+                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+              >
+                <Link2 size={13} />
+                <span>Bağlantı</span>
+              </button>
+            )}
+
+            <button
+              onClick={() => onEdit(rapor.id)}
+              className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+            >
+              <Edit size={13} />
+              <span>Düzenle</span>
+            </button>
+          </div>
         </div>
-      </div>
+      </header>
 
-      {/* Sub Tabs: Detay vs Lüzum Müzekkeresi Belge Önizleme */}
-      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2 overflow-x-auto">
-        <button
-          onClick={() => setActiveTab('detay')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
-            activeTab === 'detay'
-              ? 'bg-blue-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-          }`}
-        >
-          <FileText size={15} />
-          <span>Rapor Detayı &amp; Kalemler</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('luzum_muzekkeresi')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
-            activeTab === 'luzum_muzekkeresi'
-              ? 'bg-cyan-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-          }`}
-        >
-          <FileSpreadsheet size={15} />
-          <span>Doğrudan Temin Lüzum Müzekkeresi Belgesi</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('luzum_onay_eki')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
-            activeTab === 'luzum_onay_eki'
-              ? 'bg-purple-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-          }`}
-        >
-          <Package size={15} />
-          <span>Lüzum Müzekkeresi Onay Eki</span>
-        </button>
-      </div>
-
-      {/* TAB 1: Rapor Detayı & Kalemler */}
-      {activeTab === 'detay' && (
-        <DetayTab
-          rapor={rapor}
-          kalemler={kalemler}
-          totals={totals}
-          onEdit={onEdit}
-          onNavigateToDosya={handleNavigateToDosya}
-        />
-      )}
-
-      {/* TAB 2: Lüzum Müzekkeresi Standart Form Önizleme via DocumentPreviewModalV3 */}
-      {activeTab === 'luzum_muzekkeresi' && (
-        <LuzumMuzekkeresiTab
-          raporId={raporId}
-          dosyaId={rapor.temin_dosya_id}
-          onClose={() => setActiveTab('detay')}
-        />
-      )}
-
-      {/* TAB 3: Lüzum Müzekkeresi Onay Eki Önizleme via DocumentPreviewModalV3 */}
-      {activeTab === 'luzum_onay_eki' && (
-        <LuzumOnayEkiTab
-          raporId={raporId}
-          dosyaId={rapor.temin_dosya_id}
-          onClose={() => setActiveTab('detay')}
-        />
-      )}
-
-      {/* Bottom Sticky Action Bar (Tüm sekmelerin dışında, sayfa altında) */}
-      <div className="sticky bottom-4 z-20 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3 sm:p-4 shadow-lg flex items-center justify-between gap-4 mt-6">
-        <button
-          onClick={onBack}
-          className="px-4 py-2 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
-        >
-          <ArrowLeft size={14} />
-          <span>İhtiyaç Raporları Listesine Dön</span>
-        </button>
-
-        <div className="flex items-center gap-2.5">
-          <button
-            onClick={() => onDuplicate(rapor.id)}
-            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+      {/* 2. SAĞLI SOLLU STÜDYO DÜZENİ (SPLIT VIEW) */}
+      <div className="flex flex-col xl:flex-row gap-4 items-start w-full">
+        {/* SOL PANEL: Rapor Detayları, Gerekçe & Kalemler */}
+        {activeTab !== 'luzum_onay_eki' && (
+          <aside
+            className={`w-full xl:w-[42%] 2xl:w-[38%] transition-all duration-300 flex flex-col bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl shadow-xs overflow-hidden h-[calc(100vh-140px)] min-h-175`}
           >
-            <Copy size={13} />
-            <span>Kopyala &amp; Yeni Rapor</span>
-          </button>
+            {/* Sol Panel Üst Kontrolleri */}
+            <div className="px-5 py-3 border-b border-slate-200/80 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/40 flex items-center justify-between gap-3 shrink-0">
+              <div className="flex items-center gap-2">
+                <FileText size={16} className="text-blue-600" />
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                  Rapor Verileri &amp; Kalemler
+                </span>
+              </div>
 
-          <button
-            onClick={() => onEdit(rapor.id)}
-            className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-500/25 flex items-center gap-1.5 cursor-pointer"
-          >
-            <Edit size={14} />
-            <span>Raporu Düzenle</span>
-          </button>
-        </div>
+              {/* Sol Panel Sekme Filtresi */}
+              <div className="flex items-center bg-slate-200/70 dark:bg-slate-800 p-0.5 rounded-lg text-[11px] font-bold">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('detay')}
+                  className={`px-2.5 py-1 rounded-md transition-all ${
+                    activeTab === 'detay'
+                      ? 'bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-300 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-800 dark:text-slate-400'
+                  }`}
+                >
+                  Tümü
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('luzum_muzekkeresi')}
+                  className={`px-2.5 py-1 rounded-md transition-all ${
+                    activeTab === 'luzum_muzekkeresi'
+                      ? 'bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-300 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-800 dark:text-slate-400'
+                  }`}
+                >
+                  Kalemler ({kalemler.length})
+                </button>
+              </div>
+            </div>
+
+            {/* Sol Panel İçerik Alanı (Kaydırılabilir) */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              <DetayTab
+                rapor={rapor}
+                kalemler={kalemler}
+                totals={totals}
+                onEdit={onEdit}
+                onNavigateToDosya={handleNavigateToDosya}
+                onOpenYiUfeModal={() => setIsYiUfeModalOpen(true)}
+                filterSection={activeTab === 'luzum_muzekkeresi' ? 'items' : 'all'}
+              />
+            </div>
+          </aside>
+        )}
+
+        {/* SAĞ PANEL: Canlı Belge Stüdyosu & Önizleme */}
+        <main
+          className={`flex-1 w-full ${
+            activeTab === 'luzum_onay_eki' ? 'xl:w-full' : 'xl:w-[58%] 2xl:w-[62%]'
+          } transition-all duration-300 flex flex-col bg-slate-100 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-3xl shadow-xs overflow-hidden h-[calc(100vh-140px)] min-h-175`}
+        >
+          {/* Sağ Panel Başlık & Şablon Seçici */}
+          <div className="px-4 py-2.5 bg-white dark:bg-slate-900 border-b border-slate-200/80 dark:border-slate-800 flex items-center justify-between gap-3 shrink-0">
+            <div className="flex items-center gap-1.5 overflow-x-auto">
+              <button
+                type="button"
+                onClick={() => setActiveTab('detay')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                  activeTab !== 'luzum_onay_eki'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                }`}
+              >
+                <FileSpreadsheet size={14} />
+                <span>Lüzum Müzekkeresi</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('luzum_onay_eki')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                  activeTab === 'luzum_onay_eki'
+                    ? 'bg-purple-600 text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                }`}
+              >
+                <Package size={14} />
+                <span>Onay Eki (Çizelge)</span>
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-semibold text-slate-400 hidden sm:inline">
+                Canlı A4 Şablon Önizlemesi
+              </span>
+            </div>
+          </div>
+
+          {/* Sağ Panel Belge Gövdesi */}
+          <div className="flex-1 w-full h-full overflow-hidden relative">
+            {activeTab === 'luzum_onay_eki' ? (
+              <LuzumOnayEkiTab
+                raporId={raporId}
+                dosyaId={rapor.temin_dosya_id}
+                onClose={() => setActiveTab('detay')}
+                className="relative w-full h-full min-h-160 rounded-none border-0 overflow-hidden bg-slate-100 dark:bg-slate-950"
+              />
+            ) : (
+              <LuzumMuzekkeresiTab
+                raporId={raporId}
+                dosyaId={rapor.temin_dosya_id}
+                onClose={() => setActiveTab('detay')}
+                className="relative w-full h-full min-h-160 rounded-none border-0 overflow-hidden bg-slate-100 dark:bg-slate-950"
+              />
+            )}
+          </div>
+        </main>
       </div>
+
+      {/* TÜİK Yİ-ÜFE Fiyat Güncelleme / Eskalasyon Modalı */}
+      <YiUfeFiyatGuncellemeModal
+        isOpen={isYiUfeModalOpen}
+        onClose={() => setIsYiUfeModalOpen(false)}
+        rapor={rapor}
+        kalemler={kalemler}
+        onSuccess={loadData}
+      />
     </div>
   )
 }

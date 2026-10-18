@@ -32,7 +32,7 @@ export function DriveActionCards({ gd }: { gd: GoogleDriveState }): React.JSX.El
           <Upload size={16} /> Google Drive&apos;a Yükle
         </div>
         <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
-          Mevcut çalışma dosyanızı tarih damgasıyla (.dtal) doğrudan Google Drive hesabınıza yedek
+          Mevcut çalışma dosyanızı tarih damgasıyla (.temin) doğrudan Google Drive hesabınıza yedek
           olarak aktarır.
         </p>
         <Button
@@ -57,7 +57,7 @@ export function DriveActionCards({ gd }: { gd: GoogleDriveState }): React.JSX.El
           <Download size={16} /> Buluttan İndir & Çek
         </div>
         <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
-          Google Drive hesabınızdaki `.dtal` yedeklerinizi dökerek seçtiğiniz dosyayı indirir ve
+          Google Drive hesabınızdaki `.temin` yedeklerinizi dökerek seçtiğiniz dosyayı indirir ve
           açar.
         </p>
         <Button

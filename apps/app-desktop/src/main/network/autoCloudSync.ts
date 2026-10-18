@@ -278,7 +278,7 @@ export async function performAutoCloudSync(): Promise<void> {
 
             // Prune: keep last 7 versions
             const qList = encodeURIComponent(
-              `'${folderId}' in parents and trashed = false and (name contains '.dtal' or name contains '.hkmp')`
+              `'${folderId}' in parents and trashed = false and (name contains '.temin' or name contains '.dtal' or name contains '.hkmp')`
             )
             const listRes = await fetch(
               `https://www.googleapis.com/drive/v3/files?q=${qList}&fields=files(id,name,createdTime)&orderBy=createdTime%20desc`,

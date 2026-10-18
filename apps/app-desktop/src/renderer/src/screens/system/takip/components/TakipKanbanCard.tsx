@@ -89,6 +89,8 @@ export function TakipKanbanCard({
   }
 
   if (mode === 'compact') {
+    const hasMaliyet = dosya.yaklasik_maliyet !== undefined && dosya.yaklasik_maliyet !== null && Number(dosya.yaklasik_maliyet) > 0
+
     return (
       <div
         draggable
@@ -99,50 +101,61 @@ export function TakipKanbanCard({
           if (onOpenDetail) onOpenDetail(dosya)
         }}
         onDoubleClick={() => onOpenSurec(dosya)}
-        className={`group relative flex items-center justify-between gap-2 p-2.5 rounded-xl border transition-all duration-200 cursor-pointer select-none bg-white dark:bg-slate-900 shadow-2xs hover:shadow-sm hover:-translate-y-0.5 ${
+        className={`group relative flex flex-col gap-1.5 p-2.5 rounded-xl border transition-all duration-200 cursor-pointer select-none bg-white dark:bg-slate-900 shadow-2xs hover:shadow-sm hover:-translate-y-0.5 ${
           isActive
             ? 'border-blue-500 ring-2 ring-blue-500/20 dark:ring-blue-500/30 shadow-blue-500/10 bg-blue-50/15 dark:bg-blue-950/20'
             : 'border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
         }`}
         title="Tıklayarak detay dialog'unu, çift tıklayarak süreç ekranını açabilirsiniz."
       >
-        {/* Sol: Grip + No + Tur + Konu */}
-        <div className="flex items-center gap-1.5 min-w-0 flex-1">
-          <GripVertical className="w-3 h-3 text-slate-300 dark:text-slate-600 group-hover:text-slate-400 shrink-0 cursor-grab active:cursor-grabbing" />
-          <span className="font-mono text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60 shrink-0">
-            {dosya.temin_no || `#${dosya.id}`}
-          </span>
-          <span
-            className={`flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.2 rounded-full ${turInfo.classes} shrink-0`}
-          >
-            <TurIcon size={10} />
-            {turInfo.label}
-          </span>
-          <div className="min-w-0 flex-1">
+        {/* Üst Satır: Grip, Konu (2 Satır) ve Tutar / Aksiyonlar */}
+        <div className="flex items-start justify-between gap-2 min-w-0">
+          <div className="flex items-start gap-1.5 min-w-0 flex-1">
+            <GripVertical className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600 group-hover:text-slate-400 shrink-0 cursor-grab active:cursor-grabbing mt-0.5" />
             <h4
-              className="text-xs font-bold text-slate-850 dark:text-slate-100 truncate hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+              className="text-xs font-bold text-slate-850 dark:text-slate-100 line-clamp-2 leading-snug hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
               title={dosya.konu || 'İsimsiz Temin Dosyası'}
             >
               {dosya.konu || 'İsimsiz Temin Dosyası'}
             </h4>
-            {dosya.birim_adi && (
-              <p className="text-[10px] text-slate-400 truncate -mt-0.5">
-                {dosya.birim_adi}
-              </p>
+          </div>
+
+          {/* Sağ Üst: Tutar (varsa) */}
+          <div className="shrink-0 text-right">
+            {hasMaliyet ? (
+              <span className="font-mono text-[11px] font-bold text-slate-800 dark:text-slate-200 block">
+                {formatCurrency(dosya.yaklasik_maliyet || 0)}
+              </span>
+            ) : (
+              <span className="text-[11px] text-slate-300 dark:text-slate-600 font-mono block">—</span>
             )}
           </div>
         </div>
 
-        {/* Sağ: Maliyet + Aksiyonlar */}
-        <div
-          className="flex items-center gap-2 shrink-0"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <span className="font-mono text-xs font-bold text-slate-800 dark:text-slate-200">
-            {formatCurrency(dosya.yaklasik_maliyet || 0)}
-          </span>
+        {/* Alt Satır: No + Tür Rozeti + Birim + Hover Aksiyonları */}
+        <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-100 dark:border-slate-800/60 text-[10px]">
+          <div className="flex items-center gap-1.5 flex-wrap min-w-0 flex-1">
+            <span className="font-mono font-extrabold px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60 shrink-0">
+              {dosya.temin_no || `#${dosya.id}`}
+            </span>
+            <span
+              className={`inline-flex items-center gap-0.5 font-bold px-1.5 py-0.2 rounded-full ${turInfo.classes} shrink-0`}
+            >
+              <TurIcon size={10} />
+              {turInfo.label}
+            </span>
+            {dosya.birim_adi && (
+              <span className="text-slate-400 truncate max-w-28" title={dosya.birim_adi}>
+                {dosya.birim_adi}
+              </span>
+            )}
+          </div>
 
-          <div className="flex items-center gap-0.5">
+          {/* Aksiyon İkonları (Grup hover'da görünür, sade ve yer tasarruflu) */}
+          <div
+            className="flex items-center gap-1 shrink-0 opacity-80 group-hover:opacity-100 transition-opacity"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               type="button"
               onClick={(e) => {
@@ -156,7 +169,7 @@ export function TakipKanbanCard({
               }`}
               title={isActive ? 'Aktif Dosya' : 'Seç'}
             >
-              <CheckCircle2 size={12} />
+              <CheckCircle2 size={11} />
             </button>
 
             <button
@@ -168,7 +181,7 @@ export function TakipKanbanCard({
               className="p-1 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-950/40 text-slate-400 hover:text-purple-600 dark:hover:text-purple-300 transition-colors cursor-pointer"
               title="Süreç Aşamasına Git"
             >
-              <ExternalLink size={12} />
+              <ExternalLink size={11} />
             </button>
 
             <button
@@ -180,7 +193,7 @@ export function TakipKanbanCard({
               className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
               title="Dosyayı Düzenle"
             >
-              <Edit size={12} />
+              <Edit size={11} />
             </button>
           </div>
         </div>

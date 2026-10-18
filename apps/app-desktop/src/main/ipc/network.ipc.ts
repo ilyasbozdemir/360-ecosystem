@@ -4,6 +4,7 @@ import { startServer, stopServer, getSocketServer } from '../server'
 import { connectToServer, disconnectFromServer, emitEvent } from '../client'
 import { startExpressServer, stopExpressServer } from '../network/expressServer'
 import { workspaceManager } from '../database/workspace'
+import { allFormatsFilter } from '../config/fileFormats'
 import { registerDetsisIpcHandlers } from './detsis.ipc'
 
 export { performAutoCloudSync } from '../network/autoCloudSync'
@@ -61,8 +62,8 @@ export function registerNetworkIpcHandlers(): void {
       if (!currentFile) {
         const { canceled, filePath } = await dialog.showSaveDialog({
           title: 'Ağdan Gelen Veritabanını Kaydet',
-          defaultPath: 'paylasim.dtal',
-          filters: [{ name: 'DTAL Dosyaları', extensions: ['dtal'] }]
+          defaultPath: 'paylasim.temin',
+          filters: [allFormatsFilter]
         })
         if (canceled || !filePath) throw new Error('İşlem iptal edildi.')
         currentFile = filePath

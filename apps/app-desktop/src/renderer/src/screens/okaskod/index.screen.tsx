@@ -210,7 +210,7 @@ export default function OkasKodScreen(): React.JSX.Element {
                 KİK <ExternalLink className="w-3 h-3" />
               </a>
               adreslerini ziyaret edin. Eklediğiniz özel kodlar yalnızca{' '}
-              <strong>aktif .dtal (kurum) dosyanıza</strong> kaydedilir.
+              <strong>aktif .temin (kurum) dosyanıza</strong> kaydedilir.
             </p>
           </div>
         </div>

@@ -40,7 +40,7 @@ export function SyncMinioPanel(): React.JSX.Element {
         </div>
         <p className="text-xs text-rose-700 dark:text-rose-400 leading-relaxed">
           MinIO, Amazon S3 mimarisiyle tam uyumlu yüksek performanslı nesne depolama sunucusudur.
-          Kurumsal ortamlarda kendi MinIO kümeniz veya S3 servisi üzerine (.dtal) yedeklerinizi
+          Kurumsal ortamlarda kendi MinIO kümeniz veya S3 servisi üzerine (.temin) yedeklerinizi
           aktarabilirsiniz.
         </p>
       </div>

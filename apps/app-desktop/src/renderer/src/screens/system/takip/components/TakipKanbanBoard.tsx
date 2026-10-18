@@ -5,7 +5,7 @@ import {
   AlertCircle
 } from 'lucide-react'
 import { TakipKanbanCard } from './TakipKanbanCard'
-import { TakipFilterToolbar } from './TakipFilterToolbar'
+import { TakipFilterToolbar, type ColumnHeightMode } from './TakipFilterToolbar'
 import { logActivity } from '../../../../utils/logger'
 import { emitAppEvent } from '../../../../utils/appEvents'
 import { useQueryClient } from '@tanstack/react-query'
@@ -127,18 +127,18 @@ export function TakipKanbanBoard({
     }
   }
 
-  // Column Height / Scroll Sınırı: '3cards' | '5cards' | 'auto'
-  const [columnHeightMode, setColumnHeightModeState] = useState<'3cards' | '5cards' | 'auto'>(() => {
+  // Column Height / Scroll Sınırı: 'fit' | '3cards' | '5cards' | 'auto'
+  const [columnHeightMode, setColumnHeightModeState] = useState<ColumnHeightMode>(() => {
     try {
       const saved = localStorage.getItem('temin_kanban_height_mode')
-      if (saved === '3cards' || saved === '5cards' || saved === 'auto') return saved
+      if (saved === 'fit' || saved === '3cards' || saved === '5cards' || saved === 'auto') return saved
     } catch {
       // ignore
     }
-    return '3cards'
+    return 'fit'
   })
 
-  const setColumnHeightMode = (mode: '3cards' | '5cards' | 'auto'): void => {
+  const setColumnHeightMode = (mode: ColumnHeightMode): void => {
     setColumnHeightModeState(mode)
     try {
       localStorage.setItem('temin_kanban_height_mode', mode)
@@ -148,7 +148,7 @@ export function TakipKanbanBoard({
   }
 
   // Infinite Scroll / Kademeli Yükleme
-  const INITIAL_BATCH = columnHeightMode === '3cards' ? 5 : 8
+  const INITIAL_BATCH = columnHeightMode === 'fit' ? 40 : columnHeightMode === '3cards' ? 5 : 8
   const [visibleCounts, setVisibleCounts] = useState<Record<number, number>>({
     1: INITIAL_BATCH,
     2: INITIAL_BATCH,
@@ -332,35 +332,43 @@ export function TakipKanbanBoard({
   }
 
   return (
-    <div className="flex flex-col gap-5 w-full">
+    <div className="flex flex-col gap-4 w-full flex-1 min-h-0">
       {/* ERROR BANNER */}
       {errorMessage && (
-        <div className="flex items-center gap-2 p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 rounded-2xl text-xs font-semibold text-rose-700 dark:text-rose-300 animate-in fade-in">
+        <div className="shrink-0 flex items-center gap-2 p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 rounded-2xl text-xs font-semibold text-rose-700 dark:text-rose-300 animate-in fade-in">
           <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
           <span>{errorMessage}</span>
         </div>
       )}
 
       {/* TOOLBAR: SEARCH, FILTERS & WIZARD ACTION */}
-      <TakipFilterToolbar
-        searchQuery={effectiveSearchQuery}
-        setSearchQuery={setEffectiveSearchQuery}
-        selectedYil={effectiveSelectedYil}
-        setSelectedYil={setEffectiveSelectedYil}
-        selectedTur={effectiveSelectedTur}
-        setSelectedTur={setEffectiveSelectedTur}
-        uniqueYillar={uniqueYillar}
-        totalCount={dosyalar.length}
-        filteredCount={filteredDosyalar.length}
-        onOpenWizard={onOpenWizard}
-        cardMode={cardMode}
-        setCardMode={setCardMode}
-        columnHeightMode={columnHeightMode}
-        setColumnHeightMode={setColumnHeightMode}
-      />
+      <div className="shrink-0">
+        <TakipFilterToolbar
+          searchQuery={effectiveSearchQuery}
+          setSearchQuery={setEffectiveSearchQuery}
+          selectedYil={effectiveSelectedYil}
+          setSelectedYil={setEffectiveSelectedYil}
+          selectedTur={effectiveSelectedTur}
+          setSelectedTur={setEffectiveSelectedTur}
+          uniqueYillar={uniqueYillar}
+          totalCount={dosyalar.length}
+          filteredCount={filteredDosyalar.length}
+          onOpenWizard={onOpenWizard}
+          cardMode={cardMode}
+          setCardMode={setCardMode}
+          columnHeightMode={columnHeightMode}
+          setColumnHeightMode={setColumnHeightMode}
+        />
+      </div>
 
       {/* 4-COLUMN KANBAN BOARD */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-start select-none">
+      <div
+        className={`grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 select-none ${
+          columnHeightMode === 'fit'
+            ? 'flex-1 min-h-0 xl:grid-rows-1 items-stretch'
+            : 'items-start'
+        }`}
+      >
         {KANBAN_STAGES.map((col) => {
           // Filter dossiers for this column
           const columnDosyalar = filteredDosyalar.filter((d) => {
@@ -381,7 +389,9 @@ export function TakipKanbanBoard({
               onDragOver={(e) => handleDragOver(e, col.stageId)}
               onDragLeave={(e) => handleDragLeave(e, col.stageId)}
               onDrop={(e) => handleDrop(e, col.stageId)}
-              className={`flex flex-col rounded-3xl border transition-all duration-200 min-h-140 bg-slate-50/60 dark:bg-slate-900/40 p-3.5 ${
+              className={`flex flex-col rounded-3xl border transition-all duration-200 min-h-140 xl:min-h-0 ${
+                columnHeightMode === 'fit' ? 'xl:h-full xl:overflow-hidden' : ''
+              } bg-slate-50/60 dark:bg-slate-900/40 p-3.5 ${
                 col.borderColor
               } ${
                 isHovered
@@ -391,7 +401,7 @@ export function TakipKanbanBoard({
             >
               {/* Column Header */}
               <div
-                className={`p-3.5 rounded-2xl border ${col.borderColor} ${col.headerBg} mb-3 shadow-2xs`}
+                className={`shrink-0 p-3.5 rounded-2xl border ${col.borderColor} ${col.headerBg} mb-3 shadow-2xs`}
               >
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">
@@ -437,18 +447,20 @@ export function TakipKanbanBoard({
                 const renderedDosyalar = columnDosyalar.slice(0, limit)
                 const hasMore = renderedDosyalar.length < columnDosyalar.length
                 const heightClass =
-                  columnHeightMode === 'auto'
-                    ? 'max-h-none'
-                    : columnHeightMode === '5cards'
-                      ? 'max-h-[760px]'
-                      : cardMode === 'compact'
-                        ? 'max-h-[390px]'
-                        : 'max-h-[490px]'
+                  columnHeightMode === 'fit'
+                    ? 'max-h-[490px] xl:max-h-none'
+                    : columnHeightMode === 'auto'
+                      ? 'max-h-none'
+                      : columnHeightMode === '5cards'
+                        ? 'max-h-[760px]'
+                        : cardMode === 'compact'
+                          ? 'max-h-[390px]'
+                          : 'max-h-[490px]'
 
                 return (
                   <div
                     onScroll={(e) => handleColumnScroll(e, col.stageId, columnDosyalar.length)}
-                    className={`flex-1 flex flex-col gap-2.5 overflow-y-auto ${heightClass} custom-scrollbar pr-0.5`}
+                    className={`flex-1 min-h-0 flex flex-col gap-2.5 overflow-y-auto ${heightClass} custom-scrollbar pr-0.5`}
                   >
                     {columnDosyalar.length > 0 ? (
                       <>

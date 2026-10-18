@@ -6,12 +6,14 @@ interface LuzumMuzekkeresiTabProps {
   raporId: number
   dosyaId?: number | null
   onClose?: () => void
+  className?: string
 }
 
 export function LuzumMuzekkeresiTab({
   raporId,
   dosyaId,
-  onClose
+  onClose,
+  className
 }: LuzumMuzekkeresiTabProps): React.JSX.Element {
   const { tabs, activeTabId, switchTab, closeTab, openDocument, closeDocument } =
     useGlobalDocumentPreviewStore()
@@ -27,7 +29,12 @@ export function LuzumMuzekkeresiTab({
   }, [tabs, activeTabId])
 
   return (
-    <div className="relative w-full h-[85vh] min-h-187.5 rounded-3xl overflow-hidden border border-slate-200/80 dark:border-slate-800 shadow-xs bg-slate-100 dark:bg-slate-950">
+    <div
+      className={
+        className ||
+        'relative w-full h-[85vh] min-h-187.5 rounded-3xl overflow-hidden border border-slate-200/80 dark:border-slate-800 shadow-xs bg-slate-100 dark:bg-slate-950'
+      }
+    >
       <DocumentPreviewModalV3
         key={activeTab?.tabId || 'luzum_muzekkeresi'}
         isOpen={true}

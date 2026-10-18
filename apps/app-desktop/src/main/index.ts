@@ -87,13 +87,7 @@ try {
 import { workspaceManager } from './database/workspace'
 import { CURRENT_SCHEMA_VERSION, manifests } from '@dt/database'
 import nodemailer from 'nodemailer'
-import {
-  isSupportedFile,
-  defaultFormat,
-  perFormatFilters,
-  allFormatsFilter,
-  allExtensions
-} from './config/fileFormats'
+import { isSupportedFile } from './config/fileFormats'
 import { recentFilesStore } from './store/recentFiles'
 import { startServer, stopServer, getSocketServer } from './server'
 import { connectToServer, disconnectFromServer, emitEvent } from './client'

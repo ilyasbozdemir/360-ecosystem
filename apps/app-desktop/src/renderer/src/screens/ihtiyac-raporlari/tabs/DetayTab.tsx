@@ -24,6 +24,8 @@ interface DetayTabProps {
   }
   onEdit: (raporId: number) => void
   onNavigateToDosya: (dosyaId: number) => void
+  onOpenYiUfeModal?: () => void
+  filterSection?: 'all' | 'info' | 'items'
 }
 
 export function DetayTab({
@@ -31,115 +33,125 @@ export function DetayTab({
   kalemler,
   totals,
   onEdit,
-  onNavigateToDosya
+  onNavigateToDosya,
+  onOpenYiUfeModal,
+  filterSection = 'all'
 }: DetayTabProps): React.JSX.Element {
+  const showInfo = filterSection === 'all' || filterSection === 'info'
+  const showItems = filterSection === 'all' || filterSection === 'items'
+
   return (
-    <>
-      {/* Meta Cards Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-            Talep Eden Birim
-          </span>
-          <p className="text-sm font-bold text-slate-850 dark:text-slate-100 mt-1 flex items-center gap-2">
-            <Building2 size={15} className="text-purple-500 shrink-0" />
-            <span className="truncate">{rapor.birim_adi || 'Birim Belirtilmedi'}</span>
-          </p>
-        </div>
-
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-            Talep Eden Personel
-          </span>
-          <div className="mt-1 flex items-start gap-2">
-            <User size={15} className="text-blue-500 shrink-0 mt-0.5" />
-            <div className="min-w-0">
-              <p className="text-sm font-bold text-slate-850 dark:text-slate-100 truncate">
-                {rapor.talep_eden_personel || 'Belirtilmedi'}
+    <div className="space-y-4">
+      {/* Meta Cards Grid & Info */}
+      {showInfo && (
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                Talep Eden Birim
+              </span>
+              <p className="text-sm font-bold text-slate-850 dark:text-slate-100 mt-1 flex items-center gap-2">
+                <Building2 size={15} className="text-purple-500 shrink-0" />
+                <span className="truncate">{rapor.birim_adi || 'Birim Belirtilmedi'}</span>
               </p>
-              {rapor.talep_eden_unvan && (
-                <p className="text-[11px] text-slate-450 dark:text-slate-400 truncate">
-                  {rapor.talep_eden_unvan}
-                </p>
-              )}
             </div>
-          </div>
-        </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-            Toplam Kalem Sayısı
-          </span>
-          <p className="text-sm font-bold text-slate-850 dark:text-slate-100 mt-1 flex items-center gap-2">
-            <Package size={15} className="text-emerald-500 shrink-0" />
-            <span>{kalemler.length} Kalem</span>
-          </p>
-        </div>
-
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-            Hesaplanan KDV
-          </span>
-          <p className="text-sm font-bold font-mono text-slate-850 dark:text-slate-100 mt-1 flex items-center gap-2">
-            <TrendingUp size={15} className="text-cyan-500 shrink-0" />
-            <span>{formatCurrency(totals.kdv)}</span>
-          </p>
-        </div>
-      </div>
-
-      {/* Linked Dossier Card if connected */}
-      {rapor.temin_dosya_id ? (
-        <div className="bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/60 rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5 min-w-0">
-            <div className="w-11 h-11 rounded-2xl bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
-              <Link2 size={22} />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
-                  Bağlı Bulunan Alım Dosyası
-                </span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300">
-                  {rapor.dosya_tur || 'Doğrudan Temin'}
-                </span>
+            <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                Talep Eden Personel
+              </span>
+              <div className="mt-1 flex items-start gap-2">
+                <User size={15} className="text-blue-500 shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-slate-850 dark:text-slate-100 truncate">
+                    {rapor.talep_eden_personel || 'Belirtilmedi'}
+                  </p>
+                  {rapor.talep_eden_unvan && (
+                    <p className="text-[11px] text-slate-450 dark:text-slate-400 truncate">
+                      {rapor.talep_eden_unvan}
+                    </p>
+                  )}
+                </div>
               </div>
-              <p className="text-sm font-bold text-slate-850 dark:text-slate-100 mt-0.5 truncate">
-                <span className="font-mono text-blue-600 dark:text-blue-400 mr-2">
-                  [{rapor.dosya_no || `Dosya #${rapor.temin_dosya_id}`}]
-                </span>
-                {rapor.dosya_konu || 'Alım Dosyası'}
+            </div>
+
+            <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                Toplam Kalem Sayısı
+              </span>
+              <p className="text-sm font-bold text-slate-850 dark:text-slate-100 mt-1 flex items-center gap-2">
+                <Package size={15} className="text-emerald-500 shrink-0" />
+                <span>{kalemler.length} Kalem</span>
+              </p>
+            </div>
+
+            <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                Hesaplanan KDV
+              </span>
+              <p className="text-sm font-bold font-mono text-slate-850 dark:text-slate-100 mt-1 flex items-center gap-2">
+                <TrendingUp size={15} className="text-cyan-500 shrink-0" />
+                <span>{formatCurrency(totals.kdv)}</span>
               </p>
             </div>
           </div>
 
-          <button
-            onClick={() => onNavigateToDosya(rapor.temin_dosya_id!)}
-            className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-500/20 flex items-center gap-2 shrink-0 cursor-pointer"
-          >
-            <ExternalLink size={14} />
-            <span>Dosyayı Aç &amp; Kalemleri Gör</span>
-          </button>
-        </div>
-      ) : null}
+          {/* Linked Dossier Card if connected */}
+          {rapor.temin_dosya_id ? (
+            <div className="bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/60 rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3.5 min-w-0">
+                <div className="w-11 h-11 rounded-2xl bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                  <Link2 size={22} />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                      Bağlı Bulunan Alım Dosyası
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300">
+                      {rapor.dosya_tur || 'Doğrudan Temin'}
+                    </span>
+                  </div>
+                  <p className="text-sm font-bold text-slate-850 dark:text-slate-100 mt-0.5 truncate">
+                    <span className="font-mono text-blue-600 dark:text-blue-400 mr-2">
+                      [{rapor.dosya_no || `Dosya #${rapor.temin_dosya_id}`}]
+                    </span>
+                    {rapor.dosya_konu || 'Alım Dosyası'}
+                  </p>
+                </div>
+              </div>
 
-      {/* Justification Box */}
-      <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-slate-850 dark:text-slate-100 flex items-center gap-2">
-            <FileText size={16} className="text-amber-500" />
-            İhtiyaç Gerekçesi ve Kapsamı
-          </h3>
-          <span className="text-[11px] text-slate-400">
-            Lüzum müzekkeresi &amp; alım hazırlık gerekçesi
-          </span>
-        </div>
-        <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line bg-slate-50 dark:bg-slate-950/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-855">
-          {rapor.gerekce?.trim() || 'Gerekçe açıklaması girilmemiş.'}
-        </p>
-      </div>
+              <button
+                onClick={() => onNavigateToDosya(rapor.temin_dosya_id!)}
+                className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-500/20 flex items-center gap-2 shrink-0 cursor-pointer"
+              >
+                <ExternalLink size={14} />
+                <span>Dosyayı Aç &amp; Kalemleri Gör</span>
+              </button>
+            </div>
+          ) : null}
+
+          {/* Justification Box */}
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-slate-850 dark:text-slate-100 flex items-center gap-2">
+                <FileText size={16} className="text-amber-500" />
+                İhtiyaç Gerekçesi ve Kapsamı
+              </h3>
+              <span className="text-[11px] text-slate-400">
+                Lüzum müzekkeresi &amp; alım hazırlık gerekçesi
+              </span>
+            </div>
+            <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line bg-slate-50 dark:bg-slate-950/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-855">
+              {rapor.gerekce?.trim() || 'Gerekçe açıklaması girilmemiş.'}
+            </p>
+          </div>
+        </>
+      )}
 
       {/* Items Table Card */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
+      {showItems && (
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/60 dark:bg-slate-950/40">
           <div className="flex items-center gap-2.5">
             <Package size={17} className="text-blue-600" />
@@ -151,9 +163,23 @@ export function DetayTab({
             </span>
           </div>
 
-          <span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-300">
-            KDV Dahil Toplam: {formatCurrency(totals.genelToplam)}
-          </span>
+          <div className="flex items-center gap-3">
+            {onOpenYiUfeModal && kalemler.length > 0 && (
+              <button
+                type="button"
+                onClick={onOpenYiUfeModal}
+                className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+                title="TÜİK Yİ-ÜFE Endeksleri ile Birim Fiyatları Güncelle / Eskale Et"
+              >
+                <TrendingUp size={13} className="text-emerald-600 dark:text-emerald-400" />
+                <span>TÜİK ile Güncelle</span>
+              </button>
+            )}
+
+            <span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-300">
+              KDV Dahil Toplam: {formatCurrency(totals.genelToplam)}
+            </span>
+          </div>
         </div>
 
         {kalemler.length === 0 ? (
@@ -284,6 +310,7 @@ export function DetayTab({
           </div>
         )}
       </div>
+      )}
 
       {/* Notes if any */}
       {rapor.notlar && (
@@ -295,6 +322,6 @@ export function DetayTab({
           <p className="leading-relaxed pl-5 whitespace-pre-line">{rapor.notlar}</p>
         </div>
       )}
-    </>
+    </div>
   )
 }

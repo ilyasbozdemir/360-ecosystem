@@ -240,7 +240,7 @@ export const SelectedFileInspector: React.FC<SelectedFileInspectorProps> = ({
                 <span>
                   Ekler, dosya açıldığında geçici olarak işletim sisteminin geçici dizinine (Temp)
                   çıkarılır ve üzerinde işlem yapılır. Dosya kapatıldığında ise tüm ekler
-                  verilerinizle birlikte sıkıştırılarak <strong>.dtal</strong> dosyasına gömülür.
+                  verilerinizle birlikte sıkıştırılarak <strong>.temin</strong> dosyasına gömülür.
                 </span>
               </div>
             </div>

@@ -96,7 +96,7 @@ export function getHeaderMenus(opts: HeaderNavigationOptions): HeaderMenu[] {
         { label: 'Kullanıcı Profili', onClick: (): Promise<void> => navigate({ to: APP_ROUTES.PROFIL }) },
         { divider: true },
         {
-          label: 'Farklı Çalışma Dosyası Aç (.temin, .dtal, .hkmp...)...',
+          label: 'Farklı Çalışma Dosyası Aç (*.temin)...',
           onClick: async (): Promise<void> => {
             try {
               const res = await window.electron?.ipcRenderer.invoke('dialog:showOpenDialog')

@@ -19,7 +19,7 @@ export function SyncGdrivePanel(): React.JSX.Element {
               Google Drive Bulut Depolama & Eşitleme Yöneticisi
             </h3>
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed max-w-xl">
-              Çalışma (.dtal) dosyalarınızı doğrudan kişisel Google Drive hesabınıza yedekleyin,
+              Çalışma (.temin) dosyalarınızı doğrudan kişisel Google Drive hesabınıza yedekleyin,
               mevcut yedeklerinizi listeleyin ve istediğiniz dosyayı seçip bilgisayarınıza indirin.
             </p>
           </div>
@@ -43,7 +43,7 @@ export function SyncGdrivePanel(): React.JSX.Element {
               <h4 className="font-bold text-slate-900 dark:text-slate-100 text-sm">
                 Buluta Yükleme (Export)
               </h4>
-              <p className="text-xs text-slate-500">Aktif .dtal dosyanızı Drive'a gönderir</p>
+              <p className="text-xs text-slate-500">Aktif .temin dosyanızı Drive'a gönderir</p>
             </div>
           </div>
           <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
@@ -67,7 +67,7 @@ export function SyncGdrivePanel(): React.JSX.Element {
               <h4 className="font-bold text-slate-900 dark:text-slate-100 text-sm">
                 Buluttan İndirme (Import)
               </h4>
-              <p className="text-xs text-slate-500">Drive'daki .dtal yedeklerini listeler</p>
+              <p className="text-xs text-slate-500">Drive'daki .temin yedeklerini listeler</p>
             </div>
           </div>
           <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">

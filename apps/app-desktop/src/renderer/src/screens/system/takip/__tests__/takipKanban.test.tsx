@@ -225,6 +225,7 @@ describe("TakipKanbanBoard (Issue #11)", () => {
   });
 
   it("sütunda çok sayıda dosya olduğunda kademeli yükleme ve +5 Daha Yükle butonu çalışır", () => {
+    localStorage.setItem("temin_kanban_height_mode", "3cards");
     // Generate 12 dossiers in stage 1
     const manyDosyalar = Array.from({ length: 12 }, (_, i) => ({
       id: 200 + i,

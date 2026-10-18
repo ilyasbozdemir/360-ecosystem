@@ -62,7 +62,7 @@ export default function DosyaScreen(): React.JSX.Element {
           <div>
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-855 dark:text-slate-100 flex items-center gap-2">
               <FileArchive className="w-7 h-7 text-amber-500" />
-              {dosyaData ? dosyaData.konu : 'Aktif Çalışma Dosyası (.dtal)'}
+              {dosyaData ? dosyaData.konu : 'Aktif Çalışma Dosyası (.temin)'}
             </h1>
             <p className="text-slate-500 dark:text-slate-400 mt-1 text-xs">
               {dosyaData

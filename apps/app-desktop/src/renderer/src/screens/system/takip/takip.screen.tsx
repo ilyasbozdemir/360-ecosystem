@@ -216,51 +216,61 @@ export function TakipScreen(): React.JSX.Element {
     },
   ];
 
+  const isKanban = viewMode === "kanban";
+
   return (
-    <div className="flex flex-col gap-6 w-full max-w-[1600px] mx-auto pb-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div
+      className={`flex flex-col gap-6 w-full max-w-[1600px] mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 ${
+        isKanban ? "h-[calc(100vh-7rem)] min-h-0" : "pb-10"
+      }`}
+    >
       {/* HEADER SECTION */}
-      <TakipHeader
-        activeDosya={activeDosya}
-        onEditClick={handleEditDosya}
-        activeView={viewMode}
-        setActiveView={setViewMode}
-        onOpenWizard={() => {
-          navigate({ to: APP_ROUTES.YENI_DOSYA, search: { initialStage: 1 } });
-        }}
-      />
+      <div className="shrink-0">
+        <TakipHeader
+          activeDosya={activeDosya}
+          onEditClick={handleEditDosya}
+          activeView={viewMode}
+          setActiveView={setViewMode}
+          onOpenWizard={() => {
+            navigate({ to: APP_ROUTES.YENI_DOSYA, search: { initialStage: 1 } });
+          }}
+        />
+      </div>
 
       {/* GÖRÜNÜM 1: KANBAN İŞ AKIŞI TAHTASI */}
       {viewMode === "kanban" && (
-        <TakipKanbanBoard
-          dosyalar={dosyalar}
-          activeDosyaId={activeDosyaId}
-          setActiveDosyaId={(id) => {
-            setActiveDosyaId(id);
-          }}
-          formatCurrency={formatCurrency}
-          onOpenWizard={(targetStage) => {
-            navigate({
-              to: APP_ROUTES.YENI_DOSYA,
-              search: { initialStage: targetStage || 1 },
-            });
-          }}
-          onOpenSurec={(d) => {
-            setActiveDosyaId(d.id);
-            const route = STAGE_ROUTES[d.durum_asama_id || 1] ||
-              "/dosya/hazirlik-ve-ihtiyac";
-            navigate({ to: route });
-          }}
-          onEdit={(dosyaId) => {
-            navigate({ to: `${APP_ROUTES.YENI_DOSYA}?id=${dosyaId}` });
-          }}
-          onOpenDetail={handleOpenDetailModal}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          selectedYil={selectedYil}
-          setSelectedYil={setSelectedYil}
-          selectedTur={selectedTur}
-          setSelectedTur={setSelectedTur}
-        />
+        <div className="flex flex-col flex-1 min-h-0">
+          <TakipKanbanBoard
+            dosyalar={dosyalar}
+            activeDosyaId={activeDosyaId}
+            setActiveDosyaId={(id) => {
+              setActiveDosyaId(id);
+            }}
+            formatCurrency={formatCurrency}
+            onOpenWizard={(targetStage) => {
+              navigate({
+                to: APP_ROUTES.YENI_DOSYA,
+                search: { initialStage: targetStage || 1 },
+              });
+            }}
+            onOpenSurec={(d) => {
+              setActiveDosyaId(d.id);
+              const route = STAGE_ROUTES[d.durum_asama_id || 1] ||
+                "/dosya/hazirlik-ve-ihtiyac";
+              navigate({ to: route });
+            }}
+            onEdit={(dosyaId) => {
+              navigate({ to: `${APP_ROUTES.YENI_DOSYA}?id=${dosyaId}` });
+            }}
+            onOpenDetail={handleOpenDetailModal}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            selectedYil={selectedYil}
+            setSelectedYil={setSelectedYil}
+            selectedTur={selectedTur}
+            setSelectedTur={setSelectedTur}
+          />
+        </div>
       )}
 
       {/* GÖRÜNÜM 2: GRID / KART GÖRÜNÜMÜ */}

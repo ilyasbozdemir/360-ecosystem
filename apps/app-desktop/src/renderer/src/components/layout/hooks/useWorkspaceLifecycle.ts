@@ -109,7 +109,7 @@ export function useWorkspaceLifecycle(
       const currentActivePath = useWorkspaceStore.getState().activeFilePath
       if (!currentActivePath) {
         alert(
-          `Dışarıdan veri aktarım dosyası (.dte) algılandı, ancak aktif bir kurum dosyası açık değil.\nLütfen önce bir çalışma dosyası (.dtal) açın veya oluşturun.`
+          `Dışarıdan veri aktarım dosyası (.dte) algılandı, ancak aktif bir kurum dosyası açık değil.\nLütfen önce bir çalışma dosyası (.temin) açın veya oluşturun.`
         )
         return
       }

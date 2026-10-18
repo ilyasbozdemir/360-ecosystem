@@ -3,8 +3,7 @@ import { basename, resolve } from 'path'
 import fs from 'fs'
 import { workspaceManager } from '../database/workspace'
 import {
-  allFormatsFilter,
-  perFormatFilters
+  allFormatsFilter
 } from '../config/fileFormats'
 import { recentFilesStore } from '../store/recentFiles'
 import { getDeviceInfo } from '../utils/deviceInfo'
@@ -68,7 +67,7 @@ export function registerWorkspaceIpcHandlers(closeAllSecondaryWindows: () => voi
         const { canceled, filePath } = await dialog.showSaveDialog(win!, {
           title: 'Farklı Kaydet',
           defaultPath: defaultName,
-          filters: [allFormatsFilter, ...perFormatFilters]
+          filters: [allFormatsFilter]
         })
 
         if (canceled || !filePath) {
@@ -158,7 +157,7 @@ export function registerWorkspaceIpcHandlers(closeAllSecondaryWindows: () => voi
       const { filePath: destPath } = await dialog.showSaveDialog(win!, {
         title: 'Yedek Dosyasını Kaydet',
         defaultPath: basename(filePath),
-        filters: [allFormatsFilter, ...perFormatFilters]
+        filters: [allFormatsFilter]
       })
 
       if (!destPath) {
