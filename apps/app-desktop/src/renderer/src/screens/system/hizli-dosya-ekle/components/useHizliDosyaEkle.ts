@@ -6,11 +6,19 @@ import {
   reverseMapTur,
   reverseMapStatus,
   mapStatus,
-  mapTur
+  mapTur,
+  formatDateOnly,
+  formatDateTimeLocal,
+  getDefaultDates
 } from './hizliDosyaEkle.types'
 
 export function useHizliDosyaEkle() {
   const queryClient = useQueryClient()
+  const initialDates = getDefaultDates()
+
+  // Kullanıcının üst panelden belirleyebildiği varsayılan süreç tarihleri
+  const [defaultDates, setDefaultDates] = useState(initialDates)
+
   const [rows, setRows] = useState<DosyaRow[]>([])
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set())
   const [isSaving, setIsSaving] = useState(false)
@@ -30,7 +38,7 @@ export function useHizliDosyaEkle() {
   }
 
   const addRow = () => {
-    setRows((prev) => [...prev, emptyRow()])
+    setRows((prev) => [...prev, emptyRow(defaultDates)])
     setTimeout(() => {
       tableRef.current?.scrollTo({
         top: tableRef.current.scrollHeight,
@@ -83,7 +91,9 @@ export function useHizliDosyaEkle() {
       }
     }
 
-    setRows((prev) => (prev.length > 1 ? prev.filter((r) => r._key !== row._key) : [emptyRow()]))
+    setRows((prev) =>
+      prev.length > 1 ? prev.filter((r) => r._key !== row._key) : [emptyRow(defaultDates)]
+    )
     setSelectedKeys((prev) => {
       const next = new Set(prev)
       next.delete(row._key)
@@ -96,7 +106,8 @@ export function useHizliDosyaEkle() {
     try {
       const res = await window.electron.ipcRenderer.invoke(
         'db:query',
-        `SELECT id, temin_no, ekap_no, konu, isin_aciklamasi, ihale_tipi, ihale_sekli, dosya_acilis_tarihi, status, tur
+        `SELECT id, temin_no, ekap_no, konu, isin_aciklamasi, ihale_tipi, ihale_sekli,
+                dosya_acilis_tarihi, son_teklif_verme_tarihi, teslim_tarihi, status, tur
          FROM DATA_TeminDosyasi
          WHERE is_deleted = 0
          ORDER BY COALESCE(dosya_acilis_tarihi, created_at) DESC, id DESC
@@ -111,13 +122,19 @@ export function useHizliDosyaEkle() {
           dt_no: d.ekap_no || '',
           dosya_adi: d.konu || '',
           aciklama: d.isin_aciklamasi || '',
-          ihale_turu: reverseMapTur(d.tur || 'mal'),
-          ihale_sekli: d.ihale_sekli || '22/d',
-          ihale_tarihi: d.dosya_acilis_tarihi || '',
-          ihale_asamasi: reverseMapStatus(d.status || 'devam_ediyor'),
+          temin_turu: reverseMapTur(d.tur || 'mal'),
+          temin_sekli: d.ihale_sekli || '22/d',
+          dosya_acilis_tarihi: formatDateOnly(d.dosya_acilis_tarihi),
+          son_teklif_verme_tarihi: formatDateTimeLocal(d.son_teklif_verme_tarihi),
+          teslim_tarihi: formatDateOnly(d.teslim_tarihi),
+          surec_asamasi: reverseMapStatus(d.status || 'devam_ediyor'),
           _dirty: false
         }))
-        setRows(loaded.length > 0 ? loaded : [emptyRow(), emptyRow(), emptyRow()])
+        setRows(
+          loaded.length > 0
+            ? loaded
+            : [emptyRow(defaultDates), emptyRow(defaultDates), emptyRow(defaultDates)]
+        )
         setSelectedKeys(new Set())
         setResult(null)
       } else {
@@ -128,7 +145,7 @@ export function useHizliDosyaEkle() {
     } finally {
       setIsLoading(false)
     }
-  }, [loadLimit])
+  }, [loadLimit, defaultDates])
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -158,18 +175,21 @@ export function useHizliDosyaEkle() {
         const res = await window.electron.ipcRenderer.invoke(
           'db:run',
           `INSERT INTO DATA_TeminDosyasi
-            (temin_no, ekap_no, konu, isin_aciklamasi, ihale_tipi, ihale_sekli, dosya_acilis_tarihi, status, tur, is_deleted)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`,
+            (temin_no, ekap_no, konu, isin_aciklamasi, ihale_tipi, ihale_sekli,
+             dosya_acilis_tarihi, son_teklif_verme_tarihi, teslim_tarihi, status, tur, is_deleted)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`,
           [
             row.dosya_no || null,
             row.dt_no || null,
             row.dosya_adi.trim(),
             row.aciklama || null,
-            row.ihale_turu || 'Mal',
-            row.ihale_sekli || null,
-            row.ihale_tarihi || null,
-            mapStatus(row.ihale_asamasi),
-            mapTur(row.ihale_turu)
+            'Doğrudan Temin',
+            row.temin_sekli || '22/d',
+            row.dosya_acilis_tarihi || null,
+            row.son_teklif_verme_tarihi || null,
+            row.teslim_tarihi || null,
+            mapStatus(row.surec_asamasi),
+            mapTur(row.temin_turu)
           ]
         )
         if (res.success) {
@@ -188,7 +208,8 @@ export function useHizliDosyaEkle() {
           'db:run',
           `UPDATE DATA_TeminDosyasi SET
             temin_no = ?, ekap_no = ?, konu = ?, isin_aciklamasi = ?,
-            ihale_tipi = ?, ihale_sekli = ?, dosya_acilis_tarihi = ?,
+            ihale_tipi = ?, ihale_sekli = ?,
+            dosya_acilis_tarihi = ?, son_teklif_verme_tarihi = ?, teslim_tarihi = ?,
             status = ?, tur = ?, updated_at = CURRENT_TIMESTAMP
            WHERE id = ?`,
           [
@@ -196,11 +217,13 @@ export function useHizliDosyaEkle() {
             row.dt_no || null,
             row.dosya_adi.trim(),
             row.aciklama || null,
-            row.ihale_turu || 'Mal',
-            row.ihale_sekli || null,
-            row.ihale_tarihi || null,
-            mapStatus(row.ihale_asamasi),
-            mapTur(row.ihale_turu),
+            'Doğrudan Temin',
+            row.temin_sekli || '22/d',
+            row.dosya_acilis_tarihi || null,
+            row.son_teklif_verme_tarihi || null,
+            row.teslim_tarihi || null,
+            mapStatus(row.surec_asamasi),
+            mapTur(row.temin_turu),
             row.id
           ]
         )
@@ -242,6 +265,27 @@ export function useHizliDosyaEkle() {
       const lines = text.trim().split('\n').filter(Boolean)
       const newRows: DosyaRow[] = lines.map((line) => {
         const c = line.split('\t')
+        // Eğer 10 sütunlu yeni format yapıştırıldıysa:
+        // [0] Dosya No, [1] DT No, [2] Adı, [3] Açıklama, [4] Tür, [5] Şekli, [6] Açılış, [7] Son Teklif, [8] Teslim, [9] Aşama
+        if (c.length >= 9) {
+          return {
+            _key: Math.random().toString(36).slice(2),
+            id: null,
+            dosya_no: c[0]?.trim() || '',
+            dt_no: c[1]?.trim() || '',
+            dosya_adi: c[2]?.trim() || '',
+            aciklama: c[3]?.trim() || '',
+            temin_turu: c[4]?.trim() || 'Mal',
+            temin_sekli: c[5]?.trim() || '22/d',
+            dosya_acilis_tarihi: formatDateOnly(c[6]?.trim()) || defaultDates.dosya_acilis_tarihi,
+            son_teklif_verme_tarihi:
+              formatDateTimeLocal(c[7]?.trim()) || defaultDates.son_teklif_verme_tarihi,
+            teslim_tarihi: formatDateOnly(c[8]?.trim()) || defaultDates.teslim_tarihi,
+            surec_asamasi: c[9]?.trim() || 'Hazırlık',
+            _dirty: true
+          }
+        }
+        // Eski 8 sütunlu format için geriye dönük uyumlu:
         return {
           _key: Math.random().toString(36).slice(2),
           id: null,
@@ -249,10 +293,12 @@ export function useHizliDosyaEkle() {
           dt_no: c[1]?.trim() || '',
           dosya_adi: c[2]?.trim() || '',
           aciklama: c[3]?.trim() || '',
-          ihale_turu: c[4]?.trim() || 'Mal',
-          ihale_sekli: c[5]?.trim() || '22/d',
-          ihale_tarihi: c[6]?.trim() || '',
-          ihale_asamasi: c[7]?.trim() || 'Hazırlık',
+          temin_turu: c[4]?.trim() || 'Mal',
+          temin_sekli: c[5]?.trim() || '22/d',
+          dosya_acilis_tarihi: formatDateOnly(c[6]?.trim()) || defaultDates.dosya_acilis_tarihi,
+          son_teklif_verme_tarihi: defaultDates.son_teklif_verme_tarihi,
+          teslim_tarihi: defaultDates.teslim_tarihi,
+          surec_asamasi: c[7]?.trim() || 'Hazırlık',
           _dirty: true
         }
       })
@@ -348,14 +394,52 @@ export function useHizliDosyaEkle() {
   const handleBulkChangeAsama = (newAsama: string) => {
     setRows((prev) =>
       prev.map((r) =>
-        selectedKeys.has(r._key) ? { ...r, ihale_asamasi: newAsama, _dirty: true } : r
+        selectedKeys.has(r._key) ? { ...r, surec_asamasi: newAsama, _dirty: true } : r
       )
     )
   }
 
   const handleBulkChangeTur = (newTur: string) => {
     setRows((prev) =>
-      prev.map((r) => (selectedKeys.has(r._key) ? { ...r, ihale_turu: newTur, _dirty: true } : r))
+      prev.map((r) => (selectedKeys.has(r._key) ? { ...r, temin_turu: newTur, _dirty: true } : r))
+    )
+  }
+
+  const handleBulkApplyDates = (datesToApply: {
+    dosya_acilis_tarihi?: string
+    son_teklif_verme_tarihi?: string
+    teslim_tarihi?: string
+  }) => {
+    setRows((prev) =>
+      prev.map((r) => {
+        if (!selectedKeys.has(r._key)) return r
+        const updated = { ...r, _dirty: true }
+        if (datesToApply.dosya_acilis_tarihi !== undefined) {
+          updated.dosya_acilis_tarihi = datesToApply.dosya_acilis_tarihi
+        }
+        if (datesToApply.son_teklif_verme_tarihi !== undefined) {
+          updated.son_teklif_verme_tarihi = datesToApply.son_teklif_verme_tarihi
+        }
+        if (datesToApply.teslim_tarihi !== undefined) {
+          updated.teslim_tarihi = datesToApply.teslim_tarihi
+        }
+        return updated
+      })
+    )
+  }
+
+  const applyDefaultDatesToNewRows = () => {
+    setRows((prev) =>
+      prev.map((r) => {
+        if (r.id !== null) return r
+        return {
+          ...r,
+          dosya_acilis_tarihi: defaultDates.dosya_acilis_tarihi,
+          son_teklif_verme_tarihi: defaultDates.son_teklif_verme_tarihi,
+          teslim_tarihi: defaultDates.teslim_tarihi,
+          _dirty: true
+        }
+      })
     )
   }
 
@@ -376,6 +460,8 @@ export function useHizliDosyaEkle() {
     result,
     loadLimit,
     setLoadLimit,
+    defaultDates,
+    setDefaultDates,
     tableRef,
     updateRow,
     addRow,
@@ -388,6 +474,8 @@ export function useHizliDosyaEkle() {
     handleBulkDelete,
     handleBulkChangeAsama,
     handleBulkChangeTur,
+    handleBulkApplyDates,
+    applyDefaultDatesToNewRows,
     newCount,
     updateCount,
     totalDirty,

@@ -13,6 +13,9 @@ export default function HizliDosyaEkleScreen(): React.JSX.Element {
     result,
     loadLimit,
     setLoadLimit,
+    defaultDates,
+    setDefaultDates,
+    applyDefaultDatesToNewRows,
     tableRef,
     updateRow,
     addRow,
@@ -25,6 +28,7 @@ export default function HizliDosyaEkleScreen(): React.JSX.Element {
     handleBulkDelete,
     handleBulkChangeAsama,
     handleBulkChangeTur,
+    handleBulkApplyDates,
     newCount,
     updateCount,
     totalDirty,
@@ -33,7 +37,7 @@ export default function HizliDosyaEkleScreen(): React.JSX.Element {
 
   return (
     <div className="flex flex-col gap-5 h-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* Header */}
+      {/* Header & Varsayılan Süreç Tarihleri */}
       <HizliDosyaEkleHeader
         loadLimit={loadLimit}
         setLoadLimit={setLoadLimit}
@@ -46,6 +50,9 @@ export default function HizliDosyaEkleScreen(): React.JSX.Element {
         totalDirty={totalDirty}
         newCount={newCount}
         updateCount={updateCount}
+        defaultDates={defaultDates}
+        setDefaultDates={setDefaultDates}
+        applyDefaultDatesToNewRows={applyDefaultDatesToNewRows}
       />
 
       {/* Toplu İşlem Paneli */}
@@ -54,6 +61,7 @@ export default function HizliDosyaEkleScreen(): React.JSX.Element {
         handleBulkChangeAsama={handleBulkChangeAsama}
         handleBulkChangeTur={handleBulkChangeTur}
         handleBulkDelete={handleBulkDelete}
+        handleBulkApplyDates={handleBulkApplyDates}
       />
 
       {/* Tablo ve Sonuç */}

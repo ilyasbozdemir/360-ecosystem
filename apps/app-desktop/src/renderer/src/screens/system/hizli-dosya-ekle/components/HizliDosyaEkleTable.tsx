@@ -2,9 +2,10 @@ import React from 'react'
 import { AlertCircle, CheckCircle2, ChevronDown, Plus, Trash2 } from 'lucide-react'
 import {
   DosyaRow,
-  IHALE_ASAMALARI,
-  IHALE_SEKILLERI,
-  IHALE_TURLERI
+  SUREC_ASAMALARI,
+  TEMIN_SEKILLERI,
+  TEMIN_TURLERI,
+  formatDateTimeLocal
 } from './hizliDosyaEkle.types'
 
 interface HizliDosyaEkleTableProps {
@@ -59,7 +60,7 @@ export const HizliDosyaEkleTable: React.FC<HizliDosyaEkleTableProps> = ({
           )}
           <div>
             <p className="font-semibold">
-              {result.inserted > 0 && `${result.inserted} yeni dosya eklendi. `}
+              {result.inserted > 0 && `${result.inserted} yeni doğrudan temin dosyası eklendi. `}
               {result.updated > 0 && `${result.updated} dosya güncellendi.`}
               {result.errors.length > 0 && ` ${result.errors.length} hatalı kayıt.`}
             </p>
@@ -81,7 +82,7 @@ export const HizliDosyaEkleTable: React.FC<HizliDosyaEkleTableProps> = ({
         <span className="inline-block w-2.5 h-2.5 rounded bg-green-200 dark:bg-green-900 mr-1" />
         Yeni Kayıt &nbsp;·&nbsp; Excel sütun sırası:{' '}
         <strong>
-          Dosya No | DT No | Dosya Adı | Açıklama | İhale Türü | Şekli | Tarih | Aşama
+          Dosya No | DT No | Dosya Adı | Açıklama | Temin Türü | Temin Şekli | Açılış Tarihi | Son Teklif Tarih/Saati | Tahmini Bitiş | Süreç Aşaması
         </strong>
       </p>
 
@@ -90,7 +91,7 @@ export const HizliDosyaEkleTable: React.FC<HizliDosyaEkleTableProps> = ({
         ref={tableRef}
         className="flex-1 overflow-auto rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm"
       >
-        <table className="w-full text-sm border-collapse min-w-[1100px]">
+        <table className="w-full text-sm border-collapse min-w-[1350px]">
           <thead className="sticky top-0 z-10">
             <tr className="bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
               <th className="w-10 px-3 py-3 text-center">
@@ -107,10 +108,12 @@ export const HizliDosyaEkleTable: React.FC<HizliDosyaEkleTableProps> = ({
               <th className="px-3 py-3 text-left whitespace-nowrap">D.T. No</th>
               <th className="px-3 py-3 text-left whitespace-nowrap">Dosya Adı *</th>
               <th className="px-3 py-3 text-left whitespace-nowrap">Açıklama</th>
-              <th className="px-3 py-3 text-left whitespace-nowrap">İhale Türü</th>
-              <th className="px-3 py-3 text-left whitespace-nowrap">İhale Şekli</th>
-              <th className="px-3 py-3 text-left whitespace-nowrap">İhale Tarihi</th>
-              <th className="px-3 py-3 text-left whitespace-nowrap">İhale Aşaması</th>
+              <th className="px-3 py-3 text-left whitespace-nowrap">Temin Türü</th>
+              <th className="px-3 py-3 text-left whitespace-nowrap">Temin Şekli</th>
+              <th className="px-3 py-3 text-left whitespace-nowrap">Açılış Tarihi</th>
+              <th className="px-3 py-3 text-left whitespace-nowrap">Son Teklif Tarih/Saati</th>
+              <th className="px-3 py-3 text-left whitespace-nowrap">Tahmini Bitiş</th>
+              <th className="px-3 py-3 text-left whitespace-nowrap">Süreç Aşaması</th>
               <th className="w-10 px-3 py-3" />
             </tr>
           </thead>
@@ -159,7 +162,7 @@ export const HizliDosyaEkleTable: React.FC<HizliDosyaEkleTableProps> = ({
                       type="text"
                       value={row.dosya_no}
                       onChange={(e) => updateRow(row._key, 'dosya_no', e.target.value)}
-                      placeholder="2025/001"
+                      placeholder="2026/001"
                       className={`${cell} min-w-[90px]`}
                     />
                   </td>
@@ -191,15 +194,16 @@ export const HizliDosyaEkleTable: React.FC<HizliDosyaEkleTableProps> = ({
                     />
                   </td>
 
+                  {/* Temin Türü (Alım Türü) */}
                   <td className="px-2 py-1.5">
                     <div className="relative min-w-[100px]">
                       <select
-                        title="İhale türü"
-                        value={row.ihale_turu}
-                        onChange={(e) => updateRow(row._key, 'ihale_turu', e.target.value)}
+                        title="Temin / Alım türü"
+                        value={row.temin_turu}
+                        onChange={(e) => updateRow(row._key, 'temin_turu', e.target.value)}
                         className={sel}
                       >
-                        {IHALE_TURLERI.map((t) => (
+                        {TEMIN_TURLERI.map((t) => (
                           <option key={t} value={t}>
                             {t}
                           </option>
@@ -208,15 +212,17 @@ export const HizliDosyaEkleTable: React.FC<HizliDosyaEkleTableProps> = ({
                       <ChevronDown className="absolute right-1 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none" />
                     </div>
                   </td>
+
+                  {/* Temin Şekli */}
                   <td className="px-2 py-1.5">
                     <div className="relative min-w-[85px]">
                       <select
-                        title="İhale şekli"
-                        value={row.ihale_sekli}
-                        onChange={(e) => updateRow(row._key, 'ihale_sekli', e.target.value)}
+                        title="Temin şekli / usulü"
+                        value={row.temin_sekli}
+                        onChange={(e) => updateRow(row._key, 'temin_sekli', e.target.value)}
                         className={sel}
                       >
-                        {IHALE_SEKILLERI.map((s) => (
+                        {TEMIN_SEKILLERI.map((s) => (
                           <option key={s} value={s}>
                             {s}
                           </option>
@@ -225,23 +231,50 @@ export const HizliDosyaEkleTable: React.FC<HizliDosyaEkleTableProps> = ({
                       <ChevronDown className="absolute right-1 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none" />
                     </div>
                   </td>
+
+                  {/* Dosya Açılış Tarihi */}
                   <td className="px-2 py-1.5">
                     <input
                       type="date"
-                      value={row.ihale_tarihi}
-                      onChange={(e) => updateRow(row._key, 'ihale_tarihi', e.target.value)}
-                      className={`${cell} min-w-[130px]`}
+                      title="Dosya Açılış Tarihi"
+                      value={row.dosya_acilis_tarihi}
+                      onChange={(e) => updateRow(row._key, 'dosya_acilis_tarihi', e.target.value)}
+                      className={`${cell} min-w-[125px]`}
                     />
                   </td>
+
+                  {/* Son Teklif Verme Tarih ve Saati */}
                   <td className="px-2 py-1.5">
-                    <div className="relative min-w-[120px]">
+                    <input
+                      type="datetime-local"
+                      title="Son Teklif Verme Tarih & Saati"
+                      value={formatDateTimeLocal(row.son_teklif_verme_tarihi)}
+                      onChange={(e) => updateRow(row._key, 'son_teklif_verme_tarihi', e.target.value)}
+                      className={`${cell} min-w-[155px] font-mono text-xs`}
+                    />
+                  </td>
+
+                  {/* Tahmini Bitiş / Teslim Tarihi */}
+                  <td className="px-2 py-1.5">
+                    <input
+                      type="date"
+                      title="Tahmini Bitiş / Teslim Tarihi"
+                      value={row.teslim_tarihi}
+                      onChange={(e) => updateRow(row._key, 'teslim_tarihi', e.target.value)}
+                      className={`${cell} min-w-[125px]`}
+                    />
+                  </td>
+
+                  {/* Süreç Aşaması */}
+                  <td className="px-2 py-1.5">
+                    <div className="relative min-w-[130px]">
                       <select
-                        title="İhale aşaması"
-                        value={row.ihale_asamasi}
-                        onChange={(e) => updateRow(row._key, 'ihale_asamasi', e.target.value)}
+                        title="Süreç aşaması"
+                        value={row.surec_asamasi}
+                        onChange={(e) => updateRow(row._key, 'surec_asamasi', e.target.value)}
                         className={sel}
                       >
-                        {IHALE_ASAMALARI.map((a) => (
+                        {SUREC_ASAMALARI.map((a) => (
                           <option key={a} value={a}>
                             {a}
                           </option>
@@ -250,6 +283,7 @@ export const HizliDosyaEkleTable: React.FC<HizliDosyaEkleTableProps> = ({
                       <ChevronDown className="absolute right-1 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none" />
                     </div>
                   </td>
+
                   <td className="px-2 py-1.5">
                     <button
                       type="button"
