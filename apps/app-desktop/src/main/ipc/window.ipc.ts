@@ -40,7 +40,7 @@ export function registerWindowIpcHandlers(options: WindowIpcOptions): void {
   })
 
   // Shell / URL Handlers
-  ipcMain.on('open-external-url', (_event, url) => {
+  const handleOpenExternal = (url: unknown): void => {
     if (url && typeof url === 'string') {
       try {
         const parsed = new URL(url)
@@ -51,6 +51,14 @@ export function registerWindowIpcHandlers(options: WindowIpcOptions): void {
         // Invalid URL
       }
     }
+  }
+
+  ipcMain.on('open-external-url', (_event, url) => {
+    handleOpenExternal(url)
+  })
+
+  ipcMain.on('open-external', (_event, url) => {
+    handleOpenExternal(url)
   })
 
   ipcMain.handle('shell:openExternal', async (_event, url: string) => {

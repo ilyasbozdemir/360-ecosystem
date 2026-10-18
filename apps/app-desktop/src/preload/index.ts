@@ -164,6 +164,7 @@ const allowedChannels = new Set([
   'shell:openExternal',
   'shell:openPath',
   'open-external-url',
+  'open-external',
   // MinIO / Storage
   'workspace:minio-test',
   'workspace:minio-push',
@@ -201,6 +202,9 @@ const allowedChannels = new Set([
 // Secure gated wrapper exposing only authorized channels to renderer
 const secureElectronAPI = {
   ...electronAPI,
+  shell: {
+    openExternal: (url: string) => ipcRenderer.invoke('shell:openExternal', url)
+  },
   ipcRenderer: {
     ...electronAPI.ipcRenderer,
     invoke: (channel: string, ...args: any[]) => {

@@ -24,12 +24,37 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps): React.ReactNod
   if (!isOpen) return null
 
   const openExternal = (url: string): void => {
-    window.electron.ipcRenderer.send('open-external', url)
+    try {
+      if (window?.electron?.shell?.openExternal) {
+        window.electron.shell.openExternal(url).catch(() => {
+          window.open(url, '_blank')
+        })
+      } else if (window?.electron?.ipcRenderer) {
+        window.electron.ipcRenderer.invoke('shell:openExternal', url).catch(() => {
+          window.electron.ipcRenderer.send('open-external-url', url)
+        })
+      } else {
+        window.open(url, '_blank')
+      }
+    } catch {
+      window.open(url, '_blank')
+    }
   }
 
+  const codeLines = locData?.codeLines ?? 0
+  const totalFiles = locData?.totalFiles ?? 0
+  const totalLines = locData?.totalLines ?? 0
+  const version = packageJson?.version || '1.0.0'
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-200"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="relative p-6 bg-linear-to-r from-blue-600 via-indigo-600 to-sky-600 text-white flex items-center justify-between shrink-0 overflow-hidden">
           <div className="absolute inset-0 bg-radial from-white/15 via-transparent to-transparent pointer-events-none" />
@@ -41,17 +66,17 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps): React.ReactNod
               <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="text-xl font-black tracking-tight">TEMİN 360</h2>
                 <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-white/20 text-white backdrop-blur-md border border-white/25">
-                  v{packageJson.version}
+                  v{version}
                 </span>
                 <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-white/20 text-white backdrop-blur-md border border-white/25 font-mono">
-                  {locData.codeLines.toLocaleString('tr-TR')} Satır Kod
+                  {codeLines.toLocaleString('tr-TR')} Satır Kod
                 </span>
                 <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-400/20 text-emerald-100 border border-emerald-300/30">
                   Açık Kaynak
                 </span>
               </div>
               <p className="text-xs text-blue-100/90 mt-0.5">
-                Kamu Temin, İhale, Harcama ve Hakediş Yönetim Sistemi • {locData.totalFiles} Dosya
+                Kamu Temin, İhale, Harcama ve Hakediş Yönetim Sistemi • {totalFiles} Dosya
               </p>
             </div>
           </div>
@@ -150,7 +175,7 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps): React.ReactNod
               </div>
               <div className="p-3 rounded-xl bg-white dark:bg-slate-800/90 border border-slate-200/60 dark:border-slate-700/60 text-center shadow-2xs">
                 <div className="text-lg font-black text-emerald-600 dark:text-emerald-400 font-mono">
-                  {locData.totalLines.toLocaleString('tr-TR')}
+                  {totalLines.toLocaleString('tr-TR')}
                 </div>
                 <div className="text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-0.5">
                   Toplam Satır
@@ -212,7 +237,9 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps): React.ReactNod
         <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
             <ShieldCheck className="w-4 h-4 text-emerald-500" />
-            <span>Kamu standartlarına, 4734 Sayılı KİK ve 2886 Sayılı Devlet İhale mevzuatına uygundur.</span>
+            <span>
+              Kamu standartlarına, 4734 Sayılı KİK ve 2886 Sayılı Devlet İhale mevzuatına uygundur.
+            </span>
           </div>
           <button
             type="button"
