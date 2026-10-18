@@ -76,17 +76,18 @@ export default function Home() {
 
   // Dynamic Web App Link (Local Dev vs Remote Demo)
   const [webAppUrl, setWebAppUrl] = useState(
-    process.env.NEXT_PUBLIC_APP_URL || "https://temin360app.demo.ilyasbozdemir.dev"
+    process.env.NEXT_PUBLIC_APP_URL ||
+      "https://temin360app.demo.ilyasbozdemir.dev",
   );
 
   useEffect(() => {
-    const isLocal =
-      typeof window !== "undefined" &&
+    const isLocal = typeof window !== "undefined" &&
       (window.location.hostname === "localhost" ||
         window.location.hostname === "127.0.0.1");
-    const target =
-      process.env.NEXT_PUBLIC_APP_URL ||
-      (isLocal ? "http://localhost:3000" : "https://temin360app.demo.ilyasbozdemir.dev");
+    const target = process.env.NEXT_PUBLIC_APP_URL ||
+      (isLocal
+        ? "http://localhost:3000"
+        : "https://temin360app.demo.ilyasbozdemir.dev");
     setWebAppUrl((prev) => (prev !== target ? target : prev));
   }, []);
 
@@ -97,10 +98,10 @@ export default function Home() {
     date: string;
     url: string;
   }>({
-    tag: "v1.0.0-beta.219",
-    size: "68.5 MB",
-    date: "02.10.2026",
-    url: "https://github.com/ilyasbozdemir/temin-360-app/releases",
+    tag: "v1.0.0-rc.1",
+    size: "157 MB",
+    date: "18.10.2026",
+    url: "https://github.com/ilyasbozdemir/temin-360-app/releases/latest",
   });
 
   // Fetch GitHub Release info on mount
@@ -614,7 +615,9 @@ export default function Home() {
                   4734 KİK & Doğrudan Temin
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Piyasa fiyat araştırma tutanakları, harcama yetkilisi onay belgeleri, ihale kararları, sipariş mektupları ve muayene-kabul tutanakları kamu mevzuatına %100 uyumludur.
+                  Piyasa fiyat araştırma tutanakları, harcama yetkilisi onay
+                  belgeleri, ihale kararları, sipariş mektupları ve
+                  muayene-kabul tutanakları kamu mevzuatına %100 uyumludur.
                 </p>
               </div>
 
@@ -626,7 +629,9 @@ export default function Home() {
                   2886 Sayılı Devlet İhale Kanunu
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Taşınmaz satış, kiralama, ecrimisil, irtifak hakkı ve trampa ihale şartnameleri, Md. 45 Açık Teklif / Md. 35 Kapalı Teklif / Md. 51 Pazarlık süreçleri ve %3/%6 teminat motoru.
+                  Taşınmaz satış, kiralama, ecrimisil, irtifak hakkı ve trampa
+                  ihale şartnameleri, Md. 45 Açık Teklif / Md. 35 Kapalı Teklif
+                  / Md. 51 Pazarlık süreçleri ve %3/%6 teminat motoru.
                 </p>
               </div>
 
@@ -638,7 +643,9 @@ export default function Home() {
                   Hakediş & Çift Yönlü Eşitleme
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  5018 Mali Yönetim standartlarında damga vergisi, KDV tevkifatı ve hakediş hesaplamaları ile çevrimdışı verilerin merkezi sunucu ve bulut ile eşitlemesi.
+                  5018 Mali Yönetim standartlarında damga vergisi, KDV tevkifatı
+                  ve hakediş hesaplamaları ile çevrimdışı verilerin merkezi
+                  sunucu ve bulut ile eşitlemesi.
                 </p>
               </div>
             </div>
@@ -665,9 +672,13 @@ export default function Home() {
                     <span>Lokal Masaüstü (Client Engine)</span>
                   </div>
                   <ul className="text-xs text-slate-500 dark:text-slate-400 space-y-2">
-                    <li>• SQLite ile mikro-saniye seviyesinde okuma/yazma hızı</li>
+                    <li>
+                      • SQLite ile mikro-saniye seviyesinde okuma/yazma hızı
+                    </li>
                     <li>• Tam çevrimdışı (offline-first) çalışma garantisi</li>
-                    <li>• Yerel yazıcı ve şablon motoruyla PDF/UDF/Docx çıktısı</li>
+                    <li>
+                      • Yerel yazıcı ve şablon motoruyla PDF/UDF/Docx çıktısı
+                    </li>
                     <li>• Hassas veriler lokalde şifrelenerek saklanır</li>
                   </ul>
                 </div>
@@ -680,7 +691,9 @@ export default function Home() {
                   <ul className="text-xs text-slate-500 dark:text-slate-400 space-y-2">
                     <li>• Docker Container ile kolay ve bağımsız kurulum</li>
                     <li>• RESTful API üzerinden canlı senkronizasyon</li>
-                    <li>• Google Drive otomatik yedek rotasyonu (Son 7 sürüm)</li>
+                    <li>
+                      • Google Drive otomatik yedek rotasyonu (Son 7 sürüm)
+                    </li>
                     <li>• Çok kullanıcılı yetkilendirme ve rol yönetimi</li>
                   </ul>
                 </div>
@@ -752,8 +765,8 @@ volumes:
               4 Adımda Kusursuz Satın Alma
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-              İhtiyaç aşamasından ödeme emrine kadar mevzuata tam uyumlu adım adım
-              iş akışı.
+              İhtiyaç aşamasından ödeme emrine kadar mevzuata tam uyumlu adım
+              adım iş akışı.
             </p>
           </div>
 
@@ -805,8 +818,8 @@ volumes:
                 Sipariş & Muayene Kabul
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                Yükleniciye sipariş mektubu gönderin; teslimat sonrası Muayene ve
-                Kabul Komisyon Tutanağını eksiksiz oluşturun.
+                Yükleniciye sipariş mektubu gönderin; teslimat sonrası Muayene
+                ve Kabul Komisyon Tutanağını eksiksiz oluşturun.
               </p>
             </div>
 
@@ -854,7 +867,8 @@ volumes:
                 <span>Tek Dosya Çalışma Alanı</span>
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                Tüm veritabanı, ayarlar ve evraklar tek bir <code>.dtal</code>{" "}
+                Tüm veritabanı, ayarlar ve evraklar tek bir <code>.dtal</code>
+                {" "}
                 dosyasında paketlenir. USB veya e-posta ile taşınabilir.
               </p>
             </div>
@@ -866,8 +880,8 @@ volumes:
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
                 Sadece <code>TEMIN_360_YEDEKLER</code>{" "}
-                klasörüne erişir; kişisel dosyalara asla dokunmaz ve son 7 sürümü
-                otomatik korur.
+                klasörüne erişir; kişisel dosyalara asla dokunmaz ve son 7
+                sürümü otomatik korur.
               </p>
             </div>
 
@@ -877,8 +891,8 @@ volumes:
                 <span>Sıfır Kurulum Maliyeti</span>
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                Karmaşık SQL sunucusu kurulumu gerektirmez; çift tıklayıp
-                anında doğrudan temin dosyası oluşturmaya başlayabilirsiniz.
+                Karmaşık SQL sunucusu kurulumu gerektirmez; çift tıklayıp anında
+                doğrudan temin dosyası oluşturmaya başlayabilirsiniz.
               </p>
             </div>
           </div>
