@@ -32,8 +32,11 @@
     "db:reset": "node scripts/db-reset.js",
     "setup": "node scripts/setup.js",
     "release": "node scripts/release.js",
+    "release:rc": "node scripts/release.js --rc",
     "release:dry": "node scripts/release.js --dry-run",
-    "release:local": "node scripts/release.js --no-push"
+    "release:rc:dry": "node scripts/release.js --rc --dry-run",
+    "release:local": "node scripts/release.js --no-push",
+    "release:rc:local": "node scripts/release.js --rc --no-push"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",

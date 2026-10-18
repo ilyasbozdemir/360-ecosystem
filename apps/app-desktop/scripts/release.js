@@ -38,9 +38,10 @@ const c = {
 // ─── Argüman Parse ────────────────────────────────────────
 const args = process.argv.slice(2)
 const flags = {
+  rc: args.includes('--rc'),
+  patch: args.includes('--patch'),
   dryRun: args.includes('--dry-run'),
   noPush: args.includes('--no-push'),
-  patch: args.includes('--patch'),
   skipVersions: args.includes('--skip-versions'),
   allowDirty: args.includes('--allow-dirty'),
   help: args.includes('--help') || args.includes('-h')
@@ -66,16 +67,21 @@ ${c.cyan('Kullanım:')}
   node scripts/release.js [seçenekler]
 
 ${c.cyan('Seçenekler:')}
+  ${c.yellow('--rc')}              RC (Release Candidate) kanalını seçer (örn: beta.256 → rc.1, rc.1 → rc.2)
+  ${c.yellow('--patch')}           Versiyon numarasını otomatik artırır (beta.256 → beta.257 veya rc.1 → rc.2)
   ${c.yellow('--dry-run')}         Hiçbir değişiklik yapmadan ne yapılacağını gösterir
   ${c.yellow('--no-push')}         Sadece commit + tag oluşturur, push yapmaz
-  ${c.yellow('--patch')}           Versiyon numarasını otomatik artırır (beta.15 → beta.16)
   ${c.yellow('--skip-versions')}   versions.json dosyasını güncellemeyi atlar
   ${c.yellow('--allow-dirty')}     Kirli çalışma alanını yok sayarak release yapmaya izin verir
   ${c.yellow('--message, -m')}     Özel commit mesajı belirler
   ${c.yellow('--help, -h')}        Bu yardım mesajını gösterir
 
 ${c.cyan('Örnekler:')}
-  node scripts/release.js                          # Tam release akışı
+  node scripts/release.js                          # Tam release akışı (mevcut versiyon)
+  node scripts/release.js --rc                     # RC kanalına geç / sonraki RC'ye yükselt
+  node scripts/release.js --rc --patch             # Sonraki RC sürümünü yayınla
+  node scripts/release.js --rc --dry-run           # RC sürüm geçişini önizle
+  node scripts/release.js --patch                  # Standart beta patch release
   node scripts/release.js --no-push                # Push'suz release
   node scripts/release.js --dry-run                # Önizleme modu
   node scripts/release.js --patch --no-push        # Versiyon artır, push yapma
@@ -119,16 +125,64 @@ function writeJSON(filePath, data) {
 }
 
 /**
- * Prerelease numarasını 1 artırır.
- * Örn: "1.0.0-beta.15" → "1.0.0-beta.16"
+ * Sürüm hesaplama ve yükseltme fonksiyonu
+ * @param {string} currentVersion - Mevcut versiyon (örn: "1.0.0-beta.256", "1.0.0-rc.1")
+ * @param {object} options - { rc?: boolean, patch?: boolean }
+ * @returns {string} Yeni versiyon
  */
-function bumpPatch(version) {
-  const match = version.match(/^(.+?)(\d+)$/)
-  if (!match) {
-    console.error(c.red(`❌ Versiyon formatı anlaşılamadı: ${version}`))
-    process.exit(1)
+function computeNextVersion(currentVersion, options = {}) {
+  if (!currentVersion || typeof currentVersion !== 'string') {
+    throw new Error(`Geçersiz versiyon değeri: ${currentVersion}`)
   }
-  return `${match[1]}${parseInt(match[2], 10) + 1}`
+
+  const semverRegex = /^(\d+\.\d+\.\d+)(?:-([a-zA-Z]+)\.(\d+))?$/
+  const match = currentVersion.trim().match(semverRegex)
+
+  if (!match) {
+    throw new Error(`Desteklenmeyen veya geçersiz versiyon formatı: "${currentVersion}"`)
+  }
+
+  const [, baseVersion, prereleaseType, prereleaseNumStr] = match
+  const prereleaseNum = prereleaseNumStr ? parseInt(prereleaseNumStr, 10) : null
+
+  // 1. RC Kanalı İstendiğinde (--rc)
+  if (options.rc) {
+    if (!prereleaseType) {
+      throw new Error(
+        `Kararlı sürümden ("${currentVersion}") doğrudan RC kanalına geçiş desteklenmiyor.`
+      )
+    }
+
+    if (prereleaseType === 'rc') {
+      // Zaten RC kanalında: rc.1 -> rc.2
+      return `${baseVersion}-rc.${(prereleaseNum || 0) + 1}`
+    }
+
+    if (prereleaseType === 'beta' || prereleaseType === 'alpha') {
+      // Beta veya Alpha'dan RC başlangıcı: her zaman rc.1
+      return `${baseVersion}-rc.1`
+    }
+
+    throw new Error(`"${prereleaseType}" ön sürümünden RC kanalına geçiş desteklenmiyor.`)
+  }
+
+  // 2. Normal / Beta Kanalı (--patch)
+  if (options.patch) {
+    if (prereleaseType) {
+      // Örn: 1.0.0-beta.256 -> 1.0.0-beta.257 veya 1.0.0-rc.1 -> 1.0.0-rc.2
+      return `${baseVersion}-${prereleaseType}.${(prereleaseNum || 0) + 1}`
+    }
+    // Kararlı sürüm patch: 1.0.0 -> 1.0.1
+    const [maj, min, pat] = baseVersion.split('.').map(Number)
+    return `${maj}.${min}.${pat + 1}`
+  }
+
+  // Herhangi bir artırım seçilmediyse mevcut versiyonu koru
+  return currentVersion
+}
+
+function bumpPatch(version) {
+  return computeNextVersion(version, { patch: true })
 }
 
 function getRangeFolder(num) {
@@ -141,66 +195,114 @@ function getRangeFolder(num) {
 }
 
 function finalizeCurrentSchemaManifest(version, dryRun) {
-  const currentTsPath = path.join(GIT_ROOT, 'packages/database/src/schema-manifest/versions/beta.current.ts')
-  const currentYamlPath = path.join(GIT_ROOT, 'packages/database/src/schema-manifest/1.0.0-beta.current.yaml')
-  const manifestsTsPath = path.join(GIT_ROOT, 'packages/database/src/schema-manifest/manifests.ts')
+  const currentTsPath = path.join(
+    GIT_ROOT,
+    'packages/database/src/schema-manifest/versions/beta.current.ts'
+  )
+  const currentYamlPath = path.join(
+    GIT_ROOT,
+    'packages/database/src/schema-manifest/1.0.0-beta.current.yaml'
+  )
+  const manifestsTsPath = path.join(
+    GIT_ROOT,
+    'packages/database/src/schema-manifest/manifests.ts'
+  )
 
   if (!fs.existsSync(currentTsPath)) return
 
-  const cleanNum = version.replace(/^1\.0\.0-/, '').replace(/^beta\./, '')
-  const numVal = parseInt(cleanNum, 10) || 1
-  const subFolder = getRangeFolder(numVal)
-  const newTsName = `beta.${cleanNum}.ts`
+  const isRc = version.includes('-rc.')
+  let subFolder = ''
+  let newTsName = ''
   const newYamlName = `${version}.yaml`
+  let varName = ''
 
-  const targetTsDir = path.join(GIT_ROOT, `packages/database/src/schema-manifest/versions/${subFolder}`)
-  const targetYamlDir = path.join(GIT_ROOT, `packages/database/src/schema-manifest/yaml/${subFolder}`)
+  if (isRc) {
+    const rcMatch = version.match(/-rc\.(\d+)$/)
+    const rcNum = rcMatch ? rcMatch[1] : '1'
+    subFolder = 'rc'
+    newTsName = `rc.${rcNum}.ts`
+    varName = `rc${rcNum}`
+  } else {
+    const cleanNum = version.replace(/^.+?-beta\./, '')
+    const numVal = parseInt(cleanNum, 10) || 1
+    subFolder = getRangeFolder(numVal)
+    newTsName = `beta.${cleanNum}.ts`
+    varName = `beta${cleanNum}`
+  }
+
+  const targetTsDir = path.join(
+    GIT_ROOT,
+    `packages/database/src/schema-manifest/versions/${subFolder}`
+  )
+  const targetYamlDir = path.join(
+    GIT_ROOT,
+    `packages/database/src/schema-manifest/yaml/${subFolder}`
+  )
   const targetTsPath = path.join(targetTsDir, newTsName)
   const targetYamlPath = path.join(targetYamlDir, newYamlName)
 
-  console.log(c.green(`✅ Şema manifesti finalize ediliyor: beta.current → ${subFolder}/${newTsName}`))
+  console.log(
+    c.green(`✅ Şema manifesti finalize ediliyor: ${subFolder}/${newTsName}`)
+  )
 
   if (!dryRun) {
     fs.mkdirSync(targetTsDir, { recursive: true })
     fs.mkdirSync(targetYamlDir, { recursive: true })
 
     let tsContent = fs.readFileSync(currentTsPath, 'utf-8')
-    tsContent = tsContent.replace(/app:\s*"1\.0\.0-beta\.current"/, `app: "${version}"`)
+    tsContent = tsContent.replace(
+      /app:\s*["']1\.0\.0-(?:beta|rc)\.current["']/,
+      `app: "${version}"`
+    )
+    if (isRc) {
+      tsContent = tsContent.replace(
+        /AKTİF GELİŞTİRME ŞEMA MANİFESTİ \([^)]+\)/,
+        `RC SÜRÜM ŞEMA MANİFESTİ (${version})`
+      )
+    }
     fs.writeFileSync(targetTsPath, tsContent, 'utf-8')
-    fs.unlinkSync(currentTsPath)
+
+    const schemaMaxMatch = tsContent.match(/schema_max:\s*(\d+)/)
+    const currentMaxSchema = schemaMaxMatch ? parseInt(schemaMaxMatch[1], 10) : 45
+    const todayStr = new Date().toISOString().split('T')[0]
 
     if (fs.existsSync(currentYamlPath)) {
       let yamlContent = fs.readFileSync(currentYamlPath, 'utf-8')
-      yamlContent = yamlContent.replace(/app:\s*1\.0\.0-beta\.current/, `app: ${version}`)
+      yamlContent = yamlContent.replace(
+        /app:\s*1\.0\.0-(?:beta|rc)\.current/,
+        `app: ${version}`
+      )
       fs.writeFileSync(targetYamlPath, yamlContent, 'utf-8')
-      fs.unlinkSync(currentYamlPath)
     } else {
-      const schemaMaxMatch = tsContent.match(/schema_max:\s*(\d+)/)
-      const currentMaxSchema = schemaMaxMatch ? parseInt(schemaMaxMatch[1], 10) : 40
-      const todayStr = new Date().toISOString().split('T')[0]
       const defaultYaml = `app: ${version}\nschema_min: 1\nschema_max: ${currentMaxSchema}\nrelease_date: "${todayStr}"\nchanges: []\n`
       fs.writeFileSync(targetYamlPath, defaultYaml, 'utf-8')
     }
 
-    const schemaMaxMatch = tsContent.match(/schema_max:\s*(\d+)/)
-    const currentMaxSchema = schemaMaxMatch ? parseInt(schemaMaxMatch[1], 10) : 40
-    const todayStr = new Date().toISOString().split('T')[0]
+    // Beta sürümünde beta.current.ts taşınır ve taze oluşturulur.
+    // RC sürümünde ise beta.current.ts bozulmadan korunur (kopyası alınır), beta akışı kesintiye uğramaz.
+    if (!isRc) {
+      fs.unlinkSync(currentTsPath)
+      if (fs.existsSync(currentYamlPath)) {
+        fs.unlinkSync(currentYamlPath)
+      }
+      const freshCurrentYaml = `app: 1.0.0-beta.current\nschema_min: 1\nschema_max: ${currentMaxSchema}\nrelease_date: "${todayStr}"\nchanges: []\n`
+      fs.writeFileSync(currentYamlPath, freshCurrentYaml, 'utf-8')
 
-    // Taze beta.current.yaml oluştur
-    const freshCurrentYaml = `app: 1.0.0-beta.current\nschema_min: 1\nschema_max: ${currentMaxSchema}\nrelease_date: "${todayStr}"\nchanges: []\n`
-    fs.writeFileSync(currentYamlPath, freshCurrentYaml, 'utf-8')
+      const freshCurrentTs = `/* eslint-disable */\n/**\n * AKTİF GELİŞTİRME ŞEMA MANİFESTİ (1.0.0-beta.current)\n */\nexport default {\n  app: "1.0.0-beta.current",\n  schema_min: 1,\n  schema_max: ${currentMaxSchema},\n  release_date: "${todayStr}",\n  changes: []\n};\n`
+      fs.writeFileSync(currentTsPath, freshCurrentTs, 'utf-8')
+    }
 
+    // manifests.ts dosyasına import ve export ekle
     let manifestsContent = fs.readFileSync(manifestsTsPath, 'utf-8')
-    const varName = `beta${cleanNum}`
     if (!manifestsContent.includes(`import ${varName} `)) {
       manifestsContent = manifestsContent
-        .replace(/import betaCurrent from "\.\/versions\/beta\.current";?/, `import ${varName} from "./versions/${subFolder}/${newTsName.replace(/\.ts$/, '')}";\nimport betaCurrent from "./versions/beta.current";`)
+        .replace(
+          /import betaCurrent from ["']\.\/versions\/beta\.current["'];?/,
+          `import ${varName} from "./versions/${subFolder}/${newTsName.replace(/\.ts$/, '')}";\nimport betaCurrent from "./versions/beta.current";`
+        )
         .replace(/betaCurrent\n\];?/, `${varName},\n  betaCurrent\n];`)
       fs.writeFileSync(manifestsTsPath, manifestsContent, 'utf-8')
     }
-
-    const freshCurrentTs = `/* eslint-disable */\n/**\n * AKTİF GELİŞTİRME ŞEMA MANİFESTİ (1.0.0-beta.current)\n */\nexport default {\n  app: "1.0.0-beta.current",\n  schema_min: 1,\n  schema_max: ${currentMaxSchema},\n  release_date: "${todayStr}",\n  changes: []\n};\n`
-    fs.writeFileSync(currentTsPath, freshCurrentTs, 'utf-8')
   }
 }
 
@@ -210,6 +312,7 @@ const releaseTargets = [
   'packages/database/package.json',
   'packages/document-templates/package.json',
   'packages/database/versions.json',
+  'packages/database/schema-snapshot.json',
   'packages/database/src/schema-manifest',
   'packages/database/src/schema-snapshot',
   'apps/app-desktop/src/renderer/src/generated-loc.json'
@@ -276,11 +379,40 @@ function main() {
   // 1. Mevcut versiyonu oku
   const pkg = readJSON('package.json')
   let version = pkg.version
+  const oldVersion = version
 
-  if (flags.patch) {
-    const oldVersion = version
-    version = bumpPatch(version)
-    console.log(c.cyan(`🔄 Versiyon bump: ${oldVersion} → ${c.bold(version)}`))
+  const shouldBump = flags.patch || flags.rc
+
+  if (shouldBump) {
+    try {
+      version = computeNextVersion(oldVersion, { rc: flags.rc, patch: flags.patch })
+    } catch (err) {
+      console.error(c.red(`\n❌ Sürüm hesaplama hatası: ${err.message}`))
+      process.exit(1)
+    }
+  }
+
+  const tag = `v${version}`
+
+  console.log(c.cyan(`📌 Versiyon: ${c.bold(version)}`))
+  console.log(c.cyan(`🏷️  Tag:      ${c.bold(tag)}`))
+
+  if (flags.dryRun) {
+    console.log(c.yellow('\n⚠️  DRY RUN modu - hiçbir değişiklik yapılmayacak\n'))
+  }
+
+  // 1.1 Mevcut tag kontrolü (dosyalar güncellenmeden önce)
+  const existingTags = execSilent('git tag --list')
+  if (existingTags.split('\n').map((t) => t.trim()).includes(tag)) {
+    console.error(c.red(`\n❌ Tag "${tag}" zaten mevcut!`))
+    console.error(
+      c.dim("Versiyon numarasını artırın veya uygun parametreleri (--patch / --rc) kullanın.")
+    )
+    process.exit(1)
+  }
+
+  if (shouldBump && version !== oldVersion) {
+    console.log(c.cyan(`🔄 Versiyon geçişi: ${oldVersion} → ${c.bold(version)}`))
 
     if (!flags.dryRun) {
       pkg.version = version
@@ -301,23 +433,6 @@ function main() {
         }
       }
     }
-  }
-
-  const tag = `v${version}`
-
-  console.log(c.cyan(`📌 Versiyon: ${c.bold(version)}`))
-  console.log(c.cyan(`🏷️  Tag:      ${c.bold(tag)}`))
-
-  if (flags.dryRun) {
-    console.log(c.yellow('\n⚠️  DRY RUN modu - hiçbir değişiklik yapılmayacak\n'))
-  }
-
-  // 2. Mevcut tag kontrolü
-  const existingTags = execSilent('git tag --list')
-  if (existingTags.split('\n').includes(tag)) {
-    console.error(c.red(`\n❌ Tag "${tag}" zaten mevcut!`))
-    console.error(c.dim("Versiyon numarasını artırın veya --patch flag'ini kullanın."))
-    process.exit(1)
   }
 
   // 3. versions.json güncelle ve şema manifestini dondur
@@ -439,4 +554,14 @@ function main() {
   console.log('')
 }
 
-main()
+if (require.main === module) {
+  main()
+}
+
+module.exports = {
+  computeNextVersion,
+  bumpPatch,
+  finalizeCurrentSchemaManifest,
+  getRangeFolder,
+  releaseTargets
+}

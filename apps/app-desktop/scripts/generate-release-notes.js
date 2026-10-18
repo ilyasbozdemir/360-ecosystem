@@ -91,9 +91,14 @@ function generateReleaseNotes(currentTag) {
   }
 
   const sections = []
-  const isPrerelease = tag.includes('beta') || tag.includes('alpha')
+  const isRc = tag.includes('rc')
+  const isPrerelease = tag.includes('beta') || tag.includes('alpha') || isRc
 
-  if (isPrerelease) {
+  if (isRc) {
+    sections.push(
+      `> 🎯 **TEMİN 360 ${tag} (Sürüm Adayı / Release Candidate)**\n> Kararlı sürüm öncesi test ve doğrulama sürümüdür. Bu sürümdeki değişiklikler aşağıda listelenmiştir.`
+    )
+  } else if (isPrerelease) {
     sections.push(
       `> 🚀 **TEMİN 360 ${tag} (Erken Erişim / Early Access)**\n> Bu sürümdeki en son değişiklikler ve geliştirmeler aşağıda listelenmiştir.`
     )
