@@ -2,6 +2,7 @@ import { _electron as electron, ElectronApplication, Page } from '@playwright/te
 import path from 'path'
 import os from 'os'
 import fs from 'fs'
+import { spawn, ChildProcess, execSync } from 'child_process'
 
 export interface TestAppInstance {
   electronApp: ElectronApplication
@@ -12,26 +13,76 @@ export interface TestAppInstance {
   close: () => Promise<void>
 }
 
-export const DESKTOP_TEST_DIR = path.join(os.homedir(), 'Desktop', 'Temin360-E2E-Test')
+export interface LaunchTestAppOptions {
+  extraArgs?: string[]
+  enableSingleInstanceLock?: boolean
+  userDataDir?: string
+}
+
+export function resolveWindowsDesktopDir(): string {
+  if (process.platform === 'win32') {
+    try {
+      const psOutput = execSync(
+        'powershell -NoProfile -Command "[Environment]::GetFolderPath(\'Desktop\')"',
+        { encoding: 'utf-8', timeout: 5000 }
+      ).trim()
+      if (psOutput && fs.existsSync(psOutput)) {
+        return psOutput
+      }
+    } catch {
+      // ignore
+    }
+
+    const oneDriveDesktop = path.join(os.homedir(), 'OneDrive', 'Desktop')
+    if (fs.existsSync(oneDriveDesktop)) return oneDriveDesktop
+
+    const oneDriveMasaustu = path.join(os.homedir(), 'OneDrive', 'Masaüstü')
+    if (fs.existsSync(oneDriveMasaustu)) return oneDriveMasaustu
+  }
+
+  const standardDesktop = path.join(os.homedir(), 'Desktop')
+  if (!fs.existsSync(standardDesktop)) {
+    fs.mkdirSync(standardDesktop, { recursive: true })
+  }
+  return standardDesktop
+}
+
+export const DESKTOP_DIR = resolveWindowsDesktopDir()
+export const DESKTOP_TEST_DIR = path.join(DESKTOP_DIR, 'Temin360-E2E-Test')
 export const DESKTOP_TEST_FILE = path.join(DESKTOP_TEST_DIR, 'e2e-test-kurumu.temin')
 export const DESKTOP_SECOND_FILE = path.join(DESKTOP_TEST_DIR, 'e2e-ikinci-kurum.temin')
 export const SCREENSHOTS_DIR = path.resolve(__dirname, '../../e2e-screenshots')
 
-export async function launchTestApp(extraArgs: string[] = []): Promise<TestAppInstance> {
+export async function launchTestApp(
+  argsOrOptions: string[] | LaunchTestAppOptions = []
+): Promise<TestAppInstance> {
+  let extraArgs: string[] = []
+  let enableSingleInstanceLock = false
+  let customUserDataDir: string | undefined
+
+  if (Array.isArray(argsOrOptions)) {
+    extraArgs = argsOrOptions
+  } else {
+    extraArgs = argsOrOptions.extraArgs || []
+    enableSingleInstanceLock = argsOrOptions.enableSingleInstanceLock || false
+    customUserDataDir = argsOrOptions.userDataDir
+  }
+
   if (!fs.existsSync(SCREENSHOTS_DIR)) {
     fs.mkdirSync(SCREENSHOTS_DIR, { recursive: true })
   }
 
   const appDir = path.resolve(__dirname, '../..')
   const mainScript = path.join(appDir, 'out/main/index.js')
-  const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'temin360-e2e-session-'))
+  const userDataDir =
+    customUserDataDir || fs.mkdtempSync(path.join(os.tmpdir(), 'temin360-e2e-session-'))
 
   const consoleLogs: { type: string; text: string; location?: string }[] = []
   const pageErrors: Error[] = []
 
   const launchArgs = [
     mainScript,
-    '--multi-instance',
+    ...(enableSingleInstanceLock ? [] : ['--multi-instance']),
     `--user-data-dir=${userDataDir}`,
     ...extraArgs
   ]

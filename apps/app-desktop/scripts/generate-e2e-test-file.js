@@ -22,9 +22,40 @@ const Database = require('better-sqlite3')
 const AdmZip = require('adm-zip')
 const { initializeDatabase, CURRENT_SCHEMA_VERSION } = require('@dt/database')
 
-const targetDir = path.join(os.homedir(), 'Desktop', 'Temin360-E2E-Test')
+function resolveWindowsDesktopDir() {
+  if (process.platform === 'win32') {
+    try {
+      const { execSync } = require('child_process')
+      const psOutput = execSync(
+        'powershell -NoProfile -Command "[Environment]::GetFolderPath(\'Desktop\')"',
+        { encoding: 'utf-8', timeout: 5000 }
+      ).trim()
+      if (psOutput && fs.existsSync(psOutput)) {
+        return psOutput
+      }
+    } catch {
+      // ignore
+    }
+
+    const oneDriveDesktop = path.join(os.homedir(), 'OneDrive', 'Desktop')
+    if (fs.existsSync(oneDriveDesktop)) return oneDriveDesktop
+
+    const oneDriveMasaustu = path.join(os.homedir(), 'OneDrive', 'Masaüstü')
+    if (fs.existsSync(oneDriveMasaustu)) return oneDriveMasaustu
+  }
+
+  const standardDesktop = path.join(os.homedir(), 'Desktop')
+  if (!fs.existsSync(standardDesktop)) {
+    fs.mkdirSync(standardDesktop, { recursive: true })
+  }
+  return standardDesktop
+}
+
+const desktopDir = resolveWindowsDesktopDir()
+const targetDir = path.join(desktopDir, 'Temin360-E2E-Test')
 const targetFile = path.join(targetDir, 'e2e-test-kurumu.temin')
 const secondTargetFile = path.join(targetDir, 'e2e-ikinci-kurum.temin')
+const fallbackDir = path.join(os.homedir(), 'Desktop', 'Temin360-E2E-Test')
 
 function generateE2ETestFile(
   customTargetFile = targetFile,
@@ -125,6 +156,21 @@ function generateE2ETestFile(
 
   // Validation
   validateGeneratedFile(customTargetFile)
+
+  // Eğer yönlendirilmiş masaüstü (OneDrive vb.) standart Desktop yolundan farklıysa oraya da kopyala
+  if (fallbackDir !== targetDir) {
+    try {
+      if (!fs.existsSync(fallbackDir)) {
+        fs.mkdirSync(fallbackDir, { recursive: true })
+      }
+      const mirroredPath = path.join(fallbackDir, path.basename(customTargetFile))
+      fs.copyFileSync(customTargetFile, mirroredPath)
+      console.log('Ayna kopya oluşturuldu:', mirroredPath)
+    } catch (e) {
+      console.warn('Ayna kopya oluşturulamadı:', e.message)
+    }
+  }
+
   return customTargetFile
 }
 
