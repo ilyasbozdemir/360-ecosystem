@@ -21,13 +21,13 @@ export interface TemplateGroup {
  */
 export const TEMPLATE_NAMES: Record<string, string> = {
   'harcama-talimati': 'STANDART FORM-KİK024.0/M: DOĞRUDAN TEMİN ONAY BELGESİ (HARCAMA TALİMATI)',
-  'ihtiyac-listesi': 'STANDART FORM (MYHBY m.4/e): İHTİYAÇ LİSTESİ CETVELİ',
-  'ihtiyac-talep-formu': 'STANDART FORM (MYHBY m.4/e - 4734 KİK m.22): İHTİYAÇ BELGESİ VE HARCAMA TALEP MÜZEKKERESİ',
+  'ihtiyac-listesi': 'STANDART FORM (): İHTİYAÇ LİSTESİ CETVELİ',
+  'ihtiyac-talep-formu': 'STANDART FORM ( - 4734 KİK m.22): İHTİYAÇ BELGESİ VE HARCAMA TALEP MÜZEKKERESİ',
   'komisyon-gorevlendirme-onayi':
     'STANDART FORM (4734 KİK m.22): PİYASA FİYAT ARAŞTIRMASI VE MUAYENE KABUL GÖREVLENDİRME ONAYI',
   'komisyon-gorevlendirme-onayi-eki':
     'STANDART FORM: GÖREVLENDİRİLEN KOMİSYON VE PERSONEL LİSTESİ EKİ',
-  'luzum-muzekkeresi': 'STANDART FORM (MYHBY m.4/e): LÜZUM MÜZEKKERESİ',
+  'luzum-muzekkeresi': 'STANDART FORM (): LÜZUM MÜZEKKERESİ',
   'luzum-muzekkeresi-onay-eki': 'STANDART FORM: LÜZUM MÜZEKKERESİ ONAY EKİ',
   'luzum-muzekkeresi-teslim-tesellum': 'STANDART FORM: LÜZUM MÜZEKKERESİ TESLİM TESELLÜM TUTANAĞI',
   'son-alim-fiyat-cetveli': 'STANDART FORM: SON ALIM FİYAT ARAŞTIRMA VE MUKAYESE CETVELİ',

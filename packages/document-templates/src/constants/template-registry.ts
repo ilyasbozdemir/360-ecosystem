@@ -115,21 +115,21 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
   defineTemplate({
     id: "ihtiyac-listesi",
     name: "IhtiyacListesi",
-    title: "Standart Form (MYHBY m.4/e): İhtiyaç Listesi Cetveli",
+    title: "Standart Form (): İhtiyaç Listesi Cetveli",
     category: "1-ihtiyac-tespiti-ve-baslangic",
     description: "Alımı yapılacak mal/hizmet kalemlerinin detaylı ihtiyaç tablosu",
     workflowProfile: "ic_form",
-    standartFormKodu: "MYHBY m.4/e",
+    standartFormKodu: "",
     standartFormAdi: "İhtiyaç Listesi Cetveli",
   }),
   defineTemplate({
     id: "ihtiyac-talep-formu",
     name: "IhtiyacTalepFormu",
-    title: "Standart Form (MYHBY m.4/e - 4734 KİK m.22): İhtiyaç Belgesi ve Harcama Talep Müzekkeresi",
+    title: "Standart Form ( - 4734 KİK m.22): İhtiyaç Belgesi ve Harcama Talep Müzekkeresi",
     category: "1-ihtiyac-tespiti-ve-baslangic",
     description: "Birimlerin mal/hizmet taleplerini yetkili makama ilettiği resmi form",
     workflowProfile: "ic_form",
-    standartFormKodu: "MYHBY m.4/e - 4734 KİK m.22",
+    standartFormKodu: " - 4734 KİK m.22",
     standartFormAdi: "İhtiyaç Belgesi ve Harcama Talep Müzekkeresi",
   }),
   defineTemplate({
@@ -153,7 +153,7 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
   defineTemplate({
     id: "luzum-muzekkeresi",
     name: "LuzumMuzekkeresi",
-    title: "Standart Form (MYHBY m.4/e): Lüzum Müzekkeresi",
+    title: "Standart Form (): Lüzum Müzekkeresi",
     category: "1-ihtiyac-tespiti-ve-baslangic",
     description: "Harcama biriminin alım gerekliliğini onaylatan başlangıç müzekkeresi",
     capabilities: {
@@ -166,7 +166,7 @@ export const TEMPLATE_REGISTRY: TemplateType[] = [
     },
     // KARAR GEREKLİ: Lüzum müzekkeresi idari usulde 'ic_form' olarak mı yoksa Harcama Yetkilisi 'olur_onay' olarak mı çalışacak?
     workflowProfile: "ic_form",
-    standartFormKodu: "MYHBY m.4/e",
+    standartFormKodu: "",
     standartFormAdi: "Lüzum Müzekkeresi",
   }),
   defineTemplate({

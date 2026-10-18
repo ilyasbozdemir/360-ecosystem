@@ -35,7 +35,7 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     ],
     belgeler: [
       {
-        ad: 'Standart Form: İhtiyaç Belgesi ve Harcama Talep Müzekkeresi (4734 Sayılı KİK m.22 / MYHBY m.4/e)',
+        ad: 'Standart Form: İhtiyaç Belgesi ve Harcama Talep Müzekkeresi (4734 Sayılı KİK m.22 / )',
         kod: 'DT-01 / MYHBY-4/e',
         aciklama: 'Harcama birimi tarafından düzenlenen gerekçeli talep ve alım başlatma belgesi.',
         zorunluMu: true
