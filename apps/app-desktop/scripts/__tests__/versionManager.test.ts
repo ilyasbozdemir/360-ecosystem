@@ -65,7 +65,7 @@ describe('Merkezi Version Manager & Sürüm Karşılaştırma Testleri', () => {
       expect(compareVersions('1.0.0', '1.0.0')).toBe(0)
     })
 
-    it('versions.json içinde bulunmayan rastgele geçerli sürümleri de SemVer ile doğru karşılaştırır', () => {
+    it('rastgele geçerli sürümleri de SemVer ile doğru karşılaştırır', () => {
       expect(compareVersions('3.4.5-rc.8', '3.4.5-rc.9')).toBe(-1)
       expect(compareVersions('4.0.0', '3.9.9')).toBe(1)
     })

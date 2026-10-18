@@ -32,7 +32,7 @@ Bu dosyada Doğrudan Temin (DT) Masaüstü Uygulaması'nın her sürümünde yap
   dosya sayısı, imza bekleyen/imzalanan belge sayıları, toplam yaklaşık maliyet
   ve aşama dağılım grafiği gösterilir.
 - **Otomatik Release Scripti** (`scripts/release.js`): `npm run release`
-  komutuyla versions.json güncelleme, commit, tag oluşturma ve push işlemleri
+  komutuyla monorepo paket sürümleme, şema manifest dondurma, commit, tag oluşturma ve push işlemleri
   tek komutla yapılabilir. `--dry-run`, `--no-push`, `--patch`, `--message`
   flag'leri desteklenir.
 - Lüzum Müzekkeresi, Lüzum Onay Eki, Teslim Tesellüm ve Son

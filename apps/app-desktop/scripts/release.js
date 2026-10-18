@@ -6,8 +6,8 @@
  *
  * Yapılanlar:
  *   1. package.json'dan mevcut versiyonu okur
- *   2. versions.json'a yeni versiyonu ekler (eğer yoksa)
- *   3. Tüm değişiklikleri stage eder (git add .)
+ *   2. Monorepo paket sürümlerini ve şema manifestini günceller
+ *   3. İlgili release dosyalarını stage eder
  *   4. "chore: release vX.Y.Z" commit mesajı ile commit atar
  *   5. "vX.Y.Z" tag'i oluşturur
  *   6. (Opsiyonel) commit ve tag'i remote'a push eder
@@ -17,8 +17,8 @@
  *   node scripts/release.js --no-push        # Push yapmadan (sadece commit + tag)
  *   node scripts/release.js --dry-run        # Hiçbir şey yapmadan ne yapılacağını göster
  *   node scripts/release.js --message "msg"  # Özel commit mesajı
- *   node scripts/release.js --patch          # Otomatik patch bump (beta.15 → beta.16)
- *   node scripts/release.js --skip-versions  # versions.json güncelleme
+ *   node scripts/release.js --patch          # Otomatik patch bump (rc.1 → rc.2)
+ *   node scripts/release.js --skip-manifest  # Şema manifestini dondurmayı atlar
  */
 
 const { execSync } = require('child_process')
@@ -54,7 +54,9 @@ const flags = {
   patch: args.includes('--patch'),
   dryRun: args.includes('--dry-run'),
   noPush: args.includes('--no-push'),
-  skipVersions: args.includes('--skip-versions'),
+  skipManifest:
+    args.includes('--skip-manifest') ||
+    args.includes('--skip-versions'),
   allowDirty: args.includes('--allow-dirty'),
   help: args.includes('--help') || args.includes('-h')
 }
@@ -81,10 +83,10 @@ ${c.cyan('Kullanım:')}
 ${c.cyan('Seçenekler:')}
   ${c.yellow('--channel <ad>')}     Hedef release kanalını seçer: alpha, beta, rc, stable
   ${c.yellow('--rc')}              RC (Release Candidate) kanalını seçer (--channel rc kısayolu)
-  ${c.yellow('--patch')}           Versiyon numarasını otomatik artırır (beta.256 → beta.257 veya rc.1 → rc.2)
+  ${c.yellow('--patch')}           Versiyon numarasını otomatik artırır (rc.1 → rc.2)
   ${c.yellow('--dry-run')}         Hiçbir değişiklik yapmadan ne yapılacağını gösterir
   ${c.yellow('--no-push')}         Sadece commit + tag oluşturur, push yapmaz
-  ${c.yellow('--skip-versions')}   versions.json dosyasını güncellemeyi atlar
+  ${c.yellow('--skip-manifest')}   Şema manifestini dondurmayı atlar
   ${c.yellow('--allow-dirty')}     Kirli çalışma alanını yok sayarak release yapmaya izin verir
   ${c.yellow('--message, -m')}     Özel commit mesajı belirler
   ${c.yellow('--help, -h')}        Bu yardım mesajını gösterir
@@ -300,7 +302,6 @@ const releaseTargets = [
   'apps/app-desktop/package.json',
   'packages/database/package.json',
   'packages/document-templates/package.json',
-  'packages/database/versions.json',
   'packages/database/schema-snapshot.json',
   'packages/database/src/schema-manifest',
   'packages/database/src/schema-snapshot',
@@ -432,29 +433,11 @@ function main() {
     }
   }
 
-  // 3. versions.json güncelle ve şema manifestini dondur
-  if (!flags.skipVersions) {
-    const versionsPath = path.join(GIT_ROOT, 'packages/database/versions.json')
-    let versions = []
-    try {
-      versions = readJSON(versionsPath)
-    } catch {
-      console.log(c.yellow('⚠️  versions.json bulunamadı, yeni oluşturulacak.'))
-    }
-
-    if (!versions.includes(version)) {
-      console.log(c.green(`✅ versions.json'a "${version}" eklendi`))
-      if (!flags.dryRun) {
-        versions.push(version)
-        writeJSON(versionsPath, versions)
-      }
-    } else {
-      console.log(c.dim(`ℹ️  "${version}" zaten versions.json'da mevcut`))
-    }
-
+  // 3. Şema manifestini dondur
+  if (!flags.skipManifest) {
     finalizeCurrentSchemaManifest(version, flags.dryRun)
   } else {
-    console.log(c.dim('ℹ️  versions.json güncellemesi atlandı (--skip-versions)'))
+    console.log(c.dim('ℹ️  Şema manifesti dondurma işlemi atlandı (--skip-manifest)'))
   }
 
   // 4. Git durumu kontrol et
@@ -489,8 +472,7 @@ function main() {
   // 5. Commit
   const commitMsg = customMessage || `chore: release ${tag}`
 
-  if (hasChanges || !flags.skipVersions) {
-    // versions.json eklenmiş olabilir, tekrar stage edelim
+  if (hasChanges || !flags.skipManifest) {
     if (!flags.dryRun) {
       stageReleaseFiles()
     }

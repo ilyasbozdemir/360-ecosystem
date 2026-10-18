@@ -155,7 +155,6 @@ describe('Release Script RC & Versioning (Release Candidate Support)', () => {
       expect(releaseTargets).toContain('apps/app-desktop/package.json')
       expect(releaseTargets).toContain('packages/database/package.json')
       expect(releaseTargets).toContain('packages/document-templates/package.json')
-      expect(releaseTargets).toContain('packages/database/versions.json')
       expect(releaseTargets).toContain('packages/database/schema-snapshot.json')
       expect(releaseTargets).toContain('packages/database/src/schema-manifest')
     })
@@ -175,7 +174,7 @@ describe('Release Script RC & Versioning (Release Candidate Support)', () => {
   })
 
   describe('Monorepo Paket Sürümleri ve Şema Manifest Bütünlüğü', () => {
-    it('Tüm monorepo package.json dosyaları ve database versions.json mevcut ve geçerlidir', () => {
+    it('Tüm monorepo package.json dosyaları mevcut ve geçerlidir', () => {
       const rootPkg = JSON.parse(fs.readFileSync(path.join(GIT_ROOT, 'package.json'), 'utf-8'))
       const desktopPkg = JSON.parse(
         fs.readFileSync(path.join(GIT_ROOT, 'apps/app-desktop/package.json'), 'utf-8')
@@ -191,12 +190,6 @@ describe('Release Script RC & Versioning (Release Candidate Support)', () => {
       expect(desktopPkg.version).toBe(rootPkg.version)
       expect(dbPkg.version).toBe(rootPkg.version)
       expect(docPkg.version).toBe(rootPkg.version)
-
-      const versionsJson = JSON.parse(
-        fs.readFileSync(path.join(GIT_ROOT, 'packages/database/versions.json'), 'utf-8')
-      )
-      expect(Array.isArray(versionsJson)).toBe(true)
-      expect(versionsJson).toContain(rootPkg.version)
     })
   })
 })
