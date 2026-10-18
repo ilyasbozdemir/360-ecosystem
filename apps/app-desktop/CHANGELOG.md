@@ -24,6 +24,8 @@ Bu dosyada TEMİN 360 (Doğrudan Temin ve İhale Yönetim Sistemi) uygulamasın�
   - Çoklu platformda `Schema Parity`, `Typecheck`, `Vitest Tests` ve monorepo güvenlik denetimi.
 
 ### Düzeltilenler (Fixed)
+- **Komisyon Şablon & SQL Şema Uyumsuzluğu Düzeltmesi**: `commissionSeedService.ts` ve şablon eşlemelerindeki eski `ihale_usulu`, `alim_turu` ve `dosya_no` sorgu sütunları güncel şemadaki `ihale_sekli`, `tur` ve `temin_no` sütunlarıyla senkronize edildi.
+- **Tarih & Saat Seçici Format Sanitizasyonu**: `<input type="datetime-local">` alanlarında hatalı/5 haneli yılların ve eksik dakikaların tarayıcı konsol uyarısı üretmesi engellendi; `formatDateTimeLocal` ile otomatik format doğrulaması sağlandı.
 - **SQLite Migrasyon Güvenlik Düzeltmesi**: `packages/database/src/migrate.ts` içinde varsayılan dize değerlerinin SQL tırnaklamasından geçirilmemesi sonucu ortaya çıkan `near "/": syntax error` (Sürüm 11 - `TANIM_OlcuBirimi.kategori`) hatası giderildi (`formatSqlDefault`).
 - **Depolama Güvenliği**: Docker Compose içindeki PocketBase portu yerel ağ erişimine (`127.0.0.1`) sınırlandı.
 

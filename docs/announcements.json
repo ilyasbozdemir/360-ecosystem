@@ -1,23 +1,30 @@
 [
   {
-    "id": "v1.0.0-beta.106",
-    "title": "TEMİN 360 v1.0.0-beta.106 Yayında! 🚀",
-    "content": "Poz yönetim grid'i ve GitHub üzerinden canlı JSON senkronizasyonu, poz detay ekranı, mal/hizmet/yapım ekleme-düzenleme ekranları, birim dönüştürücü ve Excel içe/dışa aktarım iyileştirmeleri yayında.",
-    "date": "2026-09-09",
+    "id": "v1.0.0-rc.1",
+    "title": "TEMİN 360 v1.0.0-rc.1 Sürüm Adayı Yayında 🚀",
+    "content": "Monorepo mimarisi, DTM çalışma alanı güvenliği, SQLite migrasyon optimizasyonları ve geliştirilmiş ihale belge motoruyla ilk sürüm adayı hazırlandı.",
+    "date": "2026-10-18",
     "type": "success"
   },
   {
-    "id": "v1.0.0-beta.105",
-    "title": "TEMİN 360 v1.0.0-beta.105",
-    "content": "Poz detay ekranı eklendi, eski/yeni poz bağlantısı ve mevzuat verisi desteği getirildi. Mal/Hizmet/Yapım kalemleri için oluşturma ve düzenleme ekranları tamamlandı.",
-    "date": "2026-09-05",
+    "id": "v1.0.0-beta.256",
+    "title": "4734 (22/d) ve 2886 İhale Süreç Ayrımı",
+    "content": "Doğrudan temin ve ihale evrakları mevzuata uygun şekilde gruplandırıldı; yaklaşık maliyet ve piyasa araştırması akışları optimize edildi.",
+    "date": "2026-10-15",
     "type": "info"
   },
   {
-    "id": "v1.0.0-beta.86",
-    "title": "TEMİN 360 v1.0.0-beta.86",
-    "content": "Doğrudan Temin & İhale modları, responsive taşma menüsü ve dev seed altyapısı yayına alındı.",
-    "date": "2026-08-08",
+    "id": "v1.0.0-beta.245",
+    "title": "Dinamik A4 Belge Önizleme & PDF Motoru",
+    "content": "Belge şablonlarında yetim başlık/imza koruması (orphan prevention) ve otomatik sayfalama motoru devreye alındı.",
+    "date": "2026-10-10",
     "type": "info"
+  },
+  {
+    "id": "v1.0.0-beta.200",
+    "title": "KİK 2026 Limitleri & Bütçe Entegrasyonu",
+    "content": "4 Düzey Analitik Bütçe Sınıflandırması ve doğrudan temin parasal limit kontrolleri aktif olarak takip edilmektedir.",
+    "date": "2026-10-01",
+    "type": "warning"
   }
 ]
