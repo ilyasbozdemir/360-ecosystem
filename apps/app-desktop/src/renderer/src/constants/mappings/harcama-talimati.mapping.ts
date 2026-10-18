@@ -32,7 +32,7 @@ export const HarcamaTalimatiMapping: ProcessMapping = {
   },
   teminSekli: {
     tablo: 'DATA_TeminDosyasi',
-    sutun: 'ihale_usulu',
+    sutun: 'ihale_sekli',
     aciklama: 'Temin Åekli / Usulü'
   },
   yaklasikMaliyet: {

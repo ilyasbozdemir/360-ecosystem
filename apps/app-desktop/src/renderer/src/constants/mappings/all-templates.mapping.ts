@@ -457,7 +457,7 @@ export const DogrudanTeminOnayBelgesiMapping: ProcessMapping = {
   },
   odenekTutari: { tablo: 'DATA_TeminDosyasi', sutun: 'odenek_tutari', aciklama: 'Ödenek Tutarı' },
   butceTertibi: { tablo: 'DATA_TeminDosyasi', sutun: 'butce_tertibi', aciklama: 'Bütçe Tertibi' },
-  teminSekli: { tablo: 'DATA_TeminDosyasi', sutun: 'ihale_usulu', aciklama: 'Temin Åekli' },
+  teminSekli: { tablo: 'DATA_TeminDosyasi', sutun: 'ihale_sekli', aciklama: 'Temin Åekli' },
   alimTuru: { tablo: 'DATA_TeminDosyasi', sutun: 'tur', aciklama: 'Alım Türü' },
   tarih: { tablo: 'DATA_TeminDosyasi', sutun: 'dosya_acilis_tarihi', aciklama: 'Onay Tarihi' },
   hazirlayanPersonelAdi: {
@@ -516,7 +516,7 @@ export const DogrudanTeminSonucOnayBelgesiMapping: ProcessMapping = {
     sutun: 'yaklasik_maliyet',
     aciklama: 'Yaklaşık Maliyet'
   },
-  teminSekli: { tablo: 'DATA_TeminDosyasi', sutun: 'ihale_usulu', aciklama: 'Temin Åekli' },
+  teminSekli: { tablo: 'DATA_TeminDosyasi', sutun: 'ihale_sekli', aciklama: 'Temin Åekli' },
   alimTuru: { tablo: 'DATA_TeminDosyasi', sutun: 'tur', aciklama: 'Alım Türü' },
   tarih: { tablo: 'DATA_TeminDosyasi', sutun: 'dosya_acilis_tarihi', aciklama: 'Onay Tarihi' },
   hazirlayanPersonelAdi: {
@@ -659,7 +659,7 @@ export const IdareOnayBelgesiMapping: ProcessMapping = {
   },
   odenekTutari: { tablo: 'DATA_TeminDosyasi', sutun: 'odenek_tutari', aciklama: 'Ödenek Tutarı' },
   butceTertibi: { tablo: 'DATA_TeminDosyasi', sutun: 'butce_tertibi', aciklama: 'Bütçe Tertibi' },
-  teminSekli: { tablo: 'DATA_TeminDosyasi', sutun: 'ihale_usulu', aciklama: 'Temin Åekli' },
+  teminSekli: { tablo: 'DATA_TeminDosyasi', sutun: 'ihale_sekli', aciklama: 'Temin Åekli' },
   tarih: { tablo: 'DATA_TeminDosyasi', sutun: 'dosya_acilis_tarihi', aciklama: 'Onay Tarihi' },
   hazirlayanPersonelAdi: {
     tablo: 'DATA_TeminDosyasi',

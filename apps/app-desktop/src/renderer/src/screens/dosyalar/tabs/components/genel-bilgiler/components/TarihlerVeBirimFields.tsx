@@ -3,6 +3,25 @@ import { Search } from 'lucide-react'
 import { cn } from '../../../../../../utils/cn'
 import { YeniDosyaTabProps } from '../../../../types'
 
+function formatDateTimeLocal(raw?: string | null): string {
+  if (!raw) return ''
+  const str = String(raw).trim().replace(' ', 'T')
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+    return `${str}T10:00`
+  }
+  const standardMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/)
+  if (standardMatch) {
+    return `${standardMatch[1]}-${standardMatch[2]}-${standardMatch[3]}T${standardMatch[4]}:${standardMatch[5]}`
+  }
+  const malformedMatch = str.match(/^(\d{4})\d+-(\d{2})-(\d{2})(?:T(\d{1,2})(?::(\d{1,2}))?)?/)
+  if (malformedMatch) {
+    const hh = (malformedMatch[4] || '10').padStart(2, '0')
+    const mm = (malformedMatch[5] || '00').padStart(2, '0')
+    return `${malformedMatch[1]}-${malformedMatch[2]}-${malformedMatch[3]}T${hh}:${mm}`
+  }
+  return ''
+}
+
 export const TarihlerVeBirimFields: React.FC<YeniDosyaTabProps> = (props) => {
   const {
     formData,
@@ -62,13 +81,7 @@ export const TarihlerVeBirimFields: React.FC<YeniDosyaTabProps> = (props) => {
         </label>
         <input
           type="datetime-local"
-          value={
-            formData.son_teklif_verme_tarihi
-              ? /^\d{4}-\d{2}-\d{2}$/.test(String(formData.son_teklif_verme_tarihi).trim())
-                ? `${String(formData.son_teklif_verme_tarihi).trim()}T10:00`
-                : String(formData.son_teklif_verme_tarihi).replace(' ', 'T').slice(0, 16)
-              : ''
-          }
+          value={formatDateTimeLocal(formData.son_teklif_verme_tarihi)}
           onChange={(e) =>
             setFormData({
               ...formData,

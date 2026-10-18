@@ -119,32 +119,32 @@ export async function getLastDossierCommissions(
   currentDosyaId?: number | null
 ): Promise<LastDossierCommissionData | null> {
   try {
-    let ihaleUsulu: string | null = null
+    let ihaleSekli: string | null = null
     if (currentDosyaId) {
       const curRes = await window.electron.ipcRenderer.invoke(
         'db:query',
-        'SELECT ihale_usulu, alim_turu FROM DATA_TeminDosyasi WHERE id = ? LIMIT 1',
+        'SELECT ihale_sekli, tur FROM DATA_TeminDosyasi WHERE id = ? LIMIT 1',
         [currentDosyaId]
       )
       if (curRes?.success && curRes.data?.[0]) {
-        ihaleUsulu = curRes.data[0].ihale_usulu || null
+        ihaleSekli = curRes.data[0].ihale_sekli || null
       }
     }
 
     const findSql = `
-      SELECT DISTINCT d.id, COALESCE(d.dosya_no, d.temin_no, '#' || d.id) as dosya_no
+      SELECT DISTINCT d.id, COALESCE(d.temin_no, '#' || d.id) as dosya_no
       FROM DATA_TeminKomisyon tk
       JOIN DATA_TeminDosyasi d ON tk.temin_dosya_id = d.id
       WHERE tk.temin_dosya_id != ? AND COALESCE(d.is_deleted, 0) = 0
       ORDER BY 
-        CASE WHEN ? IS NOT NULL AND d.ihale_usulu = ? THEN 0 ELSE 1 END,
+        CASE WHEN ? IS NOT NULL AND d.ihale_sekli = ? THEN 0 ELSE 1 END,
         tk.temin_dosya_id DESC
       LIMIT 1
     `
     const findRes = await window.electron.ipcRenderer.invoke('db:query', findSql, [
       currentDosyaId || 0,
-      ihaleUsulu,
-      ihaleUsulu
+      ihaleSekli,
+      ihaleSekli
     ])
 
     if (!findRes?.success || !findRes.data?.[0]) {
