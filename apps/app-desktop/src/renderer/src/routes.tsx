@@ -88,10 +88,6 @@ const DosyaManageScreen = lazyRoute(
   () => import("./screens/dosyalar/manage.screen"),
   "DosyaManageScreen",
 );
-const DosyaSihirbaziScreen = lazyRoute(
-  () => import("./screens/dosyalar/sihirbaz.screen"),
-  "DosyaSihirbaziScreen",
-);
 const KomisyonDetayScreen = lazyRoute(() =>
   import("./screens/komisyonlar/detay.screen")
 );
@@ -235,7 +231,7 @@ const dosyaSihirbazRoute = createRoute({
     stage: search?.stage != null ? Number(search.stage) : undefined,
     initialStage: search?.initialStage != null ? Number(search.initialStage) : undefined,
   }),
-  component: DosyaSihirbaziScreen,
+  component: DosyaManageScreen,
 });
 
 const firmalarRoute = createRoute({

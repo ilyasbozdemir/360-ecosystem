@@ -7,8 +7,7 @@ import { APP_ROUTES } from '../../../constants/routeConstants'
 export function DosyalarPageHeader({
   viewMode,
   setViewMode,
-  onOpenAI,
-  onOpenWizard
+  onOpenAI
 }: {
   viewMode: 'grid' | 'list' | 'table'
   setViewMode: (mode: 'grid' | 'list' | 'table') => void
@@ -82,17 +81,6 @@ export function DosyalarPageHeader({
           <span className="md:hidden">AI</span>
         </button>
 
-        {/* SIHIRBAZ ILE YENI DOSYA */}
-        {onOpenWizard && (
-          <button
-            onClick={onOpenWizard}
-            className="px-4 py-2 bg-linear-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-indigo-500/20 flex items-center gap-1.5 cursor-pointer shrink-0 h-10 border-0"
-            title="Akıllı sihirbaz ile adım adım dosya oluştur"
-          >
-            <Sparkles size={16} />
-            <span>Sihirbaz</span>
-          </button>
-        )}
 
         {/* EXCEL HIZLI EKLEME */}
         <button

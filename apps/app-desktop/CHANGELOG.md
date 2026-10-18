@@ -24,6 +24,7 @@ Bu dosyada TEMİN 360 (Doğrudan Temin ve İhale Yönetim Sistemi) uygulamasın�
   - Çoklu platformda `Schema Parity`, `Typecheck`, `Vitest Tests` ve monorepo güvenlik denetimi.
 
 ### Düzeltilenler (Fixed)
+- **Doğrudan Temin Dosya Oluşturma Sadeleştirmesi**: Mükerrer ~1100 satırlık eski dosya sihirbazı kaldırıldı, dosya listesindeki çift dosya oluşturma buton karmaşası giderildi ve tüm doğrudan temin oluşturma akışları hızlı, zengin ve modern `DosyaManageScreen` ekranına bağlandı.
 - **Hızlı Dosya Ekleme Süreç Tarihleri & Doğrudan Temin Terminolojisi**: Hızlı dosya ekleme ekranında mevzuata uygun doğrudan temin terimleri benimsendi (İhale -> Temin / Süreç). Tek bir tarih alanı yerine Dosya Açılış Tarihi, Son Teklif Verme Tarih/Saati ve Tahmini Bitiş Tarihi alanları tanımlandı; varsayılan tarih yönetimi ve toplu tarih atama yeteneği kazandırıldı.
 - **Komisyon Şablon & SQL Şema Uyumsuzluğu Düzeltmesi**: `commissionSeedService.ts` ve şablon eşlemelerindeki eski `ihale_usulu`, `alim_turu` ve `dosya_no` sorgu sütunları güncel şemadaki `ihale_sekli`, `tur` ve `temin_no` sütunlarıyla senkronize edildi.
 - **Tarih & Saat Seçici Format Sanitizasyonu**: `<input type="datetime-local">` alanlarında hatalı/5 haneli yılların ve eksik dakikaların tarayıcı konsol uyarısı üretmesi engellendi; `formatDateTimeLocal` ile otomatik format doğrulaması sağlandı.

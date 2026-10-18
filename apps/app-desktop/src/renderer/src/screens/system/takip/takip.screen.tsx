@@ -1,15 +1,15 @@
 /* eslint-disable */
 import React, { useState } from "react";
 import {
-  LayoutDashboard,
-  Package,
-  Users,
   BookOpen,
+  Columns3,
   Edit,
   ExternalLink,
   Layers,
+  LayoutDashboard,
+  Package,
   Trash2,
-  Columns3,
+  Users,
 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { APP_ROUTES } from "../../../constants/routeConstants";
@@ -78,8 +78,12 @@ export function TakipScreen(): React.JSX.Element {
   // Ana Görünüm Modu: Kullanıcının son seçtiği görünüm (localStorage ile korunur)
   const [viewMode, setViewModeState] = useState<TakipViewMode>(() => {
     try {
-      const saved = localStorage.getItem("temin_takip_view_mode") as TakipViewMode;
-      if (saved && ["kanban", "grid", "list", "metrik", "detay"].includes(saved)) {
+      const saved = localStorage.getItem(
+        "temin_takip_view_mode",
+      ) as TakipViewMode;
+      if (
+        saved && ["kanban", "grid", "list", "metrik", "detay"].includes(saved)
+      ) {
         return saved;
       }
     } catch {
@@ -105,7 +109,9 @@ export function TakipScreen(): React.JSX.Element {
   }, [viewMode, activeDosyaId, dosyalar, setActiveDosyaId]);
 
   // Trello Benzeri Kart Detay Dialog'u State'i
-  const [selectedDetailDosya, setSelectedDetailDosya] = useState<TeminDosyasi | null>(null);
+  const [selectedDetailDosya, setSelectedDetailDosya] = useState<
+    TeminDosyasi | null
+  >(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   const handleOpenDetailModal = (dosya: TeminDosyasi) => {
@@ -118,7 +124,9 @@ export function TakipScreen(): React.JSX.Element {
     setIsDetailModalOpen(false);
   };
 
-  const handleDosyaUpdatedInModal = (updated: Partial<TeminDosyasi> & { id: number }) => {
+  const handleDosyaUpdatedInModal = (
+    updated: Partial<TeminDosyasi> & { id: number },
+  ) => {
     queryClient.invalidateQueries({ queryKey: ["temin_dosyalari"] });
     if (selectedDetailDosya && selectedDetailDosya.id === updated.id) {
       setSelectedDetailDosya((prev) => (prev ? { ...prev, ...updated } : null));
@@ -133,8 +141,10 @@ export function TakipScreen(): React.JSX.Element {
   const uniqueYillar = React.useMemo(() => {
     const years = new Set<number>();
     dosyalar.forEach((d) => {
-      const y =
-        d.butce_yili || (d.dosya_acilis_tarihi ? new Date(d.dosya_acilis_tarihi).getFullYear() : null);
+      const y = d.butce_yili ||
+        (d.dosya_acilis_tarihi
+          ? new Date(d.dosya_acilis_tarihi).getFullYear()
+          : null);
       if (y) years.add(y);
     });
     return Array.from(years).sort((a, b) => b - a);
@@ -159,9 +169,10 @@ export function TakipScreen(): React.JSX.Element {
       }
 
       if (selectedYil !== "all") {
-        const dYear =
-          d.butce_yili ||
-          (d.dosya_acilis_tarihi ? new Date(d.dosya_acilis_tarihi).getFullYear() : null);
+        const dYear = d.butce_yili ||
+          (d.dosya_acilis_tarihi
+            ? new Date(d.dosya_acilis_tarihi).getFullYear()
+            : null);
         if (String(dYear) !== selectedYil) return false;
       }
 
@@ -174,7 +185,9 @@ export function TakipScreen(): React.JSX.Element {
   }, [dosyalar, searchQuery, selectedYil, selectedTur]);
 
   // Tabbed Görünüm (Dosya Detayı alt sekmeleri)
-  const [activeTab, setActiveTab] = useState<"ozet" | "kalemler" | "komisyon" | "mevzuat">("ozet");
+  const [activeTab, setActiveTab] = useState<
+    "ozet" | "kalemler" | "komisyon" | "mevzuat"
+  >("ozet");
 
   const tabs = [
     {
@@ -212,7 +225,7 @@ export function TakipScreen(): React.JSX.Element {
         activeView={viewMode}
         setActiveView={setViewMode}
         onOpenWizard={() => {
-          navigate({ to: APP_ROUTES.DOSYA_SIHIRBAZ, search: { initialStage: 1 } });
+          navigate({ to: APP_ROUTES.YENI_DOSYA, search: { initialStage: 1 } });
         }}
       />
 
@@ -227,13 +240,14 @@ export function TakipScreen(): React.JSX.Element {
           formatCurrency={formatCurrency}
           onOpenWizard={(targetStage) => {
             navigate({
-              to: APP_ROUTES.DOSYA_SIHIRBAZ,
+              to: APP_ROUTES.YENI_DOSYA,
               search: { initialStage: targetStage || 1 },
             });
           }}
           onOpenSurec={(d) => {
             setActiveDosyaId(d.id);
-            const route = STAGE_ROUTES[d.durum_asama_id || 1] || "/dosya/hazirlik-ve-ihtiyac";
+            const route = STAGE_ROUTES[d.durum_asama_id || 1] ||
+              "/dosya/hazirlik-ve-ihtiyac";
             navigate({ to: route });
           }}
           onEdit={(dosyaId) => {
@@ -261,7 +275,8 @@ export function TakipScreen(): React.JSX.Element {
           onOpenDetail={handleOpenDetailModal}
           onOpenSurec={(d) => {
             setActiveDosyaId(d.id);
-            const route = STAGE_ROUTES[d.durum_asama_id || 1] || "/dosya/hazirlik-ve-ihtiyac";
+            const route = STAGE_ROUTES[d.durum_asama_id || 1] ||
+              "/dosya/hazirlik-ve-ihtiyac";
             navigate({ to: route });
           }}
           onEdit={(dosyaId) => {
@@ -276,7 +291,10 @@ export function TakipScreen(): React.JSX.Element {
           uniqueYillar={uniqueYillar}
           totalCount={dosyalar.length}
           onOpenWizard={() => {
-            navigate({ to: APP_ROUTES.DOSYA_SIHIRBAZ, search: { initialStage: 1 } });
+            navigate({
+              to: APP_ROUTES.YENI_DOSYA,
+              search: { initialStage: 1 },
+            });
           }}
         />
       )}
@@ -293,7 +311,8 @@ export function TakipScreen(): React.JSX.Element {
           onOpenDetail={handleOpenDetailModal}
           onOpenSurec={(d) => {
             setActiveDosyaId(d.id);
-            const route = STAGE_ROUTES[d.durum_asama_id || 1] || "/dosya/hazirlik-ve-ihtiyac";
+            const route = STAGE_ROUTES[d.durum_asama_id || 1] ||
+              "/dosya/hazirlik-ve-ihtiyac";
             navigate({ to: route });
           }}
           onEdit={(dosyaId) => {
@@ -308,7 +327,10 @@ export function TakipScreen(): React.JSX.Element {
           uniqueYillar={uniqueYillar}
           totalCount={dosyalar.length}
           onOpenWizard={() => {
-            navigate({ to: APP_ROUTES.DOSYA_SIHIRBAZ, search: { initialStage: 1 } });
+            navigate({
+              to: APP_ROUTES.YENI_DOSYA,
+              search: { initialStage: 1 },
+            });
           }}
         />
       )}
@@ -316,213 +338,216 @@ export function TakipScreen(): React.JSX.Element {
       {/* GÖRÜNÜM 2: SEÇİLİ AKTİF DOSYA DETAYI */}
       {viewMode === "detay" && (
         <>
-          {activeDosya ? (
-            <div className="space-y-6">
-              {/* Hızlı Aksiyon & Durum Çubuğu */}
-              <div className="flex items-center justify-between flex-wrap gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-3 shadow-2xs">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
-                    Aktif Dosya:
-                  </span>
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-blue-100/60 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/50">
-                    {activeDosya.temin_no || "Dosya No Yok"}
-                  </span>
-                  <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate max-w-md">
-                    {activeDosya.konu}
-                  </span>
-                </div>
+          {activeDosya
+            ? (
+              <div className="space-y-6">
+                {/* Hızlı Aksiyon & Durum Çubuğu */}
+                <div className="flex items-center justify-between flex-wrap gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-3 shadow-2xs">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                      Aktif Dosya:
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-blue-100/60 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/50">
+                      {activeDosya.temin_no || "Dosya No Yok"}
+                    </span>
+                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate max-w-md">
+                      {activeDosya.konu}
+                    </span>
+                  </div>
 
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={handleEditDosya}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white dark:bg-blue-950/40 dark:text-blue-300 dark:hover:bg-blue-600 dark:hover:text-white border border-blue-200 dark:border-blue-800/60 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-2xs"
-                    title="Dosya Bilgilerini Düzenle"
-                  >
-                    <Edit size={13} />
-                    Dosyayı Düzenle
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleEditDosya}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white dark:bg-blue-950/40 dark:text-blue-300 dark:hover:bg-blue-600 dark:hover:text-white border border-blue-200 dark:border-blue-800/60 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-2xs"
+                      title="Dosya Bilgilerini Düzenle"
+                    >
+                      <Edit size={13} />
+                      Dosyayı Düzenle
+                    </button>
 
-                  <button
-                    type="button"
-                    onClick={handleSurecAkisi}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 hover:bg-purple-600 text-purple-700 hover:text-white dark:bg-purple-950/40 dark:text-purple-300 dark:hover:bg-purple-600 dark:hover:text-white border border-purple-200 dark:border-purple-800/60 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-2xs"
-                    title="Süreç Akışı ve Belge Stüdyosu Ekranını Aç"
-                  >
-                    <Layers size={13} />
-                    Süreç Akışı & Stüdyo
-                  </button>
+                    <button
+                      type="button"
+                      onClick={handleSurecAkisi}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 hover:bg-purple-600 text-purple-700 hover:text-white dark:bg-purple-950/40 dark:text-purple-300 dark:hover:bg-purple-600 dark:hover:text-white border border-purple-200 dark:border-purple-800/60 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-2xs"
+                      title="Süreç Akışı ve Belge Stüdyosu Ekranını Aç"
+                    >
+                      <Layers size={13} />
+                      Süreç Akışı & Stüdyo
+                    </button>
 
-                  <button
-                    type="button"
-                    onClick={handleOpenInNewWindow}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer"
-                    title="Yeni Pencerede Aç"
-                  >
-                    <ExternalLink size={13} />
-                    Yeni Pencere
-                  </button>
+                    <button
+                      type="button"
+                      onClick={handleOpenInNewWindow}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                      title="Yeni Pencerede Aç"
+                    >
+                      <ExternalLink size={13} />
+                      Yeni Pencere
+                    </button>
 
-                  <button
-                    type="button"
-                    onClick={handleDelete}
-                    className="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl border border-transparent hover:border-rose-200 dark:hover:border-rose-900/40 transition-colors cursor-pointer"
-                    title="Dosyayı Sil / İptal Et"
-                  >
-                    <Trash2 size={15} />
-                  </button>
-                </div>
-              </div>
-
-              {/* TAB BAR (SEKMELER) */}
-              <div className="border-b border-slate-200 dark:border-slate-800 overflow-x-auto">
-                <div className="flex gap-2 min-w-max">
-                  {tabs.map((tab) => {
-                    const Icon = tab.icon;
-                    const isActive = activeTab === tab.id;
-                    return (
-                      <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id as any)}
-                        className={`flex items-center gap-2 px-5 py-3 text-xs font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
-                          isActive
-                            ? "border-blue-600 text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-900 rounded-t-xl shadow-2xs"
-                            : "border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100/60 dark:hover:bg-slate-800/40 rounded-t-xl"
-                        }`}
-                      >
-                        <Icon className="w-4 h-4" />
-                        <span>{tab.label}</span>
-                        {tab.badge !== null && (
-                          <span
-                            className={`text-[10px] font-extrabold px-1.5 py-0.2 rounded-full ${
-                              isActive
-                                ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300"
-                                : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
-                            }`}
-                          >
-                            {tab.badge}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* SEKME 1: GENEL BAKIŞ & TARİHLER (ÖZET KOKPİTİ) */}
-              {activeTab === "ozet" && (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                    <div className="lg:col-span-8 space-y-6">
-                      <TakipActiveDosyaSummary
-                        activeDosya={activeDosya}
-                        kalemler={kalemler}
-                        firmalar={firmalar}
-                        formatCurrency={formatCurrency}
-                        onEditClick={handleEditDosya}
-                        onSurecAkisiClick={handleSurecAkisi}
-                        onOpenNewWindowClick={handleOpenInNewWindow}
-                        onDeleteClick={handleDelete}
-                      />
-
-                      <TakipAsamaStepper
-                        stages={stages}
-                        currentAsamaSira={currentAsamaSira}
-                        stageRoutes={STAGE_ROUTES}
-                        stageShortLabels={STAGE_SHORT_LABELS}
-                      />
-                    </div>
-
-                    <div className="lg:col-span-4 space-y-6">
-                      {activeDosyaId && (
-                        <DosyaNotlariWidget
-                          dosyaId={activeDosyaId}
-                          dosyaNo={activeDosya?.temin_no}
-                        />
-                      )}
-
-                      <TakipDosyaTarihlerWidget
-                        status={status}
-                        setStatus={setStatus}
-                        acilisTarihi={acilisTarihi}
-                        setAcilisTarihi={setAcilisTarihi}
-                        sonTeklifTarihi={sonTeklifTarihi}
-                        setSonTeklifTarihi={setSonTeklifTarihi}
-                        teminTarihi={teminTarihi}
-                        setTeminTarihi={setTeminTarihi}
-                        teslimTarihi={teslimTarihi}
-                        setTeslimTarihi={setTeslimTarihi}
-                        notlar={notlar}
-                        setNotlar={setNotlar}
-                        saveLoading={saveLoading}
-                        saveMessage={saveMessage}
-                        onSubmit={handleUpdateDosya}
-                      />
-
-                      <TakipUretilenBelgelerWidget
-                        dbBelgeler={dbBelgeler}
-                        onToggleSign={handleToggleSign}
-                      />
-                    </div>
+                    <button
+                      type="button"
+                      onClick={handleDelete}
+                      className="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl border border-transparent hover:border-rose-200 dark:hover:border-rose-900/40 transition-colors cursor-pointer"
+                      title="Dosyayı Sil / İptal Et"
+                    >
+                      <Trash2 size={15} />
+                    </button>
                   </div>
                 </div>
-              )}
 
-              {/* SEKME 2: MALZEME & FİRMALAR TABLOSU */}
-              {activeTab === "kalemler" && (
-                <div className="space-y-6">
-                  <TakipKalemlerVeFirmalarGrid
-                    kalemler={kalemler}
-                    firmalar={firmalar}
-                  />
+                {/* TAB BAR (SEKMELER) */}
+                <div className="border-b border-slate-200 dark:border-slate-800 overflow-x-auto">
+                  <div className="flex gap-2 min-w-max">
+                    {tabs.map((tab) => {
+                      const Icon = tab.icon;
+                      const isActive = activeTab === tab.id;
+                      return (
+                        <button
+                          key={tab.id}
+                          onClick={() => setActiveTab(tab.id as any)}
+                          className={`flex items-center gap-2 px-5 py-3 text-xs font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+                            isActive
+                              ? "border-blue-600 text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-900 rounded-t-xl shadow-2xs"
+                              : "border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100/60 dark:hover:bg-slate-800/40 rounded-t-xl"
+                          }`}
+                        >
+                          <Icon className="w-4 h-4" />
+                          <span>{tab.label}</span>
+                          {tab.badge !== null && (
+                            <span
+                              className={`text-[10px] font-extrabold px-1.5 py-0.2 rounded-full ${
+                                isActive
+                                  ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300"
+                                  : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                              }`}
+                            >
+                              {tab.badge}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              )}
 
-              {/* SEKME 3: YETKİLİ & KOMİSYON BİLGİLERİ */}
-              {activeTab === "komisyon" && (
-                <div className="space-y-6">
-                  <TakipDosyaDetayBilgileri
-                    activeDosya={activeDosya}
-                    komisyonlar={komisyonlar}
-                    onEditClick={handleEditDosya}
-                  />
-                </div>
-              )}
+                {/* SEKME 1: GENEL BAKIŞ & TARİHLER (ÖZET KOKPİTİ) */}
+                {activeTab === "ozet" && (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                      <div className="lg:col-span-8 space-y-6">
+                        <TakipActiveDosyaSummary
+                          activeDosya={activeDosya}
+                          kalemler={kalemler}
+                          firmalar={firmalar}
+                          formatCurrency={formatCurrency}
+                          onEditClick={handleEditDosya}
+                          onSurecAkisiClick={handleSurecAkisi}
+                          onOpenNewWindowClick={handleOpenInNewWindow}
+                          onDeleteClick={handleDelete}
+                        />
 
-              {/* SEKME 4: İŞ AKIŞI & MEVZUAT YÖNERGESİ */}
-              {activeTab === "mevzuat" && (
-                <div className="space-y-6">
-                  <TakipIsAkisiYonergesi />
+                        <TakipAsamaStepper
+                          stages={stages}
+                          currentAsamaSira={currentAsamaSira}
+                          stageRoutes={STAGE_ROUTES}
+                          stageShortLabels={STAGE_SHORT_LABELS}
+                        />
+                      </div>
 
-                  <TakipAsamaAciklamalari
-                    stages={stages}
-                    currentAsamaSira={currentAsamaSira}
-                  />
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="p-8 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 text-center flex flex-col items-center justify-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-                <Columns3 className="w-7 h-7" />
+                      <div className="lg:col-span-4 space-y-6">
+                        {activeDosyaId && (
+                          <DosyaNotlariWidget
+                            dosyaId={activeDosyaId}
+                            dosyaNo={activeDosya?.temin_no}
+                          />
+                        )}
+
+                        <TakipDosyaTarihlerWidget
+                          status={status}
+                          setStatus={setStatus}
+                          acilisTarihi={acilisTarihi}
+                          setAcilisTarihi={setAcilisTarihi}
+                          sonTeklifTarihi={sonTeklifTarihi}
+                          setSonTeklifTarihi={setSonTeklifTarihi}
+                          teminTarihi={teminTarihi}
+                          setTeminTarihi={setTeminTarihi}
+                          teslimTarihi={teslimTarihi}
+                          setTeslimTarihi={setTeslimTarihi}
+                          notlar={notlar}
+                          setNotlar={setNotlar}
+                          saveLoading={saveLoading}
+                          saveMessage={saveMessage}
+                          onSubmit={handleUpdateDosya}
+                        />
+
+                        <TakipUretilenBelgelerWidget
+                          dbBelgeler={dbBelgeler}
+                          onToggleSign={handleToggleSign}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* SEKME 2: MALZEME & FİRMALAR TABLOSU */}
+                {activeTab === "kalemler" && (
+                  <div className="space-y-6">
+                    <TakipKalemlerVeFirmalarGrid
+                      kalemler={kalemler}
+                      firmalar={firmalar}
+                    />
+                  </div>
+                )}
+
+                {/* SEKME 3: YETKİLİ & KOMİSYON BİLGİLERİ */}
+                {activeTab === "komisyon" && (
+                  <div className="space-y-6">
+                    <TakipDosyaDetayBilgileri
+                      activeDosya={activeDosya}
+                      komisyonlar={komisyonlar}
+                      onEditClick={handleEditDosya}
+                    />
+                  </div>
+                )}
+
+                {/* SEKME 4: İŞ AKIŞI & MEVZUAT YÖNERGESİ */}
+                {activeTab === "mevzuat" && (
+                  <div className="space-y-6">
+                    <TakipIsAkisiYonergesi />
+
+                    <TakipAsamaAciklamalari
+                      stages={stages}
+                      currentAsamaSira={currentAsamaSira}
+                    />
+                  </div>
+                )}
               </div>
-              <div>
-                <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">
-                  İncelenecek Aktif Dosya Seçilmedi
-                </h3>
-                <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
-                  Dosya detaylarını ve evraklarını görüntülemek için lütfen Kanban tahtasından bir dosya seçin.
-                </p>
+            )
+            : (
+              <div className="p-8 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 text-center flex flex-col items-center justify-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                  <Columns3 className="w-7 h-7" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">
+                    İncelenecek Aktif Dosya Seçilmedi
+                  </h3>
+                  <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
+                    Dosya detaylarını ve evraklarını görüntülemek için lütfen
+                    Kanban tahtasından bir dosya seçin.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("kanban")}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-500/20 cursor-pointer"
+                >
+                  Kanban Tahtasına Git
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setViewMode("kanban")}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-500/20 cursor-pointer"
-              >
-                Kanban Tahtasına Git
-              </button>
-            </div>
-          )}
+            )}
         </>
       )}
 
@@ -554,7 +579,8 @@ export function TakipScreen(): React.JSX.Element {
         onOpenSurec={(d) => {
           handleCloseDetailModal();
           setActiveDosyaId(d.id);
-          const route = STAGE_ROUTES[d.durum_asama_id || 1] || "/dosya/hazirlik-ve-ihtiyac";
+          const route = STAGE_ROUTES[d.durum_asama_id || 1] ||
+            "/dosya/hazirlik-ve-ihtiyac";
           navigate({ to: route });
         }}
         onDosyaUpdated={handleDosyaUpdatedInModal}
@@ -564,4 +590,3 @@ export function TakipScreen(): React.JSX.Element {
 }
 
 export default TakipScreen;
-

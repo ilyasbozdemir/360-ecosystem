@@ -5,7 +5,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 vi.mock('@tanstack/react-router', () => ({
   useNavigate: () => vi.fn(),
-  useSearch: () => ({})
+  useSearch: () => ({}),
+  useRouterState: () => ({ location: { search: {} } }),
+  Link: ({ children, to, ...props }: any) => (
+    <a href={to} {...props}>
+      {children}
+    </a>
+  )
 }))
 
 const mockQueryClient = new QueryClient({
@@ -14,7 +20,7 @@ const mockQueryClient = new QueryClient({
   }
 })
 
-describe('DosyaSihirbaziModal (Issue #9)', () => {
+describe('DosyaSihirbaziModal (Unified Dosya Creation)', () => {
   const mockOnClose = vi.fn()
   const mockOnSuccess = vi.fn()
 
@@ -23,73 +29,75 @@ describe('DosyaSihirbaziModal (Issue #9)', () => {
     window.electron = {
       ipcRenderer: {
         invoke: vi.fn().mockImplementation((channel, sql) => {
-          if (sql.includes('TANIM_Birim')) {
-            return Promise.resolve({
-              success: true,
-              data: [
-                { id: 1, birim_adi: 'Fen İşleri Müdürlüğü' },
-                { id: 2, birim_adi: 'Bilgi İşlem Müdürlüğü' }
-              ]
-            })
-          }
-          if (sql.includes('TANIM_Personel')) {
-            return Promise.resolve({
-              success: true,
-              data: [
-                { id: 1, ad_soyad: 'Ahmet Yılmaz', unvan: 'Müdür' },
-                { id: 2, ad_soyad: 'Mehmet Demir', unvan: 'Mühendis' }
-              ]
-            })
-          }
-          if (sql.includes('TANIM_KikLimitDonemleri')) {
-            return Promise.resolve({
-              success: true,
-              data: [
-                {
-                  id: 1,
-                  donem_kodu: '2026-1',
-                  baslangic_tarihi: '2026-01-01',
-                  bitis_tarihi: '2026-12-31',
-                  buyuksehir_limit: 1021827.0,
-                  diger_limit: 340391.0
-                }
-              ]
-            })
-          }
-          if (sql.includes('PRAGMA table_info')) {
-            return Promise.resolve({
-              success: true,
-              data: [
-                { name: 'id' },
-                { name: 'temin_no' },
-                { name: 'konu' },
-                { name: 'tur' },
-                { name: 'butce_yili' },
-                { name: 'dosya_acilis_tarihi' },
-                { name: 'birim_id' },
-                { name: 'birim' },
-                { name: 'ihale_sekli' },
-                { name: 'ihale_tipi' },
-                { name: 'yaklasik_maliyet' },
-                { name: 'yaklasik_maliyet_kdv_dahil_mi' },
-                { name: 'kdv' },
-                { name: 'ihtiyac_yeri' },
-                { name: 'teslim_gun' },
-                { name: 'irtibat_yetkilisi_id' },
-                { name: 'onay_personel_id' },
-                { name: 'notlar' },
-                { name: 'durum_asama_id' },
-                { name: 'status' },
-                { name: 'is_deleted' },
-                { name: 'komisyon_seed_edildi' }
-              ]
-            })
-          }
-          if (sql.includes('INSERT INTO DATA_TeminDosyasi')) {
-            return Promise.resolve({
-              success: true,
-              lastInsertRowid: 201
-            })
+          if (typeof sql === 'string') {
+            if (sql.includes('TANIM_Birim')) {
+              return Promise.resolve({
+                success: true,
+                data: [
+                  { id: 1, birim_adi: 'Fen İşleri Müdürlüğü' },
+                  { id: 2, birim_adi: 'Bilgi İşlem Müdürlüğü' }
+                ]
+              })
+            }
+            if (sql.includes('TANIM_Personel')) {
+              return Promise.resolve({
+                success: true,
+                data: [
+                  { id: 1, ad_soyad: 'Ahmet Yılmaz', unvan: 'Müdür' },
+                  { id: 2, ad_soyad: 'Mehmet Demir', unvan: 'Mühendis' }
+                ]
+              })
+            }
+            if (sql.includes('TANIM_KikLimitDonemleri')) {
+              return Promise.resolve({
+                success: true,
+                data: [
+                  {
+                    id: 1,
+                    donem_kodu: '2026-1',
+                    baslangic_tarihi: '2026-01-01',
+                    bitis_tarihi: '2026-12-31',
+                    buyuksehir_limit: 1021827.0,
+                    diger_limit: 340391.0
+                  }
+                ]
+              })
+            }
+            if (sql.includes('PRAGMA table_info')) {
+              return Promise.resolve({
+                success: true,
+                data: [
+                  { name: 'id' },
+                  { name: 'temin_no' },
+                  { name: 'konu' },
+                  { name: 'tur' },
+                  { name: 'butce_yili' },
+                  { name: 'dosya_acilis_tarihi' },
+                  { name: 'birim_id' },
+                  { name: 'birim' },
+                  { name: 'ihale_sekli' },
+                  { name: 'ihale_tipi' },
+                  { name: 'yaklasik_maliyet' },
+                  { name: 'yaklasik_maliyet_kdv_dahil_mi' },
+                  { name: 'kdv' },
+                  { name: 'ihtiyac_yeri' },
+                  { name: 'teslim_gun' },
+                  { name: 'irtibat_yetkilisi_id' },
+                  { name: 'onay_personel_id' },
+                  { name: 'notlar' },
+                  { name: 'durum_asama_id' },
+                  { name: 'status' },
+                  { name: 'is_deleted' },
+                  { name: 'komisyon_seed_edildi' }
+                ]
+              })
+            }
+            if (sql.includes('INSERT INTO DATA_TeminDosyasi')) {
+              return Promise.resolve({
+                success: true,
+                lastInsertRowid: 201
+              })
+            }
           }
           return Promise.resolve({ success: true, data: [] })
         }),
@@ -114,216 +122,39 @@ describe('DosyaSihirbaziModal (Issue #9)', () => {
     )
   }
 
-  it('modal açıldığında ilk adımı (Temel Bilgiler) gösterir', () => {
-    renderModal()
-
-    expect(screen.getByText('Doğrudan Temin Dosyası Oluşturma Sihirbazı')).toBeTruthy()
-    expect(screen.getByText('Alım Türü Seçiniz')).toBeTruthy()
-    expect(screen.getByText('Bütçe Yılı')).toBeTruthy()
+  it('isOpen false olduğunda hiçbir şey render etmez', () => {
+    const { container } = renderModal(false)
+    expect(container.firstChild).toBeNull()
   })
 
-  it('konu (İşin Adı) boş bırakıldığında sonraki adıma geçişi engeller ve uyarı verir', () => {
-    renderModal()
+  it('modal açıldığında birleşik dosya oluşturma aracını (DosyaManageScreen) görüntüler', () => {
+    renderModal(true)
 
-    const nextBtn = screen.getByRole('button', { name: /İleri/i })
-    fireEvent.click(nextBtn)
-
-    expect(screen.getByText(/Lütfen doğrudan temin konusunu/i)).toBeTruthy()
+    expect(screen.getByText('Yeni Doğrudan Temin Dosyası')).toBeTruthy()
+    expect(screen.getByText('Oluşturma Modu')).toBeTruthy()
+    expect(screen.getByText('Genel Bilgiler')).toBeTruthy()
+    expect(screen.getByText('İhtiyaç Listesi & Kalemler')).toBeTruthy()
   })
 
-  it('konu girilip İleri tıklandığında Adım 2 (Mevzuat & Limit Kontrolü) ekranına geçer', async () => {
-    renderModal()
+  it('form alanı ve adım gezinme kontrollerini içerir', () => {
+    renderModal(true)
 
-    const konuInput = screen.getByPlaceholderText(/Örn: Hizmet Binaları İçin/i)
-    fireEvent.change(konuInput, { target: { value: 'Büro Malzemesi Alımı' } })
-
-    const nextBtn = screen.getByRole('button', { name: /İleri/i })
-    fireEvent.click(nextBtn)
-
-    await waitFor(() => {
-      expect(screen.getByText(/Tahmini \/ Yaklaşık Maliyet/i)).toBeTruthy()
-      expect(screen.getByText(/KİK 22\/d Bütçe Limit Kontrolü/i)).toBeTruthy()
-    })
+    expect(screen.getByTitle('Sonraki Adım')).toBeTruthy()
+    expect(screen.getByRole('button', { name: /Dosyayı Oluştur/i })).toBeTruthy()
   })
 
-  it('KİK 22/d limitini aşan bir yaklaşık maliyet girildiğinde limit aşım uyarısı gösterir', async () => {
-    renderModal()
+  it('konu girilmeden İhtiyaç Listesi sekmesine geçildiğinde uyarı verir', async () => {
+    renderModal(true)
 
-    // Step 1
-    const konuInput = screen.getByPlaceholderText(/Örn: Hizmet Binaları İçin/i)
-    fireEvent.change(konuInput, { target: { value: 'Büyük Bütçeli Araç Alımı' } })
-    fireEvent.click(screen.getByRole('button', { name: /İleri/i }))
-
-    // Step 2
     await waitFor(() => {
-      expect(screen.getByText(/Tahmini \/ Yaklaşık Maliyet/i)).toBeTruthy()
+      expect(screen.queryByText('Bilgiler yükleniyor...')).toBeNull()
     })
 
-    const maliyetInput = screen.getByPlaceholderText(/Örn: 150000/i)
-    // Enter 2.000.000 TL which exceeds the 1.021.827 TL threshold
-    fireEvent.change(maliyetInput, { target: { value: '2000000' } })
+    const ihtiyacTabBtn = screen.getByRole('button', { name: /İhtiyaç Listesi & Kalemler/i })
+    fireEvent.click(ihtiyacTabBtn)
 
     await waitFor(() => {
-      expect(screen.getByText(/KİK 22\/d Parasal Limiti Aşıldı/i)).toBeTruthy()
-    })
-  })
-
-  it('yasal limit dahilindeki tutarlarda onay rozeti görüntüler', async () => {
-    renderModal()
-
-    // Step 1
-    const konuInput = screen.getByPlaceholderText(/Örn: Hizmet Binaları İçin/i)
-    fireEvent.change(konuInput, { target: { value: 'Standart Malzeme Alımı' } })
-    fireEvent.click(screen.getByRole('button', { name: /İleri/i }))
-
-    // Step 2
-    await waitFor(() => {
-      expect(screen.getByText(/Tahmini \/ Yaklaşık Maliyet/i)).toBeTruthy()
-    })
-
-    const maliyetInput = screen.getByPlaceholderText(/Örn: 150000/i)
-    // Enter 150.000 TL which is well within 1.021.827 TL
-    fireEvent.change(maliyetInput, { target: { value: '150000' } })
-
-    await waitFor(() => {
-      expect(screen.getByText(/Tutar yasal limit dahilindedir/i)).toBeTruthy()
-    })
-  })
-
-  it('tüm adımlar tamamlandığında dosyayı veritabanına ekler ve onSuccess callback çağırır', async () => {
-    renderModal()
-
-    // Step 1
-    const konuInput = screen.getByPlaceholderText(/Örn: Hizmet Binaları İçin/i)
-    fireEvent.change(konuInput, { target: { value: 'Bilgisayar ve Donanım Temini' } })
-    await waitFor(() => {
-      expect(screen.getByDisplayValue('Bilgisayar ve Donanım Temini')).toBeTruthy()
-    })
-    fireEvent.click(screen.getByRole('button', { name: /İleri/i }))
-
-    // Step 2
-    await waitFor(() => {
-      expect(screen.getByPlaceholderText(/Örn: 150000/i)).toBeTruthy()
-    })
-    const maliyetInput = screen.getByPlaceholderText(/Örn: 150000/i)
-    fireEvent.change(maliyetInput, { target: { value: '80000' } })
-    await waitFor(() => {
-      expect(screen.getByDisplayValue('80000')).toBeTruthy()
-    })
-    fireEvent.click(screen.getByRole('button', { name: /İleri/i }))
-
-    // Step 3
-    await waitFor(() => {
-      expect(screen.getByPlaceholderText(/Örn: Fen İşleri Şantiyesi/i)).toBeTruthy()
-    })
-    fireEvent.click(screen.getByRole('button', { name: /İleri/i }))
-
-    // Step 4
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Dosyayı Oluştur/i })).toBeTruthy()
-    })
-
-    const submitBtn = screen.getByRole('button', { name: /Dosyayı Oluştur/i })
-    fireEvent.click(submitBtn)
-
-    await waitFor(() => {
-      expect(window.electron.ipcRenderer.invoke).toHaveBeenCalledWith(
-        'db:run',
-        expect.stringContaining('INSERT INTO DATA_TeminDosyasi'),
-        expect.anything()
-      )
-      expect(mockOnSuccess).toHaveBeenCalledWith(201)
-      expect(mockOnClose).toHaveBeenCalled()
-    })
-  })
-
-  it('KİK 22/d limitini aşan yaklaşık maliyette Adım 3\'e geçişi engeller ve hukuki kısıt uyarısı verir', async () => {
-    renderModal()
-
-    // Step 1
-    const konuInput = screen.getByPlaceholderText(/Örn: Hizmet Binaları İçin/i)
-    fireEvent.change(konuInput, { target: { value: 'Limit Üstü Malzeme Alımı' } })
-    fireEvent.click(screen.getByRole('button', { name: /İleri/i }))
-
-    // Step 2
-    await waitFor(() => {
-      expect(screen.getByPlaceholderText(/Örn: 150000/i)).toBeTruthy()
-    })
-
-    const maliyetInput = screen.getByPlaceholderText(/Örn: 150000/i)
-    // 2.000.000 TL exceeds 1.021.827 TL
-    fireEvent.change(maliyetInput, { target: { value: '2000000' } })
-
-    // Click Next
-    fireEvent.click(screen.getByRole('button', { name: /İleri/i }))
-
-    await waitFor(() => {
-      expect(screen.getByText(/yasal KİK 22\/d parasal limiti/i)).toBeTruthy()
-      expect(screen.getByText(/aşılamaz/i)).toBeTruthy()
-    })
-  })
-
-  it('kurum ayarına (limitType: diger / Belde Belediyesi) göre varsayılan olarak 22/d** seçer ve diger_limit (340.391 TL) uygular', async () => {
-    renderModal()
-
-    // Step 1
-    const konuInput = screen.getByPlaceholderText(/Örn: Hizmet Binaları İçin/i)
-    fireEvent.change(konuInput, { target: { value: 'Belde Belediyesi Yol Bakımı' } })
-    fireEvent.click(screen.getByRole('button', { name: /İleri/i }))
-
-    // Step 2
-    await waitFor(() => {
-      expect(screen.getByDisplayValue(/22\/d\*\*/i)).toBeTruthy()
-      expect(screen.getByText(/Diğer İdare \(22\/d\*\*\)/i)).toBeTruthy()
-      expect(screen.getByText(/340\.391/i)).toBeTruthy()
-    })
-
-    // Enter 500.000 TL - this is below buyuksehir_limit (1.021.827) BUT above diger_limit (340.391)
-    const maliyetInput = screen.getByPlaceholderText(/Örn: 150000/i)
-    fireEvent.change(maliyetInput, { target: { value: '500000' } })
-
-    await waitFor(() => {
-      expect(screen.getByText(/KİK 22\/d Parasal Limiti Aşıldı/i)).toBeTruthy()
-    })
-
-    // Trying to proceed must be blocked
-    fireEvent.click(screen.getByRole('button', { name: /İleri/i }))
-    await waitFor(() => {
-      expect(screen.getByText(/yasal KİK 22\/d parasal limiti/i)).toBeTruthy()
-    })
-  })
-
-  it('22/a veya 22/b gibi parasal limite tabi olmayan bentlerde limit denetim kartı yerine muafiyet panelini görüntüler ve geçişe izin verir', async () => {
-    renderModal()
-
-    // Step 1
-    const konuInput = screen.getByPlaceholderText(/Örn: Hizmet Binaları İçin/i)
-    fireEvent.change(konuInput, { target: { value: 'Tek Satıcıdan Lisans Alımı' } })
-    fireEvent.click(screen.getByRole('button', { name: /İleri/i }))
-
-    // Step 2
-    await waitFor(() => {
-      expect(screen.getByDisplayValue(/22\/d\*\*/i)).toBeTruthy()
-    })
-
-    // Select 22/a
-    const selectSekli = screen.getByDisplayValue(/22\/d\*\*/i)
-    fireEvent.change(selectSekli, { target: { value: '22/a' } })
-
-    // Enter high amount (5.000.000 TL)
-    const maliyetInput = screen.getByPlaceholderText(/Örn: 150000/i)
-    fireEvent.change(maliyetInput, { target: { value: '5000000' } })
-
-    await waitFor(() => {
-      expect(screen.getByText(/Madde 22\/a Özel Hükmü/i)).toBeTruthy()
-      expect(screen.getByText(/parasal limite tabi değildir/i)).toBeTruthy()
-    })
-
-    // Click Next - it should proceed to Step 3 because 22/a has no statutory price limit
-    fireEvent.click(screen.getByRole('button', { name: /İleri/i }))
-
-    await waitFor(() => {
-      expect(screen.getByPlaceholderText(/Örn: Fen İşleri Şantiyesi/i)).toBeTruthy()
+      expect(screen.getByText(/Lütfen önce dosya konusunu/i)).toBeTruthy()
     })
   })
 })

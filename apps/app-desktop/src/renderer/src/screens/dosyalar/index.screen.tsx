@@ -1,5 +1,4 @@
-import React, { useState } from 'react'
-import { useNavigate } from '@tanstack/react-router'
+import React from 'react'
 import { AITextGeneratorModal } from '../../components/ui/AITextGeneratorModal'
 import { logActivity } from '../../utils/logger'
 import { formatDate } from '@renderer/utils/formatters'
@@ -10,10 +9,8 @@ import { DosyalarList } from './components/DosyalarList'
 import { EkapIknModal } from './components/EkapIknModal'
 import { MaliyetAyarlariPopover } from './components/MaliyetAyarlariPopover'
 import { useDosyalarScreenLogic } from './components/useDosyalarScreenLogic'
-import { APP_ROUTES } from '../../constants/routeConstants'
 
 export default function DosyalarScreen(): React.ReactNode {
-  const navigate = useNavigate()
   const {
     dosyalar,
     isLoadingDosyalar,
@@ -75,7 +72,6 @@ export default function DosyalarScreen(): React.ReactNode {
       <DosyalarPageHeader
         viewMode={viewMode}
         setViewMode={setViewMode}
-        onOpenWizard={() => navigate({ to: APP_ROUTES.DOSYA_SIHIRBAZ })}
         onOpenAI={() => {
           setSelectedFileForAI({
             konu: 'Genel Mevzuat Danışmanlığı',
