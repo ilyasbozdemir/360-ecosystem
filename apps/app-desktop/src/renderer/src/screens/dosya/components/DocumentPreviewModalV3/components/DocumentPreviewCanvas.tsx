@@ -48,8 +48,8 @@ export function DocumentPreviewCanvas({
   onSelectTemplate,
   templateOptions = []
 }: DocumentPreviewCanvasProps): React.JSX.Element {
-  const effectiveTemplateKey: TemplateKey =
-    (selectedDocId ? resolveTemplateKey(selectedDocId) : undefined) || 'ihtiyac_listesi'
+  const resolvedKey = selectedDocId ? resolveTemplateKey(selectedDocId) : undefined
+  const effectiveTemplateKey: TemplateKey = resolvedKey || 'ihtiyac_listesi'
 
   if (isLoading) {
     return (
@@ -70,7 +70,7 @@ export function DocumentPreviewCanvas({
     )
   }
 
-  if (!effectiveTemplateKey && !ActiveComponent) {
+  if (!selectedDocId && !ActiveComponent) {
     return (
       <div
         ref={previewContainerRef}

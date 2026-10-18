@@ -1,16 +1,16 @@
 {
-  "totalFiles": 1509,
-  "totalLines": 255556,
-  "codeLines": 237577,
-  "timestamp": "2026-10-18T12:56:44.068Z",
+  "totalFiles": 1511,
+  "totalLines": 255975,
+  "codeLines": 237956,
+  "timestamp": "2026-10-18T13:39:34.822Z",
   "scope": "app+deps",
   "breakdown": [
     {
       "name": "app-desktop",
       "path": "apps/app-desktop",
-      "files": 1215,
-      "totalLines": 225977,
-      "codeLines": 209856
+      "files": 1217,
+      "totalLines": 226355,
+      "codeLines": 210197
     },
     {
       "name": "@dt/database",
@@ -23,8 +23,8 @@
       "name": "@temin360/document-templates",
       "path": "packages/document-templates",
       "files": 148,
-      "totalLines": 24841,
-      "codeLines": 23213
+      "totalLines": 24882,
+      "codeLines": 23251
     }
   ]
 }

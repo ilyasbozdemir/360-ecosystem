@@ -35,9 +35,19 @@ export function compileDocumentHtml({
   institutionLogo,
   orientation
 }: CompileHtmlParams): string {
-  const templateKey: TemplateKey =
-    (activeTemplateConf?.id ? resolveTemplateKey(activeTemplateConf.id) : undefined) ||
-    'ihtiyac_listesi'
+  const rawId = activeTemplateConf?.id
+  if (!rawId) {
+    throw new Error('Dışa aktarılacak aktif şablon yapılandırması bulunamadı.')
+  }
+
+  const resolved = resolveTemplateKey(rawId)
+  if (!resolved) {
+    throw new Error(
+      `Geçersiz şablon kimliği: "${rawId}". Şablon çözümlenemediği için yanlış belge dışa aktarımı engellendi.`
+    )
+  }
+
+  const templateKey: TemplateKey = resolved
   const storeSettings = useSettingsStore.getState()
   const activeSolLogo =
     formData.solLogo ||

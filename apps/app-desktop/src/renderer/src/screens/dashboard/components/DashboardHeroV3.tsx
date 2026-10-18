@@ -112,10 +112,8 @@ export const DashboardHeroV3: React.FC<DashboardHeroV3Props> = ({
 
   const handleSelectMode = (mode: HeroProcurementMode): void => {
     setInternalMode(mode);
-    if (onSwitchMode) {
-      onSwitchMode(
-        mode,
-      );
+    if (onSwitchMode && mode !== "modul_magazasi") {
+      onSwitchMode(mode);
     }
   };
 
@@ -271,7 +269,7 @@ export const DashboardHeroV3: React.FC<DashboardHeroV3Props> = ({
                     {dogrudanTeminSayisi}
                   </span>
                 )
-                : null}cccc
+                : null}
             </button>
 
             {/* Kamu İhalesi (19/21) */}

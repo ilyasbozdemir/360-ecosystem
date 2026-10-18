@@ -20,7 +20,7 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -56,6 +56,17 @@ jobs:
       - name: Build Database Package
         run: pnpm --filter @dt/database build
 
+      - name: Pre-release Integrity & Schema Checks
+        run: |
+          pnpm check:schema
+          pnpm --filter app-desktop typecheck:node
+          pnpm --filter app-desktop typecheck:web
+
+      - name: Pre-release Unit & Integration Tests
+        run: |
+          pnpm --filter @temin360/document-templates test
+          pnpm --filter app-desktop test
+
       - name: Build and Package
         working-directory: apps/app-desktop
         run: pnpm build && npx electron-builder --win --x64 -p never
@@ -69,10 +80,13 @@ jobs:
         run: |
           if [[ "${{ github.ref_name }}" == *"rc"* ]]; then
             echo "RELEASE_NAME=TEMİN 360 ${{ github.ref_name }} (Sürüm Adayı)" >> $GITHUB_ENV
+            echo "IS_PRERELEASE=true" >> $GITHUB_ENV
           elif [[ "${{ github.ref_name }}" == *"beta"* || "${{ github.ref_name }}" == *"alpha"* ]]; then
             echo "RELEASE_NAME=TEMİN 360 ${{ github.ref_name }} (Erken Erişim)" >> $GITHUB_ENV
+            echo "IS_PRERELEASE=true" >> $GITHUB_ENV
           else
             echo "RELEASE_NAME=TEMİN 360 ${{ github.ref_name }}" >> $GITHUB_ENV
+            echo "IS_PRERELEASE=false" >> $GITHUB_ENV
           fi
           node apps/app-desktop/scripts/generate-release-notes.js "${{ github.ref_name }}" release_notes.md
 
@@ -85,7 +99,7 @@ jobs:
             apps/app-desktop/dist-local/*.exe.blockmap
             apps/app-desktop/dist-local/*.yml
           draft: false
-          prerelease: false
+          prerelease: ${{ env.IS_PRERELEASE == 'true' }}
           name: ${{ env.RELEASE_NAME }}
           body_path: release_notes.md
         env:

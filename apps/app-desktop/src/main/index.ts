@@ -12,7 +12,7 @@ import {
   protocol,
   nativeImage
 } from 'electron'
-import { join, basename, dirname } from 'path'
+import { join, basename, dirname, resolve, sep } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import mime from 'mime-types'
 import fs from 'fs'
@@ -286,6 +286,44 @@ process.on('exit', () => {
   }
 })
 
+// Helper to resolve and validate dta-res paths safely preventing path traversal
+function resolveSafeDtaResPath(requestUrl: string): string | null {
+  try {
+    const parsedUrl = new URL(requestUrl)
+    const cleanPathname = decodeURIComponent(parsedUrl.pathname).replace(/^[/\\]+/, '')
+    const cleanHost = parsedUrl.host.replace(/^[a-zA-Z]:/, '')
+    const relativePath = join(cleanHost, cleanPathname)
+
+    // 1. Resolve from public/renderer directory (packaged inside ASAR in production)
+    const rendererDir = app.isPackaged
+      ? resolve(__dirname, '../renderer')
+      : resolve(__dirname, '../../src/renderer/public')
+
+    const targetFilePath = resolve(rendererDir, relativePath)
+    if (targetFilePath.startsWith(rendererDir + sep) || targetFilePath === rendererDir) {
+      if (fs.existsSync(targetFilePath) && fs.statSync(targetFilePath).isFile()) {
+        return targetFilePath
+      }
+    }
+
+    // 2. Fallback: Resolve from resources directory (outside ASAR in production)
+    const resourcesDir = app.isPackaged
+      ? resolve(process.resourcesPath)
+      : resolve(__dirname, '../../resources')
+
+    const fallbackPath = resolve(resourcesDir, relativePath)
+    if (fallbackPath.startsWith(resourcesDir + sep) || fallbackPath === resourcesDir) {
+      if (fs.existsSync(fallbackPath) && fs.statSync(fallbackPath).isFile()) {
+        return fallbackPath
+      }
+    }
+
+    return null
+  } catch {
+    return null
+  }
+}
+
 function createWindow(): void {
   const winIcon = getAppIcon()
   // Create the browser window.
@@ -353,39 +391,20 @@ function createWindow(): void {
   // Helper to open dta-res URLs in external application safely
   function openDtaResExternally(requestUrl: string): void {
     try {
-      const parsedUrl = new URL(requestUrl)
-      const relativePath = join(parsedUrl.host, decodeURIComponent(parsedUrl.pathname))
-
-      const rendererDir = app.isPackaged
-        ? join(__dirname, '../renderer')
-        : join(__dirname, '../../src/renderer/public')
-
-      let targetFilePath = join(rendererDir, relativePath)
-      let fileExists = fs.existsSync(targetFilePath) && fs.statSync(targetFilePath).isFile()
-
-      if (!fileExists) {
-        const resourcesDir = app.isPackaged
-          ? process.resourcesPath
-          : join(__dirname, '../../resources')
-        const fallbackPath = join(resourcesDir, relativePath)
-        if (fs.existsSync(fallbackPath) && fs.statSync(fallbackPath).isFile()) {
-          targetFilePath = fallbackPath
-          fileExists = true
-        }
+      const safePath = resolveSafeDtaResPath(requestUrl)
+      if (!safePath) {
+        console.warn('Geçersiz veya yetkisiz dta-res harici açma isteği:', requestUrl)
+        return
       }
 
-      if (fileExists) {
-        if (app.isPackaged) {
-          // If packaged (inside ASAR), copy to temp directory to open externally
-          const tempFilePath = join(app.getPath('temp'), basename(targetFilePath))
-          fs.copyFileSync(targetFilePath, tempFilePath)
-          shell.openPath(tempFilePath)
-        } else {
-          // In development, open directly from filesystem
-          shell.openPath(targetFilePath)
-        }
+      if (app.isPackaged) {
+        // If packaged (inside ASAR), copy to temp directory to open externally
+        const tempFilePath = join(app.getPath('temp'), basename(safePath))
+        fs.copyFileSync(safePath, tempFilePath)
+        shell.openPath(tempFilePath)
       } else {
-        console.error('File not found to open externally:', targetFilePath)
+        // In development, open directly from filesystem
+        shell.openPath(safePath)
       }
     } catch (err) {
       console.error('Failed to open document externally:', err)
@@ -397,7 +416,14 @@ function createWindow(): void {
       openDtaResExternally(details.url)
       return { action: 'deny' }
     }
-    shell.openExternal(details.url)
+    try {
+      const parsed = new URL(details.url)
+      if (['http:', 'https:', 'mailto:'].includes(parsed.protocol)) {
+        shell.openExternal(details.url)
+      }
+    } catch {
+      // Ignore invalid URL
+    }
     return { action: 'deny' }
   })
 
@@ -529,38 +555,16 @@ if (!gotTheLock && !isMultiInstance) {
   // initialization and is ready to create browser windows.
   // Some APIs can only be used after this event occurs.
   app.whenReady().then(() => {
-    // Custom Protocol: dta-res:// -> local resource mapping
+    // Custom Protocol: dta-res:// -> local resource mapping with path traversal protection
     protocol.handle('dta-res', (request) => {
       try {
-        const parsedUrl = new URL(request.url)
-        const relativePath = join(parsedUrl.host, decodeURIComponent(parsedUrl.pathname))
-
-        // 1. Resolve from public/renderer directory (packaged inside ASAR in production)
-        const rendererDir = app.isPackaged
-          ? join(__dirname, '../renderer')
-          : join(__dirname, '../../src/renderer/public')
-
-        let targetFilePath = join(rendererDir, relativePath)
-        let fileExists = fs.existsSync(targetFilePath) && fs.statSync(targetFilePath).isFile()
-
-        // 2. Fallback: Resolve from resources directory (outside ASAR in production)
-        if (!fileExists) {
-          const resourcesDir = app.isPackaged
-            ? process.resourcesPath
-            : join(__dirname, '../../resources')
-          const fallbackPath = join(resourcesDir, relativePath)
-          if (fs.existsSync(fallbackPath) && fs.statSync(fallbackPath).isFile()) {
-            targetFilePath = fallbackPath
-            fileExists = true
-          }
+        const safePath = resolveSafeDtaResPath(request.url)
+        if (!safePath) {
+          return new Response('Access Denied or File Not Found', { status: 403 })
         }
 
-        if (!fileExists) {
-          return new Response('File Not Found', { status: 404 })
-        }
-
-        const data = fs.readFileSync(targetFilePath)
-        const contentType = mime.lookup(targetFilePath) || 'application/octet-stream'
+        const data = fs.readFileSync(safePath)
+        const contentType = mime.lookup(safePath) || 'application/octet-stream'
 
         return new Response(data, {
           headers: {

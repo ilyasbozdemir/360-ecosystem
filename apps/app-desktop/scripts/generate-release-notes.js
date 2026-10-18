@@ -45,8 +45,14 @@ function generateReleaseNotes(currentTag, customPolicy) {
 
   let logOutput = ''
   if (prevTag) {
-    logOutput = execSilent(`git log "${prevTag}..${tag}" --pretty=format:"%h%x09%s"`)
-  } else {
+    const tagExists = execSilent(`git rev-parse --verify "${tag}^{commit}"`)
+    const targetRef = tagExists ? tag : 'HEAD'
+    logOutput = execSilent(`git log "${prevTag}..${targetRef}" --pretty=format:"%h%x09%s"`)
+    if (!logOutput && targetRef !== 'HEAD') {
+      logOutput = execSilent(`git log "${prevTag}..HEAD" --pretty=format:"%h%x09%s"`)
+    }
+  }
+  if (!logOutput) {
     logOutput = execSilent(`git log -n 25 --pretty=format:"%h%x09%s"`)
   }
 
