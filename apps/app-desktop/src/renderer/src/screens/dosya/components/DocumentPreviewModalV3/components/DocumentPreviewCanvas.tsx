@@ -2,7 +2,9 @@ import React from 'react'
 import { FileText, Layers } from 'lucide-react'
 import {
   IhtiyacListesiType,
-  TemplateComponentType
+  TemplateComponentType,
+  TemplateKey,
+  resolveTemplateKey
 } from '@temin360/document-templates'
 import { DocumentRenderer } from '../document-engine/DocumentRenderer'
 import { Personel } from '../types'
@@ -46,7 +48,8 @@ export function DocumentPreviewCanvas({
   onSelectTemplate,
   templateOptions = []
 }: DocumentPreviewCanvasProps): React.JSX.Element {
-  const effectiveTemplateKey = selectedDocId || (ActiveComponent ? 'ihtiyac_listesi' : undefined)
+  const effectiveTemplateKey: TemplateKey =
+    (selectedDocId ? resolveTemplateKey(selectedDocId) : undefined) || 'ihtiyac_listesi'
 
   if (isLoading) {
     return (

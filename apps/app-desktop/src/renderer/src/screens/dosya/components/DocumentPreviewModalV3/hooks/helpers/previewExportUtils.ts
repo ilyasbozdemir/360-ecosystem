@@ -1,5 +1,6 @@
 import React from 'react'
 import { renderToString } from 'react-dom/server'
+import { TemplateKey, resolveTemplateKey } from '@temin360/document-templates'
 import { DocumentRenderer } from '../../document-engine/DocumentRenderer'
 import { useSettingsStore } from '../../../../../../store/settingsStore'
 import { usePrintQueueStore } from '../../../../../../store/printQueueStore'
@@ -34,7 +35,9 @@ export function compileDocumentHtml({
   institutionLogo,
   orientation
 }: CompileHtmlParams): string {
-  const templateKey = activeTemplateConf?.id || 'ihtiyac_listesi'
+  const templateKey: TemplateKey =
+    (activeTemplateConf?.id ? resolveTemplateKey(activeTemplateConf.id) : undefined) ||
+    'ihtiyac_listesi'
   const storeSettings = useSettingsStore.getState()
   const activeSolLogo =
     formData.solLogo ||

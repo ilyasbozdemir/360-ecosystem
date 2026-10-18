@@ -611,7 +611,7 @@ export type TemplateData<K extends TemplateKey> = React.ComponentProps<
   (typeof templateRegistry)[K]['component']
 > extends { data?: infer D }
   ? NonNullable<D>
-  : Record<string, any>;
+  : never;
 
 /**
  * ID ve ad eşleştirme tablosu: kebab-case, snake_case veya alias'ları registry anahtarına dönüştürür.

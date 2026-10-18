@@ -1,25 +1,24 @@
-import React from 'react';
+import React from "react";
 import {
   TemplateKey,
   TemplateData,
   getTemplateDefinition,
   resolveTemplateKey,
-} from './registry';
+} from "./registry";
 
 export interface DocumentPageProps<K extends TemplateKey = TemplateKey> {
   /**
    * Şablon kayıt defteri anahtarı (örn: 'luzum_muzekkeresi', 'ihtiyac_listesi', vb.)
-   * Kebab-case id'ler ('luzum-muzekkeresi') otomatik olarak çözümlenir.
    */
-  templateKey: K | string;
+  templateKey: K;
   /**
-   * Şablonun beklediği veri nesnesi.
+   * Şablonun beklediği kesin veri nesnesi.
    */
-  data: TemplateData<K> | Record<string, any>;
+  data: TemplateData<K>;
   /**
    * Sayfa yönelimi (varsayılan: şablonun tanımındaki yönelim veya 'portrait')
    */
-  orientation?: 'portrait' | 'landscape';
+  orientation?: "portrait" | "landscape";
   /**
    * Sayfa kapsayıcısı için ek CSS sınıfları (UI stilleri için değil, yazdırma/düzen hizalamaları için)
    */
@@ -40,14 +39,15 @@ export function DocumentPage<K extends TemplateKey = TemplateKey>({
   templateKey,
   data,
   orientation,
-  className = '',
+  className = "",
   style = {},
 }: DocumentPageProps<K>): React.JSX.Element {
   const definition = getTemplateDefinition(templateKey);
   const resolvedKey = resolveTemplateKey(templateKey) || templateKey;
 
-  const effectiveOrientation = orientation || definition?.orientation || 'portrait';
-  const isLandscape = effectiveOrientation === 'landscape';
+  const effectiveOrientation =
+    orientation || definition?.orientation || "portrait";
+  const isLandscape = effectiveOrientation === "landscape";
 
   if (!definition || !definition.component) {
     return (
@@ -56,15 +56,16 @@ export function DocumentPage<K extends TemplateKey = TemplateKey>({
         data-template-key={resolvedKey}
         data-orientation={effectiveOrientation}
         className={`bg-white text-slate-900 box-border mx-auto p-8 ${
-          isLandscape ? 'w-[297mm] min-h-[210mm]' : 'w-[210mm] min-h-[297mm]'
+          isLandscape ? "w-[297mm] min-h-[210mm]" : "w-[210mm] min-h-[297mm]"
         } ${className}`.trim()}
         style={{
-          boxSizing: 'border-box',
+          boxSizing: "border-box",
           ...style,
         }}
       >
         <div className="p-4 border border-amber-300 bg-amber-50 rounded text-amber-900 text-sm">
-          <strong>Uyarı:</strong> &quot;{String(templateKey)}&quot; için geçerli bir şablon bileşeni bulunamadı.
+          <strong>Uyarı:</strong> &quot;{String(templateKey)}&quot; için geçerli
+          bir şablon bileşeni bulunamadı.
         </div>
       </div>
     );
@@ -78,10 +79,10 @@ export function DocumentPage<K extends TemplateKey = TemplateKey>({
       data-template-key={resolvedKey}
       data-orientation={effectiveOrientation}
       className={`bg-white text-slate-900 box-border mx-auto ${
-        isLandscape ? 'w-[297mm] min-h-[210mm]' : 'w-[210mm] min-h-[297mm]'
+        isLandscape ? "w-[297mm] min-h-[210mm]" : "w-[210mm] min-h-[297mm]"
       } ${className}`.trim()}
       style={{
-        boxSizing: 'border-box',
+        boxSizing: "border-box",
         ...style,
       }}
     >
