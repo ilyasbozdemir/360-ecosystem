@@ -1,9 +1,10 @@
 /**
  * SQL Security Guard for validating IPC SQL queries.
  * Tokenizer-based SQL validation engine that strictly differentiates
- * SQL keywords, identifiers (quoted and unquoted), string literals, and comments.
+ * SQL keywords, identifiers (quoted and unquoted), string literals, comments,
+ * and scope depths (parentheses).
  * Prevents multi-statement injections, mass unparameterized modifications,
- * destructive schema tampering, and raw SQL exfiltration of sensitive key-value tables.
+ * destructive schema tampering, CTE-based where bypasses, and raw SQL exfiltration of sensitive key-value tables.
  */
 
 const RESTRICTED_TABLES = ['SETTINGS', 'TANIM_AYAR']
@@ -20,6 +21,7 @@ export interface SqlToken {
   type: TokenType
   value: string
   raw: string
+  depth: number
 }
 
 const SQL_KEYWORDS = new Set([
@@ -84,6 +86,7 @@ const SQL_KEYWORDS = new Set([
 export function tokenizeSql(sql: string): SqlToken[] {
   const tokens: SqlToken[] = []
   let i = 0
+  let depth = 0
   const len = sql.length
 
   while (i < len) {
@@ -110,7 +113,21 @@ export function tokenizeSql(sql: string): SqlToken[] {
       continue
     }
 
-    // 4. String literal: '...' (with '' escape)
+    // 4. Parentheses (Scope depth tracking)
+    if (ch === '(') {
+      tokens.push({ type: 'PUNCTUATION', value: '(', raw: '(', depth })
+      depth++
+      i++
+      continue
+    }
+    if (ch === ')') {
+      depth = Math.max(0, depth - 1)
+      tokens.push({ type: 'PUNCTUATION', value: ')', raw: ')', depth })
+      i++
+      continue
+    }
+
+    // 5. String literal: '...' (with '' escape)
     if (ch === "'") {
       let str = ''
       const start = i
@@ -129,11 +146,11 @@ export function tokenizeSql(sql: string): SqlToken[] {
           i++
         }
       }
-      tokens.push({ type: 'STRING', value: str, raw: sql.slice(start, i) })
+      tokens.push({ type: 'STRING', value: str, raw: sql.slice(start, i), depth })
       continue
     }
 
-    // 5. Double-quoted identifier: "..." (with "" escape)
+    // 6. Double-quoted identifier: "..." (with "" escape)
     if (ch === '"') {
       let id = ''
       const start = i
@@ -152,11 +169,11 @@ export function tokenizeSql(sql: string): SqlToken[] {
           i++
         }
       }
-      tokens.push({ type: 'IDENTIFIER', value: id, raw: sql.slice(start, i) })
+      tokens.push({ type: 'IDENTIFIER', value: id, raw: sql.slice(start, i), depth })
       continue
     }
 
-    // 6. Bracketed identifier: [...]
+    // 7. Bracketed identifier: [...]
     if (ch === '[') {
       let id = ''
       const start = i
@@ -166,11 +183,11 @@ export function tokenizeSql(sql: string): SqlToken[] {
         i++
       }
       if (i < len && sql[i] === ']') i++
-      tokens.push({ type: 'IDENTIFIER', value: id, raw: sql.slice(start, i) })
+      tokens.push({ type: 'IDENTIFIER', value: id, raw: sql.slice(start, i), depth })
       continue
     }
 
-    // 7. Backtick identifier: `...`
+    // 8. Backtick identifier: `...`
     if (ch === '`') {
       let id = ''
       const start = i
@@ -180,19 +197,19 @@ export function tokenizeSql(sql: string): SqlToken[] {
         i++
       }
       if (i < len && sql[i] === '`') i++
-      tokens.push({ type: 'IDENTIFIER', value: id, raw: sql.slice(start, i) })
+      tokens.push({ type: 'IDENTIFIER', value: id, raw: sql.slice(start, i), depth })
       continue
     }
 
-    // 8. Numeric literals
+    // 9. Numeric literals
     if (/\d/.test(ch)) {
       const start = i
       while (i < len && /[0-9.xXa-fA-F]/.test(sql[i])) i++
-      tokens.push({ type: 'NUMBER', value: sql.slice(start, i), raw: sql.slice(start, i) })
+      tokens.push({ type: 'NUMBER', value: sql.slice(start, i), raw: sql.slice(start, i), depth })
       continue
     }
 
-    // 9. Word (Keywords or unquoted identifiers)
+    // 10. Word (Keywords or unquoted identifiers)
     if (/[A-Za-z_\u0080-\uFFFF]/.test(ch)) {
       const start = i
       while (i < len && /[A-Za-z0-9_\u0080-\uFFFF]/.test(sql[i])) i++
@@ -200,26 +217,74 @@ export function tokenizeSql(sql: string): SqlToken[] {
       const upper = word.toUpperCase()
 
       if (SQL_KEYWORDS.has(upper)) {
-        tokens.push({ type: 'KEYWORD', value: upper, raw: word })
+        tokens.push({ type: 'KEYWORD', value: upper, raw: word, depth })
       } else {
-        tokens.push({ type: 'IDENTIFIER', value: word, raw: word })
+        tokens.push({ type: 'IDENTIFIER', value: word, raw: word, depth })
       }
       continue
     }
 
-    // 10. Statement separator
+    // 11. Statement separator
     if (ch === ';') {
-      tokens.push({ type: 'PUNCTUATION', value: ';', raw: ';' })
+      tokens.push({ type: 'PUNCTUATION', value: ';', raw: ';', depth })
       i++
       continue
     }
 
-    // 11. Operators and symbols
-    tokens.push({ type: 'OPERATOR', value: ch, raw: ch })
+    // 12. Operators and symbols
+    tokens.push({ type: 'OPERATOR', value: ch, raw: ch, depth })
     i++
   }
 
   return tokens
+}
+
+/**
+ * Checks whether an identifier token at `idx` is being used as a target table reference
+ * (e.g. in FROM, JOIN, UPDATE, INTO, TABLE clauses) rather than as a column name or alias.
+ */
+function isTableReference(tokens: SqlToken[], idx: number): boolean {
+  let prevIdx = idx - 1
+  // Skip optional schema dot: e.g. main.settings or "main"."settings"
+  if (prevIdx >= 0 && tokens[prevIdx].value === '.') {
+    prevIdx -= 2
+  }
+
+  if (prevIdx < 0) return false
+
+  // If preceded by 'AS', it's an alias (e.g. SELECT x AS settings or FROM data AS settings), NOT a table source
+  if (tokens[prevIdx].type === 'KEYWORD' && tokens[prevIdx].value === 'AS') {
+    return false
+  }
+
+  // Scan backwards at the same scope depth to find the clause keyword
+  let scanIdx = prevIdx
+  while (scanIdx >= 0 && tokens[scanIdx].depth === tokens[idx].depth) {
+    const st = tokens[scanIdx]
+    if (st.type === 'KEYWORD') {
+      if (['FROM', 'JOIN', 'UPDATE', 'INTO', 'TABLE'].includes(st.value)) {
+        return true
+      }
+      if (
+        [
+          'SELECT',
+          'SET',
+          'WHERE',
+          'ORDER',
+          'GROUP',
+          'HAVING',
+          'LIMIT',
+          'VALUES',
+          'ON'
+        ].includes(st.value)
+      ) {
+        return false
+      }
+    }
+    scanIdx--
+  }
+
+  return false
 }
 
 export function validateSqlQuery(sql: string, _params?: unknown[]): void {
@@ -286,28 +351,50 @@ export function validateSqlQuery(sql: string, _params?: unknown[]): void {
     }
   }
 
-  // 3. Reject mass DELETE / UPDATE without true WHERE keyword clause (including CTEs e.g. WITH ... DELETE/UPDATE)
-  // An identifier named "WHERE" or string literal 'WHERE' does NOT qualify as a WHERE keyword!
-  const hasDeleteKeyword = tokens.some((t) => t.type === 'KEYWORD' && t.value === 'DELETE')
-  const hasUpdateKeyword = tokens.some((t) => t.type === 'KEYWORD' && t.value === 'UPDATE')
-  const hasWhereKeyword = tokens.some((t) => t.type === 'KEYWORD' && t.value === 'WHERE')
+  // 3. Reject mass DELETE / UPDATE without WHERE clause at the same statement depth (including CTEs)
+  // Each UPDATE or DELETE statement at depth d must be matched by a WHERE keyword at the exact same depth d!
+  // A WHERE inside a CTE (depth > d) or in a subquery does NOT satisfy the WHERE clause of the outer modification!
+  for (let idx = 0; idx < tokens.length; idx++) {
+    const t = tokens[idx]
+    if (t.type === 'KEYWORD' && (t.value === 'DELETE' || t.value === 'UPDATE')) {
+      const stmtDepth = t.depth
+      const action = t.value
 
-  if (hasDeleteKeyword && !hasWhereKeyword) {
-    throw new Error('[sqlGuard] Unparameterized mass DELETE without WHERE clause is prohibited.')
-  }
-  if (hasUpdateKeyword && !hasWhereKeyword) {
-    throw new Error('[sqlGuard] Unparameterized mass UPDATE without WHERE clause is prohibited.')
+      // Look ahead for a WHERE keyword at the exact same statement depth, before any statement separator ';'
+      let hasWhereClause = false
+      for (let lookIdx = idx + 1; lookIdx < tokens.length; lookIdx++) {
+        const next = tokens[lookIdx]
+        if (next.type === 'PUNCTUATION' && next.value === ';' && next.depth === stmtDepth) {
+          break
+        }
+        if (next.type === 'KEYWORD' && next.value === 'WHERE' && next.depth === stmtDepth) {
+          hasWhereClause = true
+          break
+        }
+      }
+
+      if (!hasWhereClause) {
+        throw new Error(
+          `[sqlGuard] Unparameterized mass ${action} without WHERE clause is prohibited.`
+        )
+      }
+    }
   }
 
   // 4. Default-Deny rule for restricted key-value tables (settings / TANIM_Ayar)
+  // Only blocks when the restricted name is used as an actual table reference (FROM, JOIN, UPDATE, INTO, TABLE),
+  // allowing columns or aliases named 'settings' in legitimate application queries.
   const RESTRICTED_SET = new Set(RESTRICTED_TABLES.map((t) => t.toUpperCase()))
-  for (const t of tokens) {
+  for (let idx = 0; idx < tokens.length; idx++) {
+    const t = tokens[idx]
     if (t.type === 'IDENTIFIER' || t.type === 'KEYWORD') {
       if (RESTRICTED_SET.has(t.value.toUpperCase())) {
-        throw new Error(
-          '[sqlGuard] Direct raw SQL query on settings/TANIM_Ayar table is restricted. ' +
-            'Use dedicated named handlers (e.g. db:get-settings, db:save-settings) instead.'
-        )
+        if (isTableReference(tokens, idx)) {
+          throw new Error(
+            '[sqlGuard] Direct raw SQL query on settings/TANIM_Ayar table is restricted. ' +
+              'Use dedicated named handlers (e.g. db:get-settings, db:save-settings) instead.'
+          )
+        }
       }
     }
   }
@@ -328,7 +415,6 @@ export function extractTableAndAction(sql: string): {
     if (t.type === 'KEYWORD') {
       if (t.value === 'INSERT' && tokens[idx + 1]?.value === 'INTO') {
         action = 'insert'
-        // Skip INTO and optional database.
         let targetIdx = idx + 2
         if (tokens[targetIdx]?.type === 'IDENTIFIER') {
           if (tokens[targetIdx + 1]?.value === '.' && tokens[targetIdx + 2]?.type === 'IDENTIFIER') {

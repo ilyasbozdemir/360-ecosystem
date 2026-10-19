@@ -85,6 +85,30 @@ describe('SQL Guard Security Suite (sqlGuard.ts)', () => {
       }).not.toThrow()
     })
 
+    it('CTE içinde WHERE bulunsa dahi ana UPDATE/DELETE ifadesinde WHERE yoksa kitle güncellemeyi/silmeyi engeller', () => {
+      // Saldırı vektörü: CTE içinde WHERE id = 1 var fakat ana UPDATE T ifadesinde WHERE yok!
+      expect(() => {
+        validateSqlQuery("WITH cte AS ( SELECT id FROM DATA_TeminDosyasi WHERE id = 1 ) UPDATE DATA_TeminDosyasi SET durum = 'X'")
+      }).toThrow(/Unparameterized mass UPDATE without WHERE clause/)
+
+      // Saldırı vektörü: CTE içinde WHERE id = 1 var fakat ana DELETE ifadesinde WHERE yok!
+      expect(() => {
+        validateSqlQuery("WITH cte AS ( SELECT id FROM DATA_TeminDosyasi WHERE id = 1 ) DELETE FROM DATA_TeminDosyasi")
+      }).toThrow(/Unparameterized mass DELETE without WHERE clause/)
+
+      // Alt sorgu içinde WHERE var fakat ana UPDATE ifadesinde WHERE yok!
+      expect(() => {
+        validateSqlQuery("UPDATE DATA_TeminDosyasi SET konu = (SELECT baslik FROM sablonlar WHERE id = 1)")
+      }).toThrow(/Unparameterized mass UPDATE without WHERE clause/)
+
+      // Hem CTE içinde hem de ana UPDATE ifadesinde WHERE varsa izin verir
+      expect(() => {
+        validateSqlQuery(
+          "WITH cte AS ( SELECT id FROM DATA_TeminDosyasi WHERE id = 1 ) UPDATE DATA_TeminDosyasi SET durum = 'X' WHERE id IN (SELECT id FROM cte)"
+        )
+      }).not.toThrow()
+    })
+
     it('kolon veya tanımlayıcı adı "WHERE" veya [WHERE] olduğunda bunu WHERE koşulu sanmaz ve kitle güncellemeyi engeller', () => {
       expect(() => {
         validateSqlQuery('UPDATE "T" SET "WHERE" = 1')
@@ -159,6 +183,28 @@ describe('SQL Guard Security Suite (sqlGuard.ts)', () => {
       expect(() => {
         validateSqlQuery('WITH cte AS (SELECT 1) SELECT * FROM "settings"')
       }).toThrow(/Direct raw SQL query on settings\/TANIM_Ayar/)
+    })
+
+    it('sütun adı veya takma ad (alias) olarak "settings" kullanılmasına izin verir (yalnızca tablo referansını korur)', () => {
+      // Sütun adı olarak settings
+      expect(() => {
+        validateSqlQuery('SELECT id, settings FROM DATA_KullaniciAyar WHERE id = 1')
+      }).not.toThrow()
+
+      // SET atamasında sütun adı olarak settings
+      expect(() => {
+        validateSqlQuery("UPDATE DATA_KullaniciAyar SET settings = 'dark' WHERE id = 1")
+      }).not.toThrow()
+
+      // WHERE koşulunda sütun adı olarak settings
+      expect(() => {
+        validateSqlQuery("SELECT * FROM DATA_KullaniciAyar WHERE settings = 'on'")
+      }).not.toThrow()
+
+      // Tablo takma adı (alias) olarak settings
+      expect(() => {
+        validateSqlQuery('SELECT * FROM DATA_KullaniciAyar AS settings WHERE id = 1')
+      }).not.toThrow()
     })
 
     it('çift tırnaklı tanımlayıcı içeren silme ve güncelleme işlemlerinde WHERE zorunluluğunu korur', () => {
