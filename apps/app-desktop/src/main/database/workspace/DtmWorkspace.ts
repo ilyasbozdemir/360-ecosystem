@@ -159,11 +159,12 @@ export class DtmWorkspace {
         const dbPath = path.join(this.tempDir, dbFileName)
         this.db = new Database(dbPath)
         const previousUserMutationAt = meta.last_user_mutation_at
+        const previousUpdatedAt = meta.updated_at
         runMigrations(this.db, fromVersion, schema)
         ensureSchemaIntegrity(this.db)
         meta.schema_version = CURRENT_SCHEMA_VERSION
-        meta.updated_at = new Date().toISOString()
-        // Schema migration does NOT alter user mutation timestamp!
+        // Schema migration does NOT alter user mutation or user updated_at timestamp!
+        meta.updated_at = previousUpdatedAt || new Date().toISOString()
         meta.last_user_mutation_at = previousUserMutationAt
         meta.integrity_hash = calculateIntegrityHash(meta)
         fs.writeFileSync(metaPath, JSON.stringify(meta, null, 2))
@@ -293,7 +294,20 @@ export class DtmWorkspace {
     const metaPath = path.join(this.tempDir, 'meta.json')
     if (fs.existsSync(metaPath)) {
       const meta = JSON.parse(fs.readFileSync(metaPath, 'utf-8')) as WorkspaceMeta
-      meta.updated_at = new Date().toISOString()
+      // ONLY update updated_at and increment data_revision if user has actually mutated data.
+      // Maintenance saves (migrations, settings updates, background checks) do not count as user edits.
+      if (this.userMutationCount > 0 || this.isDirtyState() || !meta.updated_at) {
+        meta.updated_at = new Date().toISOString()
+        if (this.userMutationCount > 0 || this.isDirtyState()) {
+          meta.data_revision = (meta.data_revision || 1) + 1
+        }
+      }
+      if (!meta.project_id) {
+        meta.project_id = crypto.randomUUID()
+      }
+      if (meta.data_revision === undefined) {
+        meta.data_revision = 1
+      }
       meta.app_version = app.getVersion()
       meta.platform = process.platform
       meta.integrity_hash = calculateIntegrityHash(meta)
@@ -539,6 +553,11 @@ export class DtmWorkspace {
 
   public hasChanges(target: 'gdrive' | 'email' | 'any' = 'any'): boolean {
     if (!this.db || !this.currentFilePath) return false
+    // Sadece şema bakımı veya okuma amaçlı açılan dosyalarda kullanıcı değişikliği yoksa
+    // kapanışta veya arka planda gereksiz yedekleme/yükleme tetiklenmesini engelle.
+    if (!this.isDirtyState() && this.userMutationCount === 0) {
+      return false
+    }
     const current = this.calculateCurrentHash()
     if (!current) return false
     if (target === 'gdrive' || target === 'email') {

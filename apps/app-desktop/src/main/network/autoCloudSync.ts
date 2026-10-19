@@ -1,9 +1,13 @@
 import fs from 'fs'
 import { basename } from 'path'
+import crypto from 'crypto'
+import { app } from 'electron'
 import nodemailer from 'nodemailer'
 import { workspaceManager } from '../database/workspace'
 import { getSmtpSetting } from '../utils/settingsHelper'
 import { getDeviceInfo } from '../utils/deviceInfo'
+import { getAnonymousDeviceId } from '../utils/anonymousDevice'
+import type { BackupManifest } from '../../shared/types/backupManifest'
 
 export async function performAutoCloudSync(): Promise<void> {
   try {
@@ -197,23 +201,46 @@ export async function performAutoCloudSync(): Promise<void> {
               .replace(/_\d{4}[-_.]\d{2}[-_.]\d{2}(?:[-_.]\d{2}[-_.]\d{2})?$/, '')
             const backupFileName = `${rawBase}_${dateStr}_${timeStr}.temin`
 
+            const currentAppVersion = app?.getVersion ? app.getVersion() : '1.0.0'
+            const activeMeta = workspaceManager.getMeta()
             const devInfo = getDeviceInfo()
+            const anonymousDeviceId = getAnonymousDeviceId()
+            const sha256 = crypto.createHash('sha256').update(fileData).digest('hex')
+
+            // 1. Anonim Manifest Oluştur (Teknik metadata, kişisel/kurumsal veri içermez)
+            const manifest: BackupManifest = {
+              manifestVersion: 1,
+              backupId: crypto.randomUUID(),
+              projectId: activeMeta?.project_id || crypto.randomUUID(),
+              fileName: backupFileName,
+              sha256,
+              fileSize: fileData.length,
+              createdAt: new Date().toISOString(),
+              dataRevision: activeMeta?.data_revision || 1,
+              parentBackupId: activeMeta?.last_backup_id || null,
+              appVersion: currentAppVersion,
+              deviceId: anonymousDeviceId
+            }
+
+            // 2. Önce asıl .temin yedeğini Google Drive'a yükle
             const boundary = '--------------------------' + Date.now().toString(16)
-            const metadata = JSON.stringify({
+            const teminMetadata = JSON.stringify({
               name: backupFileName,
-              description: `TEMİN 360 Kapanış Otomatik Yedeği [Cihaz: ${devInfo.deviceLabel}] (${dateStr} ${timeStr.replace('-', ':')})`,
+              description: `TEMİN 360 Kapanış Otomatik Yedeği (${dateStr} ${timeStr.replace('-', ':')})`,
               parents: [folderId],
               appProperties: {
-                deviceName: devInfo.hostname,
-                userName: devInfo.username,
-                userFullName: devInfo.userFullName || devInfo.username,
-                deviceLabel: devInfo.deviceLabel,
-                appVersion: '1.0.0-beta.238'
+                backupId: manifest.backupId,
+                projectId: manifest.projectId,
+                sha256: manifest.sha256,
+                dataRevision: String(manifest.dataRevision),
+                appVersion: currentAppVersion,
+                deviceId: anonymousDeviceId,
+                projectRoot: rawBase
               }
             })
 
             const metadataBuffer = Buffer.from(
-              `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${metadata}\r\n`,
+              `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${teminMetadata}\r\n`,
               'utf-8'
             )
             const fileHeaderBuffer = Buffer.from(
@@ -242,60 +269,139 @@ export async function performAutoCloudSync(): Promise<void> {
 
             if (uploadRes.ok) {
               const uploadedFile = (await uploadRes.json()) as { id?: string }
-              if (uploadedFile?.id && db) {
-                try {
-                  db.prepare(
-                    `INSERT INTO LOG_YedekGecmisi (hedef, dosya_adi, gdrive_file_id, boyut_bytes, surum_no, tarih, aciklama)
-                     VALUES (?, ?, ?, ?, ?, datetime('now', 'localtime'), ?)`
-                  ).run(
-                    'gdrive',
-                    backupFileName,
-                    uploadedFile.id,
-                    fileData.length,
-                    '1.0.0-beta.238',
-                    `Google Drive Kapanış Otomatik Yedeği (${devInfo.deviceLabel})`
+              if (uploadedFile?.id) {
+                // 3. .temin başarıyla yüklendi; driveFileId ile manifesti tamamla ve manifest.json yükle
+                manifest.driveFileId = uploadedFile.id
+                const manifestFileName = `${rawBase}_${dateStr}_${timeStr}.json`
+                const manifestBoundary = '--------------------------' + Date.now().toString(16)
+                const manifestMetaJson = JSON.stringify({
+                  name: manifestFileName,
+                  parents: [folderId],
+                  appProperties: {
+                    backupId: manifest.backupId,
+                    projectId: manifest.projectId,
+                    targetFileId: uploadedFile.id,
+                    sha256: manifest.sha256,
+                    dataRevision: String(manifest.dataRevision),
+                    appVersion: currentAppVersion,
+                    deviceId: anonymousDeviceId
+                  }
+                })
+                const manifestContent = Buffer.from(JSON.stringify(manifest, null, 2), 'utf-8')
+                const manifestMultipart = Buffer.concat([
+                  Buffer.from(
+                    `--${manifestBoundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${manifestMetaJson}\r\n`,
+                    'utf-8'
+                  ),
+                  Buffer.from(`--${manifestBoundary}\r\nContent-Type: application/json\r\n\r\n`, 'utf-8'),
+                  manifestContent,
+                  Buffer.from(`\r\n--${manifestBoundary}--`, 'utf-8')
+                ])
+
+                const manifestRes = await fetch(
+                  'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
+                  {
+                    method: 'POST',
+                    headers: {
+                      Authorization: `Bearer ${cleanToken}`,
+                      'Content-Type': `multipart/related; boundary=${manifestBoundary}`
+                    },
+                    body: manifestMultipart
+                  }
+                )
+
+                // 4. Her iki dosya da başarıyla yüklendiğinde yedeklemeyi başarılı say
+                if (manifestRes.ok && db) {
+                  try {
+                    db.prepare(
+                      `INSERT INTO LOG_YedekGecmisi (hedef, dosya_adi, gdrive_file_id, boyut_bytes, surum_no, tarih, aciklama)
+                       VALUES (?, ?, ?, ?, ?, datetime('now', 'localtime'), ?)`
+                    ).run(
+                      'gdrive',
+                      backupFileName,
+                      uploadedFile.id,
+                      fileData.length,
+                      currentAppVersion,
+                      `Google Drive Kapanış Otomatik Yedeği [Manifest: ${manifest.backupId.slice(0, 8)}]`
+                    )
+                    db.prepare(
+                      `INSERT OR REPLACE INTO settings (key, value) VALUES ('lastGdriveSync', ?)`
+                    ).run(new Date().toISOString())
+                    db.prepare(
+                      `INSERT OR REPLACE INTO settings (key, value) VALUES ('lastGdriveSyncDevice', ?)`
+                    ).run(devInfo.deviceLabel)
+                    db.prepare(
+                      `INSERT OR REPLACE INTO settings (key, value) VALUES ('lastBackupFileName', ?)`
+                    ).run(backupFileName)
+                    db.prepare(
+                      `INSERT OR REPLACE INTO settings (key, value) VALUES ('lastBackupFileId', ?)`
+                    ).run(uploadedFile.id)
+                    db.prepare(
+                      `INSERT OR REPLACE INTO settings (key, value) VALUES ('lastBackupId', ?)`
+                    ).run(manifest.backupId)
+
+                    if (activeMeta) {
+                      activeMeta.last_backup_id = manifest.backupId
+                    }
+                    workspaceManager.save(true)
+                    workspaceManager.markSynced('gdrive')
+                  } catch (dbErr) {
+                    console.warn('[AutoCloudSync] Could not save backup settings:', dbErr)
+                  }
+                } else {
+                  console.warn(
+                    '[AutoCloudSync] Kısmi Başarısızlık: .temin yüklendi ancak manifest yüklenemedi.'
                   )
-                  db.prepare(
-                    `INSERT OR REPLACE INTO settings (key, value) VALUES ('lastGdriveSync', ?)`
-                  ).run(new Date().toISOString())
-                  db.prepare(
-                    `INSERT OR REPLACE INTO settings (key, value) VALUES ('lastGdriveSyncDevice', ?)`
-                  ).run(devInfo.deviceLabel)
-                  db.prepare(
-                    `INSERT OR REPLACE INTO settings (key, value) VALUES ('lastBackupFileName', ?)`
-                  ).run(backupFileName)
-                  db.prepare(
-                    `INSERT OR REPLACE INTO settings (key, value) VALUES ('lastBackupFileId', ?)`
-                  ).run(uploadedFile.id)
-                  workspaceManager.save(true)
-                } catch (dbErr) {
-                  console.warn('[AutoCloudSync] Could not save backup settings:', dbErr)
                 }
               }
             }
 
-            workspaceManager.markSynced('gdrive')
-
-            // Prune: keep last 7 versions
+            // Prune: keep last 7 versions of THIS project (.temin ve .json eşlerini temizle)
             const qList = encodeURIComponent(
-              `'${folderId}' in parents and trashed = false and name contains '.temin'`
+              `'${folderId}' in parents and trashed = false`
             )
             const listRes = await fetch(
-              `https://www.googleapis.com/drive/v3/files?q=${qList}&fields=files(id,name,createdTime)&orderBy=createdTime%20desc`,
+              `https://www.googleapis.com/drive/v3/files?q=${qList}&fields=files(id,name,modifiedTime,createdTime)&orderBy=modifiedTime%20desc`,
               {
                 headers: { Authorization: `Bearer ${cleanToken}` }
               }
             )
             if (listRes.ok) {
-              const lData = (await listRes.json()) as { files?: Array<{ id: string }> }
-              const files = lData.files || []
-              if (files.length > 7) {
-                const toDel = files.slice(7)
-                for (const f of toDel) {
+              const lData = (await listRes.json()) as {
+                files?: Array<{ id: string; name?: string }>
+              }
+              const allFiles = lData.files || []
+              const cleanRoot = rawBase.trim().toLowerCase()
+              const escaped = cleanRoot.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+              const teminPattern = new RegExp(
+                `^${escaped}(?:[-_.](\\d{4}[-_.]\\d{2}[-_.]\\d{2}(?:[-_.T]\\d{2}[-_.]\\d{2}(?:[-_.]\\d{2})?)?|_surum\\s*#?\\d+)?\\.temin$`,
+                'i'
+              )
+
+              const projectTeminFiles = allFiles.filter((f) =>
+                f.name ? teminPattern.test(f.name.trim().toLowerCase()) : false
+              )
+
+              if (projectTeminFiles.length > 7) {
+                const toDelTemin = projectTeminFiles.slice(7)
+                for (const f of toDelTemin) {
+                  // .temin dosyasını sil
                   await fetch(`https://www.googleapis.com/drive/v3/files/${f.id}`, {
                     method: 'DELETE',
                     headers: { Authorization: `Bearer ${cleanToken}` }
                   }).catch(() => {})
+
+                  // Eşleşen .json manifest dosyasını da sil
+                  const matchingJsonName = (f.name || '').replace(/\.temin$/i, '.json').toLowerCase()
+                  const matchingJson = allFiles.find(
+                    (jf) => (jf.name || '').trim().toLowerCase() === matchingJsonName
+                  )
+                  if (matchingJson) {
+                    await fetch(`https://www.googleapis.com/drive/v3/files/${matchingJson.id}`, {
+                      method: 'DELETE',
+                      headers: { Authorization: `Bearer ${cleanToken}` }
+                    }).catch(() => {})
+                  }
                 }
               }
             }

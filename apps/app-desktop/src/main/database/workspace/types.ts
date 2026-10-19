@@ -14,6 +14,9 @@ export interface WorkspaceMeta {
   updated_at?: string
   last_user_mutation_at?: string
   integrity_hash?: string
+  project_id?: string
+  data_revision?: number
+  last_backup_id?: string | null
   warnings?: string[]
 }
 
@@ -35,7 +38,9 @@ export function calculateIntegrityHash(meta: Partial<WorkspaceMeta>): string {
     schema_version: meta.schema_version,
     created_at: meta.created_at,
     institution: meta.institution,
-    platform: meta.platform
+    platform: meta.platform,
+    project_id: meta.project_id,
+    data_revision: meta.data_revision
   }
   return crypto.createHash('sha256').update(JSON.stringify(payload)).digest('hex')
 }
@@ -59,6 +64,14 @@ export function normalizeMeta(raw: any): WorkspaceMeta {
       raw.updated_at ||
       new Date().toISOString(),
     integrity_hash: raw.integrity_hash,
+    project_id: raw.project_id || raw.projectId || crypto.randomUUID(),
+    data_revision:
+      typeof raw.data_revision === 'number'
+        ? raw.data_revision
+        : typeof raw.dataRevision === 'number'
+          ? raw.dataRevision
+          : 1,
+    last_backup_id: raw.last_backup_id || raw.lastBackupId || null,
     warnings: []
   }
 }

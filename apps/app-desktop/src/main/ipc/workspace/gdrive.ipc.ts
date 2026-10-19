@@ -1,10 +1,13 @@
-import { ipcMain } from 'electron'
+import { ipcMain, app } from 'electron'
 import { basename, join } from 'path'
 import { homedir } from 'os'
 import fs from 'fs'
+import crypto from 'crypto'
 import { workspaceManager } from '../../database/workspace'
 import { allExtensions, defaultFormat } from '../../config/fileFormats'
 import { getDeviceInfo } from '../../utils/deviceInfo'
+import { getAnonymousDeviceId } from '../../utils/anonymousDevice'
+import { isBackupManifest, type BackupManifest } from '../../../shared/types/backupManifest'
 
 // Shared Google Drive Token Refresh Helper (DB'den dinamik okunur, asla hardcoded değil)
 async function tryRefreshToken(db: any): Promise<string | null> {
@@ -102,27 +105,55 @@ async function fetchWithRetry(
   return fetch(url, options!)
 }
 
-async function pruneOldBackups(token: string, folderId: string, maxVersions = 7): Promise<void> {
+async function pruneOldBackups(
+  token: string,
+  folderId: string,
+  projectRoot?: string,
+  maxVersions = 7
+): Promise<void> {
   try {
-    const query = encodeURIComponent(
-      `'${folderId}' in parents and trashed = false and name contains '.temin'`
-    )
+    const query = encodeURIComponent(`'${folderId}' in parents and trashed = false`)
     const res = await fetchWithRetry(
-      `https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id,name,createdTime)&orderBy=createdTime%20desc`,
+      `https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id,name,modifiedTime,createdTime)&orderBy=modifiedTime%20desc`,
       {
         headers: { Authorization: `Bearer ${token}` }
       }
     )
     if (res.ok) {
       const data = (await res.json()) as { files?: Array<{ id: string; name: string }> }
-      const files = data.files || []
-      if (files.length > maxVersions) {
-        const toDelete = files.slice(maxVersions)
-        for (const file of toDelete) {
+      const allFiles = data.files || []
+      let teminFiles = allFiles.filter((f) => f.name?.toLowerCase().endsWith('.temin'))
+
+      if (projectRoot) {
+        const cleanRoot = projectRoot.trim().toLowerCase()
+        const escaped = cleanRoot.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        const pattern = new RegExp(
+          `^${escaped}(?:[-_.](\\d{4}[-_.]\\d{2}[-_.]\\d{2}(?:[-_.T]\\d{2}[-_.]\\d{2}(?:[-_.]\\d{2})?)?|_surum\\s*#?\\d+)?\\.temin$`,
+          'i'
+        )
+        teminFiles = teminFiles.filter((f) => pattern.test(f.name.trim().toLowerCase()))
+      }
+
+      if (teminFiles.length > maxVersions) {
+        const toDeleteTemin = teminFiles.slice(maxVersions)
+        for (const file of toDeleteTemin) {
+          // .temin dosyasını sil
           await fetchWithRetry(`https://www.googleapis.com/drive/v3/files/${file.id}`, {
             method: 'DELETE',
             headers: { Authorization: `Bearer ${token}` }
           }).catch(console.error)
+
+          // Eşleşen .json manifest dosyasını da sil
+          const matchingJsonName = file.name.replace(/\.temin$/i, '.json').toLowerCase()
+          const matchingJson = allFiles.find(
+            (jf) => jf.name?.trim().toLowerCase() === matchingJsonName
+          )
+          if (matchingJson) {
+            await fetchWithRetry(`https://www.googleapis.com/drive/v3/files/${matchingJson.id}`, {
+              method: 'DELETE',
+              headers: { Authorization: `Bearer ${token}` }
+            }).catch(console.error)
+          }
         }
       }
     }
@@ -457,6 +488,11 @@ export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void):
           workspaceManager.save()
           const currentData = fs.readFileSync(filePath)
 
+          const currentAppVersion = app?.getVersion ? app.getVersion() : '1.0.0'
+          const activeMeta = workspaceManager.getMeta()
+          const anonymousDeviceId = getAnonymousDeviceId()
+          const sha256 = crypto.createHash('sha256').update(currentData).digest('hex')
+
           // Versioned timestamped filename: e.g. Acme_2026-09-06_17-46.temin
           const now = new Date()
           const pad = (n: number) => String(n).padStart(2, '0')
@@ -467,22 +503,39 @@ export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void):
             .replace(/_\d{4}[-_.]\d{2}[-_.]\d{2}(?:[-_.]\d{2}[-_.]\d{2})?$/, '')
           const backupFileName = `${rawBase}_${dateStr}_${timeStr}.temin`
 
-          // Construct multipart boundary for metadata + binary payload with appProperties (Cihaz/PC bilgisi)
+          // 1. Anonim Manifest Nesnesi Oluştur (Gizli/kişisel veri içermez)
+          const manifest: BackupManifest = {
+            manifestVersion: 1,
+            backupId: crypto.randomUUID(),
+            projectId: activeMeta?.project_id || crypto.randomUUID(),
+            fileName: backupFileName,
+            sha256,
+            fileSize: currentData.length,
+            createdAt: new Date().toISOString(),
+            dataRevision: activeMeta?.data_revision || 1,
+            parentBackupId: activeMeta?.last_backup_id || null,
+            appVersion: currentAppVersion,
+            deviceId: anonymousDeviceId
+          }
+
+          // 2. Önce asıl .temin dosyasını Google Drive'a yükle
           const boundary = '--------------------------' + Date.now().toString(16)
-          const metadata = JSON.stringify({
+          const teminMetadata = JSON.stringify({
             name: backupFileName,
-            description: `TEMİN 360 Yedeği [Cihaz: ${devInfo.deviceLabel}]${devInfo.userFullName ? ` [Kullanıcı: ${devInfo.userFullName}]` : ''} (${dateStr} ${timeStr.replace('-', ':')})`,
+            description: `TEMİN 360 Yedeği (${dateStr} ${timeStr.replace('-', ':')})`,
             parents: [folderId],
             appProperties: {
-              deviceName: devInfo.hostname,
-              userName: devInfo.username,
-              userFullName: devInfo.userFullName || devInfo.username,
-              deviceLabel: devInfo.deviceLabel,
-              appVersion: '1.0.0-beta.235'
+              backupId: manifest.backupId,
+              projectId: manifest.projectId,
+              sha256: manifest.sha256,
+              dataRevision: String(manifest.dataRevision),
+              appVersion: currentAppVersion,
+              deviceId: anonymousDeviceId,
+              projectRoot: rawBase
             }
           })
 
-          const metadataPart = `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${metadata}\r\n`
+          const metadataPart = `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${teminMetadata}\r\n`
           const fileHeaderPart = `--${boundary}\r\nContent-Type: application/octet-stream\r\n\r\n`
           const closingPart = `\r\n--${boundary}--`
 
@@ -549,8 +602,59 @@ export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void):
 
           const uploadedFile = (await res.json()) as any
 
-          // Prune older backups asynchronously: keep only last 7 versions
-          pruneOldBackups(cleanToken, folderId, 7).catch((err) =>
+          // 3. .temin başarıyla yüklendi; driveFileId ile manifesti tamamla ve manifest.json yükle
+          manifest.driveFileId = uploadedFile.id
+          const manifestFileName = `${rawBase}_${dateStr}_${timeStr}.json`
+          const manifestBoundary = '--------------------------' + Date.now().toString(16)
+          const manifestMetaJson = JSON.stringify({
+            name: manifestFileName,
+            parents: [folderId],
+            appProperties: {
+              backupId: manifest.backupId,
+              projectId: manifest.projectId,
+              targetFileId: uploadedFile.id,
+              sha256: manifest.sha256,
+              dataRevision: String(manifest.dataRevision),
+              appVersion: currentAppVersion,
+              deviceId: anonymousDeviceId
+            }
+          })
+          const manifestContent = Buffer.from(JSON.stringify(manifest, null, 2), 'utf-8')
+          const manifestMultipart = Buffer.concat([
+            Buffer.from(
+              `--${manifestBoundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${manifestMetaJson}\r\n`,
+              'utf-8'
+            ),
+            Buffer.from(`--${manifestBoundary}\r\nContent-Type: application/json\r\n\r\n`, 'utf-8'),
+            manifestContent,
+            Buffer.from(`\r\n--${manifestBoundary}--`, 'utf-8')
+          ])
+
+          const manifestRes = await fetchWithRetry(
+            'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
+            {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${cleanToken}`,
+                'Content-Type': `multipart/related; boundary=${manifestBoundary}`
+              },
+              body: manifestMultipart
+            }
+          )
+
+          // 4. Her iki dosya da başarıyla yüklendiğinde yedeklemeyi tamamen başarılı say
+          if (!manifestRes.ok) {
+            console.warn('[Google Drive] Kısmi Başarısızlık: .temin yüklendi ancak manifest.json yüklenemedi.')
+            return {
+              success: false,
+              partial: true,
+              error:
+                'Yedekleme kısmi başarısız oldu: .temin yüklendi ancak JSON manifesti Google Drive üzerine yüklenemedi. Bütünlük garantisi için lütfen tekrar deneyin.'
+            }
+          }
+
+          // Prune older backups of this project asynchronously: keep only last 7 versions
+          pruneOldBackups(cleanToken, folderId, rawBase, 7).catch((err) =>
             console.warn('[Google Drive] Eski yedekleri temizleme uyarısı:', err)
           )
 
@@ -580,8 +684,8 @@ export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void):
                 backupFileName,
                 uploadedFile.id,
                 currentData.length,
-                '1.0.0-beta.92',
-                `Google Drive Bulut Yedeği (${devInfo.deviceLabel})`
+                currentAppVersion,
+                `Google Drive Bulut Yedeği [Manifest: ${manifest.backupId.slice(0, 8)}]`
               )
               db.prepare(
                 `INSERT OR REPLACE INTO settings (key, value) VALUES ('lastGdriveSync', ?)`
@@ -596,8 +700,15 @@ export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void):
                 `INSERT OR REPLACE INTO settings (key, value) VALUES ('lastBackupFileId', ?)`
               ).run(uploadedFile.id)
               db.prepare(
-                `INSERT OR REPLACE INTO settings (key, value) VALUES ('dbVersion', '1.0.0-beta.92')`
-              ).run()
+                `INSERT OR REPLACE INTO settings (key, value) VALUES ('lastBackupId', ?)`
+              ).run(manifest.backupId)
+              db.prepare(
+                `INSERT OR REPLACE INTO settings (key, value) VALUES ('dbVersion', ?)`
+              ).run(currentAppVersion)
+
+              if (activeMeta) {
+                activeMeta.last_backup_id = manifest.backupId
+              }
               workspaceManager.save(true)
             }
           } catch (dbErr) {
@@ -606,13 +717,14 @@ export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void):
 
           workspaceManager.markSynced('gdrive')
 
-          const successMsg = `${backupFileName} başarıyla Google Drive 'TEMIN_360_YEDEKLER' klasörüne yüklendi (${devInfo.deviceLabel}).`
+          const successMsg = `${backupFileName} ve manifesti başarıyla Google Drive 'TEMIN_360_YEDEKLER' klasörüne yüklendi.`
 
           return {
             success: true,
             message: successMsg,
             fileId: uploadedFile.id,
-            backupFileName
+            backupFileName,
+            manifest
           }
         }
 
@@ -680,42 +792,124 @@ export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void):
       }
 
       const query = encodeURIComponent(`'${folderId}' in parents and trashed = false`)
-      let res = await fetchWithRetry(
-        `https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id,name,size,mimeType,modifiedTime,createdTime,description,appProperties)&orderBy=modifiedTime%20desc`,
-        {
+      const fetchedFiles: any[] = []
+      let pageToken: string | undefined = undefined
+      let pageCount = 0
+
+      do {
+        pageCount++
+        const pageParam = pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : ''
+        const listUrl = `https://www.googleapis.com/drive/v3/files?q=${query}&pageSize=100&fields=nextPageToken,files(id,name,size,mimeType,modifiedTime,createdTime,description,appProperties)&orderBy=modifiedTime%20desc${pageParam}`
+        let res = await fetchWithRetry(listUrl, {
           headers: {
             Authorization: `Bearer ${cleanToken}`
           }
-        }
-      )
+        })
 
-      if (res.status === 401) {
-        const newToken = await tryRefreshToken(db)
-        if (newToken) {
-          cleanToken = newToken
-          res = await fetchWithRetry(
-            `https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id,name,size,mimeType,modifiedTime,createdTime,description,appProperties)&orderBy=modifiedTime%20desc`,
-            {
+        if (res.status === 401) {
+          const newToken = await tryRefreshToken(db)
+          if (newToken) {
+            cleanToken = newToken
+            res = await fetchWithRetry(listUrl, {
               headers: {
                 Authorization: `Bearer ${cleanToken}`
               }
-            }
-          )
+            })
+          }
+        }
+
+        if (!res.ok) {
+          const errText = await res.text()
+          throw new Error(`Google Drive Dosyaları Listelenemedi (${res.status}): ${errText}`)
+        }
+
+        const data = (await res.json()) as { nextPageToken?: string; files?: any[] }
+        if (data.files && Array.isArray(data.files)) {
+          fetchedFiles.push(...data.files)
+        }
+        pageToken = data.nextPageToken
+      } while (pageToken && pageCount < 5)
+
+      // Split into .temin backups and companion .json manifests
+      const teminFiles = fetchedFiles.filter(
+        (f: any) =>
+          allExtensions.some((ext) => f.name?.toLowerCase().endsWith('.' + ext)) &&
+          f.mimeType !== 'application/vnd.google-apps.folder'
+      )
+      const jsonFiles = fetchedFiles.filter(
+        (f: any) =>
+          f.name?.toLowerCase().endsWith('.json') &&
+          f.mimeType !== 'application/vnd.google-apps.folder'
+      )
+
+      // Manifest eşleştirme haritası oluştur (targetFileId veya dosya adı bazında)
+      const manifestByTargetId = new Map<string, any>()
+      const manifestByBaseName = new Map<string, any>()
+
+      for (const jf of jsonFiles) {
+        const targetId = jf.appProperties?.targetFileId
+        if (targetId) {
+          manifestByTargetId.set(targetId, jf)
+        }
+        const baseName = jf.name?.replace(/\.json$/i, '').toLowerCase()
+        if (baseName) {
+          manifestByBaseName.set(baseName, jf)
         }
       }
 
-      if (!res.ok) {
-        const errText = await res.text()
-        throw new Error(`Google Drive Dosyaları Listelenemedi (${res.status}): ${errText}`)
-      }
+      // Her .temin dosyasına eşleşen manifestini ve doğrulama durumunu bağla
+      const validFiles = teminFiles.map((tf: any) => {
+        const baseName = tf.name?.replace(/\.temin$/i, '').toLowerCase()
+        const matchingJson =
+          manifestByTargetId.get(tf.id) ||
+          (baseName ? manifestByBaseName.get(baseName) : undefined)
 
-      const data = (await res.json()) as any
-      // Strict security filter: allow all supported extensions inside TEMIN_360_YEDEKLER folder
-      const validFiles = (data.files || []).filter(
-        (f: any) =>
-          allExtensions.some((ext) => f.name.toLowerCase().endsWith('.' + ext)) &&
-          f.mimeType !== 'application/vnd.google-apps.folder'
-      )
+        let manifest: BackupManifest | null = null
+        let isVerified = false
+
+        if (matchingJson?.appProperties?.sha256) {
+          const props = matchingJson.appProperties
+          manifest = {
+            manifestVersion: 1,
+            backupId: props.backupId || '',
+            projectId: props.projectId || '',
+            fileName: tf.name,
+            driveFileId: tf.id,
+            sha256: props.sha256,
+            fileSize: Number(tf.size) || 0,
+            createdAt: tf.createdTime || matchingJson.createdTime || '',
+            dataRevision: parseInt(props.dataRevision, 10) || 1,
+            parentBackupId: props.parentBackupId || null,
+            appVersion: props.appVersion || '',
+            deviceId: props.deviceId || ''
+          }
+          isVerified = isBackupManifest(manifest)
+        } else if (tf.appProperties?.sha256 && tf.appProperties?.projectId) {
+          const props = tf.appProperties
+          manifest = {
+            manifestVersion: 1,
+            backupId: props.backupId || '',
+            projectId: props.projectId || '',
+            fileName: tf.name,
+            driveFileId: tf.id,
+            sha256: props.sha256,
+            fileSize: Number(tf.size) || 0,
+            createdAt: tf.createdTime || '',
+            dataRevision: parseInt(props.dataRevision, 10) || 1,
+            parentBackupId: props.parentBackupId || null,
+            appVersion: props.appVersion || '',
+            deviceId: props.deviceId || ''
+          }
+          isVerified = isBackupManifest(manifest)
+        }
+
+        return {
+          ...tf,
+          manifest: isVerified ? manifest : null,
+          manifestFileId: matchingJson?.id || null,
+          isVerified
+        }
+      })
 
       return {
         success: true,
@@ -731,7 +925,14 @@ export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void):
     'workspace:download-gdrive-file',
     async (
       _,
-      args: { fileId: string; fileName: string; token?: string; overwriteActive?: boolean }
+      args: {
+        fileId: string
+        fileName: string
+        token?: string
+        overwriteActive?: boolean
+        manifest?: BackupManifest
+        manifestFileId?: string
+      }
     ) => {
       try {
         let token = args.token
@@ -790,7 +991,7 @@ export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void):
         }
 
         let metaRes = await fetchWithRetry(
-          `https://www.googleapis.com/drive/v3/files/${args.fileId}?fields=id,name,parents,mimeType`,
+          `https://www.googleapis.com/drive/v3/files/${args.fileId}?fields=id,name,parents,mimeType,appProperties,size`,
           {
             headers: {
               Authorization: `Bearer ${cleanToken}`
@@ -803,7 +1004,7 @@ export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void):
           if (newToken) {
             cleanToken = newToken
             metaRes = await fetchWithRetry(
-              `https://www.googleapis.com/drive/v3/files/${args.fileId}?fields=id,name,parents,mimeType`,
+              `https://www.googleapis.com/drive/v3/files/${args.fileId}?fields=id,name,parents,mimeType,appProperties,size`,
               {
                 headers: {
                   Authorization: `Bearer ${cleanToken}`
@@ -813,12 +1014,18 @@ export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void):
           }
         }
 
+        let driveFileMeta: any = null
         if (metaRes.ok) {
-          const metaData = (await metaRes.json()) as { parents?: string[]; mimeType?: string }
-          if (metaData.mimeType === 'application/vnd.google-apps.folder') {
+          driveFileMeta = (await metaRes.json()) as {
+            parents?: string[]
+            mimeType?: string
+            appProperties?: Record<string, string>
+            size?: string
+          }
+          if (driveFileMeta.mimeType === 'application/vnd.google-apps.folder') {
             throw new Error('Güvenlik Koruması: Klasörler doğrudan indirilemez.')
           }
-          if (metaData.parents && !metaData.parents.includes(folderId)) {
+          if (driveFileMeta.parents && !driveFileMeta.parents.includes(folderId)) {
             throw new Error('Güvenlik Koruması: Bu dosya TEMIN_360_YEDEKLER klasörüne ait değil.')
           }
         }
@@ -854,6 +1061,70 @@ export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void):
 
         const arrayBuffer = await res.arrayBuffer()
         const buffer = Buffer.from(arrayBuffer)
+
+        // 1. Temel ZIP başlık doğrulaması
+        if (!buffer || buffer.length < 512 || buffer.subarray(0, 2).toString() !== 'PK') {
+          throw new Error(
+            'Güvenlik Hatası: İndirilen dosya geçerli bir TEMİN 360 arşivi değil veya bozuk (0 byte / geçersiz başlık).'
+          )
+        }
+
+        // 2. Bütünlük ve Manifest Doğrulaması (SHA-256 + Boyut)
+        let targetManifest: BackupManifest | null = args.manifest || null
+
+        // Manifest parametresi gelmemişse eşleşen JSON dosyasını veya appProperties kontrol et
+        if (!targetManifest && args.manifestFileId) {
+          try {
+            const mRes = await fetchWithRetry(
+              `https://www.googleapis.com/drive/v3/files/${args.manifestFileId}?alt=media`,
+              {
+                headers: { Authorization: `Bearer ${cleanToken}` }
+              }
+            )
+            if (mRes.ok) {
+              const rawM = (await mRes.json()) as unknown
+              if (isBackupManifest(rawM)) {
+                targetManifest = rawM
+              }
+            }
+          } catch (mErr) {
+            console.warn('[Google Drive] Manifest indirilemedi:', mErr)
+          }
+        }
+
+        // Eğer dosyanın kendi appProperties'inde sha256 varsa fallback olarak kullan
+        if (!targetManifest && driveFileMeta?.appProperties?.sha256) {
+          const p = driveFileMeta.appProperties
+          targetManifest = {
+            manifestVersion: 1,
+            backupId: p.backupId || '',
+            projectId: p.projectId || '',
+            fileName: args.fileName,
+            driveFileId: args.fileId,
+            sha256: p.sha256,
+            fileSize: Number(driveFileMeta.size) || buffer.length,
+            createdAt: new Date().toISOString(),
+            dataRevision: parseInt(p.dataRevision, 10) || 1,
+            parentBackupId: p.parentBackupId || null,
+            appVersion: p.appVersion || '',
+            deviceId: p.deviceId || ''
+          }
+        }
+
+        // Manifest mevcutsa SHA-256 ve boyut doğrulaması yap
+        if (targetManifest?.sha256) {
+          const actualSha256 = crypto.createHash('sha256').update(buffer).digest('hex')
+          if (actualSha256.toLowerCase() !== targetManifest.sha256.toLowerCase()) {
+            throw new Error(
+              `Güvenlik ve Bütünlük Hatası: İndirilen yedeğin SHA-256 özeti (${actualSha256}) manifestteki (${targetManifest.sha256}) ile uyuşmuyor! Dosya aktarım sırasında bozulmuş veya üzerinde oynanmış olabilir. Yerel çalışma dosyanız korundu.`
+            )
+          }
+          if (targetManifest.fileSize && buffer.length !== targetManifest.fileSize) {
+            throw new Error(
+              `Güvenlik ve Bütünlük Hatası: İndirilen dosya boyutu (${buffer.length} bayt) manifestteki beklenen (${targetManifest.fileSize} bayt) ile uyuşmuyor! Yerel çalışma dosyanız korundu.`
+            )
+          }
+        }
 
         // Determine destination path: overwrite active workspace or save as new file
         const currentPath = workspaceManager.getCurrentFilePath()
@@ -895,9 +1166,21 @@ export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void):
               `INSERT OR REPLACE INTO settings (key, value) VALUES ('lastBackupFileName', ?)`
             )
             .run(args.fileName)
+          if (targetManifest?.backupId) {
+            newDb
+              .prepare(`INSERT OR REPLACE INTO settings (key, value) VALUES ('lastBackupId', ?)`)
+              .run(targetManifest.backupId)
+          }
           newDb
             .prepare(`INSERT OR REPLACE INTO settings (key, value) VALUES ('lastGdriveSync', ?)`)
             .run(new Date().toISOString())
+
+          const activeMeta = workspaceManager.getMeta()
+          if (activeMeta && targetManifest?.backupId) {
+            activeMeta.last_backup_id = targetManifest.backupId
+          }
+          workspaceManager.markSynced('gdrive')
+          workspaceManager.save(true)
         } catch (dbErr) {
           console.warn('Could not update last backup file info in downloaded DB:', dbErr)
         }

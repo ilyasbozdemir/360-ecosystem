@@ -9,24 +9,13 @@ import {
   ShieldCheck
 } from 'lucide-react'
 import { Modal } from '../ui/Modal'
-import { formatFileSize } from '../ui/google-drive/gdriveUtils'
+import {
+  formatFileSize,
+  evaluateNewerVersion,
+  type GDriveFile
+} from '../ui/google-drive/gdriveUtils'
 import { useWorkspaceStore } from '../../store/workspaceStore'
 import { useClickOutside } from '../../hooks/useClickOutside'
-
-interface GDriveFile {
-  id: string
-  name: string
-  size?: string
-  modifiedTime?: string
-  createdTime?: string
-  appProperties?: {
-    deviceName?: string
-    deviceLabel?: string
-    userName?: string
-    userFullName?: string
-    appVersion?: string
-  }
-}
 
 export function GoogleDriveFooterWidget(): React.JSX.Element | null {
   const { fileName, activeMeta } = useWorkspaceStore()
@@ -37,6 +26,7 @@ export function GoogleDriveFooterWidget(): React.JSX.Element | null {
   const [lastSyncTime, setLastSyncTime] = useState<string | null>(null)
   const [hasNewerVersion, setHasNewerVersion] = useState(false)
   const [newerFile, setNewerFile] = useState<GDriveFile | null>(null)
+  const [isConflict, setIsConflict] = useState(false)
   const [showUpdateModal, setShowUpdateModal] = useState(false)
   const [showPopover, setShowPopover] = useState(false)
   const popoverRef = useRef<HTMLDivElement>(null)
@@ -94,122 +84,32 @@ export function GoogleDriveFooterWidget(): React.JSX.Element | null {
 
       setAuthError(false)
 
+      // Yerel kirli/değişiklik durumunu al
+      let isLocalDirty = false
+      try {
+        const dirtyRes = await window.electron.ipcRenderer.invoke('workspace:is-dirty')
+        isLocalDirty = !!dirtyRes?.isDirty
+      } catch (e) {
+        console.warn('Could not read dirty status:', e)
+      }
+
       const allFiles: GDriveFile[] = res.files || []
-      const validBackups = allFiles.filter((f) => f.name.toLowerCase().endsWith('.temin'))
 
-      if (validBackups.length === 0) {
-        setHasNewerVersion(false)
-        setNewerFile(null)
-        setIsChecking(false)
-        return
-      }
-
-      // Aktif dosya ana adını (base name) temizle ve ayrıştır
-      const currentFileNameClean = (fileName || '').trim().toLowerCase()
-      const rawBase = (fileName || '')
-        .replace(/\.temin$/i, '')
-        .replace(/_\d{4}[-_.]\d{2}[-_.]\d{2}(?:[-_.T]\d{2}[-_.]\d{2}(?:[-_.]\d{2})?)?$/i, '')
-        .replace(/_surum\s*#?\d+/i, '')
-        .trim()
-
-      if (!rawBase) {
-        // Aktif dosya ana adı yoksa yabancı yedekleri bu çalışma alanına asla eşleştirme
-        setHasNewerVersion(false)
-        setNewerFile(null)
-        setIsChecking(false)
-        return
-      }
-
-      // SADECE aktif çalışma dosyasıyla aynı köke ait yedekleri filtrele
-      const rawBaseLower = rawBase.toLowerCase()
-      const matching = validBackups.filter((f) => {
-        const fname = f.name.toLowerCase()
-        return (
-          fname.startsWith(rawBaseLower + '_') ||
-          fname.startsWith(rawBaseLower + '.') ||
-          fname === rawBaseLower
-        )
+      const evalResult = evaluateNewerVersion({
+        cloudFiles: allFiles,
+        currentFileName: fileName || '',
+        activeMeta,
+        lastBackupFileId: lastFileId,
+        lastBackupFileName: lastFileName,
+        knownBackupFileIds: knownBackupIds,
+        isDirty: isLocalDirty,
+        currentDeviceName: devInfo?.hostname,
+        currentDeviceLabel: devInfo?.deviceLabel
       })
 
-      // Bu dosyaya ait hiçbir yedek Drive'da yoksa ASLA başka projenin yedeğini güncelleme olarak gösterme!
-      if (matching.length === 0) {
-        setHasNewerVersion(false)
-        setNewerFile(null)
-        setIsChecking(false)
-        return
-      }
-
-      // En yeni oluşturulan dosya (list API createdTime desc sıralı döndürür)
-      const latestCloudFile = matching[0]
-      if (!latestCloudFile) {
-        setHasNewerVersion(false)
-        setNewerFile(null)
-        setIsChecking(false)
-        return
-      }
-
-      const latestNameClean = latestCloudFile.name.trim().toLowerCase()
-      const lastBackupNameClean = (lastFileName || '').trim().toLowerCase()
-      const localUploadedId = localStorage.getItem('lastGdriveUploadedFileId')
-      const localUploadedName = (localStorage.getItem('lastGdriveUploadedFileName') || '')
-        .trim()
-        .toLowerCase()
-
-      // 1. Dosya kimliği veya adı bilinen kendi yüklediğimiz yedeğimiz mi?
-      const isKnownUploadedFile =
-        (lastFileId && latestCloudFile.id === lastFileId) ||
-        knownBackupIds.includes(latestCloudFile.id) ||
-        (localUploadedId && latestCloudFile.id === localUploadedId)
-
-      const isSameName =
-        latestNameClean === currentFileNameClean ||
-        (lastBackupNameClean && latestNameClean === lastBackupNameClean) ||
-        (localUploadedName && latestNameClean === localUploadedName)
-
-      // Kendi veritabanımızın yüklediği veya açık olan dosyaysa asla "güncelleme var" deme
-      if (isKnownUploadedFile || isSameName) {
-        setHasNewerVersion(false)
-        setNewerFile(null)
-        setIsChecking(false)
-        return
-      }
-
-      // 2. Cihaz eşleşmesi: Bu yedek şu anki bilgisayar tarafından mı yüklendi?
-      const cloudDeviceName = latestCloudFile.appProperties?.deviceName?.trim().toLowerCase()
-      const cloudDeviceLabel = latestCloudFile.appProperties?.deviceLabel?.trim().toLowerCase()
-      const localDeviceName = devInfo?.hostname?.trim().toLowerCase()
-      const localDeviceLabel = devInfo?.deviceLabel?.trim().toLowerCase()
-
-      const isSameDevice = !!(
-        (localDeviceName && cloudDeviceName && localDeviceName === cloudDeviceName) ||
-        (localDeviceLabel && cloudDeviceLabel && localDeviceLabel === cloudDeviceLabel)
-      )
-
-      const cloudTime = new Date(
-        latestCloudFile.createdTime || latestCloudFile.modifiedTime || 0
-      ).getTime()
-      const localSyncTime = new Date(settings?.lastGdriveSync || 0).getTime()
-      const localFileTime = new Date(activeMeta?.updated_at || 0).getTime()
-      const localTime = Math.max(localSyncTime, localFileTime)
-
-      // Aynı cihaz tarafından yüklenmişse ve yerel zamandan en az 5 dakika daha yeni değilse kendi çalışmamız say
-      if (isSameDevice && cloudTime <= localTime + 300000) {
-        setHasNewerVersion(false)
-        setNewerFile(null)
-        setIsChecking(false)
-        return
-      }
-
-      // 3. Buluttaki dosya farklı bir makineden/oturumdan ve yerel zamandan belirgin şekilde (en az 90 saniye) yeniyse
-      const isCloudNewer = cloudTime > localTime + 90000
-
-      if (isCloudNewer) {
-        setHasNewerVersion(true)
-        setNewerFile(latestCloudFile)
-      } else {
-        setHasNewerVersion(false)
-        setNewerFile(null)
-      }
+      setHasNewerVersion(evalResult.hasNewerVersion)
+      setNewerFile(evalResult.newerFile)
+      setIsConflict(evalResult.isConflict)
     } catch (err) {
       console.warn('[GoogleDriveWidget] Kontrol hatası:', err)
     } finally {
@@ -218,24 +118,31 @@ export function GoogleDriveFooterWidget(): React.JSX.Element | null {
   }
 
   useEffect(() => {
-    checkGoogleDriveUpdates(false)
+    let active = true
+    const timer = setTimeout(() => {
+      if (active) void checkGoogleDriveUpdates(false)
+    }, 50)
 
     // Her 60 saniyede bir sessiz kontrol et
     const interval = setInterval(() => {
-      checkGoogleDriveUpdates(true)
+      if (active) void checkGoogleDriveUpdates(true)
     }, 60000)
 
-    const handleSaved = () => {
-      setTimeout(() => checkGoogleDriveUpdates(true), 2000)
+    const handleSaved = (): void => {
+      setTimeout(() => {
+        if (active) void checkGoogleDriveUpdates(true)
+      }, 2000)
     }
 
     window.addEventListener('workspace-saved', handleSaved)
 
     return () => {
+      active = false
+      clearTimeout(timer)
       clearInterval(interval)
       window.removeEventListener('workspace-saved', handleSaved)
     }
-  }, [fileName, activeMeta?.updated_at])
+  }, [fileName, activeMeta?.updated_at, activeMeta?.last_user_mutation_at])
 
   useClickOutside(popoverRef, () => setShowPopover(false), showPopover)
 
@@ -407,6 +314,21 @@ export function GoogleDriveFooterWidget(): React.JSX.Element | null {
             </p>
           </div>
 
+          {/* Çakışma Uyarısı (Yerel dosya kirli/değişiklik içeriyorsa) */}
+          {isConflict && (
+            <div className="p-3.5 rounded-2xl bg-rose-50/90 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/50 text-rose-900 dark:text-rose-200 text-xs space-y-1.5">
+              <div className="flex items-center gap-2 font-bold text-rose-700 dark:text-rose-400">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <span>Çakışma Uyarısı: Yerel Dosyanızda Kaydedilmemiş Değişiklikler Var</span>
+              </div>
+              <p className="text-[11px] leading-relaxed opacity-90">
+                Yerel çalışma dosyanızda henüz buluta yüklenmemiş değişiklikler bulunuyor. Buluttaki
+                daha yeni sürümü yüklerseniz, mevcut yerel çalışmanız ezilmez; güvenle{' '}
+                <strong>{fileName}.bak</strong> dosyası olarak arşivlenir.
+              </p>
+            </div>
+          )}
+
           {/* Dosya Karşılaştırma Detayları */}
           <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-2xl p-3.5 space-y-2.5 text-xs">
             <div className="flex items-center justify-between py-1 border-b border-slate-200/60 dark:border-slate-800">
@@ -461,7 +383,11 @@ export function GoogleDriveFooterWidget(): React.JSX.Element | null {
               type="button"
               disabled={isUpdating}
               onClick={handleApplyCloudUpdate}
-              className="px-5 py-2.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md cursor-pointer flex items-center gap-2 transition-all disabled:opacity-50"
+              className={`px-5 py-2.5 text-xs font-bold text-white ${
+                isConflict
+                  ? 'bg-amber-600 hover:bg-amber-700'
+                  : 'bg-emerald-600 hover:bg-emerald-700'
+              } rounded-xl shadow-md cursor-pointer flex items-center gap-2 transition-all disabled:opacity-50`}
             >
               {isUpdating ? (
                 <>
@@ -471,7 +397,11 @@ export function GoogleDriveFooterWidget(): React.JSX.Element | null {
               ) : (
                 <>
                   <CloudDownload className="w-4 h-4" />
-                  <span>Buluttan İndir & Güncelle</span>
+                  <span>
+                    {isConflict
+                      ? 'Bulut Sürümünü Yükle (Yereli Koru)'
+                      : 'Buluttan İndir & Güncelle'}
+                  </span>
                 </>
               )}
             </button>

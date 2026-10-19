@@ -7,6 +7,11 @@ export interface WorkspaceMeta {
   institution: string
   schema_version: number
   updated_at?: string
+  last_user_mutation_at?: string
+  integrity_hash?: string
+  project_id?: string
+  data_revision?: number
+  last_backup_id?: string | null
   warnings?: string[]
 }
 
