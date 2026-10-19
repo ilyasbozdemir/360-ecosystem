@@ -1,12 +1,5 @@
 import React from 'react'
-import {
-  ArrowDownToLine,
-  Copy,
-  Loader2,
-  PlusCircle,
-  Sparkles,
-  X
-} from 'lucide-react'
+import { ArrowDownToLine, Copy, Loader2, PlusCircle, Sparkles, X } from 'lucide-react'
 import { cn } from '../../../../../../utils/cn'
 import type { HizliKalemRow } from '../types'
 

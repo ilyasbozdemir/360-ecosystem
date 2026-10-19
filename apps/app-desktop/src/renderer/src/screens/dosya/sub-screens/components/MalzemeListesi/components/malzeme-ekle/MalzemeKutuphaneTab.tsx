@@ -1,12 +1,5 @@
 import React, { useState } from 'react'
-import {
-  Check,
-  CheckCheck,
-  Plus,
-  PlusCircle,
-  Search,
-  X
-} from 'lucide-react'
+import { Check, CheckCheck, Plus, PlusCircle, Search, X } from 'lucide-react'
 import { cn } from '@renderer/utils/cn'
 
 interface MalzemeKutuphaneTabProps {

@@ -9,12 +9,7 @@ interface EbysPreviewProps {
   zoomLevel: number
 }
 
-export const EbysPreview: React.FC<EbysPreviewProps> = ({
-  template,
-  html,
-  css,
-  zoomLevel
-}) => {
+export const EbysPreview: React.FC<EbysPreviewProps> = ({ template, html, css, zoomLevel }) => {
   return (
     <div className="flex-1 bg-slate-100/90 dark:bg-slate-950 overflow-auto p-6 flex flex-col items-center justify-start relative custom-scrollbar">
       {/* Üst Bilgi Barı */}

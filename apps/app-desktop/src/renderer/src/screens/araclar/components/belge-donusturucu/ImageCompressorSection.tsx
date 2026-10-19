@@ -1,11 +1,5 @@
 import React, { useState, useRef } from 'react'
-import {
-  Sliders,
-  UploadCloud,
-  Loader2,
-  RefreshCw,
-  Download
-} from 'lucide-react'
+import { Sliders, UploadCloud, Loader2, RefreshCw, Download } from 'lucide-react'
 import { SourceImg, ConvertedImgData, formatBytes } from './types'
 
 export function ImageCompressorSection(): React.JSX.Element {

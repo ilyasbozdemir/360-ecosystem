@@ -1,10 +1,5 @@
 import React from 'react'
-import {
-  AlertTriangle,
-  CheckCircle2,
-  Clock,
-  Layers
-} from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Clock, Layers } from 'lucide-react'
 
 interface NotlarStatsCardsProps {
   stats: {
@@ -59,9 +54,7 @@ export function NotlarStatsCards({ stats }: NotlarStatsCardsProps): React.JSX.El
             </p>
             <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-0.5">
               {stats.completed}{' '}
-              <span className="text-xs font-normal text-slate-400">
-                (%{stats.completionRate})
-              </span>
+              <span className="text-xs font-normal text-slate-400">(%{stats.completionRate})</span>
             </h3>
           </div>
           <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400">

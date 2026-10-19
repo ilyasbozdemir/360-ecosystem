@@ -1,13 +1,6 @@
 import React from 'react'
 import { Link } from '@tanstack/react-router'
-import {
-  TrendingUp,
-  Layers,
-  Users,
-  ClipboardList,
-  Gavel,
-  ChevronRight
-} from 'lucide-react'
+import { TrendingUp, Layers, Users, ClipboardList, Gavel, ChevronRight } from 'lucide-react'
 import { DosyaNotlariWidget } from '../../notlar/components/DosyaNotlariWidget'
 
 interface DosyaOzetPaneliProps {
@@ -101,9 +94,7 @@ export const DosyaOzetPaneli: React.FC<DosyaOzetPaneliProps> = ({
             </h3>
             <div className="space-y-3.5 text-xs">
               <div className="flex justify-between items-center">
-                <span className="text-slate-400 dark:text-slate-550">
-                  Talep Eden Birim:
-                </span>
+                <span className="text-slate-400 dark:text-slate-550">Talep Eden Birim:</span>
                 <span className="font-bold text-slate-800 dark:text-slate-200">
                   {birimAdi || 'Belirtilmemiş'}
                 </span>
@@ -204,10 +195,7 @@ export const DosyaOzetPaneli: React.FC<DosyaOzetPaneliProps> = ({
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80 text-slate-600 dark:text-slate-450">
                   {kalemler.map((item) => (
-                    <tr
-                      key={item.id}
-                      className="hover:bg-slate-50/50 dark:hover:bg-slate-900/10"
-                    >
+                    <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/10">
                       <td className="p-3 font-semibold text-slate-800 dark:text-slate-200">
                         {item.kalem_adi}
                       </td>
@@ -246,10 +234,7 @@ export const DosyaOzetPaneli: React.FC<DosyaOzetPaneliProps> = ({
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80 text-slate-600 dark:text-slate-450">
                   {firmalar.map((f) => (
-                    <tr
-                      key={f.id}
-                      className="hover:bg-slate-50/50 dark:hover:bg-slate-900/10"
-                    >
+                    <tr key={f.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/10">
                       <td className="p-3 font-semibold text-slate-800 dark:text-slate-200">
                         {f.unvan}
                       </td>

@@ -180,7 +180,8 @@ export const TeminNoAndButceFields: React.FC<YeniDosyaTabProps> = (props) => {
               title="Sıradaki müsait benzersiz numarayı ata"
               onClick={() => {
                 const nextNo =
-                  nextAvailableNo || (getNextTeminNo ? getNextTeminNo(targetYear) : `${targetYear}/1`)
+                  nextAvailableNo ||
+                  (getNextTeminNo ? getNextTeminNo(targetYear) : `${targetYear}/1`)
                 setFormData({ ...formData, temin_no: nextNo })
               }}
               className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[10px] text-blue-600 hover:text-blue-700 dark:text-blue-400 font-bold px-2 py-1 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg transition-colors flex items-center gap-1 cursor-pointer border-none"

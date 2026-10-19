@@ -1,11 +1,5 @@
 import React from 'react'
-import {
-  Search,
-  SlidersHorizontal,
-  Layers,
-  FileCheck2,
-  RotateCcw
-} from 'lucide-react'
+import { Search, SlidersHorizontal, Layers, FileCheck2, RotateCcw } from 'lucide-react'
 import { EbysTemplate, EbysCategory, EbysTemplateVariables } from '../ebys.types'
 
 interface EbysSidebarProps {

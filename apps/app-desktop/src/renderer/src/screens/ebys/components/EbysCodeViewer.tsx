@@ -52,7 +52,9 @@ export const EbysCodeViewer: React.FC<EbysCodeViewerProps> = ({
             </button>
           </div>
           <span className="text-xs text-slate-500 font-mono">
-            {codeType === 'html' ? `${currentCode.split('\n').length} satır HTML` : `${currentCode.split('\n').length} satır CSS`}
+            {codeType === 'html'
+              ? `${currentCode.split('\n').length} satır HTML`
+              : `${currentCode.split('\n').length} satır CSS`}
           </span>
         </div>
 

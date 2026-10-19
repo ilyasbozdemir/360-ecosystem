@@ -72,7 +72,8 @@ export const HarcamaMerkeziWizard: React.FC<HarcamaMerkeziWizardProps> = ({
             </h4>
             <p className="text-slate-300 leading-relaxed">
               SGK Borcu Yoktur, Vergi Borcu Yoktur, %5 Stopaj Kesintisi ve Damga Vergisi kesintisi
-              olmadan hakediş vezneden çıkamaz. Sistem bu kesintileri kuruşu kuruşuna otomatik yapar.
+              olmadan hakediş vezneden çıkamaz. Sistem bu kesintileri kuruşu kuruşuna otomatik
+              yapar.
             </p>
           </div>
 
@@ -264,9 +265,7 @@ export const HarcamaMerkeziWizard: React.FC<HarcamaMerkeziWizardProps> = ({
 
             <div className="flex items-center gap-3 pt-2">
               <Link
-                to={
-                  wizardSelection.alimTuru === 'dogrudan_temin' ? '/dosyalar/yeni' : '/hakedis'
-                }
+                to={wizardSelection.alimTuru === 'dogrudan_temin' ? '/dosyalar/yeni' : '/hakedis'}
               >
                 <Button className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-2.5 px-5 rounded-xl shadow-md cursor-pointer flex items-center gap-1.5">
                   Bu Süreçle Dosya Oluştur

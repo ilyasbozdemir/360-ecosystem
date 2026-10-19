@@ -1,29 +1,29 @@
-import React, { useState } from 'react';
-import { UploadCloud, FileCheck2, Trash2, Eye } from 'lucide-react';
-import { YuklenenEvrak } from '../types';
+import React, { useState } from 'react'
+import { UploadCloud, FileCheck2, Trash2, Eye } from 'lucide-react'
+import { YuklenenEvrak } from '../types'
 
 interface SignedUploadDropzoneProps {
-  yuklenenler: YuklenenEvrak[];
-  onYukle: (evrak: YuklenenEvrak) => void;
-  onSil: (id: string) => void;
+  yuklenenler: YuklenenEvrak[]
+  onYukle: (evrak: YuklenenEvrak) => void
+  onSil: (id: string) => void
 }
 
 export const SignedUploadDropzone: React.FC<SignedUploadDropzoneProps> = ({
   yuklenenler,
   onYukle,
-  onSil,
+  onSil
 }) => {
-  const [isDragging, setIsDragging] = useState(false);
+  const [isDragging, setIsDragging] = useState(false)
 
   const handleSimulatedUpload = () => {
     const dummyEvrak: YuklenenEvrak = {
       id: `evrak-${Date.now()}`,
       dosyaAdi: `Islak_Imzali_Tutanak_${new Date().toISOString().slice(0, 10)}.pdf`,
       boyut: '2.4 MB',
-      yuklemeTarihi: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    };
-    onYukle(dummyEvrak);
-  };
+      yuklemeTarihi: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    }
+    onYukle(dummyEvrak)
+  }
 
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs space-y-4">
@@ -40,14 +40,14 @@ export const SignedUploadDropzone: React.FC<SignedUploadDropzoneProps> = ({
       {/* Dropzone Alanı */}
       <div
         onDragOver={(e) => {
-          e.preventDefault();
-          setIsDragging(true);
+          e.preventDefault()
+          setIsDragging(true)
         }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={(e) => {
-          e.preventDefault();
-          setIsDragging(false);
-          handleSimulatedUpload();
+          e.preventDefault()
+          setIsDragging(false)
+          handleSimulatedUpload()
         }}
         onClick={handleSimulatedUpload}
         className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${
@@ -107,5 +107,5 @@ export const SignedUploadDropzone: React.FC<SignedUploadDropzoneProps> = ({
         </div>
       )}
     </div>
-  );
-};
+  )
+}

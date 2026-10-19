@@ -157,7 +157,9 @@ export function validateVersionPolicy(policy: any): VersionPolicy {
 
   for (const ch of v.channels) {
     if (typeof v.channelOrder[ch] !== 'number') {
-      throw new Error(`Geçersiz sürüm politikası: "${ch}" kanalı için "channelOrder" sıralaması tanımlanmamış.`)
+      throw new Error(
+        `Geçersiz sürüm politikası: "${ch}" kanalı için "channelOrder" sıralaması tanımlanmamış.`
+      )
     }
   }
 
@@ -168,7 +170,9 @@ export function validateVersionPolicy(policy: any): VersionPolicy {
   }
 
   if (typeof v.tagPrefix !== 'string' || v.tagPrefix.length === 0) {
-    throw new Error('Geçersiz sürüm politikası: "versioning.tagPrefix" geçerli ve boş olmayan bir dize olmalıdır.')
+    throw new Error(
+      'Geçersiz sürüm politikası: "versioning.tagPrefix" geçerli ve boş olmayan bir dize olmalıdır.'
+    )
   }
 
   if (!v.prerelease || typeof v.prerelease !== 'object') {
@@ -176,15 +180,21 @@ export function validateVersionPolicy(policy: any): VersionPolicy {
   }
 
   if (typeof v.prerelease.allowChannelUpgrade !== 'boolean') {
-    throw new Error('Geçersiz sürüm politikası: "versioning.prerelease.allowChannelUpgrade" boolean olmalıdır.')
+    throw new Error(
+      'Geçersiz sürüm politikası: "versioning.prerelease.allowChannelUpgrade" boolean olmalıdır.'
+    )
   }
 
   if (typeof v.prerelease.allowChannelDowngrade !== 'boolean') {
-    throw new Error('Geçersiz sürüm politikası: "versioning.prerelease.allowChannelDowngrade" boolean olmalıdır.')
+    throw new Error(
+      'Geçersiz sürüm politikası: "versioning.prerelease.allowChannelDowngrade" boolean olmalıdır.'
+    )
   }
 
   if (typeof v.prerelease.allowAutoUpdate !== 'boolean') {
-    throw new Error('Geçersiz sürüm politikası: "versioning.prerelease.allowAutoUpdate" boolean olmalıdır.')
+    throw new Error(
+      'Geçersiz sürüm politikası: "versioning.prerelease.allowAutoUpdate" boolean olmalıdır.'
+    )
   }
 
   if (!v.channelMeta || typeof v.channelMeta !== 'object') {
@@ -194,7 +204,9 @@ export function validateVersionPolicy(policy: any): VersionPolicy {
   for (const ch of v.channels) {
     const meta = v.channelMeta[ch]
     if (!meta || typeof meta.header !== 'string' || typeof meta.description !== 'string') {
-      throw new Error(`Geçersiz sürüm politikası: "${ch}" kanalı için meta veriler (header, description) eksik.`)
+      throw new Error(
+        `Geçersiz sürüm politikası: "${ch}" kanalı için meta veriler (header, description) eksik.`
+      )
     }
   }
 
@@ -204,7 +216,10 @@ export function validateVersionPolicy(policy: any): VersionPolicy {
 function findGitRoot(startDir: string): string | null {
   let curr = startDir
   while (curr && curr !== path.dirname(curr)) {
-    if (fs.existsSync(path.join(curr, '.git')) || fs.existsSync(path.join(curr, 'pnpm-workspace.yaml'))) {
+    if (
+      fs.existsSync(path.join(curr, '.git')) ||
+      fs.existsSync(path.join(curr, 'pnpm-workspace.yaml'))
+    ) {
       return curr
     }
     curr = path.dirname(curr)
@@ -327,7 +342,9 @@ export function loadVersionPolicy(
   // 2. Electron packaged resources dizini
   if (typeof process !== 'undefined' && (process as any).resourcesPath) {
     candidatePaths.push(path.join((process as any).resourcesPath, 'version-policy.yaml'))
-    candidatePaths.push(path.join((process as any).resourcesPath, 'resources', 'version-policy.yaml'))
+    candidatePaths.push(
+      path.join((process as any).resourcesPath, 'resources', 'version-policy.yaml')
+    )
   }
 
   // 3. Electron app path
@@ -378,7 +395,10 @@ export function loadVersionPolicy(
  * SemVer formatında sürüm dizesini ayrıştırır.
  * Biçim: MAJOR.MINOR.PATCH[-KANAL.SIRA] (örn: 1.0.0-rc.1, v1.0.0-beta.256, 1.0.0)
  */
-export function parseVersion(versionStr: string, policy: VersionPolicy = DEFAULT_VERSION_POLICY): ParsedVersion {
+export function parseVersion(
+  versionStr: string,
+  policy: VersionPolicy = DEFAULT_VERSION_POLICY
+): ParsedVersion {
   if (!versionStr || typeof versionStr !== 'string') {
     throw new Error('Geçersiz versiyon: Boş veya string olmayan değer verildi.')
   }
@@ -448,7 +468,10 @@ export function tryParseVersion(
 /**
  * Sürüm dizesinin geçerli olup olmadığını doğrular
  */
-export function isValidVersion(versionStr: string, policy: VersionPolicy = DEFAULT_VERSION_POLICY): boolean {
+export function isValidVersion(
+  versionStr: string,
+  policy: VersionPolicy = DEFAULT_VERSION_POLICY
+): boolean {
   return tryParseVersion(versionStr, policy) !== null
 }
 
@@ -550,7 +573,11 @@ export function computeNextVersion(
   const targetRank = order[targetChannel]
 
   // Kanal düşürme kuralı: Prerelease kanalları arasında hedef kanal mevcut kanaldan daha düşükse denetlenir (örn: rc -> beta)
-  if (current.channel !== 'stable' && targetRank < currentRank && !policy.versioning.prerelease.allowChannelDowngrade) {
+  if (
+    current.channel !== 'stable' &&
+    targetRank < currentRank &&
+    !policy.versioning.prerelease.allowChannelDowngrade
+  ) {
     throw new Error(
       `Kanal düşürme engellendi: "${current.channel}" kanalından daha düşük bir kanal olan "${targetChannel}" kanalına geçişe izin verilmiyor.`
     )
@@ -591,7 +618,10 @@ export function computeNextVersion(
 /**
  * Geriye dönük uyumluluk patch artışı
  */
-export function bumpPatch(versionStr: string, policy: VersionPolicy = DEFAULT_VERSION_POLICY): string {
+export function bumpPatch(
+  versionStr: string,
+  policy: VersionPolicy = DEFAULT_VERSION_POLICY
+): string {
   return computeNextVersion(versionStr, { patch: true, policy })
 }
 
@@ -652,9 +682,18 @@ export function isUpdateEligible(
 /**
  * Verilen etiket için Changelog sürüm başlığını üretir
  */
-export function getReleaseHeader(tag: string, policy: VersionPolicy = DEFAULT_VERSION_POLICY): string {
+export function getReleaseHeader(
+  tag: string,
+  policy: VersionPolicy = DEFAULT_VERSION_POLICY
+): string {
   const parsed = tryParseVersion(tag, policy)
-  const channel = parsed ? parsed.channel : (tag.includes('rc') ? 'rc' : tag.includes('beta') ? 'beta' : 'stable')
+  const channel = parsed
+    ? parsed.channel
+    : tag.includes('rc')
+      ? 'rc'
+      : tag.includes('beta')
+        ? 'beta'
+        : 'stable'
   const meta = policy.versioning.channelMeta[channel] || policy.versioning.channelMeta.stable
 
   const header = meta.header.replace(/\{tag\}/g, tag)
@@ -686,7 +725,9 @@ export function checkTagExists(tag: string, cwd?: string): boolean {
     return list.includes(cleanTag)
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err)
-    throw new Error(`Git etiket kontrolü başarısız oldu (depo: "${gitCwd}", etiket: "${tag}"): ${msg}`)
+    throw new Error(
+      `Git etiket kontrolü başarısız oldu (depo: "${gitCwd}", etiket: "${tag}"): ${msg}`
+    )
   }
 }
 

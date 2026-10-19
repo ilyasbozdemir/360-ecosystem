@@ -1,4 +1,9 @@
-import { IhtiyacRaporu, IhtiyacRaporuKalem, IhtiyacRaporuDurum, KalemTipi } from '../../services/ihtiyacRaporuService'
+import {
+  IhtiyacRaporu,
+  IhtiyacRaporuKalem,
+  IhtiyacRaporuDurum,
+  KalemTipi
+} from '../../services/ihtiyacRaporuService'
 
 export type { IhtiyacRaporu, IhtiyacRaporuKalem, IhtiyacRaporuDurum, KalemTipi }
 

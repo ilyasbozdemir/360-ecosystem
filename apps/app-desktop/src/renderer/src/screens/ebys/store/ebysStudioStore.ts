@@ -182,7 +182,8 @@ export const useEbysStudioStore = create<EbysStudioState>()(
           name: name.trim() || 'Özel EBYS Şablonu',
           category: category || 'ust_yazi',
           categoryLabel: categoryLabel || 'Özel Şablon',
-          description: description.trim() || 'Kullanıcı tarafından oluşturulan özel resmî yazı şablonu.',
+          description:
+            description.trim() || 'Kullanıcı tarafından oluşturulan özel resmî yazı şablonu.',
           html: get().currentHtml,
           createdAt: new Date().toLocaleDateString('tr-TR'),
           tags: tags || ['Özel Şablon', 'TipTap']
@@ -212,7 +213,9 @@ export const useEbysStudioStore = create<EbysStudioState>()(
           sourceType: 'Belediye / Bakanlık Şablonu',
           format: 'EBYS Şablonu',
           license: 'Kurum İçi Özel Şablon',
-          complianceNotes: ['Kullanıcı tarafından TipTap editöründe oluşturulmuş dinamik EBYS şablonu.'],
+          complianceNotes: [
+            'Kullanıcı tarafından TipTap editöründe oluşturulmuş dinamik EBYS şablonu.'
+          ],
           defaultVariables: {
             kurumAdi: 'T.C. ANKARA BÜYÜKŞEHİR BELEDİYESİ',
             birimAdi: 'Destek Hizmetleri Dairesi Başkanlığı',
@@ -220,7 +223,8 @@ export const useEbysStudioStore = create<EbysStudioState>()(
             tarih: new Date().toLocaleDateString('tr-TR'),
             konu: 'Resmi Yazışma ve Süreç Bildirimi',
             muhatap: 'İLGİLİ BİRİM AMİRLİĞİNE',
-            metin: 'İdaremiz sorumluluğunda yürütülmekte olan doğrudan temin ve kamu ihale süreçleri çerçevesinde gereği arz/rica olunur.',
+            metin:
+              'İdaremiz sorumluluğunda yürütülmekte olan doğrudan temin ve kamu ihale süreçleri çerçevesinde gereği arz/rica olunur.',
             sonucParagrafi: 'Bilgilerinizi ve gereğini arz/rica ederim.',
             imzaAdi: 'Hasan YILMAZ',
             imzaUnvani: 'Daire Başkanı'

@@ -12,10 +12,7 @@ import {
   FolderOpen
 } from 'lucide-react'
 import { ViewToggle, DataViewMode } from '../../components/ui/ViewToggle'
-import {
-  IhtiyacRaporu,
-  ihtiyacRaporuService
-} from '../../services/ihtiyacRaporuService'
+import { IhtiyacRaporu, ihtiyacRaporuService } from '../../services/ihtiyacRaporuService'
 import { dbClient } from '../../services/db/dbClient'
 import { IhtiyacRaporuList } from './components/IhtiyacRaporuList'
 import { IhtiyacRaporuEditorView } from './components/IhtiyacRaporuEditorView'
@@ -31,7 +28,9 @@ export default function IhtiyacRaporlariScreen(): React.JSX.Element {
   const [raporlar, setRaporlar] = useState<IhtiyacRaporu[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [activeTab, setActiveTab] = useState<'all' | 'taslak' | 'onaylandi' | 'dosyaya_aktarildi' | 'iptal'>('all')
+  const [activeTab, setActiveTab] = useState<
+    'all' | 'taslak' | 'onaylandi' | 'dosyaya_aktarildi' | 'iptal'
+  >('all')
   const [baglantiFilter, setBaglantiFilter] = useState<'all' | 'bagli' | 'bagimsiz'>('all')
   const [viewMode, setViewMode] = useState<DataViewMode>('list')
   const [showGuide, setShowGuide] = useState(false)
@@ -88,7 +87,9 @@ export default function IhtiyacRaporlariScreen(): React.JSX.Element {
       const label = rapor ? `Rapor: ${rapor.rapor_no}` : 'İhtiyaç Raporu Detayı'
       useTabStore.getState().updateTabLabel(activeTabPath, label)
     } else if (filterDosyaId) {
-      useTabStore.getState().updateTabLabel(activeTabPath, `İhtiyaç Raporları (Dosya #${filterDosyaId})`)
+      useTabStore
+        .getState()
+        .updateTabLabel(activeTabPath, `İhtiyaç Raporları (Dosya #${filterDosyaId})`)
     } else {
       useTabStore.getState().updateTabLabel(activeTabPath, 'İhtiyaç Raporları (Havuz)')
     }
@@ -394,7 +395,8 @@ export default function IhtiyacRaporlariScreen(): React.JSX.Element {
                 Genel İhtiyaç Raporları Havuzu
               </span>
               <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                Şu anda aktif bir alım dosyası açık değil. Hazırladığınız tüm raporlar bağımsız taslak olarak saklanır; daha sonra istediğiniz alım dosyasına bağlanabilir.
+                Şu anda aktif bir alım dosyası açık değil. Hazırladığınız tüm raporlar bağımsız
+                taslak olarak saklanır; daha sonra istediğiniz alım dosyasına bağlanabilir.
               </span>
             </div>
           </div>
@@ -424,37 +426,51 @@ export default function IhtiyacRaporlariScreen(): React.JSX.Element {
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
             <div className="bg-white/90 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 p-4 rounded-2xl space-y-1.5 shadow-xs">
-              <span className="text-cyan-700 dark:text-cyan-400 font-bold block">1. İhtiyaç Raporu Oluştur</span>
+              <span className="text-cyan-700 dark:text-cyan-400 font-bold block">
+                1. İhtiyaç Raporu Oluştur
+              </span>
               <p className="text-slate-600 dark:text-slate-300 text-[11.5px] leading-relaxed">
-                İhtiyaç kalemlerini, miktarları, teknik özellikleri ve alım gerekçesini aktif bir dosya seçmeden hazırlayın.
+                İhtiyaç kalemlerini, miktarları, teknik özellikleri ve alım gerekçesini aktif bir
+                dosya seçmeden hazırlayın.
               </p>
             </div>
 
             <div className="bg-white/90 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 p-4 rounded-2xl space-y-1.5 shadow-xs">
-              <span className="text-amber-700 dark:text-amber-400 font-bold block">2. Taslak Olarak Sakla</span>
+              <span className="text-amber-700 dark:text-amber-400 font-bold block">
+                2. Taslak Olarak Sakla
+              </span>
               <p className="text-slate-600 dark:text-slate-300 text-[11.5px] leading-relaxed">
-                Henüz belirli bir doğrudan temin veya ihaleye bağlamadan veritabanında güvenle saklayın; sonra tekrar açın.
+                Henüz belirli bir doğrudan temin veya ihaleye bağlamadan veritabanında güvenle
+                saklayın; sonra tekrar açın.
               </p>
             </div>
 
             <div className="bg-white/90 dark:bg-slate-800/80 border border-slate-700/60 p-4 rounded-2xl space-y-1.5 shadow-xs">
-              <span className="text-purple-700 dark:text-purple-400 font-bold block">3. Kopyala & Yeni Rapor</span>
+              <span className="text-purple-700 dark:text-purple-400 font-bold block">
+                3. Kopyala & Yeni Rapor
+              </span>
               <p className="text-slate-600 dark:text-slate-300 text-[11.5px] leading-relaxed">
-                Önceki rapordaki kalemleri tek tıkla kopyalayın; yeni bağımsız kimlikle miktarları ve tarihleri güncelleyin.
+                Önceki rapordaki kalemleri tek tıkla kopyalayın; yeni bağımsız kimlikle miktarları
+                ve tarihleri güncelleyin.
               </p>
             </div>
 
             <div className="bg-white/90 dark:bg-slate-800/80 border border-slate-700/60 p-4 rounded-2xl space-y-1.5 shadow-xs">
-              <span className="text-emerald-700 dark:text-emerald-400 font-bold block">4. Alım Dosyasına Bağla</span>
+              <span className="text-emerald-700 dark:text-emerald-400 font-bold block">
+                4. Alım Dosyasına Bağla
+              </span>
               <p className="text-slate-600 dark:text-slate-300 text-[11.5px] leading-relaxed">
-                Raporu dilediğiniz bir alım dosyasına bağlayın ve kalemleri dosyanın İhtiyaç Listesi&apos;ne klonlayın.
+                Raporu dilediğiniz bir alım dosyasına bağlayın ve kalemleri dosyanın İhtiyaç
+                Listesi&apos;ne klonlayın.
               </p>
             </div>
           </div>
 
           <div className="pt-3 border-t border-slate-200/90 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between flex-wrap gap-2">
             <span>
-              💡 <strong className="text-slate-700 dark:text-slate-200">Kavram Ayrımı:</strong> İhtiyaç Raporu (Hazırlık Belgesi) ≠ İhtiyaç Listesi (Dosya Kalemleri) ≠ Piyasa Fiyat Araştırması ≠ Yaklaşık Maliyet.
+              💡 <strong className="text-slate-700 dark:text-slate-200">Kavram Ayrımı:</strong>{' '}
+              İhtiyaç Raporu (Hazırlık Belgesi) ≠ İhtiyaç Listesi (Dosya Kalemleri) ≠ Piyasa Fiyat
+              Araştırması ≠ Yaklaşık Maliyet.
             </span>
           </div>
         </div>
@@ -577,7 +593,10 @@ export default function IhtiyacRaporlariScreen(): React.JSX.Element {
         <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
           {/* Search */}
           <div className="relative flex-1 sm:w-72">
-            <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search
+              size={14}
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+            />
             <input
               type="text"
               value={search}

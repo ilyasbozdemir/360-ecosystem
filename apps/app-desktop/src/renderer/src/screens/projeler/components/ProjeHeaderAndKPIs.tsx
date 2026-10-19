@@ -1,12 +1,5 @@
 import React from 'react'
-import {
-  FolderKanban,
-  Plus,
-  TrendingUp,
-  Wallet,
-  Clock,
-  PieChart
-} from 'lucide-react'
+import { FolderKanban, Plus, TrendingUp, Wallet, Clock, PieChart } from 'lucide-react'
 import { Button } from '../../../components/ui/Button'
 
 interface SummaryMetrics {

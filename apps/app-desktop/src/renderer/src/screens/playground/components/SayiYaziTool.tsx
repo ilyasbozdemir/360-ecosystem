@@ -1,12 +1,5 @@
 import React, { useState, useMemo } from 'react'
-import {
-  Type,
-  RotateCcw,
-  Sparkles,
-  Copy,
-  Check,
-  Info
-} from 'lucide-react'
+import { Type, RotateCcw, Sparkles, Copy, Check, Info } from 'lucide-react'
 import { convertNumberToWords } from '../../../utils/turkishCalculationUtils'
 
 interface SayiYaziToolProps {
@@ -245,10 +238,10 @@ export function SayiYaziTool({ onCopy, copiedKey }: SayiYaziToolProps): React.JS
               4734 Sayılı Kamu İhale Kanunu ve Muhasebat Standartları:
             </p>
             <p className="mt-0.5 text-slate-500 dark:text-slate-400">
-              Resmi belgelerde, onay belgelerinde, yaklaşık maliyet hesap cetvellerinde ve
-              hakediş kapaklarında tutarların yazı ile belirtilmesi zorunludur. Yanıltmayı
-              önlemek amacıyla metnin başına ve sonuna &quot;#&quot; karakteri veya
-              &quot;Yalnız&quot; ibaresi eklenmesi tavsiye edilir.
+              Resmi belgelerde, onay belgelerinde, yaklaşık maliyet hesap cetvellerinde ve hakediş
+              kapaklarında tutarların yazı ile belirtilmesi zorunludur. Yanıltmayı önlemek amacıyla
+              metnin başına ve sonuna &quot;#&quot; karakteri veya &quot;Yalnız&quot; ibaresi
+              eklenmesi tavsiye edilir.
             </p>
           </div>
         </div>

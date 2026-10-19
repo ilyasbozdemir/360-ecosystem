@@ -54,9 +54,7 @@ const flags = {
   patch: args.includes('--patch'),
   dryRun: args.includes('--dry-run'),
   noPush: args.includes('--no-push'),
-  skipManifest:
-    args.includes('--skip-manifest') ||
-    args.includes('--skip-versions'),
+  skipManifest: args.includes('--skip-manifest') || args.includes('--skip-versions'),
   allowDirty: args.includes('--allow-dirty'),
   help: args.includes('--help') || args.includes('-h')
 }
@@ -183,10 +181,7 @@ function finalizeCurrentSchemaManifest(version, dryRun) {
     GIT_ROOT,
     'packages/database/src/schema-manifest/1.0.0-beta.current.yaml'
   )
-  const manifestsTsPath = path.join(
-    GIT_ROOT,
-    'packages/database/src/schema-manifest/manifests.ts'
-  )
+  const manifestsTsPath = path.join(GIT_ROOT, 'packages/database/src/schema-manifest/manifests.ts')
 
   if (!fs.existsSync(currentTsPath)) return
 
@@ -232,9 +227,7 @@ function finalizeCurrentSchemaManifest(version, dryRun) {
   const targetTsPath = path.join(targetTsDir, newTsName)
   const targetYamlPath = path.join(targetYamlDir, newYamlName)
 
-  console.log(
-    c.green(`✅ Şema manifesti finalize ediliyor: ${subFolder}/${newTsName}`)
-  )
+  console.log(c.green(`✅ Şema manifesti finalize ediliyor: ${subFolder}/${newTsName}`))
 
   if (!dryRun) {
     fs.mkdirSync(targetTsDir, { recursive: true })
@@ -259,10 +252,7 @@ function finalizeCurrentSchemaManifest(version, dryRun) {
 
     if (fs.existsSync(currentYamlPath)) {
       let yamlContent = fs.readFileSync(currentYamlPath, 'utf-8')
-      yamlContent = yamlContent.replace(
-        /app:\s*1\.0\.0-(?:beta|rc)\.current/,
-        `app: ${version}`
-      )
+      yamlContent = yamlContent.replace(/app:\s*1\.0\.0-(?:beta|rc)\.current/, `app: ${version}`)
       fs.writeFileSync(targetYamlPath, yamlContent, 'utf-8')
     } else {
       const defaultYaml = `app: ${version}\nschema_min: 1\nschema_max: ${currentMaxSchema}\nrelease_date: "${todayStr}"\nchanges: []\n`
@@ -289,11 +279,7 @@ function finalizeCurrentSchemaManifest(version, dryRun) {
       : isAlpha
         ? 'manifests.alpha.ts'
         : 'manifests.beta.ts'
-    const channelVarArray = isRc
-      ? 'rcManifests'
-      : isAlpha
-        ? 'alphaManifests'
-        : 'betaManifests'
+    const channelVarArray = isRc ? 'rcManifests' : isAlpha ? 'alphaManifests' : 'betaManifests'
     const channelFilePath = path.join(
       GIT_ROOT,
       `packages/database/src/schema-manifest/${channelFileName}`
@@ -353,11 +339,15 @@ function main() {
 
     if (dirtyFiles.length > 0) {
       console.error(
-        c.red('\n❌ Çalışma alanında release dışı commit edilmemiş veya stage edilmemiş değişiklikler var!')
+        c.red(
+          '\n❌ Çalışma alanında release dışı commit edilmemiş veya stage edilmemiş değişiklikler var!'
+        )
       )
       console.error(c.yellow('Release işlemi temiz bir git çalışma alanı gerektirir.'))
       console.error(c.dim('Değişen dosyalar:\n' + dirtyFiles.join('\n') + '\n'))
-      console.error(c.yellow('Lütfen release öncesi değişikliklerinizi commit edin veya stash yapın.'))
+      console.error(
+        c.yellow('Lütfen release öncesi değişikliklerinizi commit edin veya stash yapın.')
+      )
       console.error(
         c.dim('Mevcut değişikliklerle zorlamak için: node scripts/release.js --allow-dirty')
       )
@@ -417,7 +407,9 @@ function main() {
     if (checkTagExists(tag, GIT_ROOT)) {
       console.error(c.red(`\n❌ Tag "${tag}" zaten mevcut!`))
       console.error(
-        c.dim("Versiyon numarasını artırın veya uygun parametreleri (--patch / --rc / --channel) kullanın.")
+        c.dim(
+          'Versiyon numarasını artırın veya uygun parametreleri (--patch / --rc / --channel) kullanın.'
+        )
       )
       process.exit(1)
     }

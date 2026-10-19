@@ -24,10 +24,6 @@ interface WorkspaceState {
   saveAsWorkspace: (
     targetFilePath?: string
   ) => Promise<{ success: boolean; newFilePath?: string; error?: string }>
-  upgradeToTemin: () => Promise<{ success: boolean; newPath?: string; error?: string }>
-  convertAndOpenWorkspace: (
-    filePath: string
-  ) => Promise<{ success: boolean; newFilePath?: string; error?: string }>
   setIsCreatingDosya: (flag: boolean) => void
   setActiveFile: (path: string | null) => void
   setIsAuthenticated: (auth: boolean) => void
@@ -97,51 +93,6 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       window.dispatchEvent(new CustomEvent('workspace-saved'))
     }
     return res
-  },
-  upgradeToTemin: async () => {
-    const res = await window.electron.ipcRenderer.invoke('workspace:upgrade-to-temin')
-    if (res?.success && res.newPath) {
-      const newPath = res.newPath
-      sessionStorage.setItem('workspace_path', newPath)
-      localStorage.setItem('workspace_path', newPath)
-      const baseName = newPath.split(/[/\\]/).pop() || 'Bilinmeyen Dosya'
-      set({
-        activeFilePath: newPath,
-        fileName: baseName,
-        isDirty: false
-      })
-      window.dispatchEvent(new CustomEvent('workspace-saved'))
-    }
-    return res
-  },
-  convertAndOpenWorkspace: async (filePath: string) => {
-    try {
-      const result = await window.electron.ipcRenderer.invoke(
-        'workspace:convert-and-open',
-        filePath
-      )
-      if (result.success) {
-        const actualFilePath = result.newFilePath || filePath
-        sessionStorage.setItem('workspace_path', actualFilePath)
-        sessionStorage.setItem('workspace_auth', 'true')
-        localStorage.setItem('workspace_path', actualFilePath)
-        localStorage.setItem('workspace_auth', 'true')
-        set({
-          activeFilePath: actualFilePath,
-          fileName: actualFilePath.split(/[/\\]/).pop() || 'Bilinmeyen Dosya',
-          isAuthenticated: true,
-          isDirty: false,
-          activeMeta: result.meta || null,
-          activeDosyaId: null
-        })
-        window.dispatchEvent(new CustomEvent('workspace-saved'))
-        return { success: true, newFilePath: actualFilePath }
-      }
-      return { success: false, error: result.error }
-    } catch (e: any) {
-      console.error('convertAndOpenWorkspace error:', e)
-      return { success: false, error: e?.message || 'Dönüştürme sırasında hata oluştu' }
-    }
   },
   setIsCreatingDosya: (flag) => set({ isCreatingDosya: flag }),
   setActiveStarredDocs: (docs) => set({ activeStarredDocs: docs }),
@@ -233,7 +184,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
           actualFilePath
             .split(/[/\\]/)
             .pop()
-            ?.replace(/\.(temin|hkmp|dtal|dtm|dte|dta|tmn360)$/i, '') ||
+            ?.replace(/\.temin$/i, '') ||
           'Bilinmeyen Kurum'
         window.electron.ipcRenderer
           .invoke('app:add-recent-file', actualFilePath, nameWithoutExt)
@@ -285,7 +236,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
           actualFilePath
             .split(/[/\\]/)
             .pop()
-            ?.replace(/\.(temin|hkmp|dtal|dtm|dte|dta|tmn360)$/i, '') ||
+            ?.replace(/\.temin$/i, '') ||
           'Bilinmeyen Kurum'
         window.electron.ipcRenderer
           .invoke('app:add-recent-file', actualFilePath, nameWithoutExt)

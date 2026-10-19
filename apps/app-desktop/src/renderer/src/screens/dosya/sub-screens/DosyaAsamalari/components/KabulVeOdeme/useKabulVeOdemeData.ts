@@ -387,12 +387,17 @@ export function useKabulVeOdemeData() {
         tutanakNo: tutanakItem.tutanakNo,
         // Yapım Kabul Özel Alanları (KİK048, KİK049, KİK050, KİK051)
         isinAdi: dosyaContext?.is_adi || dosyaContext?.konu || dosyaContext?.ad || 'Yapım İşi',
-        sozlesmeTarihi: dosyaContext?.sozlesme_tarihi || dosyaContext?.karar_tarihi || tutanakItem.tutanakTarihi,
+        sozlesmeTarihi:
+          dosyaContext?.sozlesme_tarihi || dosyaContext?.karar_tarihi || tutanakItem.tutanakTarihi,
         sozlesmeBedeli: fmt(tutanakItem.tutar || firmaStats?.teklifToplami),
         isinSuresi: dosyaContext?.isin_suresi || dosyaContext?.teslim_suresi || '30 Takvim Günü',
-        isinBitirilmesiGerekenTarih: dosyaContext?.bitis_tarihi || dosyaContext?.teslim_tarihi || tutanakItem.tutanakTarihi,
+        isinBitirilmesiGerekenTarih:
+          dosyaContext?.bitis_tarihi || dosyaContext?.teslim_tarihi || tutanakItem.tutanakTarihi,
         varsaSureUzatimlari: dosyaContext?.sure_uzatimi || 'Bulunmamaktadır.',
-        sureUzatimiDahilBitisTarihi: dosyaContext?.sure_uzatimi_bitis || dosyaContext?.bitis_tarihi || tutanakItem.tutanakTarihi,
+        sureUzatimiDahilBitisTarihi:
+          dosyaContext?.sure_uzatimi_bitis ||
+          dosyaContext?.bitis_tarihi ||
+          tutanakItem.tutanakTarihi,
         isinBitirildigiTarih: tutanakItem.tutanakTarihi,
         geciciKabulItibarTarihi: tutanakItem.tutanakTarihi,
         geciciKabulTarihi: tutanakItem.tutanakTarihi,
@@ -449,7 +454,9 @@ export function useKabulVeOdemeData() {
         [activeDosyaId]
       )
       if (allKomRes.success && Array.isArray(allKomRes.data)) {
-        const muayeneMembers = allKomRes.data.filter((k: any) => resolveCommissionCategory(k) === 'muayene')
+        const muayeneMembers = allKomRes.data.filter(
+          (k: any) => resolveCommissionCategory(k) === 'muayene'
+        )
         setKomisyonUyeleri(muayeneMembers)
         const baskan = muayeneMembers.find(
           (k: any) =>
@@ -681,7 +688,6 @@ export function useKabulVeOdemeData() {
       isMounted = false
     }
   }, [activeDosyaId])
-
 
   return {
     activeDosyaId,

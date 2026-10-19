@@ -26,6 +26,9 @@ export interface DocumentPreviewModalV3Props {
     dosyaId?: number | null
     documentTitle?: string
   }) => void
+  /** İsteğe bağlı aşama kimliği veya numarası (1: Hazırlık, 2: Araştırma, 3: Sipariş, 4: Kabul) */
+  currentStage?: number | string
+  stage?: number | string
 }
 
 export interface Personel {

@@ -190,9 +190,7 @@ export function ProjeDetailModal({
               </div>
 
               <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1">
-                <span className="text-xs font-semibold text-slate-400 block">
-                  Kalan Bütçe Payı
-                </span>
+                <span className="text-xs font-semibold text-slate-400 block">Kalan Bütçe Payı</span>
                 <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
                   {detailProje.toplam_butce > 0
                     ? `${Number(detailProje.kalan_butce).toLocaleString('tr-TR')} ₺`
@@ -214,9 +212,9 @@ export function ProjeDetailModal({
                   Otomatik Harcama & Bütçe Yönetimi Mantığı:
                 </strong>
                 <p>
-                  Proje harcamaları manuel sayı girilerek yönetilmez. Bu projeye doğrudan temin
-                  veya ihale dosyası bağlandıkça, dosyaların maliyet tutarları proje harcamasına
-                  otomatik yansıtılır.
+                  Proje harcamaları manuel sayı girilerek yönetilmez. Bu projeye doğrudan temin veya
+                  ihale dosyası bağlandıkça, dosyaların maliyet tutarları proje harcamasına otomatik
+                  yansıtılır.
                 </p>
               </div>
             </div>
@@ -260,8 +258,7 @@ export function ProjeDetailModal({
                   Açıklama & Kapsam
                 </h4>
                 <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-wrap">
-                  {detailProje.aciklama ||
-                    'Bu proje için henüz detaylı açıklama metni eklenmemiş.'}
+                  {detailProje.aciklama || 'Bu proje için henüz detaylı açıklama metni eklenmemiş.'}
                 </p>
               </div>
             </div>
@@ -289,9 +286,7 @@ export function ProjeDetailModal({
             </div>
 
             {isLoadingDosyalar ? (
-              <div className="py-12 text-center text-xs text-slate-400">
-                Dosyalar yükleniyor...
-              </div>
+              <div className="py-12 text-center text-xs text-slate-400">Dosyalar yükleniyor...</div>
             ) : projeDosyalari.length === 0 ? (
               <div className="py-12 text-center bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 text-xs text-slate-500 space-y-3">
                 <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-500 flex items-center justify-center mx-auto">

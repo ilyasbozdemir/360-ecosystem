@@ -108,7 +108,9 @@ export const YillikOzetView: React.FC<YillikOzetViewProps> = ({ yil }) => {
                     </span>
                   </div>
                   <div className="text-right">
-                    <div className="font-mono font-bold text-slate-900 dark:text-slate-100">{fmt(stats.total)}</div>
+                    <div className="font-mono font-bold text-slate-900 dark:text-slate-100">
+                      {fmt(stats.total)}
+                    </div>
                     <div className="text-[10px] text-slate-400">{stats.count} alım</div>
                   </div>
                 </div>
@@ -134,7 +136,10 @@ export const YillikOzetView: React.FC<YillikOzetViewProps> = ({ yil }) => {
                   </span>
                 </div>
                 <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
-                  <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${pct}%` }} />
+                  <div
+                    className="h-full bg-emerald-500 rounded-full"
+                    style={{ width: `${pct}%` }}
+                  />
                 </div>
               </div>
             )

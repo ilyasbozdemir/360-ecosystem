@@ -67,7 +67,9 @@ export interface DashboardStats {
   kikLimitStat: KikLimitStat | null
 }
 
-export function useDashboardStats(filterMode: 'dogrudan_temin' | 'ihale' | 'devlet_ihale_2886' | 'all' = 'all') {
+export function useDashboardStats(
+  filterMode: 'dogrudan_temin' | 'ihale' | 'devlet_ihale_2886' | 'all' = 'all'
+) {
   const [stats, setStats] = useState<DashboardStats>({
     ihaleDosyaSayisi: 0,
     kayitliFirmaSayisi: 0,
@@ -756,7 +758,9 @@ export function useAnnouncements() {
                 month: 'short',
                 year: 'numeric'
               })
-              const elapsedDays = Math.floor((Date.now() - dateObj.getTime()) / (1000 * 60 * 60 * 24))
+              const elapsedDays = Math.floor(
+                (Date.now() - dateObj.getTime()) / (1000 * 60 * 60 * 24)
+              )
               const remainingDays = Math.max(0, retentionDays - elapsedDays)
 
               return {

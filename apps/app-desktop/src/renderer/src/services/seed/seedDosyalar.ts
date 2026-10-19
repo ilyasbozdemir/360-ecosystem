@@ -587,4 +587,3 @@ export async function seedIhale4734Only(
   await deleteIhaleDosyalariFromDb()
   return 0
 }
-

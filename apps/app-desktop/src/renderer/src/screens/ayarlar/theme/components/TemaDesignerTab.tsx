@@ -1,11 +1,7 @@
 import React from 'react'
 import { Eye, RefreshCw, Save, Sparkles } from 'lucide-react'
 import { Button } from '../../../../components/ui/Button'
-import {
-  parseRgba,
-  themeVariablesMeta,
-  toRgbaStr
-} from '../themeVariables'
+import { parseRgba, themeVariablesMeta, toRgbaStr } from '../themeVariables'
 
 interface TemaDesignerTabProps {
   designerMode: 'light' | 'dark'
@@ -109,9 +105,7 @@ export const TemaDesignerTab: React.FC<TemaDesignerTabProps> = ({
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div className="space-y-1">
-            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">
-              Tasarım Modu
-            </h3>
+            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">Tasarım Modu</h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
               Düzenlemek istediğiniz tema modunu seçin
             </p>
@@ -177,9 +171,7 @@ export const TemaDesignerTab: React.FC<TemaDesignerTabProps> = ({
 
       {/* Kategori Filtreleri */}
       <div className="flex items-center gap-2">
-        <span className="text-xs font-bold text-slate-600 dark:text-slate-400 mr-2">
-          Filtre:
-        </span>
+        <span className="text-xs font-bold text-slate-600 dark:text-slate-400 mr-2">Filtre:</span>
         {(['all', 'primary', 'text-bg', 'sidebar'] as const).map((cat) => (
           <button
             key={cat}
@@ -424,10 +416,7 @@ export const TemaDesignerTab: React.FC<TemaDesignerTabProps> = ({
                   }}
                 >
                   <div className="flex items-center justify-between">
-                    <span
-                      className="font-bold text-[10px]"
-                      style={{ color: 'var(--text-100)' }}
-                    >
+                    <span className="font-bold text-[10px]" style={{ color: 'var(--text-100)' }}>
                       Son Evraklar
                     </span>
                     <span
@@ -474,10 +463,7 @@ export const TemaDesignerTab: React.FC<TemaDesignerTabProps> = ({
 
                 {/* Input field mock */}
                 <div className="space-y-1.5">
-                  <div
-                    style={{ color: 'var(--text-200)' }}
-                    className="text-[9px] font-semibold"
-                  >
+                  <div style={{ color: 'var(--text-200)' }} className="text-[9px] font-semibold">
                     Hızlı Arama
                   </div>
                   <input

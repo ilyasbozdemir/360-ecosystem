@@ -264,6 +264,7 @@ export function useDosyaAsamasiSablons() {
       documentTitle: title,
       selectedFirma: selectedFirma || null,
       initialData: overrideCtx || snapshotCtx || null,
+      stage: sablon.kategori || undefined,
       onClose: () => {
         setPreviewModalOpen(false)
       }

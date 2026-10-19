@@ -201,7 +201,10 @@ export function IhaleVeTeklifFinansalSection(props: YeniDosyaTabProps): React.JS
           {formData.ihale_sekli?.startsWith('22/d') && (
             <p className="text-[10px] text-blue-600 dark:text-blue-400 mt-1 font-medium bg-blue-50 dark:bg-blue-900/20 p-1.5 rounded-lg border border-blue-100 dark:border-blue-800/50 leading-relaxed">
               <Info className="w-3 h-3 inline-block mr-1 mb-0.5" />
-              EKAP Standardı: <strong>22/d* (Tek Yıldız)</strong> Büyükşehir belediyesi sınırlarındaki idarelerin limitini (1.021.827 TL), <strong>22/d** (Çift Yıldız)</strong> ise diğer il ve ilçe idarelerinin limitini (340.391 TL) ifade eder.
+              EKAP Standardı: <strong>22/d* (Tek Yıldız)</strong> Büyükşehir belediyesi
+              sınırlarındaki idarelerin limitini (1.021.827 TL),{' '}
+              <strong>22/d** (Çift Yıldız)</strong> ise diğer il ve ilçe idarelerinin limitini
+              (340.391 TL) ifade eder.
             </p>
           )}
           {!formData.ihale_sekli?.startsWith('22/d') && (

@@ -53,7 +53,7 @@ export const REHBERLER_DATA: Record<string, RehberMaddesi[]> = {
     {
       baslik: '%3 Geçici Teminat ve %6 Kesin Teminat Oranı',
       icerik:
-        'İhaleye katılabilmek için muhammen bedelin en az %3\'ü oranında geçici teminat yatırılması zorunludur. İhale üzerinde kalan istekli sözleşme öncesinde bedelin %6\'sı oranında kesin teminat yatırmakla mükelleftir.',
+        "İhaleye katılabilmek için muhammen bedelin en az %3'ü oranında geçici teminat yatırılması zorunludur. İhale üzerinde kalan istekli sözleşme öncesinde bedelin %6'sı oranında kesin teminat yatırmakla mükelleftir.",
       tip: 'onemli'
     },
     {

@@ -1,9 +1,5 @@
 import React, { useState, useMemo } from 'react'
-import {
-  Layers,
-  Plus,
-  AlertCircle
-} from 'lucide-react'
+import { Layers, Plus, AlertCircle } from 'lucide-react'
 import { TakipKanbanCard } from './TakipKanbanCard'
 import { TakipFilterToolbar, type ColumnHeightMode } from './TakipFilterToolbar'
 import { logActivity } from '../../../../utils/logger'
@@ -131,7 +127,8 @@ export function TakipKanbanBoard({
   const [columnHeightMode, setColumnHeightModeState] = useState<ColumnHeightMode>(() => {
     try {
       const saved = localStorage.getItem('temin_kanban_height_mode')
-      if (saved === 'fit' || saved === '3cards' || saved === '5cards' || saved === 'auto') return saved
+      if (saved === 'fit' || saved === '3cards' || saved === '5cards' || saved === 'auto')
+        return saved
     } catch {
       // ignore
     }
@@ -202,7 +199,8 @@ export function TakipKanbanBoard({
     const years = new Set<number>()
     dosyalar.forEach((d) => {
       const y =
-        d.butce_yili || (d.dosya_acilis_tarihi ? new Date(d.dosya_acilis_tarihi).getFullYear() : null)
+        d.butce_yili ||
+        (d.dosya_acilis_tarihi ? new Date(d.dosya_acilis_tarihi).getFullYear() : null)
       if (y) years.add(y)
     })
     return Array.from(years).sort((a, b) => b - a)
@@ -364,9 +362,7 @@ export function TakipKanbanBoard({
       {/* 4-COLUMN KANBAN BOARD */}
       <div
         className={`grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 select-none ${
-          columnHeightMode === 'fit'
-            ? 'flex-1 min-h-0 xl:grid-rows-1 items-stretch'
-            : 'items-start'
+          columnHeightMode === 'fit' ? 'flex-1 min-h-0 xl:grid-rows-1 items-stretch' : 'items-start'
         }`}
       >
         {KANBAN_STAGES.map((col) => {
@@ -377,10 +373,7 @@ export function TakipKanbanBoard({
             return stage === col.stageId
           })
 
-          const totalMaliyet = columnDosyalar.reduce(
-            (sum, d) => sum + (d.yaklasik_maliyet || 0),
-            0
-          )
+          const totalMaliyet = columnDosyalar.reduce((sum, d) => sum + (d.yaklasik_maliyet || 0), 0)
           const isHovered = activeDropStage === col.stageId
 
           return (
@@ -391,9 +384,7 @@ export function TakipKanbanBoard({
               onDrop={(e) => handleDrop(e, col.stageId)}
               className={`flex flex-col rounded-3xl border transition-all duration-200 min-h-140 xl:min-h-0 ${
                 columnHeightMode === 'fit' ? 'xl:h-full xl:overflow-hidden' : ''
-              } bg-slate-50/60 dark:bg-slate-900/40 p-3.5 ${
-                col.borderColor
-              } ${
+              } bg-slate-50/60 dark:bg-slate-900/40 p-3.5 ${col.borderColor} ${
                 isHovered
                   ? 'ring-2 ring-blue-500 bg-blue-50/20 dark:bg-blue-950/20 scale-[1.01]'
                   : ''

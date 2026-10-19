@@ -7,6 +7,7 @@ import {
   Clock,
   Copy,
   Edit,
+  ExternalLink,
   FileSpreadsheet,
   FileText,
   Link2,
@@ -259,6 +260,25 @@ export function IhtiyacRaporuDetailView({
               <span className="hidden sm:inline">Kopyala</span>
             </button>
 
+            {rapor.temin_dosya_id ? (
+              <button
+                onClick={() => {
+                  setActiveDosyaId(rapor.temin_dosya_id!)
+                  navigate({ to: APP_ROUTES.HAZIRLIK_VE_IHTIYAC })
+                }}
+                className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
+                title={`Bağlı Satın Alma Dosyasına Git (${rapor.dosya_no || '#' + rapor.temin_dosya_id})`}
+              >
+                <ExternalLink size={13} />
+                <span>Dosyaya Git</span>
+                {rapor.dosya_no && (
+                  <span className="bg-blue-500/80 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold">
+                    {rapor.dosya_no}
+                  </span>
+                )}
+              </button>
+            ) : null}
+
             {!rapor.temin_dosya_id ? (
               <button
                 onClick={() => onOpenLinkModal(rapor)}
@@ -271,6 +291,7 @@ export function IhtiyacRaporuDetailView({
               <button
                 onClick={() => onOpenLinkModal(rapor)}
                 className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                title="Dosya Bağlantısını Değiştir / Kaldır"
               >
                 <Link2 size={13} />
                 <span>Bağlantı</span>

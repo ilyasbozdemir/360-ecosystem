@@ -1,15 +1,5 @@
 import React, { useState } from 'react'
-import {
-  Key,
-  Lock,
-  User,
-  Eye,
-  EyeOff,
-  Check,
-  Copy,
-  Laptop,
-  Calendar
-} from 'lucide-react'
+import { Key, Lock, User, Eye, EyeOff, Check, Copy, Laptop, Calendar } from 'lucide-react'
 
 export interface PasswordHistoryItem {
   id?: string
@@ -55,9 +45,9 @@ export const PasswordHistoryCard: React.FC<PasswordHistoryCardProps> = ({
               Geçmiş Şifre ve Veritabanı Kilit Arşivi ({passwordHistory.length})
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Migration kolon güncellemeleri gibi, geçmiş şifreler de tarih ve cihazla ilişkilendirilerek
-              saklanır. Eski yedek veya çalışma dosyalarını açmak için aşağıdaki geçmiş kilit şifrelerini
-              kullanabilirsiniz.
+              Migration kolon güncellemeleri gibi, geçmiş şifreler de tarih ve cihazla
+              ilişkilendirilerek saklanır. Eski yedek veya çalışma dosyalarını açmak için aşağıdaki
+              geçmiş kilit şifrelerini kullanabilirsiniz.
             </p>
           </div>
         </div>
@@ -68,8 +58,8 @@ export const PasswordHistoryCard: React.FC<PasswordHistoryCardProps> = ({
 
       {passwordHistory.length === 0 ? (
         <div className="p-6 text-center text-xs text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
-          Henüz kaydedilmiş geçmiş şifre kaydı bulunmuyor. Şifre değişiklikleri otomatik olarak buraya
-          arşivlenir.
+          Henüz kaydedilmiş geçmiş şifre kaydı bulunmuyor. Şifre değişiklikleri otomatik olarak
+          buraya arşivlenir.
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">

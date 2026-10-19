@@ -52,7 +52,8 @@ const HAZIR_MATBU_IZIN_FORMLARI = [
     rejim: '657_memur' as const,
     gun: 10,
     aciklama: '657 Sayılı Kanun m.102 gereğince yıllık izin talebi',
-    ipucu: '657 DMK m.102: Hizmeti 1-10 yıl olanlara 20, 10 yıldan fazla olanlara 30 takvim günü verilir. Hafta sonu izin süresine dahildir.'
+    ipucu:
+      '657 DMK m.102: Hizmeti 1-10 yıl olanlara 20, 10 yıldan fazla olanlara 30 takvim günü verilir. Hafta sonu izin süresine dahildir.'
   },
   {
     id: 'f-4857-ucretli',
@@ -61,7 +62,8 @@ const HAZIR_MATBU_IZIN_FORMLARI = [
     rejim: '4857_isci' as const,
     gun: 14,
     aciklama: '4857 Sayılı İş Kanunu m.53 gereğince yıllık ücretli izin',
-    ipucu: '4857 İş Kanunu m.53: Kıdem 1-5 yıl: 14, 5-15 yıl: 20, 15+ yıl: 26 iş günüdür. Hafta tatili (Pazar) ve akdi tatiller düşülmez.'
+    ipucu:
+      '4857 İş Kanunu m.53: Kıdem 1-5 yıl: 14, 5-15 yıl: 20, 15+ yıl: 26 iş günüdür. Hafta tatili (Pazar) ve akdi tatiller düşülmez.'
   },
   {
     id: 'f-mazeret-evlilik',
@@ -70,7 +72,8 @@ const HAZIR_MATBU_IZIN_FORMLARI = [
     rejim: '657_memur' as const,
     gun: 7,
     aciklama: 'Memurun kendisinin veya çocuğunun evlenmesi halinde mazeret izni',
-    ipucu: '657 DMK m.104/B: Memura kendisinin veya çocuğunun evlenmesi halinde 7 gün mazeret izni verilir. 4857 SK için 3 iş günüdür.'
+    ipucu:
+      '657 DMK m.104/B: Memura kendisinin veya çocuğunun evlenmesi halinde 7 gün mazeret izni verilir. 4857 SK için 3 iş günüdür.'
   },
   {
     id: 'f-mazeret-vefat',
@@ -88,7 +91,8 @@ const HAZIR_MATBU_IZIN_FORMLARI = [
     rejim: '657_memur' as const,
     gun: 5,
     aciklama: 'Aile hekimi veya uzman hekim istirahat raporunun izne çevrilmesi',
-    ipucu: '657 DMK m.105: Tek hekim tek seferde en çok 10 gün rapor verebilir; rapordan itibaren en geç ertesi gün kuruma intikal ettirilmelidir.'
+    ipucu:
+      '657 DMK m.105: Tek hekim tek seferde en çok 10 gün rapor verebilir; rapordan itibaren en geç ertesi gün kuruma intikal ettirilmelidir.'
   },
   {
     id: 'f-vekalet-onay',
@@ -97,7 +101,8 @@ const HAZIR_MATBU_IZIN_FORMLARI = [
     rejim: '657_memur' as const,
     gun: 1,
     aciklama: 'İzin süresince imza ve birim sorumluluğunun devri',
-    ipucu: 'Kamu idarelerinde amir veya şef izinli iken harcama ve resmi evrak işlemlerinin aksamaması için vekil personel belirlenir.'
+    ipucu:
+      'Kamu idarelerinde amir veya şef izinli iken harcama ve resmi evrak işlemlerinin aksamaması için vekil personel belirlenir.'
   }
 ]
 
@@ -153,14 +158,11 @@ export const PersonelIzinMerkeziView: React.FC<PersonelIzinMerkeziViewProps> = (
 }) => {
   const storeInstitutionName = useSettingsStore((s) => s.institutionName)
   const storeAdminName = useSettingsStore((s) => s.adminName)
-  const aktifKurumAdi =
-    kurumAdi || storeInstitutionName || 'T.C. KAMU İDARESİ BAŞKANLIĞI'
+  const aktifKurumAdi = kurumAdi || storeInstitutionName || 'T.C. KAMU İDARESİ BAŞKANLIĞI'
   const aktifHarcamaYetkilisi =
     harcamaYetkilisiAdi || storeAdminName || 'Harcama Yetkilisi / Kurum Amiri'
 
-  const [activeRejimTab, setActiveRejimTab] = useState<'hepsi' | '657_memur' | '4857_isci'>(
-    'hepsi'
-  )
+  const [activeRejimTab, setActiveRejimTab] = useState<'hepsi' | '657_memur' | '4857_isci'>('hepsi')
   const [seciliPersonelId, setSeciliPersonelId] = useState<number | string>(
     personelList[0]?.id || 1
   )
@@ -332,7 +334,9 @@ export const PersonelIzinMerkeziView: React.FC<PersonelIzinMerkeziViewProps> = (
                 <Sparkles className="w-4 h-4 text-amber-500" />
                 <span>Kurumsal Matbu İzin Şablonları & Hızlı Doldurma</span>
               </div>
-              <span className="text-[10px] text-slate-400 font-semibold">Tıklayarak formu doldurun</span>
+              <span className="text-[10px] text-slate-400 font-semibold">
+                Tıklayarak formu doldurun
+              </span>
             </div>
             <div className="flex flex-wrap gap-2">
               {HAZIR_MATBU_IZIN_FORMLARI.map((form) => {
@@ -356,7 +360,9 @@ export const PersonelIzinMerkeziView: React.FC<PersonelIzinMerkeziViewProps> = (
                       }}
                       className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold cursor-pointer"
                     >
-                      <Download className={`w-3.5 h-3.5 ${isActive ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-500'}`} />
+                      <Download
+                        className={`w-3.5 h-3.5 ${isActive ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-500'}`}
+                      />
                       <span>{form.ad}</span>
                     </button>
                     <button
@@ -682,9 +688,7 @@ export const PersonelIzinMerkeziView: React.FC<PersonelIzinMerkeziViewProps> = (
                   <td className="p-2 font-bold bg-slate-100 dark:bg-slate-800 border-r border-slate-400">
                     Talep Edilen İzin Türü:
                   </td>
-                  <td className="p-2 font-semibold capitalize">
-                    {izinTuru.replace('_', ' ')}
-                  </td>
+                  <td className="p-2 font-semibold capitalize">{izinTuru.replace('_', ' ')}</td>
                 </tr>
                 <tr className="border-b border-slate-400">
                   <td className="p-2 font-bold bg-slate-100 dark:bg-slate-800 border-r border-slate-400">
@@ -713,8 +717,8 @@ export const PersonelIzinMerkeziView: React.FC<PersonelIzinMerkeziViewProps> = (
             {/* Talep Metni */}
             <p className="text-justify text-[11px] indent-6 leading-relaxed">
               Yukarıda belirtilen tarihler arasında tarafıma kanunen tanınmış bulunan{' '}
-              <strong>{gunSayisi}</strong> günlük iznimi kullanmak istiyorum. Gereğini müsaadelerinize
-              arz ederim.
+              <strong>{gunSayisi}</strong> günlük iznimi kullanmak istiyorum. Gereğini
+              müsaadelerinize arz ederim.
             </p>
 
             {/* İmzalar */}
@@ -737,7 +741,9 @@ export const PersonelIzinMerkeziView: React.FC<PersonelIzinMerkeziViewProps> = (
               <div className="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">
                 UYGUNDUR
               </div>
-              <div className="text-[10px] text-slate-500">{new Date().toLocaleDateString('tr-TR')}</div>
+              <div className="text-[10px] text-slate-500">
+                {new Date().toLocaleDateString('tr-TR')}
+              </div>
               <div className="pt-6 font-bold text-xs">{aktifHarcamaYetkilisi}</div>
               <div className="text-[10px] text-slate-500 font-sans">
                 Harcama Yetkilisi / Kurum Amiri (Mühür ve İmza)

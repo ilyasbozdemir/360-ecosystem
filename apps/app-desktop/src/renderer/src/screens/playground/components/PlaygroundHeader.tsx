@@ -1,12 +1,5 @@
 import React from 'react'
-import {
-  Calculator,
-  Type,
-  TrendingUp,
-  Percent,
-  Coins,
-  Clock
-} from 'lucide-react'
+import { Calculator, Type, TrendingUp, Percent, Coins, Clock } from 'lucide-react'
 import { ActiveTool } from '../types'
 
 interface PlaygroundHeaderProps {

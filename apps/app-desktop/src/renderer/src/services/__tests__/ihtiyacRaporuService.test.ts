@@ -1,8 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import {
-  ihtiyacRaporuService,
-  IhtiyacRaporuKalem
-} from '../ihtiyacRaporuService'
+import { ihtiyacRaporuService, IhtiyacRaporuKalem } from '../ihtiyacRaporuService'
 import {
   mapRaporToLuzumMuzekkeresiData,
   sanitizeMiktar,
@@ -130,66 +127,68 @@ describe('ihtiyacRaporuService Tests', () => {
     })
 
     // Mock dbClient.transaction (atomic runner with snapshot rollback simulation)
-    vi.spyOn(dbClient, 'transaction').mockImplementation(async (statements: { sql: string; params?: any[] }[]) => {
-      // 1. Transaction öncesi anlık durum (Snapshot) alınır
-      const snapshotRaporlar = JSON.parse(JSON.stringify(mockRaporlar))
-      const snapshotTeminKalemler = JSON.parse(JSON.stringify(mockTeminKalemler))
-      const snapshotDosyalar = JSON.parse(JSON.stringify(mockDosyalar))
+    vi.spyOn(dbClient, 'transaction').mockImplementation(
+      async (statements: { sql: string; params?: any[] }[]) => {
+        // 1. Transaction öncesi anlık durum (Snapshot) alınır
+        const snapshotRaporlar = JSON.parse(JSON.stringify(mockRaporlar))
+        const snapshotTeminKalemler = JSON.parse(JSON.stringify(mockTeminKalemler))
+        const snapshotDosyalar = JSON.parse(JSON.stringify(mockDosyalar))
 
-      try {
-        for (const stmt of statements) {
-          const sql = stmt.sql
-          const params = stmt.params || []
+        try {
+          for (const stmt of statements) {
+            const sql = stmt.sql
+            const params = stmt.params || []
 
-          // Simüle edilmiş SQL/Kısıtlama hatası tetikleyici
-          if (sql.includes('SIMULATE_SQL_FAILURE')) {
-            throw new Error('SQLite SQLITE_CONSTRAINT: foreign key mismatch in transaction')
-          }
-
-          if (sql.includes('UPDATE DATA_IhtiyacRaporu SET temin_dosya_id = ?')) {
-            const dosyaId = params[0]
-            const raporId = params[1]
-            const r = mockRaporlar.find((item) => item.id === raporId)
-            if (r) {
-              r.temin_dosya_id = dosyaId
-              r.durum = 'dosyaya_aktarildi'
+            // Simüle edilmiş SQL/Kısıtlama hatası tetikleyici
+            if (sql.includes('SIMULATE_SQL_FAILURE')) {
+              throw new Error('SQLite SQLITE_CONSTRAINT: foreign key mismatch in transaction')
             }
-          } else if (sql.includes('DELETE FROM DATA_TeminKalem WHERE temin_dosya_id = ?')) {
-            const dId = params[0]
-            mockTeminKalemler = mockTeminKalemler.filter((tk) => tk.temin_dosya_id !== dId)
-          } else if (sql.includes('INSERT INTO DATA_TeminKalem')) {
-            const id = nextTeminKalemId++
-            mockTeminKalemler.push({
-              id,
-              temin_dosya_id: params[0],
-              sira_no: params[1],
-              kalem_adi: params[2],
-              tipi: params[3],
-              birim: params[4],
-              miktar: params[5],
-              kdv_orani: params[6],
-              tasinir_kodu: params[7],
-              okas_kodu: params[8],
-              poz_no: params[9],
-              aciklama: params[10]
-            })
-          } else if (sql.includes('UPDATE DATA_TeminDosyasi SET')) {
-            const dId = params[params.length - 1]
-            const d = mockDosyalar.find((item) => item.id === dId)
-            if (d && sql.includes('isin_aciklamasi = ?')) {
-              d.isin_aciklamasi = params[0]
+
+            if (sql.includes('UPDATE DATA_IhtiyacRaporu SET temin_dosya_id = ?')) {
+              const dosyaId = params[0]
+              const raporId = params[1]
+              const r = mockRaporlar.find((item) => item.id === raporId)
+              if (r) {
+                r.temin_dosya_id = dosyaId
+                r.durum = 'dosyaya_aktarildi'
+              }
+            } else if (sql.includes('DELETE FROM DATA_TeminKalem WHERE temin_dosya_id = ?')) {
+              const dId = params[0]
+              mockTeminKalemler = mockTeminKalemler.filter((tk) => tk.temin_dosya_id !== dId)
+            } else if (sql.includes('INSERT INTO DATA_TeminKalem')) {
+              const id = nextTeminKalemId++
+              mockTeminKalemler.push({
+                id,
+                temin_dosya_id: params[0],
+                sira_no: params[1],
+                kalem_adi: params[2],
+                tipi: params[3],
+                birim: params[4],
+                miktar: params[5],
+                kdv_orani: params[6],
+                tasinir_kodu: params[7],
+                okas_kodu: params[8],
+                poz_no: params[9],
+                aciklama: params[10]
+              })
+            } else if (sql.includes('UPDATE DATA_TeminDosyasi SET')) {
+              const dId = params[params.length - 1]
+              const d = mockDosyalar.find((item) => item.id === dId)
+              if (d && sql.includes('isin_aciklamasi = ?')) {
+                d.isin_aciklamasi = params[0]
+              }
             }
           }
+          return { success: true, changes: statements.length }
+        } catch (err) {
+          // Rollback: Hata durumunda veritabanı anlık durumuna (snapshot) geri döndürülür
+          mockRaporlar = snapshotRaporlar
+          mockTeminKalemler = snapshotTeminKalemler
+          mockDosyalar = snapshotDosyalar
+          throw err
         }
-        return { success: true, changes: statements.length }
-      } catch (err) {
-        // Rollback: Hata durumunda veritabanı anlık durumuna (snapshot) geri döndürülür
-        mockRaporlar = snapshotRaporlar
-        mockTeminKalemler = snapshotTeminKalemler
-        mockDosyalar = snapshotDosyalar
-        throw err
       }
-    })
+    )
 
     // Mock dbClient.run
     vi.spyOn(dbClient, 'run').mockImplementation(async (sql: string, params: any[] = []) => {
@@ -389,7 +388,13 @@ describe('ihtiyacRaporuService Tests', () => {
         tahmini_butce: 20000
       },
       [
-        { kalem_adi: 'Soğuk Asfalt', tipi: 'Mal', birim: 'Torba', miktar: 50, tahmini_birim_fiyat: 400 }
+        {
+          kalem_adi: 'Soğuk Asfalt',
+          tipi: 'Mal',
+          birim: 'Torba',
+          miktar: 50,
+          tahmini_birim_fiyat: 400
+        }
       ]
     )
 
@@ -592,9 +597,7 @@ describe('ihtiyacRaporuService Tests', () => {
         temin_dosya_id: null,
         tarih: '2026-03-10'
       },
-      [
-        { kalem_adi: 'Monitor 27 inç', tipi: 'Mal', birim: 'Adet', miktar: 3, kdv_orani: 20 }
-      ]
+      [{ kalem_adi: 'Monitor 27 inç', tipi: 'Mal', birim: 'Adet', miktar: 3, kdv_orani: 20 }]
     )
 
     const res = await ihtiyacRaporuService.linkToDosya(raporId, 10, {
@@ -716,10 +719,7 @@ describe('ihtiyacRaporuService Tests', () => {
     const origTransaction = dbClient.transaction
     vi.spyOn(dbClient, 'transaction').mockImplementationOnce(async (statements) => {
       // Birinci statement (UPDATE DATA_IhtiyacRaporu) çalıştıktan sonra hata patlat
-      const augmentedStatements = [
-        ...statements,
-        { sql: 'SIMULATE_SQL_FAILURE' }
-      ]
+      const augmentedStatements = [...statements, { sql: 'SIMULATE_SQL_FAILURE' }]
       return origTransaction.call(dbClient, augmentedStatements)
     })
 
@@ -929,4 +929,3 @@ describe('ihtiyacRaporuService Tests', () => {
     expect(clonedKalemler[0].miktar).toBe(100)
   })
 })
-

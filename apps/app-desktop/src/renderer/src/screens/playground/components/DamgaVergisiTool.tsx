@@ -1,11 +1,6 @@
 import React, { useState, useMemo } from 'react'
-import {
-  Coins
-} from 'lucide-react'
-import {
-  calculateDamgaVergisi,
-  formatCurrency
-} from '../../../utils/turkishCalculationUtils'
+import { Coins } from 'lucide-react'
+import { calculateDamgaVergisi, formatCurrency } from '../../../utils/turkishCalculationUtils'
 
 export function DamgaVergisiTool(): React.JSX.Element {
   const [damgaMatrahInput, setDamgaMatrahInput] = useState<string>('250000')
@@ -167,9 +162,7 @@ export function DamgaVergisiTool(): React.JSX.Element {
                 )}
                 {incKikPayi && (
                   <tr className="bg-slate-50/50 dark:bg-slate-800/30">
-                    <td className="p-3 text-slate-700 dark:text-slate-300">
-                      KİK Payı (‰ 0,5)
-                    </td>
+                    <td className="p-3 text-slate-700 dark:text-slate-300">KİK Payı (‰ 0,5)</td>
                     <td className="p-3 font-semibold text-red-600 dark:text-red-400 text-right">
                       - {formatCurrency(damgaSonuc.kikPayi)}
                     </td>

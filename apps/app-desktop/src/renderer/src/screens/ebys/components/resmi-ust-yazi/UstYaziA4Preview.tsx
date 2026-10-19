@@ -100,9 +100,7 @@ export function UstYaziA4Preview(props: PreviewProps): React.JSX.Element {
               </tbody>
             </table>
           </div>
-          <div className="font-bold text-right">
-            Tarih: {formatTrDate(tarih) || '__.__.20__'}
-          </div>
+          <div className="font-bold text-right">Tarih: {formatTrDate(tarih) || '__.__.20__'}</div>
         </div>
 
         {/* Muhatap */}
@@ -136,8 +134,14 @@ export function UstYaziA4Preview(props: PreviewProps): React.JSX.Element {
             ) : (
               <div className="h-16" />
             )}
-            {imzaList[0].g && <b>{imzaList[0].g}<br /></b>}
-            {imzaList[0].a}<br />
+            {imzaList[0].g && (
+              <b>
+                {imzaList[0].g}
+                <br />
+              </b>
+            )}
+            {imzaList[0].a}
+            <br />
             {imzaList[0].u}
           </div>
         )}
@@ -153,14 +157,18 @@ export function UstYaziA4Preview(props: PreviewProps): React.JSX.Element {
                     className="align-top text-[10pt] p-1 leading-snug"
                   >
                     {eimza ? (
-                      <div className="text-[9pt] italic mb-1 text-slate-600">
-                        e-imzalıdır
-                      </div>
+                      <div className="text-[9pt] italic mb-1 text-slate-600">e-imzalıdır</div>
                     ) : (
                       <div className="h-10" />
                     )}
-                    {im.g && <b>{im.g}<br /></b>}
-                    {im.a}<br />
+                    {im.g && (
+                      <b>
+                        {im.g}
+                        <br />
+                      </b>
+                    )}
+                    {im.a}
+                    <br />
                     {im.u}
                   </td>
                 ))}
@@ -214,8 +222,11 @@ export function UstYaziA4Preview(props: PreviewProps): React.JSX.Element {
           <div className="mt-6 flex justify-between text-[11pt] leading-normal">
             <div className="italic text-slate-700">Para Birimi: Türk Lirası (TL)</div>
             <div className="text-right">
-              Tarih: .…../.…../20…<br />
-              Kaşe:<br /><br />
+              Tarih: .…../.…../20…
+              <br />
+              Kaşe:
+              <br />
+              <br />
               İmza:
             </div>
           </div>
@@ -242,7 +253,9 @@ export function UstYaziA4Preview(props: PreviewProps): React.JSX.Element {
               <div className="pl-5">
                 <b>Gereği:</b>
                 {geregLines.map((line, idx) => (
-                  <p key={idx} className="m-0">- {line}</p>
+                  <p key={idx} className="m-0">
+                    - {line}
+                  </p>
                 ))}
               </div>
             )}
@@ -250,7 +263,9 @@ export function UstYaziA4Preview(props: PreviewProps): React.JSX.Element {
               <div className="pl-5 mt-1">
                 <b>Bilgi:</b>
                 {bilgiLines.map((line, idx) => (
-                  <p key={idx} className="m-0">- {line}</p>
+                  <p key={idx} className="m-0">
+                    - {line}
+                  </p>
                 ))}
               </div>
             )}
@@ -265,15 +280,17 @@ export function UstYaziA4Preview(props: PreviewProps): React.JSX.Element {
               .map((r, idx) => (
                 <div key={idx} className="min-w-[110px] text-center">
                   <i className="block h-6 border-b border-black mb-1" />
-                  {r.a || '…'}<br />
+                  {r.a || '…'}
+                  <br />
                   <span className="text-[9pt]">{r.u || ''}</span>
                 </div>
               ))}
           </div>
         ) : (
           <div className="mt-8 pt-2 border-t border-black text-[10pt] leading-normal">
-            Bu belge, 5070 sayılı Elektronik İmza Kanunu çerçevesinde güvenli elektronik imza
-            ile imzalanmıştır.<br />
+            Bu belge, 5070 sayılı Elektronik İmza Kanunu çerçevesinde güvenli elektronik imza ile
+            imzalanmıştır.
+            <br />
             Belge Doğrulama Kodu: <span className="font-mono">{kod}</span>
           </div>
         )}
@@ -286,14 +303,19 @@ export function UstYaziA4Preview(props: PreviewProps): React.JSX.Element {
               <tbody>
                 <tr>
                   <td className="align-top">
-                    Adres: {adres}<br />
-                    Elektronik Ağ: {web}<br />
-                    E-Posta: {eposta}<br />
+                    Adres: {adres}
+                    <br />
+                    Elektronik Ağ: {web}
+                    <br />
+                    E-Posta: {eposta}
+                    <br />
                     KEP: {kep}
                   </td>
                   <td className="text-right align-top">
-                    Bilgi İçin: {hazad}<br />
-                    {hazun}<br />
+                    Bilgi İçin: {hazad}
+                    <br />
+                    {hazun}
+                    <br />
                     Telefon No: {haztel}
                   </td>
                 </tr>

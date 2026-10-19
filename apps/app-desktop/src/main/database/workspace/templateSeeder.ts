@@ -195,7 +195,9 @@ export function seedTemplates(db: Database.Database): void {
       if (route_path) {
         let sablonId = existing ? existing.id : null
         if (!sablonId) {
-          const newRow = db.prepare('SELECT id FROM TANIM_Sablon WHERE dosya_adi = ?').get(dosya_adi) as any
+          const newRow = db
+            .prepare('SELECT id FROM TANIM_Sablon WHERE dosya_adi = ?')
+            .get(dosya_adi) as any
           if (newRow) sablonId = newRow.id
         }
         if (sablonId) {

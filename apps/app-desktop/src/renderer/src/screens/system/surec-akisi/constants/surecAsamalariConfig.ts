@@ -120,7 +120,8 @@ export const SUREC_STAGE_DEFINITIONS: SurecStageDefinition[] = [
       {
         name: 'Doğrudan Temin Sözleşmesi / Taahhüt',
         tab: 'belgeler',
-        checkDone: ({ activeDosya }) => Boolean(activeDosya?.sozlesme_tarihi || activeDosya?.sozlesme_bedeli)
+        checkDone: ({ activeDosya }) =>
+          Boolean(activeDosya?.sozlesme_tarihi || activeDosya?.sozlesme_bedeli)
       }
     ],
     defaultDocs: [
@@ -142,7 +143,9 @@ export const SUREC_STAGE_DEFINITIONS: SurecStageDefinition[] = [
         name: 'Muayene Kabul Komisyonu İncelemesi',
         tab: 'komisyon',
         checkDone: ({ komisyonlar }) =>
-          komisyonlar.some((k) => k.tur.toLowerCase().includes('muayene') || k.tur.toLowerCase().includes('kabul'))
+          komisyonlar.some(
+            (k) => k.tur.toLowerCase().includes('muayene') || k.tur.toLowerCase().includes('kabul')
+          )
       },
       {
         name: 'Muayene Kabul Tutanağını Düzenle',
@@ -173,7 +176,8 @@ export const SUREC_STAGE_DEFINITIONS: SurecStageDefinition[] = [
       {
         name: 'Fatura ve Hakediş Kontrolü',
         tab: 'belgeler',
-        checkDone: ({ activeDosya }) => Boolean(activeDosya?.fatura_no || activeDosya?.fatura_tutari)
+        checkDone: ({ activeDosya }) =>
+          Boolean(activeDosya?.fatura_no || activeDosya?.fatura_tutari)
       },
       {
         name: 'Ödeme Yazısı / Harcama Pusulası Hazırla',

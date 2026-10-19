@@ -168,8 +168,7 @@ export const TurOzelAlanlarCard: React.FC<TurOzelAlanlarCardProps> = ({
                   type="text"
                   list="yeni-fiyat-donem-list"
                   value={
-                    formData.fiyat_donemi ||
-                    `${formData.poz_yili || new Date().getFullYear()}/1`
+                    formData.fiyat_donemi || `${formData.poz_yili || new Date().getFullYear()}/1`
                   }
                   onChange={(e) => {
                     const val = e.target.value
@@ -182,13 +181,13 @@ export const TurOzelAlanlarCard: React.FC<TurOzelAlanlarCardProps> = ({
                   className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500"
                 />
                 <datalist id="yeni-fiyat-donem-list">
-                  {getDinamikFiyatDonemleri(
-                    formData.poz_yili || new Date().getFullYear()
-                  ).map((d) => (
-                    <option key={d.kod} value={d.kod}>
-                      {d.etiket}
-                    </option>
-                  ))}
+                  {getDinamikFiyatDonemleri(formData.poz_yili || new Date().getFullYear()).map(
+                    (d) => (
+                      <option key={d.kod} value={d.kod}>
+                        {d.etiket}
+                      </option>
+                    )
+                  )}
                 </datalist>
               </div>
 

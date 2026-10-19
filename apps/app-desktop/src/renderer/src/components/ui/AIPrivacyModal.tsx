@@ -51,8 +51,8 @@ export function AIPrivacyModal({ onAccept, onDecline }: AIPrivacyModalProps) {
                 <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0" />
                 <span>
                   <strong>Yasal Sorumluluk:</strong> Yapay zeka tavsiyeleri 4734, 4735 ve 2886
-                  sayılı kanunlar ile ilgili kamu ihale mevzuatı çerçevesinde şekillense de, son onay
-                  ve yasal sorumluluk her zaman işlemi gerçekleştiren personele aittir.
+                  sayılı kanunlar ile ilgili kamu ihale mevzuatı çerçevesinde şekillense de, son
+                  onay ve yasal sorumluluk her zaman işlemi gerçekleştiren personele aittir.
                 </span>
               </li>
             </ul>

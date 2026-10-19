@@ -2,7 +2,11 @@ import React from 'react'
 import { FileText, Package } from 'lucide-react'
 import { cn } from '../../../../utils/cn'
 import { SubScreen } from '../../SubScreens.screen'
-import { isV2Template, normalizeForMatch, useDosyaAsamasiSablons as useDosyaAsamasiSablonsV2 } from './useDosyaAsamasiSablons'
+import {
+  isV2Template,
+  normalizeForMatch,
+  useDosyaAsamasiSablons as useDosyaAsamasiSablonsV2
+} from './useDosyaAsamasiSablons'
 import { useMalzemeListesi } from '../components/MalzemeListesi/useMalzemeListesi'
 import { MalzemeEkleModal } from '../components/MalzemeListesi/MalzemeEkleModal'
 import { MalzemeTablosu } from '../components/MalzemeListesi/MalzemeTablosu'

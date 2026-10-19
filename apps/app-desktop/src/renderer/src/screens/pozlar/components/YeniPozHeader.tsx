@@ -49,12 +49,7 @@ export function YeniPozHeader({
       </div>
 
       <div className="flex items-center gap-3 self-end sm:self-auto">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleTryClose}
-          className="gap-2 text-xs"
-        >
+        <Button type="button" variant="outline" onClick={handleTryClose} className="gap-2 text-xs">
           <RotateCcw size={14} />
           {isDirty ? (
             <span className="text-amber-600 dark:text-amber-400">Değişiklikleri Geri Al</span>

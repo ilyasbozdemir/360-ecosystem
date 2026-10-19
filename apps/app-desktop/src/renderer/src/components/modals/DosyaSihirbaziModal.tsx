@@ -24,11 +24,7 @@ export function DosyaSihirbaziModal({
   if (isOpen === false) return null
 
   return (
-    <DosyaSihirbaziScreen
-      initialStage={initialStage}
-      onClose={onClose}
-      onSuccess={onSuccess}
-    />
+    <DosyaSihirbaziScreen initialStage={initialStage} onClose={onClose} onSuccess={onSuccess} />
   )
 }
 

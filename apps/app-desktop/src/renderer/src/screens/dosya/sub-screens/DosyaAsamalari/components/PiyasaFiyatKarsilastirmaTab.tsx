@@ -78,7 +78,6 @@ export function PiyasaFiyatKarsilastirmaTab({
   const netSavings = totalBefore - totalAfter
   const overallSavingsRate = totalBefore > 0 ? (netSavings / totalBefore) * 100 : 0
 
-
   if (items.length === 0) {
     return (
       <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/60 rounded-2xl p-6 text-center text-amber-800 dark:text-amber-300">

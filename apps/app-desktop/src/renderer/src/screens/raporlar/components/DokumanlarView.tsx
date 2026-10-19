@@ -35,17 +35,16 @@ export function DokumanlarView({ filters }: DokumanlarViewProps): React.JSX.Elem
   }
 
   const toggleSelect = (id: number) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
-    )
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]))
   }
 
   const handleExportZip = async (targetData: RaporDokumanItem[]) => {
     if (!targetData.length) return
     const zipFiles = targetData.map((item) => ({
-      name: item.dosya_adi.endsWith('.pdf') || item.dosya_adi.endsWith('.zip')
-        ? item.dosya_adi
-        : `${item.dosya_adi}.pdf`,
+      name:
+        item.dosya_adi.endsWith('.pdf') || item.dosya_adi.endsWith('.zip')
+          ? item.dosya_adi
+          : `${item.dosya_adi}.pdf`,
       html: `<html><head><meta charset="utf-8"/><title>${item.dosya_adi}</title></head><body><h1>${item.ihale_no} - ${item.ihale_adi}</h1><h2>Belge: ${item.dosya_adi}</h2><p>Tarih: ${item.eklenme_tarihi}</p></body></html>`
     }))
 
@@ -57,7 +56,11 @@ export function DokumanlarView({ filters }: DokumanlarViewProps): React.JSX.Elem
 
   const handleDelete = async (id: number) => {
     if (!confirm('Bu doküman kaydını silmek istediğinize emin misiniz?')) return
-    await window.electron?.ipcRenderer?.invoke('db:query', 'DELETE FROM DATA_TeminBelge WHERE id = ?', [id])
+    await window.electron?.ipcRenderer?.invoke(
+      'db:query',
+      'DELETE FROM DATA_TeminBelge WHERE id = ?',
+      [id]
+    )
     refetch()
   }
 
@@ -72,7 +75,11 @@ export function DokumanlarView({ filters }: DokumanlarViewProps): React.JSX.Elem
       `"${d.eklenme_tarihi}"`,
       `"${d.birim || ''}"`
     ])
-    exportCsv(`ihale_dokumanlari_raporu_${new Date().toISOString().split('T')[0]}.csv`, headers, rows)
+    exportCsv(
+      `ihale_dokumanlari_raporu_${new Date().toISOString().split('T')[0]}.csv`,
+      headers,
+      rows
+    )
   }
 
   const getFormatBadge = (fmt: string) => {
@@ -171,10 +178,16 @@ export function DokumanlarView({ filters }: DokumanlarViewProps): React.JSX.Elem
                   />
                 </th>
                 <th className="py-3 px-4 font-bold text-slate-800 dark:text-slate-100">İhale No</th>
-                <th className="py-3 px-4 font-bold text-slate-800 dark:text-slate-100">İhale Adı</th>
+                <th className="py-3 px-4 font-bold text-slate-800 dark:text-slate-100">
+                  İhale Adı
+                </th>
                 <th className="py-3 px-4 font-bold text-slate-800 dark:text-slate-100">Dosya</th>
-                <th className="py-3 px-4 font-bold text-slate-800 dark:text-slate-100">Eklenme Tarihi</th>
-                <th className="py-3 px-4 text-right font-bold text-slate-800 dark:text-slate-100">#</th>
+                <th className="py-3 px-4 font-bold text-slate-800 dark:text-slate-100">
+                  Eklenme Tarihi
+                </th>
+                <th className="py-3 px-4 text-right font-bold text-slate-800 dark:text-slate-100">
+                  #
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700">

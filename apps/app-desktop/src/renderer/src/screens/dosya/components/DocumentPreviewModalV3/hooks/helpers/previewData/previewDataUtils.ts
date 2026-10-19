@@ -1,6 +1,10 @@
 import { TemplateRegistryService } from '@temin360/document-templates'
 
-export function applyRolePolicy(baseData: any, templateId: string, _komisyonSatirlari?: any[]): void {
+export function applyRolePolicy(
+  baseData: any,
+  templateId: string,
+  _komisyonSatirlari?: any[]
+): void {
   TemplateRegistryService.applyRolePolicy(baseData, templateId)
 }
 

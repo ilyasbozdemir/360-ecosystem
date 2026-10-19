@@ -10,9 +10,4 @@ export const FONT_OPTIONS = [
   { label: 'DejaVu Sans (Açık Kaynak)', value: "'DejaVu Sans', sans-serif" }
 ]
 
-export type DocumentThemeSectionType =
-  | 'typography'
-  | 'page'
-  | 'colors'
-  | 'table'
-  | 'spacing'
+export type DocumentThemeSectionType = 'typography' | 'page' | 'colors' | 'table' | 'spacing'

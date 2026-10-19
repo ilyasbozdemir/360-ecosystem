@@ -308,7 +308,6 @@ export function useTakip(): UseTakipReturn {
 
   const currentAsamaSira = activeDosya?.durum_asama_id || 1
 
-
   // Handle toggle signed state (imzalandı ↔ imzalanmadı)
   const handleToggleSign = async (belgeId: number, currentState: number) => {
     try {

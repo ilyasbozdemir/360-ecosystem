@@ -268,7 +268,10 @@ export function useHizliDosyaEkle() {
         alert('Panoda yapıştırılacak metin veya tablo bulunamadı.')
         return
       }
-      const rawLines = text.trim().split(/\r?\n/).filter((l) => l.trim().length > 0)
+      const rawLines = text
+        .trim()
+        .split(/\r?\n/)
+        .filter((l) => l.trim().length > 0)
       if (rawLines.length === 0) return
 
       // Başlık satırı kontrolü: Eğer ilk satır "dosya no", "dt no", "dosya adı" gibi başlık kelimeleri içeriyorsa atla

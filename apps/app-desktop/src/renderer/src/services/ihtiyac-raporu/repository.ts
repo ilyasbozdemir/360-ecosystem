@@ -1,15 +1,7 @@
 import { dbClient } from '../db/dbClient'
 import { ensureIhtiyacRaporuTables } from './schema'
-import {
-  IhtiyacRaporu,
-  IhtiyacRaporuKalem,
-  IhtiyacRaporuFilters
-} from './types'
-import {
-  sanitizeMiktar,
-  sanitizeKdvOrani,
-  sanitizeBirimFiyat
-} from './adapter'
+import { IhtiyacRaporu, IhtiyacRaporuKalem, IhtiyacRaporuFilters } from './types'
+import { sanitizeMiktar, sanitizeKdvOrani, sanitizeBirimFiyat } from './adapter'
 import { calculateTotals } from '../../utils/ihtiyacRaporuTotals'
 
 export const ihtiyacRaporuRepository = {
@@ -246,10 +238,7 @@ export const ihtiyacRaporuRepository = {
 
     if (fields.length > 0) {
       values.push(id)
-      await dbClient.run(
-        `UPDATE DATA_IhtiyacRaporu SET ${fields.join(', ')} WHERE id = ?`,
-        values
-      )
+      await dbClient.run(`UPDATE DATA_IhtiyacRaporu SET ${fields.join(', ')} WHERE id = ?`, values)
     }
 
     if (kalemler !== undefined) {

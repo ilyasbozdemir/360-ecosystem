@@ -6,9 +6,7 @@ import { KonuVeAciklamaFields } from './components/KonuVeAciklamaFields'
 import { TarihlerVeBirimFields } from './components/TarihlerVeBirimFields'
 import { AntetMakamVeIhtiyacYeriFields } from './components/AntetMakamVeIhtiyacYeriFields'
 
-export function GenelBilgilerVeIdariAntetSection(
-  props: YeniDosyaTabProps
-): React.JSX.Element {
+export function GenelBilgilerVeIdariAntetSection(props: YeniDosyaTabProps): React.JSX.Element {
   const { formData } = props
 
   const targetYear = useMemo(() => {

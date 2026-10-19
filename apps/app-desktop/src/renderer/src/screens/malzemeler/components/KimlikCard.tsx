@@ -131,9 +131,7 @@ export const KimlikCard: React.FC<KimlikCardProps> = ({
               <Calendar className="w-3.5 h-3.5 text-slate-400" />
               Fiyat Araştırma Dönemi
             </span>
-            <span className="text-[10px] text-slate-400 font-mono">
-              Birim Fiyat / KİK
-            </span>
+            <span className="text-[10px] text-slate-400 font-mono">Birim Fiyat / KİK</span>
           </label>
           <div className="flex gap-1.5">
             <input
@@ -180,9 +178,10 @@ export const KimlikCard: React.FC<KimlikCardProps> = ({
             ) : (
               <>
                 {[
-                  `${new Date().getFullYear()}-${String(
-                    new Date().getMonth() + 1
-                  ).padStart(2, '0')}`,
+                  `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(
+                    2,
+                    '0'
+                  )}`,
                   `${new Date().getFullYear()} Yılı`
                 ].map((p) => (
                   <button

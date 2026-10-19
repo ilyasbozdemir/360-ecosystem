@@ -1,14 +1,5 @@
 import React from 'react'
-import {
-  Landmark,
-  Sliders,
-  MapPin,
-  ShieldCheck,
-  Phone,
-  Mail,
-  Copy,
-  Check
-} from 'lucide-react'
+import { Landmark, Sliders, MapPin, ShieldCheck, Phone, Mail, Copy, Check } from 'lucide-react'
 import { KurumVerisi } from '../../kurum.hooks'
 
 interface KurumBilgiKartlariGridProps {
@@ -38,7 +29,9 @@ export const KurumBilgiKartlariGrid: React.FC<KurumBilgiKartlariGridProps> = ({
 
         <div className="space-y-2 text-xs">
           <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-850">
-            <span className="text-[10px] text-slate-400 font-bold uppercase block">Kurum / Belediye Başkanı</span>
+            <span className="text-[10px] text-slate-400 font-bold uppercase block">
+              Kurum / Belediye Başkanı
+            </span>
             <span className="font-bold text-slate-800 dark:text-slate-200 text-xs block truncate mt-0.5">
               {data.kurum_baskani || '—'}
             </span>
@@ -50,7 +43,9 @@ export const KurumBilgiKartlariGrid: React.FC<KurumBilgiKartlariGridProps> = ({
           </div>
 
           <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-850">
-            <span className="text-[10px] text-slate-400 font-bold uppercase block">Varsayılan Harcama Yetkilisi</span>
+            <span className="text-[10px] text-slate-400 font-bold uppercase block">
+              Varsayılan Harcama Yetkilisi
+            </span>
             <span className="font-bold text-slate-800 dark:text-slate-200 text-xs block truncate mt-0.5">
               {data.harcama_yetkilisi || '—'}
             </span>
@@ -58,7 +53,9 @@ export const KurumBilgiKartlariGrid: React.FC<KurumBilgiKartlariGridProps> = ({
 
           {data.makam_adi && (
             <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-850">
-              <span className="text-[10px] text-slate-400 font-bold uppercase block">Muhatap Makam</span>
+              <span className="text-[10px] text-slate-400 font-bold uppercase block">
+                Muhatap Makam
+              </span>
               <span className="font-semibold text-slate-700 dark:text-slate-300 text-[11px] block truncate mt-0.5">
                 {data.makam_adi}
               </span>

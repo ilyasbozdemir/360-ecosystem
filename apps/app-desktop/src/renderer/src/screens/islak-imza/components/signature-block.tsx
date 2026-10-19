@@ -1,14 +1,14 @@
-import React from 'react';
-import { ImzaciSatiri } from '../types';
+import React from 'react'
+import { ImzaciSatiri } from '../types'
 
 interface SignatureBlockProps {
-  signers: ImzaciSatiri[];
+  signers: ImzaciSatiri[]
 }
 
 export const SignatureBlock: React.FC<SignatureBlockProps> = ({ signers }) => {
   // İmzacılar onay/yetkili durumuna göre sağa veya eşit sütunlara dağıtılır
-  const onaylayanlar = signers.filter((s) => s.imzaTipi === 'Onay');
-  const hazirlayanVeKontrol = signers.filter((s) => s.imzaTipi !== 'Onay');
+  const onaylayanlar = signers.filter((s) => s.imzaTipi === 'Onay')
+  const hazirlayanVeKontrol = signers.filter((s) => s.imzaTipi !== 'Onay')
 
   return (
     <div className="w-full mt-8 pt-4 border-t border-slate-300">
@@ -53,8 +53,12 @@ export const SignatureBlock: React.FC<SignatureBlockProps> = ({ signers }) => {
                     Mühür / Islak İmza Alanı
                   </span>
                 </div>
-                <div className="text-[11px] font-bold text-slate-900">{s.adSoyad || 'Adı Soyadı'}</div>
-                <div className="text-[10px] text-slate-600 font-medium">{s.unvan || 'Harcama Yetkilisi'}</div>
+                <div className="text-[11px] font-bold text-slate-900">
+                  {s.adSoyad || 'Adı Soyadı'}
+                </div>
+                <div className="text-[10px] text-slate-600 font-medium">
+                  {s.unvan || 'Harcama Yetkilisi'}
+                </div>
                 {s.tarihVar && (
                   <div className="text-[9px] text-slate-400 mt-0.5">Tarih: .../.../202...</div>
                 )}
@@ -64,5 +68,5 @@ export const SignatureBlock: React.FC<SignatureBlockProps> = ({ signers }) => {
         </div>
       )}
     </div>
-  );
-};
+  )
+}

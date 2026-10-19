@@ -37,9 +37,7 @@ export const DosyaYonetimi2886Table: React.FC<DosyaYonetimi2886TableProps> = ({
             {filteredDosyalar.map((d) => {
               const isActive = activeDosyaId === d.id
               const bedel =
-                d.muhammenBedel?.takdirEdilenMuhammenBedel ||
-                d.muhammenBedel?.hesaplananBedel ||
-                0
+                d.muhammenBedel?.takdirEdilenMuhammenBedel || d.muhammenBedel?.hesaplananBedel || 0
 
               return (
                 <tr
@@ -55,15 +53,11 @@ export const DosyaYonetimi2886Table: React.FC<DosyaYonetimi2886TableProps> = ({
                     {d.ihaleAdi}
                   </td>
                   <td className="p-3">{getTurBadge(d.islemTuru)}</td>
-                  <td className="p-3 text-slate-500 dark:text-slate-400">
-                    {getUsulLabel(d.usul)}
-                  </td>
+                  <td className="p-3 text-slate-500 dark:text-slate-400">{getUsulLabel(d.usul)}</td>
                   <td className="p-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
                     ₺{formatMoney(bedel)}
                   </td>
-                  <td className="p-3 text-center font-mono text-slate-500">
-                    {d.ihaleTarihi}
-                  </td>
+                  <td className="p-3 text-center font-mono text-slate-500">{d.ihaleTarihi}</td>
                   <td className="p-3 text-center">
                     <div className="flex items-center justify-center gap-1">
                       <button

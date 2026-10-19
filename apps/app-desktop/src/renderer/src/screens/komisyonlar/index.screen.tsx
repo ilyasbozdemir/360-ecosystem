@@ -1,23 +1,20 @@
-import React from "react";
-import { Building2, FolderKanban, Plus, Sparkles, Users } from "lucide-react";
-import { Button } from "../../components/ui/Button";
-import { KomisyonOlusturModal } from "./components/KomisyonOlusturModal";
-import { PersonelAtaModal } from "./components/PersonelAtaModal";
-import { HizliKadroGuncelleModal } from "./components/HizliKadroGuncelleModal";
-import { KomisyonAtamaModal } from "../dosya/sub-screens/components/MalzemeListesi/components/KomisyonAtamaModal";
-import { GenelSablonKadrolariTab } from "./components/GenelSablonKadrolariTab";
-import { DosyaKomisyonlariTab } from "./components/DosyaKomisyonlariTab";
-import { PersonelGorevDagilimiTab } from "./components/PersonelGorevDagilimiTab";
-import { AtamaGecmisiModal } from "./components/AtamaGecmisiModal";
-import {
-  isBaseKomisyon,
-  useKomisyonlarScreenLogic,
-} from "./useKomisyonlarScreenLogic";
+import React from 'react'
+import { Building2, FolderKanban, Plus, Sparkles, Users } from 'lucide-react'
+import { Button } from '../../components/ui/Button'
+import { KomisyonOlusturModal } from './components/KomisyonOlusturModal'
+import { PersonelAtaModal } from './components/PersonelAtaModal'
+import { HizliKadroGuncelleModal } from './components/HizliKadroGuncelleModal'
+import { KomisyonAtamaModal } from '../dosya/sub-screens/components/MalzemeListesi/components/KomisyonAtamaModal'
+import { GenelSablonKadrolariTab } from './components/GenelSablonKadrolariTab'
+import { DosyaKomisyonlariTab } from './components/DosyaKomisyonlariTab'
+import { PersonelGorevDagilimiTab } from './components/PersonelGorevDagilimiTab'
+import { AtamaGecmisiModal } from './components/AtamaGecmisiModal'
+import { isBaseKomisyon, useKomisyonlarScreenLogic } from './useKomisyonlarScreenLogic'
 
 export default function KomisyonlarScreen({
-  isSubComponent = false,
+  isSubComponent = false
 }: {
-  isSubComponent?: boolean;
+  isSubComponent?: boolean
 }): React.JSX.Element {
   const {
     addTab,
@@ -62,14 +59,16 @@ export default function KomisyonlarScreen({
     isKomisyonMatchingMode,
     filteredKomisyonlar,
     filteredDosyaKomisyonlar,
-    handleDeleteKomisyon,
-  } = useKomisyonlarScreenLogic();
+    handleDeleteKomisyon
+  } = useKomisyonlarScreenLogic()
 
   return (
     <div
-      className={isSubComponent
-        ? "flex flex-col h-full space-y-6 w-full animate-in fade-in duration-200"
-        : "flex flex-col h-full space-y-6"}
+      className={
+        isSubComponent
+          ? 'flex flex-col h-full space-y-6 w-full animate-in fade-in duration-200'
+          : 'flex flex-col h-full space-y-6'
+      }
     >
       {/* Header Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4 gap-4">
@@ -79,18 +78,18 @@ export default function KomisyonlarScreen({
             Komisyon Yönetimi ve Atama Geçmişi
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Genel şablon kadrolarını yönetebilir veya dosyalara özel komisyon
-            kadro atamalarını ve revizyon geçmişini inceleyebilirsiniz.
+            Genel şablon kadrolarını yönetebilir veya dosyalara özel komisyon kadro atamalarını ve
+            revizyon geçmişini inceleyebilirsiniz.
           </p>
         </div>
 
-        {activeMainTab === "sablonlar" && (
+        {activeMainTab === 'sablonlar' && (
           <div className="flex flex-wrap items-center gap-3">
             <Button
               className="gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-sm shadow-blue-500/20 rounded-xl px-4 py-2 text-sm font-semibold transition-all cursor-pointer"
               onClick={() => {
-                setEditingKomisyonId(null);
-                setIsModalOpen(true);
+                setEditingKomisyonId(null)
+                setIsModalOpen(true)
               }}
             >
               <Plus className="w-4 h-4" /> Yeni Komisyon Tanımla
@@ -103,11 +102,11 @@ export default function KomisyonlarScreen({
       <div className="flex items-center gap-2 p-1.5 bg-slate-200/70 dark:bg-slate-900 border border-slate-300/80 dark:border-slate-800 rounded-2xl w-fit">
         <button
           type="button"
-          onClick={() => setActiveMainTab("sablonlar")}
+          onClick={() => setActiveMainTab('sablonlar')}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
-            activeMainTab === "sablonlar"
-              ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-md border border-slate-200 dark:border-slate-700"
-              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+            activeMainTab === 'sablonlar'
+              ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-md border border-slate-200 dark:border-slate-700'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
           <Building2 className="w-4 h-4" />
@@ -119,11 +118,11 @@ export default function KomisyonlarScreen({
 
         <button
           type="button"
-          onClick={() => setActiveMainTab("dosya_komisyonlari")}
+          onClick={() => setActiveMainTab('dosya_komisyonlari')}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
-            activeMainTab === "dosya_komisyonlari"
-              ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-md border border-slate-200 dark:border-slate-700"
-              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+            activeMainTab === 'dosya_komisyonlari'
+              ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-md border border-slate-200 dark:border-slate-700'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
           <FolderKanban className="w-4 h-4" />
@@ -135,11 +134,11 @@ export default function KomisyonlarScreen({
 
         <button
           type="button"
-          onClick={() => setActiveMainTab("gorev_dagilimi")}
+          onClick={() => setActiveMainTab('gorev_dagilimi')}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
-            activeMainTab === "gorev_dagilimi"
-              ? "bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-md border border-slate-200 dark:border-slate-700"
-              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+            activeMainTab === 'gorev_dagilimi'
+              ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-md border border-slate-200 dark:border-slate-700'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
           <Sparkles className="w-4 h-4 text-amber-500" />
@@ -151,10 +150,10 @@ export default function KomisyonlarScreen({
       </div>
 
       {/* TAB 3: KURUMSAL PERSONEL GÖREV DAĞILIMI VE PLANLAMA HAVUZU */}
-      {activeMainTab === "gorev_dagilimi" && <PersonelGorevDagilimiTab />}
+      {activeMainTab === 'gorev_dagilimi' && <PersonelGorevDagilimiTab />}
 
       {/* TAB 1: GENEL ŞABLON KADROLARI */}
-      {activeMainTab === "sablonlar" && (
+      {activeMainTab === 'sablonlar' && (
         <GenelSablonKadrolariTab
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
@@ -169,24 +168,24 @@ export default function KomisyonlarScreen({
           expandedBelgelerMap={expandedBelgelerMap}
           toggleBelgeler={toggleBelgeler}
           onHizliKadro={(k) => {
-            setHizliKadroKomisyon(k);
-            setHizliKadroOpen(true);
+            setHizliKadroKomisyon(k)
+            setHizliKadroOpen(true)
           }}
           onEditKomisyon={(id) => {
-            setEditingKomisyonId(id);
-            setIsModalOpen(true);
+            setEditingKomisyonId(id)
+            setIsModalOpen(true)
           }}
           onDeleteKomisyon={handleDeleteKomisyon}
           onOpenPreview={handleOpenPreviewForSablon}
           onOpenDetails={(id) => {
-            addTab("/komisyonlar/detay?id=" + id);
+            addTab('/komisyonlar/detay?id=' + id)
           }}
           activeDosyaId={activeDosyaId}
         />
       )}
 
       {/* TAB 2: DOSYA KOMİSYONLARI VE ATAMA GEÇMİŞİ ZAMAN ÇİZELGESİ */}
-      {activeMainTab === "dosya_komisyonlari" && (
+      {activeMainTab === 'dosya_komisyonlari' && (
         <DosyaKomisyonlariTab
           filteredDosyaKomisyonlar={filteredDosyaKomisyonlar}
           isDosyaKomisyonLoading={isDosyaKomisyonLoading}
@@ -201,11 +200,11 @@ export default function KomisyonlarScreen({
       <HizliKadroGuncelleModal
         isOpen={hizliKadroOpen}
         onClose={() => {
-          setHizliKadroOpen(false);
-          setHizliKadroKomisyon(null);
+          setHizliKadroOpen(false)
+          setHizliKadroKomisyon(null)
         }}
         komisyonId={hizliKadroKomisyon?.id || null}
-        komisyonAdi={hizliKadroKomisyon?.ad || "Komisyon"}
+        komisyonAdi={hizliKadroKomisyon?.ad || 'Komisyon'}
         activeDosyaId={activeDosyaId}
       />
 
@@ -213,18 +212,18 @@ export default function KomisyonlarScreen({
       <KomisyonOlusturModal
         isOpen={isModalOpen}
         onClose={() => {
-          setIsModalOpen(false);
-          setEditingKomisyonId(null);
+          setIsModalOpen(false)
+          setEditingKomisyonId(null)
         }}
         komisyonId={editingKomisyonId}
         onPreviewSablon={(sablon) => {
           if (!activeDosyaId) {
             alert(
-              'Lütfen önce sol menüden veya "Dosyalar" altından bir dosya/proje açın. Belgeler, aktif dosya verileri kullanılarak hazırlanmaktadır.',
-            );
-            return;
+              'Lütfen önce sol menüden veya "Dosyalar" altından bir dosya/proje açın. Belgeler, aktif dosya verileri kullanılarak hazırlanmaktadır.'
+            )
+            return
           }
-          handleOpenPreviewForSablon(sablon, sablon.ad);
+          handleOpenPreviewForSablon(sablon, sablon.ad)
         }}
       />
 
@@ -233,10 +232,10 @@ export default function KomisyonlarScreen({
         <KomisyonAtamaModal
           isOpen={!!editingDosyaId}
           onClose={() => {
-            setEditingDosyaId(null);
+            setEditingDosyaId(null)
             queryClient.invalidateQueries({
-              queryKey: ["dosya-komisyonlari-global-list"],
-            });
+              queryKey: ['dosya-komisyonlari-global-list']
+            })
           }}
           activeDosyaId={editingDosyaId}
         />
@@ -255,13 +254,13 @@ export default function KomisyonlarScreen({
       <PersonelAtaModal
         isOpen={isAtaModalOpen}
         onClose={() => {
-          setIsAtaModalOpen(false);
-          setAtaRoleId(null);
-          setAtaKomisyonId(null);
+          setIsAtaModalOpen(false)
+          setAtaRoleId(null)
+          setAtaKomisyonId(null)
         }}
         roleId={ataRoleId}
         komisyonId={ataKomisyonId}
       />
     </div>
-  );
+  )
 }

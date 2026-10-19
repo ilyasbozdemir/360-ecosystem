@@ -235,10 +235,7 @@ export default function ProfilScreen(): React.JSX.Element {
       <AuditTrailInfoCard />
 
       {/* 4. BÖLÜM: GEÇMİŞ ŞİFRE VE VERİTABANI KİLİT ARŞİVİ */}
-      <PasswordHistoryCard
-        passwordHistory={passwordHistory}
-        adminPassword={adminPassword}
-      />
+      <PasswordHistoryCard passwordHistory={passwordHistory} adminPassword={adminPassword} />
 
       {/* YENİ / DÜZENLEME KURUM PROFİLİ MODALI */}
       <KurumProfileModal

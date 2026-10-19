@@ -207,7 +207,8 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         trashRetentionDays: parseInt(settings.trashRetentionDays || '30', 10) || 30,
         isAiConfigured,
         aiProvider,
-        defaultKurumIci: settings.defaultKurumIci !== undefined ? settings.defaultKurumIci !== 'false' : true
+        defaultKurumIci:
+          settings.defaultKurumIci !== undefined ? settings.defaultKurumIci !== 'false' : true
         // isDisclaimerAccepted is intentionally not loaded from DB to show it on every app launch
       })
     } catch (error) {

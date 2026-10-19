@@ -9,10 +9,7 @@ interface TurSecimiCardProps {
   selectedType: 'Mal' | 'Hizmet' | 'Yapım'
 }
 
-export const TurSecimiCard: React.FC<TurSecimiCardProps> = ({
-  setFormData,
-  selectedType
-}) => {
+export const TurSecimiCard: React.FC<TurSecimiCardProps> = ({ setFormData, selectedType }) => {
   return (
     <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-5">
       <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">

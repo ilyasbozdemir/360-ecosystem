@@ -246,9 +246,7 @@ export function TopluGridTab({
                   <td className="p-2">
                     <select
                       value={row.kdv_orani}
-                      onChange={(e) =>
-                        handleUpdateRow(row.id, 'kdv_orani', Number(e.target.value))
-                      }
+                      onChange={(e) => handleUpdateRow(row.id, 'kdv_orani', Number(e.target.value))}
                       className="w-full px-1.5 py-1.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-lg font-bold text-center"
                     >
                       <option value={20}>%20</option>

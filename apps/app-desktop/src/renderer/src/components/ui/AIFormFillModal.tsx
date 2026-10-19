@@ -1,11 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import {
-  Sparkles,
-  X,
-  Zap,
-  MessageSquare,
-  ChevronRight
-} from 'lucide-react'
+import { Sparkles, X, Zap, MessageSquare, ChevronRight } from 'lucide-react'
 import { cn } from '../../utils/cn'
 import type {
   AIFormContext,

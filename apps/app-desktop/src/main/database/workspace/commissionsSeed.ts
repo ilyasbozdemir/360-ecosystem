@@ -81,9 +81,7 @@ export function seedDefaultCommissions(db: Database.Database): void {
 
     // 3. Sablon baglantilari (TANIM_Komisyon_Sablon)
     const checkSablonTable = db
-      .prepare(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name='TANIM_Komisyon_Sablon'"
-      )
+      .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='TANIM_Komisyon_Sablon'")
       .get()
     if (checkSablonTable) {
       try {

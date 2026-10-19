@@ -16,14 +16,7 @@ export function buildKalemlerSheet(
   ctx: ExportContext
 ): void {
   const { dosya, kalemler = [] } = data
-  const {
-    dosyaNoStr,
-    dosyaKonusu,
-    turLabel,
-    kurumAdi,
-    kalemlerSheetName,
-    kalemTotalRow
-  } = ctx
+  const { dosyaNoStr, dosyaKonusu, turLabel, kurumAdi, kalemlerSheetName, kalemTotalRow } = ctx
 
   const wsKalem = workbook.addWorksheet(kalemlerSheetName, {
     pageSetup: {

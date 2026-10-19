@@ -41,7 +41,11 @@ export const ButceOdenekTanimTab: React.FC = () => {
     if (!id) return
     if (!confirm('Bu bütçe ödenek kaydını silmek istediğinize emin misiniz?')) return
     try {
-      await window.electron.ipcRenderer.invoke('db:query', 'DELETE FROM TANIM_ButceOdenek WHERE id = ?', [id])
+      await window.electron.ipcRenderer.invoke(
+        'db:query',
+        'DELETE FROM TANIM_ButceOdenek WHERE id = ?',
+        [id]
+      )
       loadData()
     } catch {}
   }
@@ -66,7 +70,8 @@ export const ButceOdenekTanimTab: React.FC = () => {
             Bütçe & Ödenek Tertipleri Yönetimi
           </h2>
           <p className="text-xs text-slate-500">
-            Harcama birimlerinin bütçe tertipleri, yıllık başlangıç ödenekleri ve %10 yasal limit tanımları.
+            Harcama birimlerinin bütçe tertipleri, yıllık başlangıç ödenekleri ve %10 yasal limit
+            tanımları.
           </p>
         </div>
 
@@ -160,7 +165,9 @@ export const ButceOdenekTanimTab: React.FC = () => {
                       {it.birim_adi}
                     </td>
                     <td className="py-3 px-3 font-mono text-slate-500">{it.kurumsal_kod || '-'}</td>
-                    <td className="py-3 px-3 font-mono font-bold text-purple-600">{it.butce_kodu}</td>
+                    <td className="py-3 px-3 font-mono font-bold text-purple-600">
+                      {it.butce_kodu}
+                    </td>
                     <td className="py-3 px-3 text-slate-700 dark:text-slate-300 max-w-xs truncate">
                       {it.butce_kalemi}
                     </td>

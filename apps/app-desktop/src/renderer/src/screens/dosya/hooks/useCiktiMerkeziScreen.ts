@@ -110,7 +110,10 @@ export function useCiktiMerkeziScreen() {
       try {
         const isElectron = typeof window !== 'undefined' && (window as any).electron
         if (!isElectron) {
-          const res = window.prompt('Lütfen bu belge paketi taslağı için bir isim girin:', defaultName)
+          const res = window.prompt(
+            'Lütfen bu belge paketi taslağı için bir isim girin:',
+            defaultName
+          )
           if (res && res.trim()) name = res.trim()
         }
       } catch {

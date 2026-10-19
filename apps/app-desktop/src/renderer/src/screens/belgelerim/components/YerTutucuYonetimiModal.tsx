@@ -148,7 +148,9 @@ export function YerTutucuYonetimiModal({
         yeniAnahtar: renameItem.newKey.trim(),
         belgeIds: renameItem.usages.map((u) => u.id)
       })
-      alert(`Anahtar başarıyla güncellendi. ${renameItem.usages.length} belge yeni sürüme aktarıldı.`)
+      alert(
+        `Anahtar başarıyla güncellendi. ${renameItem.usages.length} belge yeni sürüme aktarıldı.`
+      )
       setRenameItem(null)
       loadData()
       onRefreshPlaceholders?.()
@@ -398,7 +400,9 @@ export function YerTutucuYonetimiModal({
                     className="p-2 bg-slate-50 dark:bg-slate-800 rounded text-xs flex justify-between items-center"
                   >
                     <span className="font-medium text-slate-800 dark:text-slate-200">{u.ad}</span>
-                    <span className="text-[10px] text-blue-600 dark:text-blue-400">v{u.surum_no}</span>
+                    <span className="text-[10px] text-blue-600 dark:text-blue-400">
+                      v{u.surum_no}
+                    </span>
                   </div>
                 ))}
               </div>

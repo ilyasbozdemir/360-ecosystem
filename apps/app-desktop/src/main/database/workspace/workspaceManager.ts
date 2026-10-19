@@ -19,10 +19,6 @@ export const workspaceManager = {
   save: (force: boolean = false) => {
     if (activeWorkspace) activeWorkspace.saveWorkspace(force)
   },
-  convertToTemin: () => {
-    if (!activeWorkspace) return { success: false, error: 'Açık bir çalışma alanı yok.' }
-    return activeWorkspace.convertToTemin()
-  },
   saveAs: (targetFilePath: string) => {
     if (!activeWorkspace) return { success: false, error: 'Açık bir çalışma alanı yok.' }
     return activeWorkspace.saveAs(targetFilePath)
@@ -90,7 +86,9 @@ export const workspaceManager = {
     try {
       const db = activeWorkspace.getDb()
       const tables = db
-        .prepare("SELECT name, sql FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")
+        .prepare(
+          "SELECT name, sql FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+        )
         .all() as { name: string; sql: string }[]
       return tables.map((t) => t.sql).join('\n\n')
     } catch {

@@ -68,7 +68,9 @@ class DatabaseClient {
   /**
    * Çoklu sorguyu tek bir SQLite transaction'ı içinde atomik çalıştırır
    */
-  public async transaction(statements: { sql: string; params?: unknown[] }[]): Promise<DbRunResult> {
+  public async transaction(
+    statements: { sql: string; params?: unknown[] }[]
+  ): Promise<DbRunResult> {
     try {
       const sanitized = statements.map((s) => ({
         sql: s.sql,

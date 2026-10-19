@@ -1,10 +1,5 @@
 import React from 'react'
-import {
-  ChevronRight,
-  Clock,
-  FolderOpen,
-  X
-} from 'lucide-react'
+import { ChevronRight, Clock, FolderOpen, X } from 'lucide-react'
 
 interface LauncherRecentFilesProps {
   recentFiles: { name: string; path: string; lastOpened: number }[]

@@ -41,9 +41,24 @@ type TabType =
   | 'pano'
   | 'formul'
 
-const TABS: { id: TabType; label: string; icon: React.ComponentType<{ size?: number }>; badge?: string }[] = [
-  { id: 'hesap', label: '🧮 Yüzde & Muhasebe Hesabı (Decimal.js)', icon: Calculator, badge: 'SÜİT' },
-  { id: 'belge', label: '📄 Belge & Medya Dönüştürücü (Word/PDF/Görsel)', icon: ArrowLeftRight, badge: 'YENİ' },
+const TABS: {
+  id: TabType
+  label: string
+  icon: React.ComponentType<{ size?: number }>
+  badge?: string
+}[] = [
+  {
+    id: 'hesap',
+    label: '🧮 Yüzde & Muhasebe Hesabı (Decimal.js)',
+    icon: Calculator,
+    badge: 'SÜİT'
+  },
+  {
+    id: 'belge',
+    label: '📄 Belge & Medya Dönüştürücü (Word/PDF/Görsel)',
+    icon: ArrowLeftRight,
+    badge: 'YENİ'
+  },
   { id: 'usul', label: 'Alım Usulü Belirleyici', icon: Scale },
   { id: 'vergi', label: 'Vergi & Tevkifat (Brüt ↔ Net)', icon: Coins },
   { id: 'fiyatFarki', label: 'TÜİK Fiyat Farkı', icon: TrendingUp },
@@ -102,7 +117,8 @@ export default function HesaplamaAraclariScreen(): React.JSX.Element {
               </span>
             </div>
             <p className="text-xs text-blue-200/80 mt-1">
-              Decimal.js hassas yüzde & finans süiti, Word/Görsel/PDF dönüştürücüler, mevzuat limitleri, vergi/tevkifat, Yİ-ÜFE fiyat farkı ve formül motoru
+              Decimal.js hassas yüzde & finans süiti, Word/Görsel/PDF dönüştürücüler, mevzuat
+              limitleri, vergi/tevkifat, Yİ-ÜFE fiyat farkı ve formül motoru
             </p>
           </div>
         </div>
@@ -151,4 +167,3 @@ export default function HesaplamaAraclariScreen(): React.JSX.Element {
     </div>
   )
 }
-

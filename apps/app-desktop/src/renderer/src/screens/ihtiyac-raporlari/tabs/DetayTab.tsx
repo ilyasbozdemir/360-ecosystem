@@ -152,164 +152,169 @@ export function DetayTab({
       {/* Items Table Card */}
       {showItems && (
         <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/60 dark:bg-slate-950/40">
-          <div className="flex items-center gap-2.5">
-            <Package size={17} className="text-blue-600" />
-            <h3 className="text-sm font-bold text-slate-850 dark:text-slate-100">
-              İhtiyaç Kalemleri Listesi
-            </h3>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-300">
-              {kalemler.length} Kalem
-            </span>
+          <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/60 dark:bg-slate-950/40">
+            <div className="flex items-center gap-2.5">
+              <Package size={17} className="text-blue-600" />
+              <h3 className="text-sm font-bold text-slate-850 dark:text-slate-100">
+                İhtiyaç Kalemleri Listesi
+              </h3>
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-300">
+                {kalemler.length} Kalem
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {onOpenYiUfeModal && kalemler.length > 0 && (
+                <button
+                  type="button"
+                  onClick={onOpenYiUfeModal}
+                  className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+                  title="TÜİK Yİ-ÜFE Endeksleri ile Birim Fiyatları Güncelle / Eskale Et"
+                >
+                  <TrendingUp size={13} className="text-emerald-600 dark:text-emerald-400" />
+                  <span>TÜİK ile Güncelle</span>
+                </button>
+              )}
+
+              <span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-300">
+                KDV Dahil Toplam: {formatCurrency(totals.genelToplam)}
+              </span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            {onOpenYiUfeModal && kalemler.length > 0 && (
+          {kalemler.length === 0 ? (
+            <div className="p-12 text-center text-xs text-slate-450 space-y-3">
+              <Package size={32} className="mx-auto text-slate-300 dark:text-slate-700" />
+              <p className="font-medium">Bu ihtiyaç raporuna henüz kalem eklenmemiş.</p>
               <button
-                type="button"
-                onClick={onOpenYiUfeModal}
-                className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
-                title="TÜİK Yİ-ÜFE Endeksleri ile Birim Fiyatları Güncelle / Eskale Et"
+                onClick={() => onEdit(rapor.id)}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer"
               >
-                <TrendingUp size={13} className="text-emerald-600 dark:text-emerald-400" />
-                <span>TÜİK ile Güncelle</span>
+                <Edit size={13} />
+                Kalem Ekle
               </button>
-            )}
-
-            <span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-300">
-              KDV Dahil Toplam: {formatCurrency(totals.genelToplam)}
-            </span>
-          </div>
-        </div>
-
-        {kalemler.length === 0 ? (
-          <div className="p-12 text-center text-xs text-slate-450 space-y-3">
-            <Package size={32} className="mx-auto text-slate-300 dark:text-slate-700" />
-            <p className="font-medium">Bu ihtiyaç raporuna henüz kalem eklenmemiş.</p>
-            <button
-              onClick={() => onEdit(rapor.id)}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer"
-            >
-              <Edit size={13} />
-              Kalem Ekle
-            </button>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="border-b border-slate-100 dark:border-slate-800 text-[10.5px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/40 dark:bg-slate-950/20">
-                  <th className="py-3 px-4 w-12 text-center">Sıra</th>
-                  <th className="py-3 px-4">Kalem / İşin Adı &amp; Açıklama</th>
-                  <th className="py-3 px-4 w-24">Tür</th>
-                  <th className="py-3 px-4 w-32 text-right">Miktar &amp; Birim</th>
-                  <th className="py-3 px-4 w-20 text-center">KDV</th>
-                  <th className="py-3 px-4 w-32 text-right">Tahmini B. Fiyat</th>
-                  <th className="py-3 px-4 w-32 text-right">Satır Tutarı</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
-                {kalemler.map((k, idx) => {
-                  const rowTotal = (Number(k.miktar) || 0) * (Number(k.tahmini_birim_fiyat) || 0)
-                  const kdvRate = resolveKdvOrani(k.kdv_orani)
-                  return (
-                    <tr
-                      key={k.id || idx}
-                      className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors"
-                    >
-                      <td className="py-3 px-4 text-center font-mono text-slate-400 font-bold">
-                        {k.sira_no || idx + 1}
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className="font-bold text-slate-850 dark:text-slate-100 block text-xs">
-                          {k.kalem_adi}
-                        </span>
-                        {k.aciklama && (
-                          <span className="text-[11.5px] text-slate-500 dark:text-slate-400 block mt-0.5 leading-relaxed">
-                            {k.aciklama}
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-100 dark:border-slate-800 text-[10.5px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/40 dark:bg-slate-950/20">
+                    <th className="py-3 px-4 w-12 text-center">Sıra</th>
+                    <th className="py-3 px-4">Kalem / İşin Adı &amp; Açıklama</th>
+                    <th className="py-3 px-4 w-24">Tür</th>
+                    <th className="py-3 px-4 w-32 text-right">Miktar &amp; Birim</th>
+                    <th className="py-3 px-4 w-20 text-center">KDV</th>
+                    <th className="py-3 px-4 w-32 text-right">Tahmini B. Fiyat</th>
+                    <th className="py-3 px-4 w-32 text-right">Satır Tutarı</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                  {kalemler.map((k, idx) => {
+                    const rowTotal = (Number(k.miktar) || 0) * (Number(k.tahmini_birim_fiyat) || 0)
+                    const kdvRate = resolveKdvOrani(k.kdv_orani)
+                    return (
+                      <tr
+                        key={k.id || idx}
+                        className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors"
+                      >
+                        <td className="py-3 px-4 text-center font-mono text-slate-400 font-bold">
+                          {k.sira_no || idx + 1}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="font-bold text-slate-850 dark:text-slate-100 block text-xs">
+                            {k.kalem_adi}
                           </span>
-                        )}
-                        {(k.tasinir_kodu || k.okas_kodu || k.poz_no) && (
-                          <div className="flex gap-2.5 mt-1.5 text-[10.5px] text-slate-400 font-mono">
-                            {k.tasinir_kodu && (
-                              <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
-                                TK: {k.tasinir_kodu}
-                              </span>
-                            )}
-                            {k.okas_kodu && (
-                              <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
-                                OKAS: {k.okas_kodu}
-                              </span>
-                            )}
-                            {k.poz_no && (
-                              <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
-                                POZ: {k.poz_no}
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className="px-2.5 py-1 rounded-md text-[10.5px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                          {k.tipi || 'Mal'}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-right font-medium text-slate-800 dark:text-slate-200">
-                        <span className="font-bold font-mono text-xs">{k.miktar}</span>{' '}
-                        <span className="text-[11px] text-slate-450 font-normal">{k.birim}</span>
-                      </td>
-                      <td className="py-3 px-4 text-center font-mono text-slate-500">%{kdvRate}</td>
-                      <td className="py-3 px-4 text-right font-mono text-slate-700 dark:text-slate-300">
-                        {k.tahmini_birim_fiyat ? formatCurrency(k.tahmini_birim_fiyat) : '-'}
-                      </td>
-                      <td className="py-3 px-4 text-right font-mono font-bold text-slate-850 dark:text-slate-100">
-                        {rowTotal > 0 ? formatCurrency(rowTotal) : '-'}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-              <tfoot>
-                <tr className="border-t-2 border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-950/60 font-bold">
-                  <td colSpan={4} className="py-3 px-4 text-slate-500 text-xs">
-                    Toplam {kalemler.length} Kalem
-                  </td>
-                  <td
-                    colSpan={2}
-                    className="py-3 px-4 text-right text-xs text-slate-600 dark:text-slate-300"
-                  >
-                    Ara Toplam (KDV Hariç):
-                  </td>
-                  <td className="py-3 px-4 text-right font-mono text-xs text-slate-850 dark:text-slate-100">
-                    {formatCurrency(totals.araToplam)}
-                  </td>
-                </tr>
-                <tr className="bg-slate-50/80 dark:bg-slate-950/60 font-bold">
-                  <td colSpan={4} />
-                  <td
-                    colSpan={2}
-                    className="py-2 px-4 text-right text-xs text-slate-600 dark:text-slate-300"
-                  >
-                    Hesaplanan Toplam KDV:
-                  </td>
-                  <td className="py-2 px-4 text-right font-mono text-xs text-slate-850 dark:text-slate-100">
-                    {formatCurrency(totals.kdv)}
-                  </td>
-                </tr>
-                <tr className="bg-blue-50/50 dark:bg-blue-950/30 font-black text-sm border-t border-blue-200/50 dark:border-blue-900/40">
-                  <td colSpan={4} />
-                  <td colSpan={2} className="py-3 px-4 text-right text-blue-900 dark:text-blue-200">
-                    Genel Toplam (KDV Dahil):
-                  </td>
-                  <td className="py-3 px-4 text-right font-mono text-blue-700 dark:text-cyan-400">
-                    {formatCurrency(totals.genelToplam)}
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        )}
-      </div>
+                          {k.aciklama && (
+                            <span className="text-[11.5px] text-slate-500 dark:text-slate-400 block mt-0.5 leading-relaxed">
+                              {k.aciklama}
+                            </span>
+                          )}
+                          {(k.tasinir_kodu || k.okas_kodu || k.poz_no) && (
+                            <div className="flex gap-2.5 mt-1.5 text-[10.5px] text-slate-400 font-mono">
+                              {k.tasinir_kodu && (
+                                <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
+                                  TK: {k.tasinir_kodu}
+                                </span>
+                              )}
+                              {k.okas_kodu && (
+                                <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
+                                  OKAS: {k.okas_kodu}
+                                </span>
+                              )}
+                              {k.poz_no && (
+                                <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
+                                  POZ: {k.poz_no}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="px-2.5 py-1 rounded-md text-[10.5px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                            {k.tipi || 'Mal'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-right font-medium text-slate-800 dark:text-slate-200">
+                          <span className="font-bold font-mono text-xs">{k.miktar}</span>{' '}
+                          <span className="text-[11px] text-slate-450 font-normal">{k.birim}</span>
+                        </td>
+                        <td className="py-3 px-4 text-center font-mono text-slate-500">
+                          %{kdvRate}
+                        </td>
+                        <td className="py-3 px-4 text-right font-mono text-slate-700 dark:text-slate-300">
+                          {k.tahmini_birim_fiyat ? formatCurrency(k.tahmini_birim_fiyat) : '-'}
+                        </td>
+                        <td className="py-3 px-4 text-right font-mono font-bold text-slate-850 dark:text-slate-100">
+                          {rowTotal > 0 ? formatCurrency(rowTotal) : '-'}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+                <tfoot>
+                  <tr className="border-t-2 border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-950/60 font-bold">
+                    <td colSpan={4} className="py-3 px-4 text-slate-500 text-xs">
+                      Toplam {kalemler.length} Kalem
+                    </td>
+                    <td
+                      colSpan={2}
+                      className="py-3 px-4 text-right text-xs text-slate-600 dark:text-slate-300"
+                    >
+                      Ara Toplam (KDV Hariç):
+                    </td>
+                    <td className="py-3 px-4 text-right font-mono text-xs text-slate-850 dark:text-slate-100">
+                      {formatCurrency(totals.araToplam)}
+                    </td>
+                  </tr>
+                  <tr className="bg-slate-50/80 dark:bg-slate-950/60 font-bold">
+                    <td colSpan={4} />
+                    <td
+                      colSpan={2}
+                      className="py-2 px-4 text-right text-xs text-slate-600 dark:text-slate-300"
+                    >
+                      Hesaplanan Toplam KDV:
+                    </td>
+                    <td className="py-2 px-4 text-right font-mono text-xs text-slate-850 dark:text-slate-100">
+                      {formatCurrency(totals.kdv)}
+                    </td>
+                  </tr>
+                  <tr className="bg-blue-50/50 dark:bg-blue-950/30 font-black text-sm border-t border-blue-200/50 dark:border-blue-900/40">
+                    <td colSpan={4} />
+                    <td
+                      colSpan={2}
+                      className="py-3 px-4 text-right text-blue-900 dark:text-blue-200"
+                    >
+                      Genel Toplam (KDV Dahil):
+                    </td>
+                    <td className="py-3 px-4 text-right font-mono text-blue-700 dark:text-cyan-400">
+                      {formatCurrency(totals.genelToplam)}
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          )}
+        </div>
       )}
 
       {/* Notes if any */}

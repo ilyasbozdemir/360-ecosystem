@@ -36,10 +36,7 @@ export default function HarcamaMerkeziScreen(): React.JSX.Element {
       />
 
       {/* 2. CORE PROCESS CARDS GRID (4 BÜYÜK KAMU SÜRECİ) */}
-      <HarcamaMerkeziModules
-        activeLimit={activeLimit}
-        formatCurrency={formatCurrency}
-      />
+      <HarcamaMerkeziModules activeLimit={activeLimit} formatCurrency={formatCurrency} />
 
       {/* 3. 4734 SAYILI KANUN: BÜTÇE LİMİTLERİ & CANLI SİMÜLATÖR */}
       <HarcamaMerkeziSimulator
@@ -52,10 +49,7 @@ export default function HarcamaMerkeziScreen(): React.JSX.Element {
       />
 
       {/* 4. İLLER BANKASI PANELİ & AKILLI SÜREÇ SİHİRBAZI */}
-      <HarcamaMerkeziWizard
-        activeLimit={activeLimit}
-        formatCurrency={formatCurrency}
-      />
+      <HarcamaMerkeziWizard activeLimit={activeLimit} formatCurrency={formatCurrency} />
     </div>
   )
 }

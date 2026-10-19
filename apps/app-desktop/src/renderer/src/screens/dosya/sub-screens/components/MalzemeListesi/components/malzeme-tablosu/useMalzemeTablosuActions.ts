@@ -24,11 +24,7 @@ export function useMalzemeTablosuActions({
   sablons = [],
   onSablonClick
 }: UseMalzemeTablosuActionsProps) {
-  const {
-    items,
-    handleCheckKatalogDiffs,
-    loadData
-  } = state
+  const { items, handleCheckKatalogDiffs, loadData } = state
 
   // Çoklu komisyon seçimi — değerler DB'den gelen id (number)
   const [selectedKomisyonlar, setSelectedKomisyonlar] = useState<number[]>([])
@@ -127,17 +123,7 @@ export function useMalzemeTablosuActions({
           `INSERT INTO DATA_TeminKalem 
            (temin_dosya_id, tasinir_kodu, okas_kodu, kalem_adi, tipi, birim, miktar, kdv_orani, aciklama) 
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [
-            activeDosyaId,
-            tasinirKodu,
-            okasKodu,
-            kalemAdi,
-            tipi,
-            birim,
-            miktar,
-            kdvOrani,
-            aciklama
-          ]
+          [activeDosyaId, tasinirKodu, okasKodu, kalemAdi, tipi, birim, miktar, kdvOrani, aciklama]
         )
         count++
       }
@@ -384,7 +370,10 @@ export function useMalzemeTablosuActions({
   }, [stageSablons, komisyonSablons])
 
   const handleOpenSablonByDosyaAdi = (targetKey: string) => {
-    const cleanTarget = targetKey.replace(/\.html$/, '').toLowerCase().trim()
+    const cleanTarget = targetKey
+      .replace(/\.html$/, '')
+      .toLowerCase()
+      .trim()
     const foundSablon = findSablonByAlias(sablons, cleanTarget)
 
     if (foundSablon && onSablonClick) {

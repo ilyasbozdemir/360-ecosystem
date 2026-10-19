@@ -44,8 +44,10 @@ export const ModulUninstallModal: React.FC<ModulUninstallModalProps> = ({
             Modülü Çöp Kutusuna Taşı
           </h3>
           <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-            <strong className="text-slate-800 dark:text-slate-100 font-semibold">{modul.baslik}</strong> paketini
-            kaldırmak üzeresiniz.
+            <strong className="text-slate-800 dark:text-slate-100 font-semibold">
+              {modul.baslik}
+            </strong>{' '}
+            paketini kaldırmak üzeresiniz.
           </p>
         </div>
 
@@ -56,9 +58,10 @@ export const ModulUninstallModal: React.FC<ModulUninstallModalProps> = ({
             Güvenli Silme (Soft Delete) Koruması
           </div>
           <div className="text-[11px] text-blue-800/90 dark:text-blue-300/90">
-            Bu modül hemen yok edilmez; <span className="font-bold underline">{retentionDays} gün</span> boyunca çöp kutusunda
-            güvenle bekletilir. Süre dolana kadar dilediğiniz an tek tıkla şablonlarınız ve yapılandırmanız
-            kaybolmadan geri yükleyebilirsiniz.
+            Bu modül hemen yok edilmez;{' '}
+            <span className="font-bold underline">{retentionDays} gün</span> boyunca çöp kutusunda
+            güvenle bekletilir. Süre dolana kadar dilediğiniz an tek tıkla şablonlarınız ve
+            yapılandırmanız kaybolmadan geri yükleyebilirsiniz.
           </div>
         </div>
 
@@ -80,7 +83,10 @@ export const ModulUninstallModal: React.FC<ModulUninstallModalProps> = ({
                     : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 dark:bg-slate-800/50 dark:border-slate-700 dark:text-slate-300'
                 }`}
               >
-                {days} Gün {days === 30 && <span className="text-[9px] block font-normal opacity-80">(Önerilen)</span>}
+                {days} Gün{' '}
+                {days === 30 && (
+                  <span className="text-[9px] block font-normal opacity-80">(Önerilen)</span>
+                )}
               </button>
             ))}
           </div>
@@ -94,7 +100,9 @@ export const ModulUninstallModal: React.FC<ModulUninstallModalProps> = ({
               onClick={() => setShowPermanentOption(!showPermanentOption)}
               className="text-[10px] text-slate-400 hover:text-red-600 dark:hover:text-red-400 underline cursor-pointer"
             >
-              {showPermanentOption ? 'Gelişmiş seçenekleri gizle' : 'Doğrudan kalıcı olarak silmek mi istiyorsunuz?'}
+              {showPermanentOption
+                ? 'Gelişmiş seçenekleri gizle'
+                : 'Doğrudan kalıcı olarak silmek mi istiyorsunuz?'}
             </button>
           </div>
         )}

@@ -190,7 +190,9 @@ export function PersonelDetailView({
               <UserCheck className="w-4 h-4 text-emerald-500" />
               <span>
                 Durum:{' '}
-                <strong className={viewingPersonel.aktif_mi ? 'text-emerald-600' : 'text-slate-400'}>
+                <strong
+                  className={viewingPersonel.aktif_mi ? 'text-emerald-600' : 'text-slate-400'}
+                >
                   {viewingPersonel.aktif_mi ? 'Aktif Görevde' : 'Pasif'}
                 </strong>
               </span>

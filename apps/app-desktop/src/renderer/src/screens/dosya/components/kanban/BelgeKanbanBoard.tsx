@@ -11,11 +11,7 @@ import {
 } from 'lucide-react'
 import { BelgeKanbanCard } from './BelgeKanbanCard'
 import { BelgeDetayDialog } from './BelgeDetayDialog'
-import {
-  BelgeKanbanItem,
-  BelgeKanbanStatus,
-  BELGE_KANBAN_COLUMNS
-} from './belgeKanbanTypes'
+import { BelgeKanbanItem, BelgeKanbanStatus, BELGE_KANBAN_COLUMNS } from './belgeKanbanTypes'
 import { Sablon } from '../../../sablonlar/sablonlar.hooks'
 
 export interface BelgeKanbanBoardProps {
@@ -56,7 +52,10 @@ export function BelgeKanbanBoard({
     }
   }
 
-  const handleDrop = async (e: React.DragEvent<HTMLDivElement>, targetStatus: BelgeKanbanStatus) => {
+  const handleDrop = async (
+    e: React.DragEvent<HTMLDivElement>,
+    targetStatus: BelgeKanbanStatus
+  ) => {
     e.preventDefault()
     setActiveDropStatus(null)
 
@@ -141,7 +140,9 @@ export function BelgeKanbanBoard({
                   <div className="h-36 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-800/80 rounded-2xl text-slate-400 dark:text-slate-500 p-4 text-center">
                     <FileText className="w-5 h-5 mb-1.5 opacity-40" />
                     <p className="text-[11px] font-medium">Bu sütunda belge yok</p>
-                    <p className="text-[9px] opacity-60 mt-0.5">Sürükleyip buraya bırakabilirsiniz</p>
+                    <p className="text-[9px] opacity-60 mt-0.5">
+                      Sürükleyip buraya bırakabilirsiniz
+                    </p>
                   </div>
                 ) : (
                   items.map((item) => (

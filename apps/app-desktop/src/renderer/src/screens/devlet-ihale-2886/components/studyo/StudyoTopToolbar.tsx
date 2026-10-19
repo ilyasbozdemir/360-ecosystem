@@ -1,12 +1,5 @@
 import React from 'react'
-import {
-  Sparkles,
-  Download,
-  Printer,
-  History,
-  Save,
-  CheckCircle2
-} from 'lucide-react'
+import { Sparkles, Download, Printer, History, Save, CheckCircle2 } from 'lucide-react'
 import type { Dosya2886Item } from '../../../../components/layout/temin-selector/teminSelector.types'
 import { STANDARD_2886_TEMPLATES } from './standard2886Templates.data'
 

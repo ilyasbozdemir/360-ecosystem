@@ -1,9 +1,25 @@
-import React from 'react'
-import { ChevronLeft, Edit3, FileText, Layers, Sliders } from 'lucide-react'
+import React, { useState, useMemo } from 'react'
+import {
+  ArrowRight,
+  Check,
+  ChevronLeft,
+  Compass,
+  Edit3,
+  FileText,
+  Layers,
+  Sliders,
+  Sparkles
+} from 'lucide-react'
 import { IhtiyacListesiType, TemplateCapabilities } from '@temin360/document-templates'
 import { TemplateOptionItem } from '../templateResolver'
 import { useSettingsStore } from '../../../../../store/settingsStore'
 import { getTemplateFieldMapping } from '../../tek-tik-yazdir/ciktiWizardFieldMapping'
+import {
+  DOCUMENT_STAGES,
+  IHTIYAC_RAPORU_STAGE,
+  DocumentStageInfo,
+  filterTemplatesByStage
+} from '../stages'
 
 interface DocumentPreviewSidebarProps {
   sidebarOpen: boolean
@@ -24,6 +40,11 @@ interface DocumentPreviewSidebarProps {
   setLocalShowLogoLeft: (show: boolean) => void
   localShowLogoRight: boolean
   setLocalShowLogoRight: (show: boolean) => void
+  stageInfo?: DocumentStageInfo
+  disableDocumentGuidance?: boolean
+  sourceKind?: string
+  nextTemplate?: TemplateOptionItem
+  prevTemplate?: TemplateOptionItem
 }
 
 export function DocumentPreviewSidebar({
@@ -44,34 +65,233 @@ export function DocumentPreviewSidebar({
   localShowLogoLeft,
   setLocalShowLogoLeft,
   localShowLogoRight,
-  setLocalShowLogoRight
+  setLocalShowLogoRight,
+  stageInfo,
+  disableDocumentGuidance = true,
+  sourceKind,
+  nextTemplate
 }: DocumentPreviewSidebarProps): React.JSX.Element {
+  const [activeSidebarTab, setActiveSidebarTab] = useState<'asamalar' | 'ayarlar'>('asamalar')
+  const [selectedStageId, setSelectedStageId] = useState<number>(() => stageInfo?.id ?? 1)
+  const [prevStageInfoId, setPrevStageInfoId] = useState<number | undefined>(stageInfo?.id)
+
+  if (stageInfo?.id !== prevStageInfoId) {
+    setPrevStageInfoId(stageInfo?.id)
+    setSelectedStageId(stageInfo?.id ?? 1)
+  }
+
+  const stagesList = useMemo(() => {
+    if (sourceKind === 'ihtiyacRaporu') {
+      return [IHTIYAC_RAPORU_STAGE]
+    }
+    return DOCUMENT_STAGES
+  }, [sourceKind])
+
+  const currentStageTemplates = useMemo(() => {
+    return filterTemplatesByStage(selectedStageId, templateOptions)
+  }, [selectedStageId, templateOptions])
+
   return (
     <div
       className={`bg-slate-50 dark:bg-slate-900/50 transition-all duration-200 flex flex-col shrink-0 h-full overflow-hidden ${
         sidebarOpen
-          ? 'w-72 border-r border-slate-200 dark:border-slate-800 opacity-100'
+          ? 'w-80 border-r border-slate-200 dark:border-slate-800 opacity-100'
           : 'w-0 border-0 opacity-0 pointer-events-none hidden'
       }`}
     >
-      {/* Sidebar Header */}
-      <div className="flex items-center justify-between p-3.5 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shrink-0">
-        <div className="flex items-center gap-2">
-          <Sliders className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-          <span className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">
-            Belge Ayarları
-          </span>
+      {/* Sidebar Header & Tab Switcher */}
+      <div className="flex flex-col border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shrink-0">
+        <div className="flex items-center justify-between p-3 border-b border-slate-100 dark:border-slate-800/60">
+          <div className="flex items-center gap-2">
+            <Layers className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <span className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">
+              Belge &amp; Süreç
+            </span>
+          </div>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 rounded-lg transition-colors cursor-pointer"
+            title="Paneli Kapat"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
         </div>
-        <button
-          onClick={() => setSidebarOpen(false)}
-          className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 rounded-lg transition-colors cursor-pointer"
-          title="Paneli Kapat"
-        >
-          <ChevronLeft className="w-4 h-4" />
-        </button>
+
+        {/* 2 Tabs: Aşama Belgeleri vs Belge Ayarları */}
+        <div className="grid grid-cols-2 p-1 gap-1 bg-slate-100/70 dark:bg-slate-900">
+          <button
+            type="button"
+            onClick={() => setActiveSidebarTab('asamalar')}
+            className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              activeSidebarTab === 'asamalar'
+                ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-2xs'
+                : 'text-slate-500 hover:text-slate-800 dark:text-slate-400'
+            }`}
+          >
+            <Compass className="w-3.5 h-3.5" />
+            <span>Aşama Belgeleri</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveSidebarTab('ayarlar')}
+            className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              activeSidebarTab === 'ayarlar'
+                ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-2xs'
+                : 'text-slate-500 hover:text-slate-800 dark:text-slate-400'
+            }`}
+          >
+            <Sliders className="w-3.5 h-3.5" />
+            <span>Ayarlar</span>
+          </button>
+        </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-5 custom-scrollbar min-h-0">
+      {activeSidebarTab === 'asamalar' ? (
+        <div className="flex-1 overflow-y-auto p-3.5 space-y-4 custom-scrollbar min-h-0">
+          {/* Yönlendirme Modu Durum Kartı (Image 2 bağlantısı) */}
+          {!disableDocumentGuidance ? (
+            <div className="p-3 bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-800/60 rounded-xl space-y-1.5">
+              <div className="flex items-center gap-1.5">
+                <Compass className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                <span className="text-xs font-bold text-blue-900 dark:text-blue-200">
+                  Kılavuzlu Belge Çıkarma Modu
+                </span>
+              </div>
+              <p className="text-[11px] text-blue-700/80 dark:text-blue-300/80 leading-relaxed">
+                Her diyalog adımında sırayla çıkarılması gereken evraklar mevzuat sırasına göre yönlendirilir.
+              </p>
+              {nextTemplate && onSelectTemplate && (
+                <button
+                  type="button"
+                  onClick={() => onSelectTemplate(nextTemplate.id)}
+                  className="w-full mt-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-xs cursor-pointer active:scale-98"
+                >
+                  <span>Sıradaki Belgeye İlerle</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="p-2.5 bg-slate-100/70 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 rounded-xl">
+              <div className="flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                  Serbest Belge Çıkarma Modu
+                </span>
+              </div>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
+                Tüm aşama belgelerini serbestçe seçebilir ve istediğiniz sırayla önizleyebilirsiniz.
+              </p>
+            </div>
+          )}
+
+          {/* Aşama Seçici Butonları */}
+          <div className="space-y-1.5">
+            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
+              Satın Alma Aşaması
+            </span>
+            <div className="grid grid-cols-2 gap-1.5">
+              {stagesList.map((stg) => {
+                const isSelected = stg.id === selectedStageId
+                return (
+                  <button
+                    key={stg.id}
+                    type="button"
+                    onClick={() => setSelectedStageId(stg.id)}
+                    className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer border text-left ${
+                      isSelected
+                        ? `${stg.badgeBg} ${stg.badgeText} shadow-xs font-extrabold ring-1 ring-blue-500/30`
+                        : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-850'
+                    }`}
+                  >
+                    <span className="w-2 h-2 rounded-full bg-current shrink-0" />
+                    <span className="truncate">{stg.shortName}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Seçili Aşamaya Ait Belgeler Listesi */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                Aşama Evrakları ({currentStageTemplates.length})
+              </span>
+              <span className="text-[10px] text-slate-400">
+                {stagesList.find((s) => s.id === selectedStageId)?.shortName}
+              </span>
+            </div>
+
+            <div className="space-y-1">
+              {currentStageTemplates.length === 0 ? (
+                <div className="p-4 text-center text-xs text-slate-400 bg-white dark:bg-slate-900 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
+                  Bu aşamada listelenecek şablon bulunamadı.
+                </div>
+              ) : (
+                currentStageTemplates.map((tpl, idx) => {
+                  const isCurActive =
+                    tpl.id.replace(/_/g, '-').toLowerCase() ===
+                    selectedDocId?.replace(/_/g, '-').toLowerCase()
+
+                  return (
+                    <div
+                      key={tpl.id}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => onSelectTemplate && onSelectTemplate(tpl.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          onSelectTemplate && onSelectTemplate(tpl.id)
+                        }
+                      }}
+                      className={`w-full p-2.5 rounded-xl text-xs transition-all flex items-start gap-2.5 cursor-pointer border group ${
+                        isCurActive
+                          ? 'bg-blue-50/90 dark:bg-blue-950/60 border-blue-300 dark:border-blue-800 text-blue-900 dark:text-blue-100 shadow-xs'
+                          : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-850'
+                      }`}
+                    >
+                      {!disableDocumentGuidance ? (
+                        <span
+                          className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5 ${
+                            isCurActive
+                              ? 'bg-blue-600 text-white shadow-2xs'
+                              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 group-hover:bg-blue-100 dark:group-hover:bg-blue-900'
+                          }`}
+                        >
+                          {idx + 1}
+                        </span>
+                      ) : (
+                        <FileText
+                          className={`w-4 h-4 shrink-0 mt-0.5 ${
+                            isCurActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600'
+                          }`}
+                        />
+                      )}
+
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold leading-snug truncate">
+                          {tpl.title || tpl.name}
+                        </div>
+                        {tpl.description && (
+                          <div className="text-[10px] text-slate-400 truncate mt-0.5">
+                            {tpl.description}
+                          </div>
+                        )}
+                      </div>
+
+                      {isCurActive && (
+                        <Check className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 self-center" />
+                      )}
+                    </div>
+                  )
+                })
+              )}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="flex-1 overflow-y-auto p-4 space-y-5 custom-scrollbar min-h-0">
         <div className="p-3 bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200/60 dark:border-blue-800/40 rounded-xl text-xs text-blue-900 dark:text-blue-300 leading-relaxed">
           💡 <strong>Canlı Düzenleme:</strong> Belge üzerindeki metin, sayı, tarih ve imza
           alanlarını sağdaki A4 sayfasında doğrudan tıklayarak düzenleyebilirsiniz.
@@ -491,9 +711,7 @@ export function DocumentPreviewSidebar({
         {/* Sadece şablon yeteneklerinde (capabilities) gerçekten desteklenen alanlar gösterilir */}
         {/* ========================================================= */}
         {(() => {
-          const mapping = selectedDocId
-            ? getTemplateFieldMapping(selectedDocId)
-            : {}
+          const mapping = selectedDocId ? getTemplateFieldMapping(selectedDocId) : {}
           const caps = templateCapabilities
 
           // Bir alanın gösterilmesi için şablon yeteneklerinde (capabilities) açık olması ve mapping'inin bulunması gerekir
@@ -578,7 +796,9 @@ export function DocumentPreviewSidebar({
 
                   {/* Öneri Chipleri */}
                   <div className="space-y-1 pt-1">
-                    <span className="text-[10px] text-slate-400 block">Önceki Belgelerden Öneriler:</span>
+                    <span className="text-[10px] text-slate-400 block">
+                      Önceki Belgelerden Öneriler:
+                    </span>
                     <div className="flex flex-wrap gap-1">
                       {suggestionPool.ilgi.map((sug, idx) => (
                         <button
@@ -692,6 +912,7 @@ export function DocumentPreviewSidebar({
           )
         })()}
       </div>
+      )}
     </div>
   )
 }

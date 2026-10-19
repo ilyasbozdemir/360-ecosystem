@@ -77,7 +77,8 @@ export const ModulMagazasiScreen: React.FC = () => {
                 Aramanıza Uygun Modül Bulunamadı
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mt-1">
-                Farklı anahtar kelimeler ile arama yapabilir veya kategori filtresini &apos;Tüm Paketler&apos; olarak seçebilirsiniz.
+                Farklı anahtar kelimeler ile arama yapabilir veya kategori filtresini &apos;Tüm
+                Paketler&apos; olarak seçebilirsiniz.
               </p>
               <button
                 onClick={() => {

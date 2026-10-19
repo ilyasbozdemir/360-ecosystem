@@ -14,11 +14,7 @@ import { Button } from '../../../components/ui/Button'
 import { cn } from '../../../utils/cn'
 import { PozItem, PozFiyatGecmisi } from '../pozlar.hooks'
 import { POZ_KURUMLARI } from '../../malzemeler/components/pozKitaplari.data'
-import {
-  OLCU_BIRIMLERI_LIST,
-  POZ_TIPLERI,
-  YAPI_SINIFLARI_LIST
-} from '../yeni.constants'
+import { OLCU_BIRIMLERI_LIST, POZ_TIPLERI, YAPI_SINIFLARI_LIST } from '../yeni.constants'
 
 interface YeniPozFormCardsProps {
   formData: Partial<PozItem>
@@ -112,9 +108,7 @@ export function YeniPozFormCards({
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                 Yeni Poz No <span className="text-red-500">*</span>
               </label>
-              <span className="text-[10px] text-amber-600 font-mono font-bold">
-                2019+ Formatı
-              </span>
+              <span className="text-[10px] text-amber-600 font-mono font-bold">2019+ Formatı</span>
             </div>
             <input
               type="text"

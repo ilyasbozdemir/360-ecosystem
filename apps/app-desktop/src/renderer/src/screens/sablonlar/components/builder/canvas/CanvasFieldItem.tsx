@@ -12,11 +12,7 @@ import {
   ChevronDown,
   Trash2
 } from 'lucide-react'
-import {
-  FormFieldV2,
-  FormFieldType,
-  PresetController
-} from '../../../types/formBuilder.types'
+import { FormFieldV2, FormFieldType, PresetController } from '../../../types/formBuilder.types'
 import { getWidthClass } from '../utils'
 import { CanvasFieldRenderer } from './CanvasFieldRenderer'
 
@@ -135,9 +131,7 @@ export const CanvasFieldItem: React.FC<CanvasFieldItemProps> = ({
       <div className="flex items-center justify-between mb-2 font-sans opacity-75 group-hover:opacity-100 transition-opacity">
         <div className="flex items-center gap-1.5 overflow-hidden flex-wrap">
           <GripVertical className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 cursor-grab active:cursor-grabbing shrink-0" />
-          <span className="text-[11px] font-bold text-slate-800 truncate">
-            {field.label}
-          </span>
+          <span className="text-[11px] font-bold text-slate-800 truncate">{field.label}</span>
           {field.required && <span className="text-red-500 font-bold">*</span>}
           <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-mono font-semibold shrink-0">
             {field.tabName || 'Genel Bilgiler'}
@@ -179,10 +173,7 @@ export const CanvasFieldItem: React.FC<CanvasFieldItemProps> = ({
         <div className="flex items-center gap-1 shrink-0">
           {/* Hizalama ikonu */}
           {field.textAlign && field.textAlign !== 'left' && (
-            <span
-              className="text-slate-400 p-0.5"
-              title={`Hizalama: ${field.textAlign}`}
-            >
+            <span className="text-slate-400 p-0.5" title={`Hizalama: ${field.textAlign}`}>
               {field.textAlign === 'center' && <AlignCenter className="w-3 h-3" />}
               {field.textAlign === 'right' && <AlignRight className="w-3 h-3" />}
               {field.textAlign === 'justify' && <AlignJustify className="w-3 h-3" />}

@@ -14,9 +14,7 @@ export function registerKutuphaneIpc(): void {
   ipcMain.handle('kutuphane:grup:list', async () => {
     try {
       const db = getDb()
-      const rows = db
-        .prepare('SELECT * FROM DATA_KutuphaneGrup ORDER BY sira ASC, ad ASC')
-        .all()
+      const rows = db.prepare('SELECT * FROM DATA_KutuphaneGrup ORDER BY sira ASC, ad ASC').all()
       return { success: true, data: rows }
     } catch (err: any) {
       console.error('[Kutuphane IPC] grup:list error:', err)
@@ -120,9 +118,7 @@ export function registerKutuphaneIpc(): void {
   ipcMain.handle('kutuphane:belge:get', async (_event, belgeId: number) => {
     try {
       const db = getDb()
-      const belge = db
-        .prepare('SELECT * FROM DATA_KutuphaneBelge WHERE id = ?')
-        .get(belgeId)
+      const belge = db.prepare('SELECT * FROM DATA_KutuphaneBelge WHERE id = ?').get(belgeId)
 
       if (!belge) {
         return { success: false, error: 'Belge bulunamadı' }
@@ -130,9 +126,7 @@ export function registerKutuphaneIpc(): void {
 
       // Sürümleri al
       const surumler = db
-        .prepare(
-          'SELECT * FROM DATA_KutuphaneBelgeSurum WHERE belge_id = ? ORDER BY surum_no DESC'
-        )
+        .prepare('SELECT * FROM DATA_KutuphaneBelgeSurum WHERE belge_id = ? ORDER BY surum_no DESC')
         .all(belgeId)
 
       return { success: true, data: { belge, surumler } }
@@ -163,7 +157,11 @@ export function registerKutuphaneIpc(): void {
             `INSERT INTO DATA_KutuphaneBelgeSurum (belge_id, surum_no, etiket, "not", icerik_html, kosullar_json)
              VALUES (?, 1, 'v1.0', 'İlk Sürüm', ?, ?)`
           )
-          .run(belgeId, icerik_html, typeof kosullar_json === 'string' ? kosullar_json : JSON.stringify(kosullar_json))
+          .run(
+            belgeId,
+            icerik_html,
+            typeof kosullar_json === 'string' ? kosullar_json : JSON.stringify(kosullar_json)
+          )
         const surumId = Number(surumInfo.lastInsertRowid)
 
         // 3. Aktif sürümü güncelle
@@ -263,7 +261,9 @@ export function registerKutuphaneIpc(): void {
 
       if (updates.length > 0) {
         params.push(id)
-        db.prepare(`UPDATE DATA_KutuphaneBelge SET ${updates.join(', ')} WHERE id = ?`).run(...params)
+        db.prepare(`UPDATE DATA_KutuphaneBelge SET ${updates.join(', ')} WHERE id = ?`).run(
+          ...params
+        )
       }
 
       return { success: true }
@@ -277,9 +277,9 @@ export function registerKutuphaneIpc(): void {
   ipcMain.handle('kutuphane:belge:trash', async (_event, id: number) => {
     try {
       const db = getDb()
-      db.prepare(
-        'UPDATE DATA_KutuphaneBelge SET silindi_at = CURRENT_TIMESTAMP WHERE id = ?'
-      ).run(id)
+      db.prepare('UPDATE DATA_KutuphaneBelge SET silindi_at = CURRENT_TIMESTAMP WHERE id = ?').run(
+        id
+      )
       return { success: true }
     } catch (err: any) {
       console.error('[Kutuphane IPC] belge:trash error:', err)
@@ -622,9 +622,7 @@ export function registerKutuphaneIpc(): void {
       const aciklama = `Belgelerim eklentisinden derlendi (Sürüm v${surumNo || '1.0'})`
 
       // Mevcut şablon var mı kontrol et
-      const existing = db
-        .prepare('SELECT id FROM TANIM_Sablon WHERE dosya_adi = ?')
-        .get(dosyaAdi)
+      const existing = db.prepare('SELECT id FROM TANIM_Sablon WHERE dosya_adi = ?').get(dosyaAdi)
 
       let sablonId: number
 
@@ -662,4 +660,3 @@ export function registerKutuphaneIpc(): void {
     }
   })
 }
-

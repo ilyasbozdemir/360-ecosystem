@@ -1,19 +1,15 @@
-import React from 'react';
-import { QrCode, Printer, CheckCircle } from 'lucide-react';
-import { SignatureBlock } from './signature-block';
-import { ImzaciSatiri, IslakImzaBelgeBilgileri } from '../types';
+import React from 'react'
+import { QrCode, Printer, CheckCircle } from 'lucide-react'
+import { SignatureBlock } from './signature-block'
+import { ImzaciSatiri, IslakImzaBelgeBilgileri } from '../types'
 
 interface A4PreviewProps {
-  bilgiler: IslakImzaBelgeBilgileri;
-  signers: ImzaciSatiri[];
-  onPrintPreview?: () => void;
+  bilgiler: IslakImzaBelgeBilgileri
+  signers: ImzaciSatiri[]
+  onPrintPreview?: () => void
 }
 
-export const A4Preview: React.FC<A4PreviewProps> = ({
-  bilgiler,
-  signers,
-  onPrintPreview,
-}) => {
+export const A4Preview: React.FC<A4PreviewProps> = ({ bilgiler, signers, onPrintPreview }) => {
   return (
     <div className="flex flex-col items-center">
       {/* A4 Kağıdı Efekti */}
@@ -95,12 +91,10 @@ export const A4Preview: React.FC<A4PreviewProps> = ({
                 </div>
               </div>
             </div>
-            <div className="text-right">
-              Sayfa 1 / 1
-            </div>
+            <div className="text-right">Sayfa 1 / 1</div>
           </div>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}

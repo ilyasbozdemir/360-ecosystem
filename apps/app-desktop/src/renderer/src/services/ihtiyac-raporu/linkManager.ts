@@ -132,12 +132,9 @@ export const ihtiyacRaporuLinkManager = {
           transferredCount++
         }
       } else if (mode === 'append_if_missing') {
-        const existingSet = new Set(
-          existingItems.map((item) => normalizeItemKey(item))
-        )
+        const existingSet = new Set(existingItems.map((item) => normalizeItemKey(item)))
 
-        let curSira =
-          existingItems.reduce((max, item) => Math.max(max, item.sira_no || 0), 0) + 1
+        let curSira = existingItems.reduce((max, item) => Math.max(max, item.sira_no || 0), 0) + 1
 
         for (const k of kalemler) {
           const key = normalizeItemKey(k)
@@ -173,8 +170,7 @@ export const ihtiyacRaporuLinkManager = {
         }
       } else {
         // mode === 'append_all'
-        let curSira =
-          existingItems.reduce((max, item) => Math.max(max, item.sira_no || 0), 0) + 1
+        let curSira = existingItems.reduce((max, item) => Math.max(max, item.sira_no || 0), 0) + 1
 
         for (const k of kalemler) {
           const payload = mapIhtiyacKalemToTeminKalem(k, dosyaId, curSira++)

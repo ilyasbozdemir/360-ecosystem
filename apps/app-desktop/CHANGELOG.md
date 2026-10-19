@@ -7,6 +7,7 @@ Bu dosyada TEMİN 360 (Doğrudan Temin ve İhale Yönetim Sistemi) uygulamasın�
 ## [1.0.0-rc.1] - 2026-10-18 (Sürüm Adayı / Release Candidate)
 
 ### Eklenenler (Added)
+
 - **Monorepo Mimarisi**: pnpm workspace yapısına geçildi (`apps/app-desktop`, `packages/database`, `packages/document-templates`).
 - **Merkezi Sürüm Yöneticisi (`VersionManager`)**: Çoklu sürüm kanalları (`alpha`, `beta`, `rc`, `stable`), SemVer kural motoru, versiyon politikası (`version-policy.yaml`) ve CLI desteği.
 - **Gelişmiş Release CLI (`scripts/release.js`)**:
@@ -24,6 +25,7 @@ Bu dosyada TEMİN 360 (Doğrudan Temin ve İhale Yönetim Sistemi) uygulamasın�
   - Çoklu platformda `Schema Parity`, `Typecheck`, `Vitest Tests` ve monorepo güvenlik denetimi.
 
 ### Düzeltilenler (Fixed)
+
 - **Doğrudan Temin Dosya Oluşturma Sadeleştirmesi**: Mükerrer ~1100 satırlık eski dosya sihirbazı kaldırıldı, dosya listesindeki çift dosya oluşturma buton karmaşası giderildi ve tüm doğrudan temin oluşturma akışları hızlı, zengin ve modern `DosyaManageScreen` ekranına bağlandı.
 - **Hızlı Dosya Ekleme Süreç Tarihleri & Doğrudan Temin Terminolojisi**: Hızlı dosya ekleme ekranında mevzuata uygun doğrudan temin terimleri benimsendi (İhale -> Temin / Süreç). Tek bir tarih alanı yerine Dosya Açılış Tarihi, Son Teklif Verme Tarih/Saati ve Tahmini Bitiş Tarihi alanları tanımlandı; varsayılan tarih yönetimi ve toplu tarih atama yeteneği kazandırıldı.
 - **Komisyon Şablon & SQL Şema Uyumsuzluğu Düzeltmesi**: `commissionSeedService.ts` ve şablon eşlemelerindeki eski `ihale_usulu`, `alim_turu` ve `dosya_no` sorgu sütunları güncel şemadaki `ihale_sekli`, `tur` ve `temin_no` sütunlarıyla senkronize edildi.
@@ -32,6 +34,7 @@ Bu dosyada TEMİN 360 (Doğrudan Temin ve İhale Yönetim Sistemi) uygulamasın�
 - **Depolama Güvenliği**: Docker Compose içindeki PocketBase portu yerel ağ erişimine (`127.0.0.1`) sınırlandı.
 
 ### Kaldırılanlar (Removed)
+
 - **`versions.json` Temizliği**: Artık monorepo paketleri `package.json`, git etiketleri ve şema manifestleri üzerinden yönetildiği için gereksiz hale gelen `packages/database/versions.json` ve ilgili kod referansları tamamen kaldırıldı.
 
 ---
@@ -39,6 +42,7 @@ Bu dosyada TEMİN 360 (Doğrudan Temin ve İhale Yönetim Sistemi) uygulamasın�
 ## [1.0.0-beta.245 ... 1.0.0-beta.256] - 2026-10-01 - 2026-10-18
 
 ### Eklenenler (Added)
+
 - **Belge Önizleme Regresyon Test Paketi**: `documentPreviewRegression.test.tsx` ile şablon anahtarları çözünürlüğü, landscape/portrait sayfa yönü, HTML/PDF çıktıları ve hata durumları doğrulandı.
 - **Kamu İhale & Doğrudan Temin Süreç Ayrımı**:
   - 4734 Sayılı Kamu İhale Kanunu (Madde 22/d doğrudan temin) ve 2886 Sayılı Devlet İhale Kanunu ayrımı sağlandı.
@@ -57,6 +61,7 @@ Bu dosyada TEMİN 360 (Doğrudan Temin ve İhale Yönetim Sistemi) uygulamasın�
 ## [1.0.0-beta.200 ... 1.0.0-beta.244] - 2026-09-01 - 2026-09-30
 
 ### Eklenenler (Added)
+
 - **Komisyon Şablon Hassasiyeti**:
   - Komisyon üyelerinin hangi belgelerde görüneceği (`belge_kapsami`, `belgede_goster`, `hedef_belgeler`) ve üye sıralama (`sira`) dinamik yapısı.
   - Komisyon unvan geçmişi takibi (`TANIM_PersonelUnvanGecmisi`).
@@ -72,6 +77,7 @@ Bu dosyada TEMİN 360 (Doğrudan Temin ve İhale Yönetim Sistemi) uygulamasın�
 ## [1.0.0-beta.150 ... 1.0.0-beta.199] - 2026-08-01 - 2026-08-31
 
 ### Eklenenler (Added)
+
 - **Muayene & Kabul İşlemleri**:
   - Kısmi teslimat desteği, bakiye hesaplamaları ve kabul tutanakları (`KabulTutanakModal`).
 - **Mali Hizmetler Ödeme Yazısı**:
@@ -86,6 +92,7 @@ Bu dosyada TEMİN 360 (Doğrudan Temin ve İhale Yönetim Sistemi) uygulamasın�
 ## [1.0.0-beta.50 ... 1.0.0-beta.149] - 2026-07-15 - 2026-07-31
 
 ### Eklenenler (Added)
+
 - **Firma CRM & Yasaklılık Kontrolü**:
   - Tedarikçi firma profilleri, iletişim notları (`TANIM_FirmaIletisimNotu`), KİK yasaklılık teyit belgeleri.
 - **Ambar ve Depo Yönetimi**:
@@ -98,6 +105,7 @@ Bu dosyada TEMİN 360 (Doğrudan Temin ve İhale Yönetim Sistemi) uygulamasın�
 ## [1.0.0-beta.17 ... 1.0.0-beta.49] - 2026-07-02 - 2026-07-14
 
 ### Eklenenler (Added)
+
 - **SQLite Çok Katmanlı Şema Göç Motoru**:
   - Veritabanı şemasının v1'den v45'e kadar kesintisiz yükseltilmesini sağlayan `runMigrations` mimarisi.
 - **Şablon Snapshot ve Versiyonlama**:
@@ -110,6 +118,7 @@ Bu dosyada TEMİN 360 (Doğrudan Temin ve İhale Yönetim Sistemi) uygulamasın�
 ## [1.0.0-beta.16] - 2026-07-01
 
 ### Düzeltilenler (Fixed)
+
 - **Aktif Dosya Araç Çubuğu Düzeltmesi**: `ActiveFileToolbar` bileşenindeki `dosya_no` / `temin_no` tip uyumsuzluğu giderildi ve geri dönüş butonunun yazısı `"Aktif Dosyadan Çık"` olarak güncellendi.
 
 ---
@@ -117,6 +126,7 @@ Bu dosyada TEMİN 360 (Doğrudan Temin ve İhale Yönetim Sistemi) uygulamasın�
 ## [1.0.0-beta.15] - 2026-06-30
 
 ### Eklenenler (Added)
+
 - **İmza Toggle Desteği**: Üretilen Belgeler ve İmza Takibi bölümünde imza durumu artık çift yönlü toggle switch ile değiştirilebilir (İmzalandı ↔ Bekliyor).
 - **Genel Metrik Paneli (Takip Ekranı)**: Aktif dosya seçilmediğinde toplam dosya sayısı, imza bekleyen/imzalanan belge sayıları, toplam yaklaşık maliyet ve aşama dağılım grafiği gösterilir.
 - **Otomatik Release Scripti** (`scripts/release.js`): `npm run release` komutuyla monorepo paket sürümleme, şema manifest dondurma, commit, tag oluşturma ve push işlemleri tek komutla yapılabilir. `--dry-run`, `--no-push`, `--patch`, `--message` flag'leri desteklenir.
@@ -129,7 +139,9 @@ Bu dosyada TEMİN 360 (Doğrudan Temin ve İhale Yönetim Sistemi) uygulamasın�
 - Dağınık duran dokümantasyon dosyaları `docs/` klasörü altına taşındı.
 
 ### Düzeltilenler (Fixed)
+
 - Çeşitli lint ve tip uyarıları giderildi.
 
 ### Kaldırılanlar (Removed)
+
 - Kullanılmayan `IhtiyacListesiTalepFormu` rotası ve `IhtiyacListesi.screen.tsx` tamamen silindi.

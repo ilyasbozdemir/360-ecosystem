@@ -121,17 +121,13 @@ export function DocumentPreviewCanvas({
     onayaSunulanTarih: formData.onayaSunulanTarih || formData.tarih || '',
     onayTarihi: formData.onayTarihi || formData.olurTarihi || formData.dosyaTarihi || '',
     solLogo: localShowLogoLeft
-      ? (formData.solLogo && String(formData.solLogo).trim() !== ''
-          ? formData.solLogo
-          : null) ||
+      ? (formData.solLogo && String(formData.solLogo).trim() !== '' ? formData.solLogo : null) ||
         useSettingsStore.getState().logoLeft ||
         useSettingsStore.getState().institutionLogo ||
         null
       : null,
     sagLogo: localShowLogoRight
-      ? (formData.sagLogo && String(formData.sagLogo).trim() !== ''
-          ? formData.sagLogo
-          : null) ||
+      ? (formData.sagLogo && String(formData.sagLogo).trim() !== '' ? formData.sagLogo : null) ||
         useSettingsStore.getState().logoRight ||
         null
       : null,

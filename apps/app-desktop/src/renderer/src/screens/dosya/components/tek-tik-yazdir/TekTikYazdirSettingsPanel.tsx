@@ -1,9 +1,6 @@
 import React from 'react'
 import { Settings2, Lock } from 'lucide-react'
-import {
-  CURRENT_APP_VERSION,
-  PrintSettings
-} from '../../../../store/printQueueStore'
+import { CURRENT_APP_VERSION, PrintSettings } from '../../../../store/printQueueStore'
 
 interface TekTikYazdirSettingsPanelProps {
   printSettings: PrintSettings
@@ -29,9 +26,7 @@ export const TekTikYazdirSettingsPanel: React.FC<TekTikYazdirSettingsPanelProps>
         <div className="space-y-4 text-xs">
           {/* Page Size */}
           <div>
-            <label className="block text-slate-300 font-semibold mb-1.5">
-              Kağıt Boyutu
-            </label>
+            <label className="block text-slate-300 font-semibold mb-1.5">Kağıt Boyutu</label>
             <div className="grid grid-cols-2 gap-2">
               {(['A4', 'A3'] as const).map((size) => (
                 <button
@@ -79,9 +74,7 @@ export const TekTikYazdirSettingsPanel: React.FC<TekTikYazdirSettingsPanelProps>
 
           {/* Copies */}
           <div>
-            <label className="block text-slate-300 font-semibold mb-1.5">
-              Kopya Sayısı
-            </label>
+            <label className="block text-slate-300 font-semibold mb-1.5">Kopya Sayısı</label>
             <input
               type="number"
               min={1}
@@ -110,9 +103,7 @@ export const TekTikYazdirSettingsPanel: React.FC<TekTikYazdirSettingsPanelProps>
               }
               className="rounded bg-slate-800 border-slate-700 text-indigo-600 focus:ring-0 cursor-pointer"
             />
-            <span className="text-slate-300 font-medium">
-              Arka plan ve renkleri dahil et
-            </span>
+            <span className="text-slate-300 font-medium">Arka plan ve renkleri dahil et</span>
           </label>
         </div>
       </div>

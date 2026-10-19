@@ -10,10 +10,7 @@ import { DosyaYonetimi2886Stats } from './dosya-yonetimi/DosyaYonetimi2886Stats'
 import { DosyaYonetimi2886FilterBar } from './dosya-yonetimi/DosyaYonetimi2886FilterBar'
 import { DosyaYonetimi2886Grid } from './dosya-yonetimi/DosyaYonetimi2886Grid'
 import { DosyaYonetimi2886Table } from './dosya-yonetimi/DosyaYonetimi2886Table'
-import {
-  DosyaYonetimi2886Modal,
-  Dosya2886FormData
-} from './dosya-yonetimi/DosyaYonetimi2886Modal'
+import { DosyaYonetimi2886Modal, Dosya2886FormData } from './dosya-yonetimi/DosyaYonetimi2886Modal'
 import { DosyaYonetimi2886DeleteModal } from './dosya-yonetimi/DosyaYonetimi2886DeleteModal'
 
 export type { Dosya2886Item }
@@ -111,9 +108,7 @@ export function DosyaYonetimi2886Tab({
       islemTuru: dosya.islemTuru,
       usul: dosya.usul,
       muhammenBedel:
-        dosya.muhammenBedel?.takdirEdilenMuhammenBedel ||
-        dosya.muhammenBedel?.hesaplananBedel ||
-        0,
+        dosya.muhammenBedel?.takdirEdilenMuhammenBedel || dosya.muhammenBedel?.hesaplananBedel || 0,
       ihaleTarihi: dosya.ihaleTarihi,
       ihaleSaati: dosya.ihaleSaati || '14:00',
       ihaleYeri: dosya.ihaleYeri || 'Belediye Encümen Toplantı Salonu',

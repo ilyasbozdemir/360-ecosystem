@@ -327,7 +327,8 @@ export async function seedDossierCommission(
         const rol =
           m.asil_mi === 0
             ? 'Yedek Üye'
-            : m.gorev_adi?.toLowerCase().includes('başkan') || m.gorev_adi?.toLowerCase().includes('baskan')
+            : m.gorev_adi?.toLowerCase().includes('başkan') ||
+                m.gorev_adi?.toLowerCase().includes('baskan')
               ? 'Başkan'
               : 'Üye'
 
@@ -520,7 +521,8 @@ export async function applyInstitutionalTemplateToDossier(
       const rol =
         m.asil_mi === 0
           ? 'Yedek Üye'
-          : m.gorev_adi?.toLowerCase().includes('başkan') || m.gorev_adi?.toLowerCase().includes('baskan')
+          : m.gorev_adi?.toLowerCase().includes('başkan') ||
+              m.gorev_adi?.toLowerCase().includes('baskan')
             ? 'Başkan'
             : 'Üye'
 
@@ -588,4 +590,3 @@ export async function applyInstitutionalTemplateToDossier(
     return { success: false, error: err.message }
   }
 }
-

@@ -58,7 +58,10 @@ export function getSistemTanimlariMenu(
         {
           label: '📈 Yİ-ÜFE Endeksleri (TÜİK & hakedis.org)',
           onClick: (): Promise<void> =>
-            navigate({ to: APP_ROUTES.MEVZUAT, search: { tab: 'yi-ufe' } as Record<string, string> })
+            navigate({
+              to: APP_ROUTES.MEVZUAT,
+              search: { tab: 'yi-ufe' } as Record<string, string>
+            })
         }
       ]
     }
@@ -104,7 +107,10 @@ export function getSistemTanimlariMenu(
         {
           label: '📈 TÜİK Yİ-ÜFE Kira Artış Endeksleri',
           onClick: (): Promise<void> =>
-            navigate({ to: APP_ROUTES.MEVZUAT, search: { tab: 'yi-ufe' } as Record<string, string> })
+            navigate({
+              to: APP_ROUTES.MEVZUAT,
+              search: { tab: 'yi-ufe' } as Record<string, string>
+            })
         }
       ]
     }
@@ -153,7 +159,10 @@ export function getSistemTanimlariMenu(
       {
         label: '🏛️ İhale Eşik Değerleri ve Limit Parametreleri',
         onClick: (): Promise<void> =>
-          navigate({ to: APP_ROUTES.MEVZUAT, search: { tab: 'limitler' } as Record<string, string> })
+          navigate({
+            to: APP_ROUTES.MEVZUAT,
+            search: { tab: 'limitler' } as Record<string, string>
+          })
       },
       {
         label: '📈 Yİ-ÜFE Fiyat Farkı & Değerleme Endeksleri',

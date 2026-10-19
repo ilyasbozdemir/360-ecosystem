@@ -1,6 +1,8 @@
 import { DocumentSettings, TableRowItem } from '../../types/formBuilder.types'
 
-export const getPageDimensions = (docSettings: DocumentSettings): { width: string; minHeight: string } => {
+export const getPageDimensions = (
+  docSettings: DocumentSettings
+): { width: string; minHeight: string } => {
   const isA3 = docSettings.pageSize === 'A3'
   const isLandscape = docSettings.orientation === 'landscape'
 

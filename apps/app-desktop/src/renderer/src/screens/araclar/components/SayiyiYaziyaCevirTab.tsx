@@ -25,8 +25,14 @@ const SAYIDAN_YAZIYA_PRESETS = [
 
 const YAZIDAN_SAYIYA_PRESETS = [
   { label: 'İKİYÜZSEKSENİKİBİN YÜZONİKİ TL', value: 'İKİYÜZSEKSENİKİBİN YÜZONİKİ TL' },
-  { label: 'BİR MİLYON DÖRTYÜZELLİ BİN TL ELLİ KURUŞ', value: 'BİR MİLYON DÖRTYÜZELLİ BİN TL ELLİ KURUŞ' },
-  { label: 'KIRKBEŞ BİN YEDİYÜZELLİ TL YİRMİBEŞ KURUŞ', value: 'KIRKBEŞ BİN YEDİYÜZELLİ TL YİRMİBEŞ KURUŞ' },
+  {
+    label: 'BİR MİLYON DÖRTYÜZELLİ BİN TL ELLİ KURUŞ',
+    value: 'BİR MİLYON DÖRTYÜZELLİ BİN TL ELLİ KURUŞ'
+  },
+  {
+    label: 'KIRKBEŞ BİN YEDİYÜZELLİ TL YİRMİBEŞ KURUŞ',
+    value: 'KIRKBEŞ BİN YEDİYÜZELLİ TL YİRMİBEŞ KURUŞ'
+  },
   { label: 'BİN TL', value: 'BİN TL' }
 ]
 
@@ -76,8 +82,12 @@ export function SayiyiYaziyaCevirTab(): React.JSX.Element {
               <Coins className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-800 dark:text-white">Çift Yönlü Çevirici</h3>
-              <p className="text-[11px] text-slate-500">Rakam ile metin arasında kamu formatında dönüşüm</p>
+              <h3 className="text-sm font-bold text-slate-800 dark:text-white">
+                Çift Yönlü Çevirici
+              </h3>
+              <p className="text-[11px] text-slate-500">
+                Rakam ile metin arasında kamu formatında dönüşüm
+              </p>
             </div>
           </div>
 
@@ -147,7 +157,9 @@ export function SayiyiYaziyaCevirTab(): React.JSX.Element {
 
             <div className="grid grid-cols-2 gap-3 pt-1">
               <div>
-                <label className="text-[11px] font-bold text-slate-500 uppercase block mb-1">Harf Formatı</label>
+                <label className="text-[11px] font-bold text-slate-500 uppercase block mb-1">
+                  Harf Formatı
+                </label>
                 <div className="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex gap-1 border border-slate-200/60 dark:border-slate-700">
                   {(['buyuk', 'baslik', 'kucuk'] as const).map((h) => (
                     <button
@@ -155,7 +167,9 @@ export function SayiyiYaziyaCevirTab(): React.JSX.Element {
                       type="button"
                       onClick={() => setHarfTipi(h)}
                       className={`flex-1 py-1 text-[11px] font-bold rounded-lg ${
-                        harfTipi === h ? 'bg-white dark:bg-slate-900 text-blue-600 shadow-xs' : 'text-slate-500'
+                        harfTipi === h
+                          ? 'bg-white dark:bg-slate-900 text-blue-600 shadow-xs'
+                          : 'text-slate-500'
                       }`}
                     >
                       {h === 'buyuk' ? 'BÜYÜK' : h === 'baslik' ? 'Baş' : 'küçük'}
@@ -165,7 +179,9 @@ export function SayiyiYaziyaCevirTab(): React.JSX.Element {
               </div>
 
               <div>
-                <label className="text-[11px] font-bold text-slate-500 uppercase block mb-1">Para Birimi</label>
+                <label className="text-[11px] font-bold text-slate-500 uppercase block mb-1">
+                  Para Birimi
+                </label>
                 <div className="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex gap-1 border border-slate-200/60 dark:border-slate-700">
                   {(['TL', 'USD', 'EUR'] as const).map((curr) => (
                     <button
@@ -173,7 +189,9 @@ export function SayiyiYaziyaCevirTab(): React.JSX.Element {
                       type="button"
                       onClick={() => handleCurrencyChange(curr)}
                       className={`flex-1 py-1 text-[11px] font-bold rounded-lg ${
-                        paraBirimi.startsWith(curr === 'TL' ? 'TL' : curr === 'USD' ? 'DOLAR' : 'EURO')
+                        paraBirimi.startsWith(
+                          curr === 'TL' ? 'TL' : curr === 'USD' ? 'DOLAR' : 'EURO'
+                        )
                           ? 'bg-white dark:bg-slate-900 text-blue-600 shadow-xs'
                           : 'text-slate-500'
                       }`}
@@ -237,11 +255,15 @@ export function SayiyiYaziyaCevirTab(): React.JSX.Element {
           {activeTab === 'sayidanYaziya' ? (
             <div className="p-5 bg-gradient-to-br from-blue-50/80 to-indigo-50/40 dark:from-blue-950/30 dark:to-slate-800/60 border border-blue-200/70 dark:border-blue-800/60 rounded-2xl space-y-3">
               <div className="flex items-center justify-between text-xs text-blue-700 dark:text-blue-300 font-semibold">
-                <span className="flex items-center gap-1.5"><FileText size={14} /> Resmi Yazı Formatı</span>
+                <span className="flex items-center gap-1.5">
+                  <FileText size={14} /> Resmi Yazı Formatı
+                </span>
                 {resultWords && <span>{resultWords.length} karakter</span>}
               </div>
               <p className="text-base font-bold text-blue-950 dark:text-blue-100 leading-relaxed select-all">
-                {resultWords || <span className="text-slate-400 font-normal italic">Tutar giriniz...</span>}
+                {resultWords || (
+                  <span className="text-slate-400 font-normal italic">Tutar giriniz...</span>
+                )}
               </p>
               {resultWords && (
                 <button
@@ -249,7 +271,15 @@ export function SayiyiYaziyaCevirTab(): React.JSX.Element {
                   onClick={() => handleCopy(resultWords, 'words')}
                   className="px-4 py-2 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
-                  {copiedKey === 'words' ? <><Check size={14} /> Kopyalandı</> : <><Clipboard size={14} /> Metni Kopyala</>}
+                  {copiedKey === 'words' ? (
+                    <>
+                      <Check size={14} /> Kopyalandı
+                    </>
+                  ) : (
+                    <>
+                      <Clipboard size={14} /> Metni Kopyala
+                    </>
+                  )}
                 </button>
               )}
             </div>
@@ -259,7 +289,13 @@ export function SayiyiYaziyaCevirTab(): React.JSX.Element {
                 <Calculator size={14} /> Rakam Karşılığı
               </div>
               <p className="text-2xl font-mono font-black text-indigo-950 dark:text-indigo-100">
-                {parsedNumber !== null ? formatTL(parsedNumber) : <span className="text-slate-400 text-sm font-normal italic">Metin giriniz...</span>}
+                {parsedNumber !== null ? (
+                  formatTL(parsedNumber)
+                ) : (
+                  <span className="text-slate-400 text-sm font-normal italic">
+                    Metin giriniz...
+                  </span>
+                )}
               </p>
               {parsedNumber !== null && (
                 <div className="flex gap-2">
@@ -268,7 +304,15 @@ export function SayiyiYaziyaCevirTab(): React.JSX.Element {
                     onClick={() => handleCopy(formatTL(parsedNumber), 'fmt')}
                     className="px-3.5 py-1.5 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl flex items-center gap-1.5"
                   >
-                    {copiedKey === 'fmt' ? <><Check size={14} /> Kopyalandı</> : <><Clipboard size={14} /> ₺ Formatlı</>}
+                    {copiedKey === 'fmt' ? (
+                      <>
+                        <Check size={14} /> Kopyalandı
+                      </>
+                    ) : (
+                      <>
+                        <Clipboard size={14} /> ₺ Formatlı
+                      </>
+                    )}
                   </button>
                   <button
                     type="button"
@@ -285,7 +329,10 @@ export function SayiyiYaziyaCevirTab(): React.JSX.Element {
 
         <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200/70 dark:border-slate-800 text-[11px] text-slate-500 flex items-start gap-2">
           <Info size={15} className="text-blue-500 shrink-0 mt-0.5" />
-          <span>Kamu İhale ve Muhasebat standartlarına göre <b>&quot;BİR BİN&quot;</b> yerine <b>&quot;BİN&quot;</b> ifadesi yazılır.</span>
+          <span>
+            Kamu İhale ve Muhasebat standartlarına göre <b>&quot;BİR BİN&quot;</b> yerine{' '}
+            <b>&quot;BİN&quot;</b> ifadesi yazılır.
+          </span>
         </div>
       </div>
     </div>

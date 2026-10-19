@@ -1,12 +1,5 @@
 import React from 'react'
-import {
-  FileText,
-  ChevronLeft,
-  ChevronRight,
-  ZoomIn,
-  ZoomOut,
-  Printer
-} from 'lucide-react'
+import { FileText, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Printer } from 'lucide-react'
 import { Sablon } from '../../../sablonlar/sablonlar.hooks'
 
 interface TekTikYazdirPreviewProps {
@@ -60,9 +53,7 @@ export const TekTikYazdirPreview: React.FC<TekTikYazdirPreviewProps> = ({
               </span>
               <button
                 onClick={() =>
-                  setActivePreviewIndex((prev) =>
-                    Math.min(selectedSablonsCount - 1, prev + 1)
-                  )
+                  setActivePreviewIndex((prev) => Math.min(selectedSablonsCount - 1, prev + 1))
                 }
                 disabled={activePreviewIndex >= selectedSablonsCount - 1}
                 className="p-1 rounded text-slate-300 hover:text-white disabled:opacity-30 cursor-pointer"
@@ -112,9 +103,7 @@ export const TekTikYazdirPreview: React.FC<TekTikYazdirPreviewProps> = ({
         ) : (
           <div className="flex flex-col items-center justify-center text-center p-12 text-slate-500 my-auto">
             <Printer size={48} className="stroke-[1.5] mb-3 text-slate-600" />
-            <p className="text-base font-semibold text-slate-300">
-              Önizleme İçin Belge Seçin
-            </p>
+            <p className="text-base font-semibold text-slate-300">Önizleme İçin Belge Seçin</p>
             <p className="text-xs text-slate-500 mt-1 max-w-sm">
               Sol listeden yazdırmak veya önizlemek istediğiniz resmi evrakları işaretleyin.
             </p>

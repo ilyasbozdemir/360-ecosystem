@@ -1,11 +1,5 @@
 import React, { useState } from 'react'
-import {
-  ArrowLeft,
-  Clock,
-  History,
-  RefreshCw,
-  Users
-} from 'lucide-react'
+import { ArrowLeft, Clock, History, RefreshCw, Users } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import {
   KomisyonAtamaFooter,
@@ -117,7 +111,8 @@ export const DosyaKomisyonDetayView: React.FC<DosyaKomisyonDetayViewProps> = ({
               </h2>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Bu temin dosyasına ait komisyon görevlilerini düzenleyebilir ve geçmiş atama revizyonlarını inceleyebilirsiniz.
+              Bu temin dosyasına ait komisyon görevlilerini düzenleyebilir ve geçmiş atama
+              revizyonlarını inceleyebilirsiniz.
             </p>
           </div>
         </div>
@@ -166,7 +161,8 @@ export const DosyaKomisyonDetayView: React.FC<DosyaKomisyonDetayViewProps> = ({
               <span>
                 Bu dosyada henüz komisyon tanımlanmadığı için bir önceki dosyanız olan{' '}
                 <strong>{sourceDossierInfo.dosyaNo}</strong> komisyon kadrosu varsayılan olarak
-                yüklendi. Düzenleme yapabilir veya doğrudan &quot;Kaydet&quot; butonuna basabilirsiniz.
+                yüklendi. Düzenleme yapabilir veya doğrudan &quot;Kaydet&quot; butonuna
+                basabilirsiniz.
               </span>
             </div>
           )}
@@ -175,7 +171,10 @@ export const DosyaKomisyonDetayView: React.FC<DosyaKomisyonDetayViewProps> = ({
           <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
               <KomisyonAtamaTabs activeTab={komisyonType} onSelectTab={setKomisyonType} />
-              <KomisyonSyncToggle checked={syncToGlobalCommission} onChange={setSyncToGlobalCommission} />
+              <KomisyonSyncToggle
+                checked={syncToGlobalCommission}
+                onChange={setSyncToGlobalCommission}
+              />
             </div>
 
             {/* Üye Listesi Tablosu */}
@@ -224,7 +223,8 @@ export const DosyaKomisyonDetayView: React.FC<DosyaKomisyonDetayViewProps> = ({
                   Komisyon Revizyon &amp; Snapshot Tarihçesi
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Bu dosyada geçmişte yapılan tüm üye değişiklikleri anlık versiyon snapshot&apos;ı olarak kaydedilmiştir.
+                  Bu dosyada geçmişte yapılan tüm üye değişiklikleri anlık versiyon snapshot&apos;ı
+                  olarak kaydedilmiştir.
                 </p>
               </div>
             </div>
@@ -245,7 +245,8 @@ export const DosyaKomisyonDetayView: React.FC<DosyaKomisyonDetayViewProps> = ({
               <History className="w-8 h-8 mx-auto text-slate-300 dark:text-slate-600" />
               <p className="font-semibold">Bu dosyaya ait henüz bir revizyon kaydı oluşmadı.</p>
               <p className="text-[11px] text-slate-400">
-                Komisyon kadrosunda herhangi bir değişiklik yapıp kaydettiğinizde otomatik versiyon snapshot&apos;ı oluşturulur.
+                Komisyon kadrosunda herhangi bir değişiklik yapıp kaydettiğinizde otomatik versiyon
+                snapshot&apos;ı oluşturulur.
               </p>
             </div>
           ) : (

@@ -1,4 +1,10 @@
-import type { MuhatapHiyerarsi, GonderimKanali, EbysMuhatap, EbysDagitimKalemi, EbysRotaAdimi } from '../../ebys/ebys.types'
+import type {
+  MuhatapHiyerarsi,
+  GonderimKanali,
+  EbysMuhatap,
+  EbysDagitimKalemi,
+  EbysRotaAdimi
+} from '../../ebys/ebys.types'
 
 export type { MuhatapHiyerarsi, GonderimKanali, EbysMuhatap, EbysDagitimKalemi, EbysRotaAdimi }
 

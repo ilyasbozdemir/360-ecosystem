@@ -27,17 +27,20 @@ export function ProjeDeleteModal({
         <div className="flex items-start gap-3 p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-xl">
           <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
           <div className="text-xs text-red-800 dark:text-red-300">
-            <strong>{deletingProje.proje_adi}</strong> ({deletingProje.proje_kodu}) projesini
-            silmek istediğinize emin misiniz?
+            <strong>{deletingProje.proje_adi}</strong> ({deletingProje.proje_kodu}) projesini silmek
+            istediğinize emin misiniz?
             <p className="mt-1 text-slate-500 dark:text-slate-400">
-              Bu projeye bağlı doğrudan temin dosyaları silinmez ancak proje ilişkisi
-              arşivlenir.
+              Bu projeye bağlı doğrudan temin dosyaları silinmez ancak proje ilişkisi arşivlenir.
             </p>
           </div>
         </div>
 
         <div className="flex justify-end gap-2 pt-2">
-          <Button variant="outline" onClick={() => setDeletingProje(null)} className="text-xs cursor-pointer">
+          <Button
+            variant="outline"
+            onClick={() => setDeletingProje(null)}
+            className="text-xs cursor-pointer"
+          >
             Vazgeç
           </Button>
           <Button

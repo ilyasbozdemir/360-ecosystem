@@ -11,9 +11,7 @@ export function getFormDataForDosya(d: Dosya2886Item | null, totalDosyalar = 0):
       islemTuru: d.islemTuru || 'satis',
       usul: d.usul || 'acik_teklif_45',
       muhammenBedel:
-        d.muhammenBedel?.takdirEdilenMuhammenBedel ||
-        d.muhammenBedel?.hesaplananBedel ||
-        2500000,
+        d.muhammenBedel?.takdirEdilenMuhammenBedel || d.muhammenBedel?.hesaplananBedel || 2500000,
       ihaleTarihi: d.ihaleTarihi || todayStr,
       ihaleSaati: d.ihaleSaati || '14:00',
       ihaleYeri: d.ihaleYeri || 'Belediye Encümen Toplantı Salonu',

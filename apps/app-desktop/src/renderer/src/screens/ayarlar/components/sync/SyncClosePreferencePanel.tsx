@@ -31,8 +31,8 @@ export function SyncClosePreferencePanel(props: ClosePrefProps): React.JSX.Eleme
             )}
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
-            Çalışma dosyanızı her kapattığınızda veya uygulamadan çıktığınızda uygulanacak varsayılan
-            davranışı belirleyin.
+            Çalışma dosyanızı her kapattığınızda veya uygulamadan çıktığınızda uygulanacak
+            varsayılan davranışı belirleyin.
           </p>
         </div>
       </div>

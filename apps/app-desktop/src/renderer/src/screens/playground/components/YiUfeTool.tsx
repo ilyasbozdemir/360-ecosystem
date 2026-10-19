@@ -1,9 +1,5 @@
 import React, { useState, useMemo } from 'react'
-import {
-  TrendingUp,
-  Copy,
-  Check
-} from 'lucide-react'
+import { TrendingUp, Copy, Check } from 'lucide-react'
 import {
   calculateFiyatFarki,
   formatCurrency,
@@ -247,8 +243,7 @@ export function YiUfeTool({ onCopy, copiedKey }: YiUfeToolProps): React.JSX.Elem
                     Temel Endeks (Y₀)
                   </td>
                   <td className="p-2.5 font-semibold text-slate-800 dark:text-slate-200">
-                    {customTemel ||
-                      SAMPLE_YIUFE_INDEXES[temelEndeksIndex]?.endeks.toFixed(2)}
+                    {customTemel || SAMPLE_YIUFE_INDEXES[temelEndeksIndex]?.endeks.toFixed(2)}
                   </td>
                 </tr>
                 <tr>
@@ -256,8 +251,7 @@ export function YiUfeTool({ onCopy, copiedKey }: YiUfeToolProps): React.JSX.Elem
                     Güncel Endeks (Yₙ)
                   </td>
                   <td className="p-2.5 font-semibold text-slate-800 dark:text-slate-200">
-                    {customGuncel ||
-                      SAMPLE_YIUFE_INDEXES[guncelEndeksIndex]?.endeks.toFixed(2)}
+                    {customGuncel || SAMPLE_YIUFE_INDEXES[guncelEndeksIndex]?.endeks.toFixed(2)}
                   </td>
                 </tr>
                 <tr>

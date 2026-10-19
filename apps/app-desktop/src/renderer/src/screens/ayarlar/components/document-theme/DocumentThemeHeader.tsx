@@ -1,13 +1,5 @@
 import React from 'react'
-import {
-  FileText,
-  RotateCcw,
-  Save,
-  Sliders,
-  CheckCircle2,
-  AlertCircle,
-  Info
-} from 'lucide-react'
+import { FileText, RotateCcw, Save, Sliders, CheckCircle2, AlertCircle, Info } from 'lucide-react'
 import { useDocumentTheme } from './useDocumentTheme'
 
 type HeaderProps = ReturnType<typeof useDocumentTheme>

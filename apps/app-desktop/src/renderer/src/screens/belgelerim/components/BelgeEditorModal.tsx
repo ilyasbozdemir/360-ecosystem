@@ -109,9 +109,7 @@ export function BelgeEditorModal({
 
   // HTML içindeki data-ph ve data-cond alanlarını tara
   useEffect(() => {
-    const phMatches = Array.from(contentHtml.matchAll(/data-ph=["']([^"']+)["']/g)).map(
-      (m) => m[1]
-    )
+    const phMatches = Array.from(contentHtml.matchAll(/data-ph=["']([^"']+)["']/g)).map((m) => m[1])
     const condMatches = Array.from(contentHtml.matchAll(/data-cond=["']([^"']+)["']/g)).map(
       (m) => m[1]
     )

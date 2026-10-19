@@ -1,9 +1,5 @@
 import React from 'react'
-import {
-  CheckSquare,
-  FileText,
-  Plus
-} from 'lucide-react'
+import { CheckSquare, FileText, Plus } from 'lucide-react'
 import { NotOncelik, NotTip } from '../types'
 
 interface NotlarQuickAddBarProps {

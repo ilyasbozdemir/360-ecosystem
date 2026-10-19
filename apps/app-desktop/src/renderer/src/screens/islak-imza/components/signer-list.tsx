@@ -1,11 +1,11 @@
-import React from 'react';
-import { UserCheck, Plus } from 'lucide-react';
-import { SignerRow } from './signer-row';
-import { ImzaciSatiri } from '../types';
+import React from 'react'
+import { UserCheck, Plus } from 'lucide-react'
+import { SignerRow } from './signer-row'
+import { ImzaciSatiri } from '../types'
 
 interface SignerListProps {
-  signers: ImzaciSatiri[];
-  onChange: (signers: ImzaciSatiri[]) => void;
+  signers: ImzaciSatiri[]
+  onChange: (signers: ImzaciSatiri[]) => void
 }
 
 export const SignerList: React.FC<SignerListProps> = ({ signers, onChange }) => {
@@ -18,41 +18,39 @@ export const SignerList: React.FC<SignerListProps> = ({ signers, onChange }) => 
       imzaTipi: signers.length === 0 ? 'Hazırlayan' : 'Kontrol',
       parafVar: true,
       imzaKutusuVar: true,
-      tarihVar: true,
-    };
-    onChange([...signers, newSigner]);
-  };
+      tarihVar: true
+    }
+    onChange([...signers, newSigner])
+  }
 
   const handleUpdate = (id: string, updated: Partial<ImzaciSatiri>) => {
-    onChange(
-      signers.map((s) => (s.id === id ? { ...s, ...updated } : s))
-    );
-  };
+    onChange(signers.map((s) => (s.id === id ? { ...s, ...updated } : s)))
+  }
 
   const handleDelete = (id: string) => {
-    const remaining = signers.filter((s) => s.id !== id);
+    const remaining = signers.filter((s) => s.id !== id)
     // Sıraları yeniden düzenle
     const reindexed = remaining.map((s, index) => ({
       ...s,
-      sira: index + 1,
-    }));
-    onChange(reindexed);
-  };
+      sira: index + 1
+    }))
+    onChange(reindexed)
+  }
 
   const handleMove = (index: number, direction: 'up' | 'down') => {
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= signers.length) return;
+    const targetIndex = direction === 'up' ? index - 1 : index + 1
+    if (targetIndex < 0 || targetIndex >= signers.length) return
 
-    const copy = [...signers];
-    const [moved] = copy.splice(index, 1);
-    copy.splice(targetIndex, 0, moved);
+    const copy = [...signers]
+    const [moved] = copy.splice(index, 1)
+    copy.splice(targetIndex, 0, moved)
 
     const reindexed = copy.map((s, idx) => ({
       ...s,
-      sira: idx + 1,
-    }));
-    onChange(reindexed);
-  };
+      sira: idx + 1
+    }))
+    onChange(reindexed)
+  }
 
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs space-y-4">
@@ -98,5 +96,5 @@ export const SignerList: React.FC<SignerListProps> = ({ signers, onChange }) => 
         )}
       </div>
     </div>
-  );
-};
+  )
+}

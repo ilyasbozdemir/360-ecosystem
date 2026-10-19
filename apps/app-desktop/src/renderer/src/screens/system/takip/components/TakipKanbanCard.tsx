@@ -89,7 +89,10 @@ export function TakipKanbanCard({
   }
 
   if (mode === 'compact') {
-    const hasMaliyet = dosya.yaklasik_maliyet !== undefined && dosya.yaklasik_maliyet !== null && Number(dosya.yaklasik_maliyet) > 0
+    const hasMaliyet =
+      dosya.yaklasik_maliyet !== undefined &&
+      dosya.yaklasik_maliyet !== null &&
+      Number(dosya.yaklasik_maliyet) > 0
 
     return (
       <div
@@ -127,7 +130,9 @@ export function TakipKanbanCard({
                 {formatCurrency(dosya.yaklasik_maliyet || 0)}
               </span>
             ) : (
-              <span className="text-[11px] text-slate-300 dark:text-slate-600 font-mono block">—</span>
+              <span className="text-[11px] text-slate-300 dark:text-slate-600 font-mono block">
+                —
+              </span>
             )}
           </div>
         </div>
@@ -220,10 +225,7 @@ export function TakipKanbanCard({
     >
       {/* Top Header Row */}
       <div className="flex items-center justify-between gap-2">
-        <div
-          className="flex items-center gap-1.5 min-w-0"
-          onClick={(e) => e.stopPropagation()}
-        >
+        <div className="flex items-center gap-1.5 min-w-0" onClick={(e) => e.stopPropagation()}>
           <GripVertical className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600 group-hover:text-slate-400 shrink-0 cursor-grab active:cursor-grabbing" />
           <span className="font-mono text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60 truncate">
             {dosya.temin_no || `#${dosya.id}`}

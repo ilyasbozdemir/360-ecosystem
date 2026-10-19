@@ -19,11 +19,7 @@ import {
   AlertTriangle,
   X
 } from 'lucide-react'
-import {
-  kutuphaneService,
-  KutuphaneBelge,
-  KutuphaneGrup
-} from './services/kutuphaneService'
+import { kutuphaneService, KutuphaneBelge, KutuphaneGrup } from './services/kutuphaneService'
 import { BelgeEditorModal } from './components/BelgeEditorModal'
 import { YerTutucuYonetimiModal } from './components/YerTutucuYonetimiModal'
 import { PaketIceAktarModal } from './components/PaketIceAktarModal'
@@ -108,7 +104,8 @@ export default function BelgelerimScreen(): React.JSX.Element {
       const res = await kutuphaneService.createBelge({
         ad: newBelgeAd.trim(),
         grup_id: newBelgeGrupId,
-        icerik_html: '<h1>' + newBelgeAd.trim() + '</h1><p>Belge içeriğini buraya yazabilirsiniz...</p>'
+        icerik_html:
+          '<h1>' + newBelgeAd.trim() + '</h1><p>Belge içeriğini buraya yazabilirsiniz...</p>'
       })
       setShowNewBelgeModal(false)
       await loadData()
@@ -164,7 +161,11 @@ export default function BelgelerimScreen(): React.JSX.Element {
 
   // Grup Sil
   const handleDeleteGrup = async (id: number) => {
-    if (!confirm('Bu klasörü silmek istediğinize emin misiniz? (İçindeki belgeler klasörsüz kalacaktır)'))
+    if (
+      !confirm(
+        'Bu klasörü silmek istediğinize emin misiniz? (İçindeki belgeler klasörsüz kalacaktır)'
+      )
+    )
       return
     try {
       await kutuphaneService.deleteGrup(id)
@@ -207,7 +208,11 @@ export default function BelgelerimScreen(): React.JSX.Element {
   }
 
   const handlePurgeExpired = async () => {
-    if (!confirm('30 günü doldurmuş tüm çöp kutusu kayıtları kalıcı olarak temizlenecektir. Devam edilsin mi?'))
+    if (
+      !confirm(
+        '30 günü doldurmuş tüm çöp kutusu kayıtları kalıcı olarak temizlenecektir. Devam edilsin mi?'
+      )
+    )
       return
     try {
       const count = await kutuphaneService.purgeExpired()
@@ -241,7 +246,8 @@ export default function BelgelerimScreen(): React.JSX.Element {
   const filteredBelgeler = selectedTag
     ? belgeler.filter((b) => {
         try {
-          const tags: string[] = typeof b.etiketler === 'string' ? JSON.parse(b.etiketler) : b.etiketler
+          const tags: string[] =
+            typeof b.etiketler === 'string' ? JSON.parse(b.etiketler) : b.etiketler
           return tags.includes(selectedTag)
         } catch {
           return false
@@ -512,7 +518,8 @@ export default function BelgelerimScreen(): React.JSX.Element {
                 Henüz Belge Eklenmedi
               </h3>
               <p className="text-xs text-slate-500 mb-6">
-                Belgelerim alanı serbestçe adlandırıp düzenleyebileceğiniz özel şablon ve metin alanıdır.
+                Belgelerim alanı serbestçe adlandırıp düzenleyebileceğiniz özel şablon ve metin
+                alanıdır.
               </p>
               <div className="flex flex-col gap-2">
                 <button
@@ -774,7 +781,9 @@ export default function BelgelerimScreen(): React.JSX.Element {
             </h3>
             <div className="space-y-3 mb-5">
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">Klasör Adı</label>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
+                  Klasör Adı
+                </label>
                 <input
                   type="text"
                   required

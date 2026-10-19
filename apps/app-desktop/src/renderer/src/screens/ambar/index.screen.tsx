@@ -188,12 +188,7 @@ export default function AmbarScreen({
       </div>
 
       {/* METRIC CARDS */}
-      <AmbarMetrics
-        ambarlar={ambarlar}
-        stoklar={stoklar}
-        hareketler={hareketler}
-        tifler={tifler}
-      />
+      <AmbarMetrics ambarlar={ambarlar} stoklar={stoklar} hareketler={hareketler} tifler={tifler} />
 
       {/* NAVIGATION TABS & FILTER BAR */}
       <AmbarTabsHeader

@@ -109,13 +109,15 @@ export const kutuphaneService = {
   },
 
   // Belgeler
-  async listBelgeler(filters: {
-    grup_id?: number | null
-    cop_kutusu?: boolean
-    arsiv_mi?: boolean
-    favori_mi?: boolean
-    q?: string
-  } = {}): Promise<KutuphaneBelge[]> {
+  async listBelgeler(
+    filters: {
+      grup_id?: number | null
+      cop_kutusu?: boolean
+      arsiv_mi?: boolean
+      favori_mi?: boolean
+      q?: string
+    } = {}
+  ): Promise<KutuphaneBelge[]> {
     const res = await getIpc().invoke('kutuphane:belge:list', filters)
     if (!res.success) throw new Error(res.error)
     return res.data
@@ -187,10 +189,12 @@ export const kutuphaneService = {
   },
 
   // Yer Tutucular
-  async listYerTutucular(filters: {
-    kapsam?: 'genel' | 'grup' | 'belge'
-    kapsam_id?: number | null
-  } = {}): Promise<KutuphaneYerTutucuRow[]> {
+  async listYerTutucular(
+    filters: {
+      kapsam?: 'genel' | 'grup' | 'belge'
+      kapsam_id?: number | null
+    } = {}
+  ): Promise<KutuphaneYerTutucuRow[]> {
     const res = await getIpc().invoke('kutuphane:yertutucu:list', filters)
     if (!res.success) throw new Error(res.error)
     return res.data
@@ -207,7 +211,9 @@ export const kutuphaneService = {
     if (!res.success) throw new Error(res.error)
   },
 
-  async findYerTutucuUsages(anahtar: string): Promise<Array<{ id: number; ad: string; surum_no: number }>> {
+  async findYerTutucuUsages(
+    anahtar: string
+  ): Promise<Array<{ id: number; ad: string; surum_no: number }>> {
     const res = await getIpc().invoke('kutuphane:yertutucu:findUsages', anahtar)
     if (!res.success) throw new Error(res.error)
     return res.data
@@ -234,7 +240,10 @@ export const kutuphaneService = {
       exportedAt: new Date().toISOString(),
       belge: {
         ad: belge.ad,
-        etiketler: typeof belge.etiketler === 'string' ? JSON.parse(belge.etiketler || '[]') : belge.etiketler
+        etiketler:
+          typeof belge.etiketler === 'string'
+            ? JSON.parse(belge.etiketler || '[]')
+            : belge.etiketler
       },
       surumler: surumler.map((s) => ({
         surum_no: s.surum_no,
@@ -277,7 +286,10 @@ export const kutuphaneService = {
     }
     const expectedChecksum = calculateChecksum(JSON.stringify(rawForCheck))
     if (expectedChecksum !== paket.checksum) {
-      return { valid: false, error: 'Paket bütünlük doğrulaması (checksum) başarısız! Dosya değiştirilmiş olabilir.' }
+      return {
+        valid: false,
+        error: 'Paket bütünlük doğrulaması (checksum) başarısız! Dosya değiştirilmiş olabilir.'
+      }
     }
 
     return { valid: true }
@@ -316,4 +328,3 @@ export const kutuphaneService = {
     return res.sablonId
   }
 }
-

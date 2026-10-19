@@ -33,9 +33,24 @@ export interface HizliKadroGuncelleModalProps {
 }
 
 export const DEFAULT_YAKLASIK_ROLES = [
-  { ad: 'Harcama Yetkilisi', asil: 1, belgedeGoster: true, belgeSablonIds: [...DOC_GROUPS.olur_onay] },
-  { ad: 'Satın Alma Harcama Yetkilisi', asil: 1, belgedeGoster: true, belgeSablonIds: [...DOC_GROUPS.olur_onay] },
-  { ad: 'Gerçekleştirme Görevlisi', asil: 1, belgedeGoster: true, belgeSablonIds: [...DOC_GROUPS.olur_onay] },
+  {
+    ad: 'Harcama Yetkilisi',
+    asil: 1,
+    belgedeGoster: true,
+    belgeSablonIds: [...DOC_GROUPS.olur_onay]
+  },
+  {
+    ad: 'Satın Alma Harcama Yetkilisi',
+    asil: 1,
+    belgedeGoster: true,
+    belgeSablonIds: [...DOC_GROUPS.olur_onay]
+  },
+  {
+    ad: 'Gerçekleştirme Görevlisi',
+    asil: 1,
+    belgedeGoster: true,
+    belgeSablonIds: [...DOC_GROUPS.olur_onay]
+  },
   { ad: 'Muhasebe Yetkilisi', asil: 1, belgedeGoster: false, belgeSablonIds: [] },
   {
     ad: 'Fiyat Araştırma Görevlisi',
@@ -58,7 +73,12 @@ export const DEFAULT_YAKLASIK_ROLES = [
 ]
 
 export const DEFAULT_MUAYENE_ROLES = [
-  { ad: 'Komisyon Başkanı', asil: 1, belgedeGoster: true, belgeSablonIds: [...DOC_GROUPS.muayene_kabul] },
+  {
+    ad: 'Komisyon Başkanı',
+    asil: 1,
+    belgedeGoster: true,
+    belgeSablonIds: [...DOC_GROUPS.muayene_kabul]
+  },
   { ad: 'Üye', asil: 1, belgedeGoster: true, belgeSablonIds: [...DOC_GROUPS.muayene_kabul] },
   { ad: 'Üye', asil: 1, belgedeGoster: true, belgeSablonIds: [...DOC_GROUPS.muayene_kabul] },
   { ad: 'Üye', asil: 0, belgedeGoster: true, belgeSablonIds: [...DOC_GROUPS.muayene_kabul] },
@@ -95,4 +115,3 @@ export function getDefaultScopeForRole(gorevAd: string): {
   }
   return { belgeSablonIds: null, belgedeGoster: true }
 }
-

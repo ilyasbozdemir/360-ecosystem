@@ -68,7 +68,9 @@ export function BirimDonusumTab(): React.JSX.Element {
               </div>
               <div>
                 <h3 className="text-sm font-bold text-slate-800 dark:text-white">Birim Çevirici</h3>
-                <p className="text-[11px] text-slate-500">Ölçü birimlerini kamu ve teknik standartlara göre dönüştürün</p>
+                <p className="text-[11px] text-slate-500">
+                  Ölçü birimlerini kamu ve teknik standartlara göre dönüştürün
+                </p>
               </div>
             </div>
 
@@ -202,28 +204,36 @@ export function BirimDonusumTab(): React.JSX.Element {
               <span className="font-bold text-amber-900 dark:text-amber-300 flex items-center gap-1.5">
                 <Scale className="w-3.5 h-3.5 text-amber-600" /> Ağırlık
               </span>
-              <p className="font-mono text-slate-600 dark:text-slate-400">1 Ton = 1.000 kg = 1.000.000 g</p>
+              <p className="font-mono text-slate-600 dark:text-slate-400">
+                1 Ton = 1.000 kg = 1.000.000 g
+              </p>
             </div>
 
             <div className="p-3 rounded-xl bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-800/30 space-y-1">
               <span className="font-bold text-blue-900 dark:text-blue-300 flex items-center gap-1.5">
                 <Ruler className="w-3.5 h-3.5 text-blue-600" /> Uzunluk & Yapım
               </span>
-              <p className="font-mono text-slate-600 dark:text-slate-400">1 m = 100 cm = 1.000 mm = 1 mt</p>
+              <p className="font-mono text-slate-600 dark:text-slate-400">
+                1 m = 100 cm = 1.000 mm = 1 mt
+              </p>
             </div>
 
             <div className="p-3 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-800/30 space-y-1">
               <span className="font-bold text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5">
                 <Maximize2 className="w-3.5 h-3.5 text-emerald-600" /> Alan & Hacim
               </span>
-              <p className="font-mono text-slate-600 dark:text-slate-400">1 Dönüm = 1.000 m² | 1 m³ = 1.000 L</p>
+              <p className="font-mono text-slate-600 dark:text-slate-400">
+                1 Dönüm = 1.000 m² | 1 m³ = 1.000 L
+              </p>
             </div>
 
             <div className="p-3 rounded-xl bg-rose-50/60 dark:bg-rose-950/20 border border-rose-200/50 dark:border-rose-800/30 space-y-1">
               <span className="font-bold text-rose-900 dark:text-rose-300 flex items-center gap-1.5">
                 <Thermometer className="w-3.5 h-3.5 text-rose-600" /> Sıcaklık
               </span>
-              <p className="font-mono text-slate-600 dark:text-slate-400">0 °C = 32 °F | K = °C + 273.15</p>
+              <p className="font-mono text-slate-600 dark:text-slate-400">
+                0 °C = 32 °F | K = °C + 273.15
+              </p>
             </div>
           </div>
         </div>

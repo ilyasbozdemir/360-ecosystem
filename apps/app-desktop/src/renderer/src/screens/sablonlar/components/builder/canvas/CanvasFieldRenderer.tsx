@@ -7,10 +7,7 @@ interface CanvasFieldRendererProps {
   formData: Record<string, string>
 }
 
-export const CanvasFieldRenderer: React.FC<CanvasFieldRendererProps> = ({
-  field,
-  formData
-}) => {
+export const CanvasFieldRenderer: React.FC<CanvasFieldRendererProps> = ({ field, formData }) => {
   return (
     <div
       className={`pointer-events-none ${getTextAlignClass(field.textAlign)} ${
@@ -61,9 +58,7 @@ export const CanvasFieldRenderer: React.FC<CanvasFieldRendererProps> = ({
       ) : field.type === 'page_break' ? (
         <div className="py-2 text-center">
           <div className="border border-dashed border-amber-400 bg-amber-50/70 text-amber-800 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center justify-center gap-2">
-            <span>
-              ✂️ ---------------- SAYFA SONU KESMESİ (Page Break) ---------------- ✂️
-            </span>
+            <span>✂️ ---------------- SAYFA SONU KESMESİ (Page Break) ---------------- ✂️</span>
           </div>
         </div>
       ) : field.type === 'grid' ? (
@@ -84,38 +79,27 @@ export const CanvasFieldRenderer: React.FC<CanvasFieldRendererProps> = ({
         </div>
       ) : field.type === 'select' ? (
         <div className="space-y-1">
-          <label className="block text-[9pt] font-bold text-slate-700">
-            {field.label}:
-          </label>
+          <label className="block text-[9pt] font-bold text-slate-700">{field.label}:</label>
           <div className="px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded text-xs text-slate-800 flex justify-between items-center">
             <span className="font-medium">
               {formData[field.variableName] ||
                 field.defaultValue ||
                 field.placeholder ||
-                (field.options?.[0]
-                  ? `Seçili: ${field.options[0]}`
-                  : 'Seçim Yapınız')}
+                (field.options?.[0] ? `Seçili: ${field.options[0]}` : 'Seçim Yapınız')}
             </span>
             <span className="text-slate-400 text-[9px]">▼</span>
           </div>
         </div>
       ) : field.type === 'radio' ? (
         <div className="space-y-1.5">
-          <label className="block text-[9pt] font-bold text-slate-700">
-            {field.label}:
-          </label>
+          <label className="block text-[9pt] font-bold text-slate-700">{field.label}:</label>
           <div className="flex flex-wrap gap-3">
             {field.options && field.options.length > 0 ? (
               field.options.map((opt, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-1.5 text-xs text-slate-800"
-                >
+                <div key={i} className="flex items-center gap-1.5 text-xs text-slate-800">
                   <span
                     className={`w-3 h-3 rounded-full border flex items-center justify-center ${
-                      i === 0
-                        ? 'border-blue-600 bg-blue-600'
-                        : 'border-slate-300 bg-white'
+                      i === 0 ? 'border-blue-600 bg-blue-600' : 'border-slate-300 bg-white'
                     }`}
                   >
                     {i === 0 && <span className="w-1 h-1 rounded-full bg-white" />}
@@ -124,24 +108,17 @@ export const CanvasFieldRenderer: React.FC<CanvasFieldRendererProps> = ({
                 </div>
               ))
             ) : (
-              <span className="text-slate-400 italic text-xs">
-                Seçenek tanımlanmadı
-              </span>
+              <span className="text-slate-400 italic text-xs">Seçenek tanımlanmadı</span>
             )}
           </div>
         </div>
       ) : field.type === 'checkbox' ? (
         <div className="space-y-1.5">
-          <label className="block text-[9pt] font-bold text-slate-700">
-            {field.label}:
-          </label>
+          <label className="block text-[9pt] font-bold text-slate-700">{field.label}:</label>
           <div className="flex flex-wrap gap-3">
             {field.options && field.options.length > 0 ? (
               field.options.map((opt, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-1.5 text-xs text-slate-800"
-                >
+                <div key={i} className="flex items-center gap-1.5 text-xs text-slate-800">
                   <span className="w-3.5 h-3.5 rounded border border-blue-600 bg-blue-600 text-white flex items-center justify-center text-[8px] font-bold">
                     ✓
                   </span>
@@ -160,9 +137,7 @@ export const CanvasFieldRenderer: React.FC<CanvasFieldRendererProps> = ({
         </div>
       ) : field.type === 'textarea' ? (
         <div className="space-y-1">
-          <label className="block text-[9pt] font-bold text-slate-700">
-            {field.label}:
-          </label>
+          <label className="block text-[9pt] font-bold text-slate-700">{field.label}:</label>
           <div className="text-[9.5pt] leading-relaxed text-slate-800 bg-slate-50/70 p-2.5 border border-slate-200 rounded min-h-12 whitespace-pre-wrap">
             {formData[field.variableName] ||
               field.defaultValue ||
@@ -240,9 +215,7 @@ export const CanvasFieldRenderer: React.FC<CanvasFieldRendererProps> = ({
                     <div className="text-slate-400 text-[7.5pt] uppercase font-semibold">
                       {member.gorev}
                     </div>
-                    <div className="text-slate-300 text-[7.5pt] italic pt-1">
-                      [ İmza ]
-                    </div>
+                    <div className="text-slate-300 text-[7.5pt] italic pt-1">[ İmza ]</div>
                   </div>
                 ))
               ) : (

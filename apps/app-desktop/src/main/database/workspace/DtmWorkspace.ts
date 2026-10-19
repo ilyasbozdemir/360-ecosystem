@@ -235,7 +235,16 @@ export class DtmWorkspace {
         `)
         const seedTx = this.db.transaction((rows: any[]) => {
           for (const row of rows) {
-            insertStmt.run(row.tam_kod, row.hesap_kodu, row.duzey_1, row.duzey_2, row.duzey_3, row.duzey_4, row.duzey_5, row.aciklama)
+            insertStmt.run(
+              row.tam_kod,
+              row.hesap_kodu,
+              row.duzey_1,
+              row.duzey_2,
+              row.duzey_3,
+              row.duzey_4,
+              row.duzey_5,
+              row.aciklama
+            )
           }
         })
         seedTx(tasinirKodlariSeed)
@@ -265,7 +274,10 @@ export class DtmWorkspace {
       this.resetDirty()
       return meta
     } catch (createErr) {
-      if (fs.existsSync(lockPath)) try { fs.unlinkSync(lockPath) } catch {}
+      if (fs.existsSync(lockPath))
+        try {
+          fs.unlinkSync(lockPath)
+        } catch {}
       this.currentFilePath = null
       throw createErr
     }
@@ -275,7 +287,9 @@ export class DtmWorkspace {
     if (!this.currentFilePath || !this.db) throw new Error('Hiçbir veri dosyası açık değil.')
     if (!force && !this.isDirtyState()) return
 
-    try { this.db.pragma('wal_checkpoint(TRUNCATE)') } catch {}
+    try {
+      this.db.pragma('wal_checkpoint(TRUNCATE)')
+    } catch {}
     const metaPath = path.join(this.tempDir, 'meta.json')
     if (fs.existsSync(metaPath)) {
       const meta = JSON.parse(fs.readFileSync(metaPath, 'utf-8')) as WorkspaceMeta
@@ -293,17 +307,24 @@ export class DtmWorkspace {
     // Atomik ve güvenli kaydetme: Önce aynı dizinde geçici bir dosyaya yaz,
     // boyutu doğrula, ardından asıl hedefi güncelle.
     const targetDir = path.dirname(this.currentFilePath)
-    const tempFile = path.join(targetDir, `.${path.basename(this.currentFilePath)}.tmp.${Date.now()}`)
+    const tempFile = path.join(
+      targetDir,
+      `.${path.basename(this.currentFilePath)}.tmp.${Date.now()}`
+    )
     try {
       zip.writeZip(tempFile)
       if (!fs.existsSync(tempFile) || fs.statSync(tempFile).size === 0) {
         throw new Error('Geçici arşiv dosyası oluşturulamadı veya boş.')
       }
       fs.copyFileSync(tempFile, this.currentFilePath)
-      try { fs.unlinkSync(tempFile) } catch {}
+      try {
+        fs.unlinkSync(tempFile)
+      } catch {}
     } catch (saveErr) {
       if (fs.existsSync(tempFile)) {
-        try { fs.unlinkSync(tempFile) } catch {}
+        try {
+          fs.unlinkSync(tempFile)
+        } catch {}
       }
       throw saveErr
     }
@@ -312,33 +333,28 @@ export class DtmWorkspace {
     this.resetDirty()
   }
 
-  public convertToTemin(): { success: boolean; newPath?: string; error?: string } {
-    if (!this.currentFilePath || !this.db) return { success: false, error: 'Açık bir çalışma alanı yok.' }
-    if (this.currentFilePath.toLowerCase().endsWith('.temin')) {
-      this.saveWorkspace()
-      return { success: true, newPath: this.currentFilePath }
-    }
-    const dir = path.dirname(this.currentFilePath)
-    const baseName = path.basename(this.currentFilePath, path.extname(this.currentFilePath))
-    const newPath = path.join(dir, `${baseName}.temin`)
-    this.currentFilePath = newPath
-    this.saveWorkspace()
-    return { success: true, newPath }
-  }
-
   public saveAs(targetFilePath: string): { success: boolean; newPath?: string; error?: string } {
-    if (!this.currentFilePath || !this.db) return { success: false, error: 'Açık bir çalışma alanı yok.' }
-    const newPath = targetFilePath.toLowerCase().endsWith('.temin') ? targetFilePath : `${targetFilePath}.temin`
+    if (!this.currentFilePath || !this.db)
+      return { success: false, error: 'Açık bir çalışma alanı yok.' }
+    const newPath = targetFilePath.toLowerCase().endsWith('.temin')
+      ? targetFilePath
+      : `${targetFilePath}.temin`
     this.currentFilePath = newPath
     this.saveWorkspace()
     return { success: true, newPath }
   }
 
   public closeWorkspace(): void {
-    if (this.db) { this.db.close(); this.db = null }
+    if (this.db) {
+      this.db.close()
+      this.db = null
+    }
     if (this.currentFilePath) {
       const lockPath = this.currentFilePath + '.lock'
-      if (fs.existsSync(lockPath)) try { fs.unlinkSync(lockPath) } catch {}
+      if (fs.existsSync(lockPath))
+        try {
+          fs.unlinkSync(lockPath)
+        } catch {}
     }
     this.currentFilePath = null
     this.meta = null
@@ -346,7 +362,8 @@ export class DtmWorkspace {
   }
 
   public replaceDatabase(sourceSqlitePath: string): void {
-    if (!this.currentFilePath || !this.db || !this.meta) throw new Error('Açık bir çalışma alanı yok.')
+    if (!this.currentFilePath || !this.db || !this.meta)
+      throw new Error('Açık bir çalışma alanı yok.')
     this.db.close()
     const newDbName = `database_${Date.now()}.sqlite`
     const dbPath = path.join(this.tempDir, newDbName)
@@ -367,13 +384,19 @@ export class DtmWorkspace {
     if (!this.tempDir) throw new Error('Geçici dizin yok.')
     return path.join(this.tempDir, this.meta?.active_db_file || 'database.sqlite')
   }
-  public getMeta(): WorkspaceMeta | null { return this.meta }
-  public getCurrentFilePath(): string | null { return this.currentFilePath }
+  public getMeta(): WorkspaceMeta | null {
+    return this.meta
+  }
+  public getCurrentFilePath(): string | null {
+    return this.currentFilePath
+  }
 
   public calculateCurrentHash(): string {
     if (!this.db || !this.tempDir) return ''
     try {
-      try { this.db.pragma('wal_checkpoint(TRUNCATE)') } catch {}
+      try {
+        this.db.pragma('wal_checkpoint(TRUNCATE)')
+      } catch {}
       const dbPath = path.join(this.tempDir, this.meta?.active_db_file || 'database.sqlite')
       if (!fs.existsSync(dbPath)) return ''
       const content = fs.readFileSync(dbPath)
@@ -388,7 +411,9 @@ export class DtmWorkspace {
         }
       }
       return hash.digest('hex')
-    } catch { return '' }
+    } catch {
+      return ''
+    }
   }
 
   public getDataVersion(): number {
@@ -396,7 +421,9 @@ export class DtmWorkspace {
     try {
       const row = this.db.prepare('PRAGMA data_version').get() as { data_version?: number }
       return row?.data_version ?? 0
-    } catch { return 0 }
+    } catch {
+      return 0
+    }
   }
 
   public recordMutation(tableName?: string, action?: string, count: number = 1): void {
@@ -404,8 +431,18 @@ export class DtmWorkspace {
     const table = tableName || 'Veritabanı'
     const tableUpper = table.toUpperCase()
     if (
-      ['LOG_SYSTEMLOG', 'SETTINGS', 'SCHEMA_MIGRATIONS', 'SQLITE_SEQUENCE', 'TANIM_SABLON', 'TANIM_DETSISCACHE', 'TANIM_TASINIRKOD', 'TANIM_KIKLIMITLERI'].includes(tableUpper) ||
-      tableUpper.startsWith('SYS_') || tableUpper.startsWith('TEMP_')
+      [
+        'LOG_SYSTEMLOG',
+        'SETTINGS',
+        'SCHEMA_MIGRATIONS',
+        'SQLITE_SEQUENCE',
+        'TANIM_SABLON',
+        'TANIM_DETSISCACHE',
+        'TANIM_TASINIRKOD',
+        'TANIM_KIKLIMITLERI'
+      ].includes(tableUpper) ||
+      tableUpper.startsWith('SYS_') ||
+      tableUpper.startsWith('TEMP_')
     ) {
       return
     }
@@ -415,7 +452,11 @@ export class DtmWorkspace {
     if (this.meta) {
       this.meta.last_user_mutation_at = nowIso
     }
-    this.lastMutationTime = new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    this.lastMutationTime = new Date().toLocaleTimeString('tr-TR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    })
     const act = (action as 'insert' | 'update' | 'delete' | 'other') || 'other'
     const key = `${table}_${act}`
     const existing = this.mutationMap.get(key)
@@ -427,7 +468,14 @@ export class DtmWorkspace {
         tableName: table,
         title: TABLE_FRIENDLY_NAMES[table] || table,
         action: act,
-        actionLabel: act === 'insert' ? 'Yeni Kayıt Eklendi' : act === 'update' ? 'Bilgiler Güncellendi' : act === 'delete' ? 'Kayıt Silindi' : 'Veri Düzenlendi',
+        actionLabel:
+          act === 'insert'
+            ? 'Yeni Kayıt Eklendi'
+            : act === 'update'
+              ? 'Bilgiler Güncellendi'
+              : act === 'delete'
+                ? 'Kayıt Silindi'
+                : 'Veri Düzenlendi',
         count,
         lastTime: this.lastMutationTime
       })
@@ -435,7 +483,9 @@ export class DtmWorkspace {
     this.notifyDirtyChange(true)
   }
 
-  public isDirtyState(): boolean { return !!(this.db && this.currentFilePath && this.isDirty && this.userMutationCount > 0) }
+  public isDirtyState(): boolean {
+    return !!(this.db && this.currentFilePath && this.isDirty && this.userMutationCount > 0)
+  }
 
   public resetDirty(): void {
     this.isDirty = false
@@ -462,7 +512,13 @@ export class DtmWorkspace {
     }
     return {
       isDirty,
-      totalChanges: isDirty ? Math.max(this.userMutationCount, items.reduce((acc, it) => acc + (it.count || 1), 0), 1) : 0,
+      totalChanges: isDirty
+        ? Math.max(
+            this.userMutationCount,
+            items.reduce((acc, it) => acc + (it.count || 1), 0),
+            1
+          )
+        : 0,
       lastModifiedAt: this.lastMutationTime,
       items: isDirty ? items : []
     }
@@ -488,7 +544,9 @@ export class DtmWorkspace {
     if (target === 'gdrive' || target === 'email') {
       try {
         const key = target === 'gdrive' ? 'lastGdriveSyncHash' : 'lastEmailSyncHash'
-        const row = this.db.prepare(`SELECT value FROM settings WHERE key = ?`).get(key) as { value?: string }
+        const row = this.db.prepare(`SELECT value FROM settings WHERE key = ?`).get(key) as {
+          value?: string
+        }
         if (row?.value) return row.value !== current
       } catch {}
       return true
@@ -503,11 +561,15 @@ export class DtmWorkspace {
     if (!current) return
     try {
       const key = target === 'gdrive' ? 'lastGdriveSyncHash' : 'lastEmailSyncHash'
-      this.db.prepare(`INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)`).run(key, current)
+      this.db
+        .prepare(`INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)`)
+        .run(key, current)
     } catch {}
   }
 
-  public isOpen(): boolean { return !!this.db }
+  public isOpen(): boolean {
+    return !!this.db
+  }
 
   private ensureTempDir() {
     if (fs.existsSync(this.tempDir)) fs.rmSync(this.tempDir, { recursive: true, force: true })

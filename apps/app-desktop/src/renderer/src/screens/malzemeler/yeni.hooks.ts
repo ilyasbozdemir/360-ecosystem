@@ -81,11 +81,7 @@ export function useYeniMalzeme() {
     const populateForm = (item: Partial<Kalem>) => {
       setFormData({
         ...item,
-        tipi: item.tipi?.startsWith('Hizmet')
-          ? 'Hizmet'
-          : item.tipi === 'Yapım'
-            ? 'Yapım'
-            : 'Mal'
+        tipi: item.tipi?.startsWith('Hizmet') ? 'Hizmet' : item.tipi === 'Yapım' ? 'Yapım' : 'Mal'
       })
       loadedEditIdRef.current = editId
     }

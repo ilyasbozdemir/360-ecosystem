@@ -6,9 +6,7 @@ import { Eye, Lock, CheckCircle2, Sliders } from 'lucide-react'
 interface CiktiWizardVisibilityStepProps {
   selectedSablons: Sablon[]
   documentDataMap: Record<string, Record<string, unknown>>
-  setDocumentDataMap: React.Dispatch<
-    React.SetStateAction<Record<string, Record<string, unknown>>>
-  >
+  setDocumentDataMap: React.Dispatch<React.SetStateAction<Record<string, Record<string, unknown>>>>
   onProceed: () => void
   onBack: () => void
 }
@@ -20,11 +18,7 @@ export function CiktiWizardVisibilityStep({
   onProceed,
   onBack
 }: CiktiWizardVisibilityStepProps): React.JSX.Element {
-  const handleToggleFlag = (
-    templateId: string,
-    flagKey: string,
-    currentValue: boolean
-  ): void => {
+  const handleToggleFlag = (templateId: string, flagKey: string, currentValue: boolean): void => {
     setDocumentDataMap((prev) => {
       const existing = prev[templateId] || {}
       return {
@@ -49,8 +43,8 @@ export function CiktiWizardVisibilityStep({
             Göster / Gizle Seçenekleri
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Yalnızca ilgili şablonun desteklediği bölümler ve imza blokları listelenir.
-            Mevzuat gereği zorunlu (statutory) olan bloklar kilitlidir ve gizlenemez.
+            Yalnızca ilgili şablonun desteklediği bölümler ve imza blokları listelenir. Mevzuat
+            gereği zorunlu (statutory) olan bloklar kilitlidir ve gizlenemez.
           </p>
         </div>
 
@@ -71,14 +65,13 @@ export function CiktiWizardVisibilityStep({
                     <Sliders className="w-4 h-4 text-blue-400" />
                     <span className="text-sm font-bold text-slate-200">{sablon.ad}</span>
                   </div>
-                  <span className="text-[10px] text-slate-400 font-mono">
-                    {sablon.dosya_adi}
-                  </span>
+                  <span className="text-[10px] text-slate-400 font-mono">{sablon.dosya_adi}</span>
                 </div>
 
                 {supportedFlags.length === 0 ? (
                   <p className="text-xs text-slate-400 italic py-1">
-                    Bu belge için yapılandırılabilir ek görünürlük bayrağı bulunmamaktadır (tüm standart alanlar etkindir).
+                    Bu belge için yapılandırılabilir ek görünürlük bayrağı bulunmamaktadır (tüm
+                    standart alanlar etkindir).
                   </p>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
@@ -100,9 +93,7 @@ export function CiktiWizardVisibilityStep({
                         >
                           <div className="space-y-0.5 pr-2">
                             <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-bold text-slate-200">
-                                {flag.label}
-                              </span>
+                              <span className="text-xs font-bold text-slate-200">{flag.label}</span>
                               {isStatutory && (
                                 <span className="flex items-center gap-1 px-1.5 py-0.2 rounded bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[9px] font-semibold">
                                   <Lock className="w-2.5 h-2.5" />

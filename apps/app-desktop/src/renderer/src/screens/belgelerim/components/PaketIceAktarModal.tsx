@@ -56,9 +56,7 @@ export function PaketIceAktarModal({
 
     try {
       const docName =
-        conflictAction === 'copy'
-          ? `${parsedPaket.belge.ad} (İçe Aktarılan)`
-          : parsedPaket.belge.ad
+        conflictAction === 'copy' ? `${parsedPaket.belge.ad} (İçe Aktarılan)` : parsedPaket.belge.ad
 
       // 1. Belge oluştur
       const initialSurum = parsedPaket.surumler[0] || {

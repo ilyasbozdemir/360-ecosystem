@@ -120,7 +120,8 @@ export function IhtiyacRaporuList({
               Arama Kriterlerine Uygun Rapor Bulunamadı
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">
-              Girilen arama terimine veya seçilen filtreye uygun ihtiyaç raporu bulunamadı. Filtreleri temizleyerek tüm kayıtları listeleyebilirsiniz.
+              Girilen arama terimine veya seçilen filtreye uygun ihtiyaç raporu bulunamadı.
+              Filtreleri temizleyerek tüm kayıtları listeleyebilirsiniz.
             </p>
           </div>
           {onClearFilters && (
@@ -226,7 +227,10 @@ export function IhtiyacRaporuList({
                           <span className="font-mono font-bold text-blue-600 dark:text-blue-400 text-[11px]">
                             [{r.dosya_no || `Dosya #${r.temin_dosya_id}`}]
                           </span>
-                          <span className="text-slate-600 dark:text-slate-400 truncate max-w-[140px] text-[11px]" title={r.dosya_konu || ''}>
+                          <span
+                            className="text-slate-600 dark:text-slate-400 truncate max-w-[140px] text-[11px]"
+                            title={r.dosya_konu || ''}
+                          >
                             {r.dosya_konu}
                           </span>
                           <button
@@ -244,7 +248,10 @@ export function IhtiyacRaporuList({
                     <td className="py-3 px-4 text-slate-500 whitespace-nowrap text-[11px]">
                       {formatDate(r.tarih)}
                     </td>
-                    <td className="py-3 px-4 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                    <td
+                      className="py-3 px-4 text-right whitespace-nowrap"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => onSelect(r.id)}
@@ -365,9 +372,7 @@ export function IhtiyacRaporuList({
                       </button>
                     </div>
                     {r.dosya_konu && (
-                      <p className="text-slate-600 dark:text-slate-300 truncate">
-                        {r.dosya_konu}
-                      </p>
+                      <p className="text-slate-600 dark:text-slate-300 truncate">{r.dosya_konu}</p>
                     )}
                   </div>
                 )}

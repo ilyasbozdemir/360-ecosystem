@@ -153,7 +153,9 @@ export const SaveTemplateModal: React.FC<SaveTemplateModalProps> = ({
           <div className="p-3 bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-900/50 rounded-xl flex items-start gap-2.5 text-xs text-purple-900 dark:text-purple-300">
             <Info className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0 mt-0.5" />
             <p className="leading-relaxed">
-              Bu şablonu kaydettiğinizde, sol taraftaki <strong>EBYS Şablon Kütüphanesi</strong>'nde yer alacak; istediğiniz zaman değişkenleri doldurularak farklı satın alma ve resmi dosya süreçlerinde canlı olarak kullanılabilecektir.
+              Bu şablonu kaydettiğinizde, sol taraftaki <strong>EBYS Şablon Kütüphanesi</strong>'nde
+              yer alacak; istediğiniz zaman değişkenleri doldurularak farklı satın alma ve resmi
+              dosya süreçlerinde canlı olarak kullanılabilecektir.
             </p>
           </div>
 

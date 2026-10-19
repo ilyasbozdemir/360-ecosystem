@@ -3,9 +3,10 @@ import { SaveDosyaSablonVeriCommand } from './SaveDosyaSablonVeriCommand'
 import { SaveDosyaSablonVeriResultDto } from '../dtos/DosyaSablonVeriDto'
 import { dbClient } from '../../../services/db/dbClient'
 
-export class SaveDosyaSablonVeriCommandHandler
-  implements IRequestHandler<SaveDosyaSablonVeriCommand, SaveDosyaSablonVeriResultDto>
-{
+export class SaveDosyaSablonVeriCommandHandler implements IRequestHandler<
+  SaveDosyaSablonVeriCommand,
+  SaveDosyaSablonVeriResultDto
+> {
   async handle(command: SaveDosyaSablonVeriCommand): Promise<SaveDosyaSablonVeriResultDto> {
     await dbClient.run(
       `INSERT INTO DATA_DosyaSablonVeri (temin_dosya_id, sablon_kodu, veri_json, updated_at)

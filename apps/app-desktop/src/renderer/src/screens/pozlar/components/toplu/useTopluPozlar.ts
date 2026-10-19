@@ -3,11 +3,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { PozItem, usePozlarHooks } from '../../pozlar.hooks'
 import { APP_ROUTES } from '../../../../constants/routeConstants'
 import { TopluPozRow, TopluTabType } from './toplu.types'
-import {
-  DEFAULT_GITHUB_RAW_URL,
-  ORNEK_GITHUB_JSON_DATA,
-  createEmptyRow
-} from './toplu.constants'
+import { DEFAULT_GITHUB_RAW_URL, ORNEK_GITHUB_JSON_DATA, createEmptyRow } from './toplu.constants'
 
 export function useTopluPozlar() {
   const navigate = useNavigate()

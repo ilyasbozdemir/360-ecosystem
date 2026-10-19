@@ -251,7 +251,8 @@ export default function DashboardScreenV2(): React.JSX.Element {
             selectedFileForAI.yaklasik_maliyet || selectedFileForAI.muhammenBedel || 0
           )}\n\nLütfen mevzuata uygun dikkat edilmesi gereken hususlar ve adımlar hakkında uzman tavsiyesi sun.`}
           placeholderMappings={{
-            '[DOSYA_NO]': selectedFileForAI.temin_no || selectedFileForAI.ihaleKayitNo || 'Belirtilmemiş',
+            '[DOSYA_NO]':
+              selectedFileForAI.temin_no || selectedFileForAI.ihaleKayitNo || 'Belirtilmemiş',
             '[DOSYA_KONU]': selectedFileForAI.konu || selectedFileForAI.ihaleAdi || 'Belirtilmemiş',
             '[DOSYA_MALIYET]': formatCurrency(
               selectedFileForAI.yaklasik_maliyet || selectedFileForAI.muhammenBedel || 0

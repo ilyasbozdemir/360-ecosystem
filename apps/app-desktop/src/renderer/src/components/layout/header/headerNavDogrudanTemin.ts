@@ -129,12 +129,18 @@ export function getDogrudanTeminMenus(
         {
           label: 'Doğrudan Temin Parasal Limitleri (22/a, 22/d)',
           onClick: (): Promise<void> =>
-            navigate({ to: APP_ROUTES.MEVZUAT, search: { tab: 'limitler' } as Record<string, string> })
+            navigate({
+              to: APP_ROUTES.MEVZUAT,
+              search: { tab: 'limitler' } as Record<string, string>
+            })
         },
         {
           label: 'TÜİK Yİ-ÜFE Endeksleri & Değerleme',
           onClick: (): Promise<void> =>
-            navigate({ to: APP_ROUTES.MEVZUAT, search: { tab: 'yi-ufe' } as Record<string, string> })
+            navigate({
+              to: APP_ROUTES.MEVZUAT,
+              search: { tab: 'yi-ufe' } as Record<string, string>
+            })
         }
       ]
     }

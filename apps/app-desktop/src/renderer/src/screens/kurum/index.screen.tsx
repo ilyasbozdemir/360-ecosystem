@@ -214,14 +214,9 @@ export default function KurumScreen(): React.JSX.Element {
 
   const handleTabChange = (tabId: string): void => {
     if (
-      [
-        'birimler',
-        'personel',
-        'komisyonlar',
-        'komisyon-gorevleri',
-        'ambar',
-        'projeler'
-      ].includes(tabId)
+      ['birimler', 'personel', 'komisyonlar', 'komisyon-gorevleri', 'ambar', 'projeler'].includes(
+        tabId
+      )
     ) {
       addTab(`/${tabId}`)
       navigate({ to: `/${tabId}` as any })

@@ -9,9 +9,7 @@ describe('Template Constants & Metadata Integrity', () => {
   it('should map core templates to non-empty Turkish title strings', () => {
     expect(TEMPLATE_NAMES['harcama-talimati']).toContain('HARCAMA TALİMATI')
     expect(TEMPLATE_NAMES['ihtiyac-listesi']).toContain('İHTİYAÇ LİSTESİ')
-    expect(TEMPLATE_NAMES['piyasa-fiyat-arastirma-tutanagi']).toContain(
-      'PİYASA FİYAT ARAŞTIRMA'
-    )
+    expect(TEMPLATE_NAMES['piyasa-fiyat-arastirma-tutanagi']).toContain('PİYASA FİYAT ARAŞTIRMA')
     expect(TEMPLATE_NAMES['dogrudan-temin-onay-belgesi']).toContain('DOĞRUDAN TEMİN ONAY BELGESİ')
   })
 

@@ -176,7 +176,8 @@ export const ButceOdenekView: React.FC<ButceOdenekViewProps> = ({ yil }) => {
                       {yil} yılına ait kayıtlı bütçe ödeneği bulunamadı.
                     </p>
                     <p className="text-xs text-slate-400 mt-1">
-                      Ödenek tertiplerinizi eklemek için Kurum Tanımları &gt; Bütçe &amp; Ödenek Yönetimi ekranını kullanabilirsiniz.
+                      Ödenek tertiplerinizi eklemek için Kurum Tanımları &gt; Bütçe &amp; Ödenek
+                      Yönetimi ekranını kullanabilirsiniz.
                     </p>
                     <button
                       onClick={handleNavigateToKurum}
@@ -202,13 +203,21 @@ export const ButceOdenekView: React.FC<ButceOdenekViewProps> = ({ yil }) => {
                       <td className="py-3 px-3 font-semibold text-slate-700 dark:text-slate-200">
                         {it.birim_adi}
                       </td>
-                      <td className="py-3 px-3 font-mono text-slate-500">{it.kurumsal_kod || '-'}</td>
-                      <td className="py-3 px-3 font-mono font-bold text-purple-600">{it.butce_kodu}</td>
+                      <td className="py-3 px-3 font-mono text-slate-500">
+                        {it.kurumsal_kod || '-'}
+                      </td>
+                      <td className="py-3 px-3 font-mono font-bold text-purple-600">
+                        {it.butce_kodu}
+                      </td>
                       <td className="py-3 px-3 text-slate-800 dark:text-slate-100 max-w-xs truncate">
                         {it.butce_kalemi}
                       </td>
-                      <td className="py-3 px-3 text-slate-600 dark:text-slate-400">{it.butce_turu}</td>
-                      <td className="py-3 px-3 text-slate-600 dark:text-slate-400">{it.butce_yili}</td>
+                      <td className="py-3 px-3 text-slate-600 dark:text-slate-400">
+                        {it.butce_turu}
+                      </td>
+                      <td className="py-3 px-3 text-slate-600 dark:text-slate-400">
+                        {it.butce_yili}
+                      </td>
                       <td className="py-3 px-3 text-right">
                         <div className="font-bold text-slate-800 dark:text-slate-100">
                           {fmt(it.yillik_odenek)}

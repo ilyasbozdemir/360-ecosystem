@@ -202,7 +202,6 @@ export const FirmaGecmisTeminler: React.FC<FirmaGecmisTeminlerProps> = ({
     return turMap[tur] || tur || 'Mal Alımı'
   }
 
-
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-16 gap-3">

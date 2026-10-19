@@ -22,7 +22,9 @@ export function useEbysStudio() {
   }, [getCustomTemplatesAsEbys, customTemplates])
 
   const selectedTemplate = useMemo(() => {
-    return allTemplates.find((t) => t.id === selectedTemplateId) || allTemplates[0] || EBYS_TEMPLATES[0]
+    return (
+      allTemplates.find((t) => t.id === selectedTemplateId) || allTemplates[0] || EBYS_TEMPLATES[0]
+    )
   }, [allTemplates, selectedTemplateId])
 
   const [variables, setVariables] = useState<EbysTemplateVariables>(() => {
@@ -30,13 +32,16 @@ export function useEbysStudio() {
   })
 
   // Şablon değiştiğinde değişkenleri yeni şablonun varsayılanlarına eşitle
-  const handleSelectTemplate = useCallback((id: string) => {
-    const target = allTemplates.find((t) => t.id === id)
-    if (target) {
-      setSelectedTemplateId(id)
-      setVariables({ ...target.defaultVariables })
-    }
-  }, [allTemplates])
+  const handleSelectTemplate = useCallback(
+    (id: string) => {
+      const target = allTemplates.find((t) => t.id === id)
+      if (target) {
+        setSelectedTemplateId(id)
+        setVariables({ ...target.defaultVariables })
+      }
+    },
+    [allTemplates]
+  )
 
   const handleVariableChange = useCallback((field: keyof EbysTemplateVariables, value: any) => {
     setVariables((prev) => ({
@@ -70,17 +75,20 @@ export function useEbysStudio() {
     return selectedTemplate.generateCss()
   }, [selectedTemplate])
 
-  const handleCopyCode = useCallback(async (type: 'html' | 'css') => {
-    const textToCopy = type === 'html' ? currentHtml : currentCss
-    try {
-      await navigator.clipboard.writeText(textToCopy)
-      setCopyStatus(type === 'html' ? 'HTML Kopyalandı!' : 'CSS Kopyalandı!')
-      setTimeout(() => setCopyStatus(null), 2500)
-    } catch {
-      setCopyStatus('Kopyalama başarısız oldu')
-      setTimeout(() => setCopyStatus(null), 2000)
-    }
-  }, [currentHtml, currentCss])
+  const handleCopyCode = useCallback(
+    async (type: 'html' | 'css') => {
+      const textToCopy = type === 'html' ? currentHtml : currentCss
+      try {
+        await navigator.clipboard.writeText(textToCopy)
+        setCopyStatus(type === 'html' ? 'HTML Kopyalandı!' : 'CSS Kopyalandı!')
+        setTimeout(() => setCopyStatus(null), 2500)
+      } catch {
+        setCopyStatus('Kopyalama başarısız oldu')
+        setTimeout(() => setCopyStatus(null), 2000)
+      }
+    },
+    [currentHtml, currentCss]
+  )
 
   const handleDownloadHtml = useCallback(() => {
     const fullHtmlDocument = `<!DOCTYPE html>

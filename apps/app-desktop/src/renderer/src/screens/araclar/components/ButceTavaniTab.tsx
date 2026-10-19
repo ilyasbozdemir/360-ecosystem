@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react'
-import { Percent, ShieldAlert, Database, Sparkles, FolderOpen, RefreshCw, CheckCircle2 } from 'lucide-react'
+import {
+  Percent,
+  ShieldAlert,
+  Database,
+  Sparkles,
+  FolderOpen,
+  RefreshCw,
+  CheckCircle2
+} from 'lucide-react'
 import { denetleButceYuzdeOnSiniri, formatTL } from '../../../utils/ihale'
 import { useWorkspaceStore } from '../../../store/workspaceStore'
 
@@ -48,7 +56,9 @@ export function ButceTavaniTab(): React.JSX.Element {
             setButceBuAlim(currentFile.toplam_tutar)
           }
           if (currentFile.kullanilabilir_odenek) {
-            const odenekNum = parseFloat(currentFile.kullanilabilir_odenek.replace(/[^0-9.-]+/g, ''))
+            const odenekNum = parseFloat(
+              currentFile.kullanilabilir_odenek.replace(/[^0-9.-]+/g, '')
+            )
             if (odenekNum > 0) setButceYillik(odenekNum)
           }
         }
@@ -179,7 +189,10 @@ export function ButceTavaniTab(): React.JSX.Element {
               Yeni Yapılacak Alım Tutarı (₺)
             </label>
             {mode === 'auto' && seciliDosyaAdi && (
-              <span className="text-[10px] text-purple-600 font-semibold truncate max-w-[200px]" title={seciliDosyaAdi}>
+              <span
+                className="text-[10px] text-purple-600 font-semibold truncate max-w-[200px]"
+                title={seciliDosyaAdi}
+              >
                 ({seciliDosyaAdi})
               </span>
             )}
@@ -207,11 +220,15 @@ export function ButceTavaniTab(): React.JSX.Element {
               <span className="text-lg font-mono font-bold text-slate-900 dark:text-white">
                 {formatTL(butceSonuc.yuzdeOnTavanTutari)}
               </span>
-              <span className="text-[10px] text-slate-400 block mt-0.5">Yıllık Ödeneğin %10&apos;u</span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">
+                Yıllık Ödeneğin %10&apos;u
+              </span>
             </div>
 
             <div className="p-4 bg-purple-50 dark:bg-purple-950/40 rounded-2xl border border-purple-200 dark:border-purple-800">
-              <span className="text-xs text-purple-600 dark:text-purple-400 block">Toplam Kullanım</span>
+              <span className="text-xs text-purple-600 dark:text-purple-400 block">
+                Toplam Kullanım
+              </span>
               <span className="text-lg font-mono font-bold text-purple-900 dark:text-purple-100">
                 {formatTL(butceSonuc.yeniToplamHarcama)}
               </span>
@@ -225,7 +242,13 @@ export function ButceTavaniTab(): React.JSX.Element {
           <div className="space-y-1.5 p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800">
             <div className="flex justify-between text-xs font-semibold">
               <span className="text-slate-500">Tavan Doluluk Oranı</span>
-              <span className={kullanilanYuzde > tavanYuzde ? 'text-rose-600 font-bold' : 'text-purple-600 font-bold'}>
+              <span
+                className={
+                  kullanilanYuzde > tavanYuzde
+                    ? 'text-rose-600 font-bold'
+                    : 'text-purple-600 font-bold'
+                }
+              >
                 %{kullanilanYuzde.toFixed(2)} / %{tavanYuzde} (Yasal Tavan)
               </span>
             </div>

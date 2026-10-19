@@ -1,12 +1,5 @@
 import React from 'react'
-import {
-  Calculator,
-  CheckSquare,
-  DownloadCloud,
-  Moon,
-  Store,
-  Sun
-} from 'lucide-react'
+import { Calculator, CheckSquare, DownloadCloud, Moon, Store, Sun } from 'lucide-react'
 import { SyncPopover } from './SyncPopover'
 import { NotificationPopover } from './NotificationPopover'
 import { APP_ROUTES } from '../../../constants/routeConstants'
@@ -74,17 +67,12 @@ export const HeaderActions = React.memo(function HeaderActions({
           className="w-7 h-7 flex items-center justify-center text-slate-500 hover:text-amber-500 dark:text-slate-400 dark:hover:text-amber-400 hover:bg-slate-200/50 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
           title="Tema Değiştir"
         >
-          {theme === 'dark' ? (
-            <Sun className="w-3.5 h-3.5" />
-          ) : (
-            <Moon className="w-3.5 h-3.5" />
-          )}
+          {theme === 'dark' ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
         </button>
 
         {/* Güncelleme Durumu */}
         {updateStatus &&
-          (updateStatus.status === 'available' ||
-            updateStatus.status === 'downloaded') && (
+          (updateStatus.status === 'available' || updateStatus.status === 'downloaded') && (
             <button
               type="button"
               onClick={(): void => setShowUpdateModal(true)}
@@ -101,9 +89,7 @@ export const HeaderActions = React.memo(function HeaderActions({
             >
               <DownloadCloud className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">
-                {updateStatus.status === 'downloaded'
-                  ? `Güncelleme`
-                  : `İndiriliyor...`}
+                {updateStatus.status === 'downloaded' ? `Güncelleme` : `İndiriliyor...`}
               </span>
               <span
                 className={`w-1.5 h-1.5 rounded-full ${
@@ -124,4 +110,3 @@ export const HeaderActions = React.memo(function HeaderActions({
     </div>
   )
 })
-

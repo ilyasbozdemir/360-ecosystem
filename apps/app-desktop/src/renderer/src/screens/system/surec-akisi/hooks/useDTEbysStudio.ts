@@ -152,15 +152,12 @@ export function useDTEbysStudio({
     [mapDosyaToEbysVariables]
   )
 
-  const handleVariableChange = useCallback(
-    (field: keyof EbysTemplateVariables, value: any) => {
-      setVariables((prev) => ({
-        ...prev,
-        [field]: value
-      }))
-    },
-    []
-  )
+  const handleVariableChange = useCallback((field: keyof EbysTemplateVariables, value: any) => {
+    setVariables((prev) => ({
+      ...prev,
+      [field]: value
+    }))
+  }, [])
 
   const handleResetVariables = useCallback(() => {
     setVariables(mapDosyaToEbysVariables(selectedTemplate))

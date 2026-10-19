@@ -1,12 +1,5 @@
 import React from 'react'
-import {
-  ArrowLeft,
-  Copy,
-  Download,
-  FileSpreadsheet,
-  Save,
-  Upload
-} from 'lucide-react'
+import { ArrowLeft, Copy, Download, FileSpreadsheet, Save, Upload } from 'lucide-react'
 import { Button } from '../../../../components/ui/Button'
 import { cn } from '../../../../utils/cn'
 import { APP_ROUTES } from '../../../../constants/routeConstants'

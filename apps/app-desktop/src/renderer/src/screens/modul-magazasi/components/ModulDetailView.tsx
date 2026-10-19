@@ -124,8 +124,7 @@ export const ModulDetailView: React.FC<ModulDetailViewProps> = ({
   const surum = getSurumAsamasiMeta(modul.surumAsamasi)
 
   const filteredHazirMetinler = hazirMetinler.filter((item) => {
-    const matchesType =
-      selectedFormType === 'all' ? true : item.formTipi === selectedFormType
+    const matchesType = selectedFormType === 'all' ? true : item.formTipi === selectedFormType
     const q = hazirMetinSearch.trim().toLowerCase()
     if (!q) return matchesType
     return (
@@ -140,15 +139,34 @@ export const ModulDetailView: React.FC<ModulDetailViewProps> = ({
   const getFormTipiLabel = (type: string): { label: string; color: string } => {
     switch (type) {
       case 'dilekce':
-        return { label: 'Dilekçe', color: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200' }
+        return {
+          label: 'Dilekçe',
+          color:
+            'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200'
+        }
       case 'tutanak':
-        return { label: 'Tutanak', color: 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border-amber-200' }
+        return {
+          label: 'Tutanak',
+          color:
+            'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border-amber-200'
+        }
       case 'onay_belgesi':
-        return { label: 'Makam Oluru', color: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border-indigo-200' }
+        return {
+          label: 'Makam Oluru',
+          color:
+            'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border-indigo-200'
+        }
       case 'ust_yazi':
-        return { label: 'Resmî Yazı', color: 'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border-blue-200' }
+        return {
+          label: 'Resmî Yazı',
+          color: 'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border-blue-200'
+        }
       default:
-        return { label: 'Kalıp Metin', color: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-300' }
+        return {
+          label: 'Kalıp Metin',
+          color:
+            'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-300'
+        }
     }
   }
 
@@ -419,7 +437,8 @@ export const ModulDetailView: React.FC<ModulDetailViewProps> = ({
                   {modul.baslik} Hazır Metin ve Resmî Şablon Kalıpları
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  Doğrudan temin, ihale, izin ve yazışma işlemlerinde kullanılan onay, dilekçe, tutanak ve ihtarname kalıpları:
+                  Doğrudan temin, ihale, izin ve yazışma işlemlerinde kullanılan onay, dilekçe,
+                  tutanak ve ihtarname kalıpları:
                 </p>
               </div>
 

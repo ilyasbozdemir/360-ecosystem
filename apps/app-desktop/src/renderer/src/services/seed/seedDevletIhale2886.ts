@@ -180,8 +180,7 @@ export async function seedDevletIhale2886(): Promise<number> {
       birim: 'Adet',
       kdv: 20,
       tkod: '150.01.01.01',
-      ozelligi:
-        'Kira süresi: 3 Yıl. Aylık kira bedeli ve yıllık TÜFE/Yİ-ÜFE artışı uygulanacaktır.'
+      ozelligi: 'Kira süresi: 3 Yıl. Aylık kira bedeli ve yıllık TÜFE/Yİ-ÜFE artışı uygulanacaktır.'
     },
     {
       barkod: '2886003',
@@ -221,9 +220,7 @@ export async function seedDevletIhale2886(): Promise<number> {
   }
 
   // 5. 2886 Örnek Çalışma Masası Verisini localStorage'a Hazırla & Kaydet
-  const sample2886Dosyalar = [
-
-  ]
+  const sample2886Dosyalar = []
 
   try {
     localStorage.setItem('temin_2886_dosyalar_samples', JSON.stringify(sample2886Dosyalar))

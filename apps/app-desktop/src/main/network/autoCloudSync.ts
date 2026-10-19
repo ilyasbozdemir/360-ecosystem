@@ -193,7 +193,7 @@ export async function performAutoCloudSync(): Promise<void> {
             const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
             const timeStr = `${pad(now.getHours())}-${pad(now.getMinutes())}`
             const rawBase = fileName
-              .replace(/\.(temin|dtal|hkmp|dtm|dte|dta|tmn360|sqlite|db|zip|bak)$/i, '')
+              .replace(/\.temin$/i, '')
               .replace(/_\d{4}[-_.]\d{2}[-_.]\d{2}(?:[-_.]\d{2}[-_.]\d{2})?$/, '')
             const backupFileName = `${rawBase}_${dateStr}_${timeStr}.temin`
 
@@ -278,7 +278,7 @@ export async function performAutoCloudSync(): Promise<void> {
 
             // Prune: keep last 7 versions
             const qList = encodeURIComponent(
-              `'${folderId}' in parents and trashed = false and (name contains '.temin' or name contains '.dtal' or name contains '.hkmp')`
+              `'${folderId}' in parents and trashed = false and name contains '.temin'`
             )
             const listRes = await fetch(
               `https://www.googleapis.com/drive/v3/files?q=${qList}&fields=files(id,name,createdTime)&orderBy=createdTime%20desc`,

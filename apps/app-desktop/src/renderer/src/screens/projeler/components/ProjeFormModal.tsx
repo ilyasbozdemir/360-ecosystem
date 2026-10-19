@@ -69,9 +69,9 @@ export function ProjeFormModal({
         <div className="p-3.5 rounded-xl bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 flex items-start gap-2.5">
           <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
           <div className="text-xs text-blue-900 dark:text-blue-200">
-            <strong>Harcama Takibi Otomatiktir:</strong> Proje oluştururken harcanan tutar
-            girişi yapılmaz. Bağlanan doğrudan temin ve ihale dosyalarının maliyetleri proje
-            harcamasına otomatik eklenir.
+            <strong>Harcama Takibi Otomatiktir:</strong> Proje oluştururken harcanan tutar girişi
+            yapılmaz. Bağlanan doğrudan temin ve ihale dosyalarının maliyetleri proje harcamasına
+            otomatik eklenir.
           </div>
         </div>
 

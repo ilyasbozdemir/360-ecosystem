@@ -377,22 +377,18 @@ export function resolveAllCiktiData(
     const resolvedIrsaliyeTarihi = firstTutanak?.irsaliyeTarihi || ''
     const resolvedTutanakNo = firstTutanak?.tutanakNo || activeDosya?.temin_no || ''
     const resolvedTutanakTarihi =
-      firstTutanak?.tutanakTarihi ||
-      activeDosya?.teslim_tarihi ||
-      activeDosya?.temin_tarihi ||
-      ''
+      firstTutanak?.tutanakTarihi || activeDosya?.teslim_tarihi || activeDosya?.temin_tarihi || ''
 
     // Resolve official EBYS / E-DETSİS evrakSayisi format (E-10234521-934.01-0001)
-    let detsisNo =
-      String(
-        (activeDosya as any)?.detsis_kodu ||
-          (kurum as any)?.detsis_kodu ||
-          (kurum as any)?.detsis_no ||
-          (kurum as any)?.dtvt_kodu ||
-          settingsMap.detsisKodu ||
-          settingsMap.detsis_kodu ||
-          ''
-      ).trim()
+    let detsisNo = String(
+      (activeDosya as any)?.detsis_kodu ||
+        (kurum as any)?.detsis_kodu ||
+        (kurum as any)?.detsis_no ||
+        (kurum as any)?.dtvt_kodu ||
+        settingsMap.detsisKodu ||
+        settingsMap.detsis_kodu ||
+        ''
+    ).trim()
     if (!detsisNo) detsisNo = '10234521'
 
     const rawTur = String((activeDosya as any)?.tur || 'mal').toLowerCase()
@@ -409,7 +405,9 @@ export function resolveAllCiktiData(
       ((activeDosya as any)?.dosya_acilis_tarihi
         ? new Date((activeDosya as any).dosya_acilis_tarihi).getFullYear()
         : null) ||
-      ((activeDosya as any)?.created_at ? new Date((activeDosya as any).created_at).getFullYear() : null) ||
+      ((activeDosya as any)?.created_at
+        ? new Date((activeDosya as any).created_at).getFullYear()
+        : null) ||
       new Date().getFullYear()
 
     let seqNumber: number | null = null

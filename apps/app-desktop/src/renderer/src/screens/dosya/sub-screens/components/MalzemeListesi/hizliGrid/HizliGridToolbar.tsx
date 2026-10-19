@@ -1,12 +1,5 @@
 import React from 'react'
-import {
-  ArrowDownToLine,
-  Clipboard,
-  Info,
-  Plus,
-  Trash2,
-  Zap
-} from 'lucide-react'
+import { ArrowDownToLine, Clipboard, Info, Plus, Trash2, Zap } from 'lucide-react'
 import { PRESET_PACKAGES, PresetPackage } from './presetPackages.data'
 
 interface HizliGridToolbarProps {

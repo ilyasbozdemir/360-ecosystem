@@ -37,15 +37,16 @@ export const MuhasebeSurecKriterleri: React.FC = () => {
         </h3>
         <ul className="text-xs text-slate-600 dark:text-slate-400 list-disc list-inside space-y-2 font-normal">
           <li>
-            <strong>Şartname ve Sözleşme:</strong> Doğrudan teminde şartname ve sözleşme düzenlenmesi
-            idarenin takdirindedir. Ancak <strong>süreli alımlarda</strong> (işin gerçekleştirilmesinin
-            belli bir süreye bağlı olduğu hizmet veya mal alımlarında) yazılı sözleşme düzenlenmesi
-            gerekmektedir.
+            <strong>Şartname ve Sözleşme:</strong> Doğrudan teminde şartname ve sözleşme
+            düzenlenmesi idarenin takdirindedir. Ancak <strong>süreli alımlarda</strong> (işin
+            gerçekleştirilmesinin belli bir süreye bağlı olduğu hizmet veya mal alımlarında) yazılı
+            sözleşme düzenlenmesi gerekmektedir.
           </li>
           <li>
             <strong>EKAP Yasaklılık Teyidi:</strong> 22/d kapsamındaki alımlarda, alım yapılacak
-            gerçek veya tüzel kişinin EKAP üzerinden yasaklılar listesinde olup olmadığı sorgulanmalı
-            ve <strong>yasaklı olduğu tespit edilen kişilerden kesinlikle alım yapılmamalıdır</strong>{' '}
+            gerçek veya tüzel kişinin EKAP üzerinden yasaklılar listesinde olup olmadığı
+            sorgulanmalı ve{' '}
+            <strong>yasaklı olduğu tespit edilen kişilerden kesinlikle alım yapılmamalıdır</strong>{' '}
             (KİK Genel Tebliği Md. 30.5.4).
           </li>
           <li>
@@ -133,9 +134,9 @@ export const MuhasebeSurecKriterleri: React.FC = () => {
             <strong>kesinlikle aynı kişi olamaz</strong>.
           </li>
           <li>
-            <strong>Maddi Hata Kontrolü:</strong> Faturadaki birim fiyat, miktar ve KDV hesaplamaları
-            ile Muayene Kabul Tutanağındaki ve Yaklaşık Maliyet Cetvelindeki rakamların matematiksel
-            olarak birbirini doğrulaması gerekir.
+            <strong>Maddi Hata Kontrolü:</strong> Faturadaki birim fiyat, miktar ve KDV
+            hesaplamaları ile Muayene Kabul Tutanağındaki ve Yaklaşık Maliyet Cetvelindeki
+            rakamların matematiksel olarak birbirini doğrulaması gerekir.
           </li>
           <li>
             <strong>Borç Sorgulaması (Kamu Alacakları):</strong> 6183 Sayılı Kanun gereğince, ödeme

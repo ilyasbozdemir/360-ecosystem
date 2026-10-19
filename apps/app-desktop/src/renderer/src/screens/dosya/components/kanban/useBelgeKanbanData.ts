@@ -140,9 +140,7 @@ export function useBelgeKanbanData({
         kategori: s.kategori || 'Genel',
         durum: override ? override.durum : initialStatus,
         beklemeNedeni:
-          override && override.beklemeNedeni !== undefined
-            ? override.beklemeNedeni
-            : beklemeNedeni,
+          override && override.beklemeNedeni !== undefined ? override.beklemeNedeni : beklemeNedeni,
         isProduced,
         isSigned,
         isLocked: locked,
@@ -221,11 +219,7 @@ export function useBelgeKanbanData({
 
   // Durum taşıma (Drag & Drop veya Detay Dialogundan)
   const moveItem = useCallback(
-    async (
-      itemId: string,
-      targetStatus: BelgeKanbanStatus,
-      beklemeNedeniParam?: string | null
-    ) => {
+    async (itemId: string, targetStatus: BelgeKanbanStatus, beklemeNedeniParam?: string | null) => {
       const item = allItems.find((i) => i.id === itemId)
       if (!item) return
       if (item.durum === targetStatus && beklemeNedeniParam === undefined) return

@@ -12,10 +12,7 @@ export interface EvrakWarning {
  * Belge için engellemeyen (non-blocking) evrak kontrollerini çalıştırır.
  * getMissingRequirement'tan bağımsızdır; kullanıcı bu uyarılar olsa dahi yazdırmaya devam edebilir.
  */
-export function getEvrakWarnings(
-  sablon: Sablon,
-  veri?: Record<string, unknown>
-): EvrakWarning[] {
+export function getEvrakWarnings(sablon: Sablon, veri?: Record<string, unknown>): EvrakWarning[] {
   const warnings: EvrakWarning[] = []
   const templateId = (sablon.dosya_adi || '').replace(/\.html$/, '').trim()
   const mapping = getTemplateFieldMapping(templateId)

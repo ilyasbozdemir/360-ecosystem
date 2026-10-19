@@ -22,19 +22,7 @@ export interface StatusMsg {
 
 export type AuthTab = 'api' | 'manual'
 
-export const SUPPORTED_BACKUP_EXTS = [
-  'temin',
-  'hkmp',
-  'dtal',
-  'dtm',
-  'dte',
-  'dta',
-  'tmn360',
-  'sqlite',
-  'db',
-  'zip',
-  'bak'
-]
+export const SUPPORTED_BACKUP_EXTS = ['temin']
 
 /** Tırnakları ve tüm boşluk/satır sonlarını temizler (Client ID, Secret, Refresh Token). */
 export const cleanSecret = (value?: string | null): string =>

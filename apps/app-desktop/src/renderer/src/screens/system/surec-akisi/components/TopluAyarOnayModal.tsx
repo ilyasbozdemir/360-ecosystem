@@ -54,7 +54,9 @@ export function TopluAyarOnayModal({
           <div className="text-xs text-amber-800 dark:text-amber-300 space-y-1">
             <p className="font-semibold">Toplu Personel & İmza Yetkisi Senkronizasyonu</p>
             <p className="text-amber-700/90 dark:text-amber-400/90 leading-relaxed">
-              Dosyada kayıtlı Hazırlayan ({hazirlayanAd || 'Tanımlı Değil'}) ve Onay Yetkilisi ({onaylayanAd || 'Tanımlı Değil'}) bilgileri, aşağıdaki uygun belgelerin imza alanlarına otomatik olarak yansıtılacaktır.
+              Dosyada kayıtlı Hazırlayan ({hazirlayanAd || 'Tanımlı Değil'}) ve Onay Yetkilisi (
+              {onaylayanAd || 'Tanımlı Değil'}) bilgileri, aşağıdaki uygun belgelerin imza
+              alanlarına otomatik olarak yansıtılacaktır.
             </p>
           </div>
         </div>

@@ -102,11 +102,7 @@ export const KurumViewCard: React.FC<KurumViewCardProps> = ({
       />
 
       {/* 📊 RESMİ BİLGİ KARTLARI (4'LÜ / 2'Lİ RESPONSIVE GRID) */}
-      <KurumBilgiKartlariGrid
-        data={data}
-        copiedField={copiedField}
-        onCopy={handleCopy}
-      />
+      <KurumBilgiKartlariGrid data={data} copiedField={copiedField} onCopy={handleCopy} />
 
       {/* ⚙️ ÖZEL PARAMETRELER & DİNAMİK ALANLAR */}
       <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 space-y-3 shadow-xs">

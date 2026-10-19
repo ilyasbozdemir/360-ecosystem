@@ -42,7 +42,9 @@ export default function PersonelScreen({
     const searchParams = new URLSearchParams(window.location.search)
     return (hashParams?.get('tab') || searchParams.get('tab')) === 'izinler' ? 'izinler' : 'kadro'
   }
-  const [activeMainTab, setActiveMainTab] = useState<'kadro' | 'izinler'>(getPersonelTabFromLocation())
+  const [activeMainTab, setActiveMainTab] = useState<'kadro' | 'izinler'>(
+    getPersonelTabFromLocation()
+  )
 
   useEffect(() => {
     const handleLocationChange = () => {
@@ -225,7 +227,11 @@ export default function PersonelScreen({
   }
 
   return (
-    <div className={isSubComponent ? 'w-full' : 'p-6 max-w-[1600px] mx-auto flex flex-col gap-6 w-full'}>
+    <div
+      className={
+        isSubComponent ? 'w-full' : 'p-6 max-w-[1600px] mx-auto flex flex-col gap-6 w-full'
+      }
+    >
       {!isSubComponent && (
         <div className="flex items-center gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
           <button

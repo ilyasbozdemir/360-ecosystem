@@ -11,10 +11,7 @@ import { TekTikYazdirDocList } from './tek-tik-yazdir/TekTikYazdirDocList'
 import { TekTikYazdirPreview } from './tek-tik-yazdir/TekTikYazdirPreview'
 import { TekTikYazdirSettingsPanel } from './tek-tik-yazdir/TekTikYazdirSettingsPanel'
 import { TekTikYazdirActionBar } from './tek-tik-yazdir/TekTikYazdirActionBar'
-import {
-  CiktiWizardStepper,
-  WizardStepId
-} from './tek-tik-yazdir/CiktiWizardStepper'
+import { CiktiWizardStepper, WizardStepId } from './tek-tik-yazdir/CiktiWizardStepper'
 import {
   CiktiWizardCommonDataStep,
   CommonWizardData
@@ -52,11 +49,7 @@ export function TekTikYazdirModal({
   normalizeForMatch = (s) => s.toLowerCase()
 }: TekTikYazdirModalProps): React.JSX.Element | null {
   const { activeDosyaId } = useWorkspaceStore()
-  const {
-    getDocumentStatus,
-    unlockDocument,
-    markAsPrinted
-  } = usePrintQueueStore()
+  const { getDocumentStatus, unlockDocument, markAsPrinted } = usePrintQueueStore()
 
   // Wizard Mode & Step State (Varsayılan sihirbaz açık, toggle edilebilir)
   const [wizardMode, setWizardMode] = useState<boolean>(true)
@@ -71,9 +64,9 @@ export function TekTikYazdirModal({
   const [showSettings, setShowSettings] = useState<boolean>(true)
 
   // Document custom data map (Belge başına flat key veriler)
-  const [documentDataMap, setDocumentDataMap] = useState<
-    Record<string, Record<string, unknown>>
-  >({})
+  const [documentDataMap, setDocumentDataMap] = useState<Record<string, Record<string, unknown>>>(
+    {}
+  )
 
   // Ortak Bilgiler Form State (Dosyadaki varsayılan personeller ve tarih)
   const [commonData, setCommonData] = useState<CommonWizardData>({
@@ -338,7 +331,8 @@ export function TekTikYazdirModal({
                           Seçili Belgeler Özeti
                         </h3>
                         <p className="text-xs text-slate-400 mt-1">
-                          Alım türüne ve sürece göre yazdırılacak belgeleri sol listeden işaretleyin.
+                          Alım türüne ve sürece göre yazdırılacak belgeleri sol listeden
+                          işaretleyin.
                         </p>
                       </div>
 

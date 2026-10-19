@@ -1,13 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import {
-  parseDec,
-  formatNum,
-  formatPct,
-  gcd,
-  sumDec,
-  parseDecList,
-  D
-} from '../decimalUtils'
+import { parseDec, formatNum, formatPct, gcd, sumDec, parseDecList, D } from '../decimalUtils'
 import { TOOLS } from '../toolsData'
 
 describe('decimalUtils & hesapAraclari', () => {

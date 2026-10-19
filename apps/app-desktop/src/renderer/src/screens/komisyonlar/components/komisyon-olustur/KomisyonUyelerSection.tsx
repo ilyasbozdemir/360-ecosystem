@@ -153,4 +153,3 @@ export const KomisyonUyelerSection: React.FC<KomisyonUyelerSectionProps> = ({
     </div>
   )
 }
-

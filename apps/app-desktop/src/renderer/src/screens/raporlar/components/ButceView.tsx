@@ -50,12 +50,17 @@ export const ButceView: React.FC<ButceViewProps> = ({ yil }) => {
       <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
           <div>
-            <div className="text-xs text-slate-500 font-semibold">22/d Doğrudan Temin Kümülatif Harcama</div>
+            <div className="text-xs text-slate-500 font-semibold">
+              22/d Doğrudan Temin Kümülatif Harcama
+            </div>
             <div className="text-3xl font-bold text-slate-900 dark:text-slate-100 font-mono">
               {fmt(kullanilanToplam)}
             </div>
             <div className="text-xs text-slate-400 mt-0.5">
-              Yıllık %10 Tavan Limiti: <strong className="text-slate-700 dark:text-slate-300 font-mono">{fmt(yuzdeOnTavan)}</strong>
+              Yıllık %10 Tavan Limiti:{' '}
+              <strong className="text-slate-700 dark:text-slate-300 font-mono">
+                {fmt(yuzdeOnTavan)}
+              </strong>
             </div>
           </div>
           <div className="text-right">
@@ -82,10 +87,12 @@ export const ButceView: React.FC<ButceViewProps> = ({ yil }) => {
 
         <div className="flex justify-between text-xs text-slate-600 dark:text-slate-300 pt-1">
           <span>
-            Harcanan (22/d): <strong className="text-purple-600 font-mono">{fmt(kullanilanToplam)}</strong>
+            Harcanan (22/d):{' '}
+            <strong className="text-purple-600 font-mono">{fmt(kullanilanToplam)}</strong>
           </span>
           <span>
-            Kalan %10 Payı: <strong className="text-emerald-600 font-mono">{fmt(kalanTavan)}</strong>
+            Kalan %10 Payı:{' '}
+            <strong className="text-emerald-600 font-mono">{fmt(kalanTavan)}</strong>
           </span>
         </div>
       </div>
@@ -94,19 +101,25 @@ export const ButceView: React.FC<ButceViewProps> = ({ yil }) => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs space-y-1">
           <div className="text-xs font-semibold text-slate-500">Yıllık Toplam Bütçe Ödeneği</div>
-          <div className="text-xl font-bold font-mono text-slate-900 dark:text-slate-100">{fmt(yillikLimit)}</div>
+          <div className="text-xl font-bold font-mono text-slate-900 dark:text-slate-100">
+            {fmt(yillikLimit)}
+          </div>
           <div className="text-[11px] text-slate-400">Genel / İlgili Tertip Ödeneği</div>
         </div>
 
         <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs space-y-1">
           <div className="text-xs font-semibold text-slate-500">KİK İznisiz Azami 22/d Limiti</div>
-          <div className="text-xl font-bold font-mono text-purple-600 dark:text-purple-400">{fmt(yuzdeOnTavan)}</div>
+          <div className="text-xl font-bold font-mono text-purple-600 dark:text-purple-400">
+            {fmt(yuzdeOnTavan)}
+          </div>
           <div className="text-[11px] text-slate-400">Ödeneğin %10&apos;luk Yasal Tavanı</div>
         </div>
 
         <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs space-y-1">
           <div className="text-xs font-semibold text-slate-500">Kalan Kullanılabilir Limit</div>
-          <div className="text-xl font-bold font-mono text-emerald-600 dark:text-emerald-400">{fmt(kalanTavan)}</div>
+          <div className="text-xl font-bold font-mono text-emerald-600 dark:text-emerald-400">
+            {fmt(kalanTavan)}
+          </div>
           <div className="text-[11px] text-slate-400">%10 Sınırına Kalan Pay</div>
         </div>
       </div>

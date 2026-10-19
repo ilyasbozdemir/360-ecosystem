@@ -23,8 +23,7 @@ export function HizliTopluKalemGrid({
   const defaultTipi = isYapim ? 'Yapım' : isHizmet ? 'Hizmet' : 'Mal'
   const defaultBirim = isYapim ? 'm²' : 'Adet'
 
-  const unitOptions =
-    units.length > 0 ? units.map((u: any) => u.ad || u.name || u) : DEFAULT_UNITS
+  const unitOptions = units.length > 0 ? units.map((u: any) => u.ad || u.name || u) : DEFAULT_UNITS
 
   const {
     rows,

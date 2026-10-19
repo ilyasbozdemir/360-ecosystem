@@ -1,12 +1,5 @@
 import React, { useState } from 'react'
-import {
-  Cpu,
-  Download,
-  ExternalLink,
-  FileSpreadsheet,
-  FileText,
-  HelpCircle
-} from 'lucide-react'
+import { Cpu, Download, ExternalLink, FileSpreadsheet, FileText, HelpCircle } from 'lucide-react'
 import { ExcelViewer } from '../../../components/ui/ExcelViewer'
 import {
   DOCUMENTS,

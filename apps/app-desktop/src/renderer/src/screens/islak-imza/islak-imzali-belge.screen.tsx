@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   Printer,
   Eye,
@@ -6,55 +6,51 @@ import {
   RotateCcw,
   CheckCircle,
   HelpCircle,
-  Download,
-} from 'lucide-react';
-import { DocumentInfoForm } from './components/document-info-form';
-import { SignerList } from './components/signer-list';
-import { A4Preview } from './components/a4-preview';
-import { StatusTimeline } from './components/status-timeline';
-import { SignedUploadDropzone } from './components/signed-upload-dropzone';
-import {
-  INITIAL_BELGE_BILGILERI,
-  INITIAL_IMZACILAR,
-  INITIAL_SUREC_ASAMALARI,
-} from './mock-data';
+  Download
+} from 'lucide-react'
+import { DocumentInfoForm } from './components/document-info-form'
+import { SignerList } from './components/signer-list'
+import { A4Preview } from './components/a4-preview'
+import { StatusTimeline } from './components/status-timeline'
+import { SignedUploadDropzone } from './components/signed-upload-dropzone'
+import { INITIAL_BELGE_BILGILERI, INITIAL_IMZACILAR, INITIAL_SUREC_ASAMALARI } from './mock-data'
 import {
   IslakImzaBelgeBilgileri,
   ImzaciSatiri,
   SurecAsamasi,
   YuklenenEvrak,
-  IslakImzaDurum,
-} from './types';
+  IslakImzaDurum
+} from './types'
 
 interface IslakImzaliBelgeScreenProps {
-  initialBilgiler?: Partial<IslakImzaBelgeBilgileri>;
-  isEmbedded?: boolean;
+  initialBilgiler?: Partial<IslakImzaBelgeBilgileri>
+  isEmbedded?: boolean
 }
 
 export default function IslakImzaliBelgeScreen({
   initialBilgiler,
-  isEmbedded = false,
+  isEmbedded = false
 }: IslakImzaliBelgeScreenProps): React.JSX.Element {
   const [bilgiler, setBilgiler] = useState<IslakImzaBelgeBilgileri>({
     ...INITIAL_BELGE_BILGILERI,
-    ...initialBilgiler,
-  });
+    ...initialBilgiler
+  })
 
-  const [signers, setSigners] = useState<ImzaciSatiri[]>(INITIAL_IMZACILAR);
-  const [asamalar, setAsamalar] = useState<SurecAsamasi[]>(INITIAL_SUREC_ASAMALARI);
-  const [yuklenenler, setYuklenenler] = useState<YuklenenEvrak[]>([]);
-  const [activeTab, setActiveTab] = useState<'editor' | 'takip'>('editor');
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [signers, setSigners] = useState<ImzaciSatiri[]>(INITIAL_IMZACILAR)
+  const [asamalar, setAsamalar] = useState<SurecAsamasi[]>(INITIAL_SUREC_ASAMALARI)
+  const [yuklenenler, setYuklenenler] = useState<YuklenenEvrak[]>([])
+  const [activeTab, setActiveTab] = useState<'editor' | 'takip'>('editor')
+  const [toastMessage, setToastMessage] = useState<string | null>(null)
 
   const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
-  };
+    setToastMessage(msg)
+    setTimeout(() => setToastMessage(null), 3000)
+  }
 
   const handlePrint = () => {
-    showToast('Yazıcı çıktısı hazırlanıyor: A4 formatında fiziki imzaya gönderildi.');
-    window.print();
-  };
+    showToast('Yazıcı çıktısı hazırlanıyor: A4 formatında fiziki imzaya gönderildi.')
+    window.print()
+  }
 
   const handleAsamaGuncelle = (durum: IslakImzaDurum, tamamlandi: boolean, not?: string) => {
     setAsamalar((prev) =>
@@ -63,14 +59,16 @@ export default function IslakImzaliBelgeScreen({
           ? {
               ...a,
               tamamlandi,
-              tarih: tamamlandi ? new Date().toISOString().slice(0, 16).replace('T', ' ') : undefined,
-              not: not || a.not,
+              tarih: tamamlandi
+                ? new Date().toISOString().slice(0, 16).replace('T', ' ')
+                : undefined,
+              not: not || a.not
             }
           : a
       )
-    );
-    showToast('Aşama durumu güncellendi.');
-  };
+    )
+    showToast('Aşama durumu güncellendi.')
+  }
 
   return (
     <div
@@ -101,7 +99,8 @@ export default function IslakImzaliBelgeScreen({
               </span>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Elektronik imza dışındaki belgeleri yazdırıp ıslak imzalatın, paraf rotasını belirleyin ve teslim durumunu takip edin.
+              Elektronik imza dışındaki belgeleri yazdırıp ıslak imzalatın, paraf rotasını
+              belirleyin ve teslim durumunu takip edin.
             </p>
           </div>
         </div>
@@ -170,16 +169,16 @@ export default function IslakImzaliBelgeScreen({
           <SignedUploadDropzone
             yuklenenler={yuklenenler}
             onYukle={(evr) => {
-              setYuklenenler((prev) => [evr, ...prev]);
-              showToast('İmzalı belge başarıyla sisteme aktarıldı.');
+              setYuklenenler((prev) => [evr, ...prev])
+              showToast('İmzalı belge başarıyla sisteme aktarıldı.')
             }}
             onSil={(id) => {
-              setYuklenenler((prev) => prev.filter((e) => e.id !== id));
-              showToast('İmzalı belge kaydı kaldırıldı.');
+              setYuklenenler((prev) => prev.filter((e) => e.id !== id))
+              showToast('İmzalı belge kaydı kaldırıldı.')
             }}
           />
         </div>
       )}
     </div>
-  );
+  )
 }

@@ -70,7 +70,9 @@ export function KabulTutanakModal({
   const [tutar, setTutar] = useState('')
   const [notlar, setNotlar] = useState('')
   const [kalemler, setKalemler] = useState<MalKalemiItem[]>([])
-  const [yapimSablonKodu, setYapimSablonKodu] = useState<string>('kik049-yapim-gecici-kabul-tutanagi')
+  const [yapimSablonKodu, setYapimSablonKodu] = useState<string>(
+    'kik049-yapim-gecici-kabul-tutanagi'
+  )
 
   const normalizedAlimTuru = (alimTuru || '').toLowerCase()
   const isYapim =
@@ -176,13 +178,8 @@ export function KabulTutanakModal({
           existingKalem?.malzemeAdi ||
           `Kalem #${siraNo}`
         const ozelligi =
-          k.ozelligi ||
-          (k as any).aciklama ||
-          (k as any).ozellik ||
-          existingKalem?.ozelligi ||
-          ''
-        const birimi =
-          k.birimi || (k as any).birim || existingKalem?.birimi || 'Adet'
+          k.ozelligi || (k as any).aciklama || (k as any).ozellik || existingKalem?.ozelligi || ''
+        const birimi = k.birimi || (k as any).birim || existingKalem?.birimi || 'Adet'
 
         return {
           siraNo,
@@ -211,7 +208,16 @@ export function KabulTutanakModal({
     } else {
       setKalemler([])
     }
-  }, [isOpen, initialTutanak, dosyaKalemler, defaultFaturaNo, defaultFaturaTarihi, defaultTeslimYeri, defaultTeslimAlan, defaultTutar])
+  }, [
+    isOpen,
+    initialTutanak,
+    dosyaKalemler,
+    defaultFaturaNo,
+    defaultFaturaTarihi,
+    defaultTeslimYeri,
+    defaultTeslimAlan,
+    defaultTutar
+  ])
 
   const handleUpdateKalem = (
     idx: number,

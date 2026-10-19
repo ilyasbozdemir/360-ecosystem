@@ -389,9 +389,7 @@ export function IhtiyacRaporuBaglaModal({
                               Onaylı
                             </span>
                           ) : null}
-                          <span className="text-[10px] text-slate-400">
-                            {formatDate(r.tarih)}
-                          </span>
+                          <span className="text-[10px] text-slate-400">{formatDate(r.tarih)}</span>
                         </div>
                       </div>
 
@@ -400,9 +398,7 @@ export function IhtiyacRaporuBaglaModal({
                       </div>
 
                       <div className="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 mt-1.5 pt-1 border-t border-slate-100 dark:border-slate-700/40">
-                        <span className="truncate max-w-[130px]">
-                          {r.birim_adi || 'Birim Yok'}
-                        </span>
+                        <span className="truncate max-w-[130px]">{r.birim_adi || 'Birim Yok'}</span>
                         <span className="font-bold text-slate-700 dark:text-slate-300">
                           {r.kalem_sayisi || 0} Kalem
                         </span>
@@ -635,7 +631,9 @@ export function IhtiyacRaporuBaglaModal({
             ) : (
               <div className="h-full flex flex-col items-center justify-center py-16 text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
                 <Layers className="w-8 h-8 text-slate-300 dark:text-slate-600 mb-2" />
-                <span className="text-xs font-medium">Lütfen sol listeden bir ihtiyaç raporu seçin</span>
+                <span className="text-xs font-medium">
+                  Lütfen sol listeden bir ihtiyaç raporu seçin
+                </span>
               </div>
             )}
           </div>
@@ -646,9 +644,11 @@ export function IhtiyacRaporuBaglaModal({
           <Info className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
           <div>
             İhtiyaç raporunu doğrudan temin dosyasına bağladığınızda; rapor durumu otomatik olarak{' '}
-            <strong className="text-slate-800 dark:text-slate-200">&apos;dosyaya_aktarildi&apos;</strong>{' '}
-            olarak güncellenir. Dosyadaki talep eden personel veya iş gerekçesi boş ise rapordan otomatik
-            olarak tamamlanır.
+            <strong className="text-slate-800 dark:text-slate-200">
+              &apos;dosyaya_aktarildi&apos;
+            </strong>{' '}
+            olarak güncellenir. Dosyadaki talep eden personel veya iş gerekçesi boş ise rapordan
+            otomatik olarak tamamlanır.
           </div>
         </div>
 

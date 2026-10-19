@@ -20,9 +20,7 @@ interface CiktiWizardCommonDataStepProps {
   commonData: CommonWizardData
   setCommonData: React.Dispatch<React.SetStateAction<CommonWizardData>>
   documentDataMap: Record<string, Record<string, unknown>>
-  setDocumentDataMap: React.Dispatch<
-    React.SetStateAction<Record<string, Record<string, unknown>>>
-  >
+  setDocumentDataMap: React.Dispatch<React.SetStateAction<Record<string, Record<string, unknown>>>>
   onProceed: () => void
   onBack: () => void
 }
@@ -49,12 +47,7 @@ export function CiktiWizardCommonDataStep({
     for (const sablon of selectedSablons) {
       const templateId = (sablon.dosya_adi || '').replace(/\.html$/, '').trim()
       const existing = documentDataMap[templateId] || {}
-      const res = applyCommonDataToTemplate(
-        existing,
-        templateId,
-        commonData,
-        overwriteExisting
-      )
+      const res = applyCommonDataToTemplate(existing, templateId, commonData, overwriteExisting)
 
       if (res.appliedFields.length > 0) {
         affectedCount++
@@ -75,20 +68,13 @@ export function CiktiWizardCommonDataStep({
     for (const sablon of selectedSablons) {
       const templateId = (sablon.dosya_adi || '').replace(/\.html$/, '').trim()
       const existing = nextMap[templateId] || {}
-      const res = applyCommonDataToTemplate(
-        existing,
-        templateId,
-        commonData,
-        overwriteExisting
-      )
+      const res = applyCommonDataToTemplate(existing, templateId, commonData, overwriteExisting)
       nextMap[templateId] = res.updatedData
       if (res.appliedFields.length > 0) count++
     }
 
     setDocumentDataMap(nextMap)
-    setAppliedNotification(
-      `${count} seçili belgeye ortak bilgiler başarıyla aktarıldı.`
-    )
+    setAppliedNotification(`${count} seçili belgeye ortak bilgiler başarıyla aktarıldı.`)
     setTimeout(() => setAppliedNotification(null), 4000)
   }
 
@@ -104,8 +90,8 @@ export function CiktiWizardCommonDataStep({
             Ortak Bilgiler (Toplu Aktarım)
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Seçili {selectedSablons.length} belgeye tek seferde tarih, muhatap ve imza yetkilisi bilgilerini uygulayın.
-            Dolu alanlar ezme koruması ile güvence altındadır.
+            Seçili {selectedSablons.length} belgeye tek seferde tarih, muhatap ve imza yetkilisi
+            bilgilerini uygulayın. Dolu alanlar ezme koruması ile güvence altındadır.
           </p>
         </div>
 
@@ -127,9 +113,7 @@ export function CiktiWizardCommonDataStep({
             <input
               type="date"
               value={commonData.tarih}
-              onChange={(e) =>
-                setCommonData((prev) => ({ ...prev, tarih: e.target.value }))
-              }
+              onChange={(e) => setCommonData((prev) => ({ ...prev, tarih: e.target.value }))}
               className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 focus:outline-hidden focus:border-blue-500"
             />
             <span className="text-[10px] text-slate-400 block">
@@ -147,9 +131,7 @@ export function CiktiWizardCommonDataStep({
               type="text"
               placeholder="Örn: Destek Hizmetleri Müdürlüğüne / Makamına"
               value={commonData.muhatap}
-              onChange={(e) =>
-                setCommonData((prev) => ({ ...prev, muhatap: e.target.value }))
-              }
+              onChange={(e) => setCommonData((prev) => ({ ...prev, muhatap: e.target.value }))}
               className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 placeholder:text-slate-500 focus:outline-hidden focus:border-purple-500"
             />
             <span className="text-[10px] text-slate-400 block">
@@ -225,9 +207,7 @@ export function CiktiWizardCommonDataStep({
           <label className="flex items-center justify-between cursor-pointer">
             <div className="flex items-center gap-2.5">
               <ShieldAlert
-                className={`w-4 h-4 ${
-                  overwriteExisting ? 'text-amber-400' : 'text-blue-400'
-                }`}
+                className={`w-4 h-4 ${overwriteExisting ? 'text-amber-400' : 'text-blue-400'}`}
               />
               <div>
                 <span className="text-xs font-bold text-slate-200 block">
@@ -267,9 +247,7 @@ export function CiktiWizardCommonDataStep({
                   {Object.entries(impactAnalysis.overwrittenMap).map(([name, fields]) => (
                     <div key={name} className="flex justify-between">
                       <span className="text-slate-300">• {name}</span>
-                      <span className="text-amber-300/90 font-mono">
-                        {fields.join(', ')}
-                      </span>
+                      <span className="text-amber-300/90 font-mono">{fields.join(', ')}</span>
                     </div>
                   ))}
                 </div>

@@ -105,7 +105,7 @@ async function fetchWithRetry(
 async function pruneOldBackups(token: string, folderId: string, maxVersions = 7): Promise<void> {
   try {
     const query = encodeURIComponent(
-      `'${folderId}' in parents and trashed = false and (name contains '.temin' or name contains '.dtal' or name contains '.hkmp')`
+      `'${folderId}' in parents and trashed = false and name contains '.temin'`
     )
     const res = await fetchWithRetry(
       `https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id,name,createdTime)&orderBy=createdTime%20desc`,
@@ -457,13 +457,13 @@ export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void):
           workspaceManager.save()
           const currentData = fs.readFileSync(filePath)
 
-          // Versioned timestamped filename: e.g. Acme_2026-09-06_17-46.dtal
+          // Versioned timestamped filename: e.g. Acme_2026-09-06_17-46.temin
           const now = new Date()
           const pad = (n: number) => String(n).padStart(2, '0')
           const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
           const timeStr = `${pad(now.getHours())}-${pad(now.getMinutes())}`
           const rawBase = fileName
-            .replace(/\.(temin|dtal|hkmp|dtm|dte|dta|tmn360)$/i, '')
+            .replace(/\.temin$/i, '')
             .replace(/_\d{4}[-_.]\d{2}[-_.]\d{2}(?:[-_.]\d{2}[-_.]\d{2})?$/, '')
           const backupFileName = `${rawBase}_${dateStr}_${timeStr}.temin`
 
@@ -887,15 +887,17 @@ export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void):
 
         try {
           const newDb = workspaceManager.getDb()
-          newDb.prepare(
-            `INSERT OR REPLACE INTO settings (key, value) VALUES ('lastBackupFileId', ?)`
-          ).run(args.fileId)
-          newDb.prepare(
-            `INSERT OR REPLACE INTO settings (key, value) VALUES ('lastBackupFileName', ?)`
-          ).run(args.fileName)
-          newDb.prepare(
-            `INSERT OR REPLACE INTO settings (key, value) VALUES ('lastGdriveSync', ?)`
-          ).run(new Date().toISOString())
+          newDb
+            .prepare(`INSERT OR REPLACE INTO settings (key, value) VALUES ('lastBackupFileId', ?)`)
+            .run(args.fileId)
+          newDb
+            .prepare(
+              `INSERT OR REPLACE INTO settings (key, value) VALUES ('lastBackupFileName', ?)`
+            )
+            .run(args.fileName)
+          newDb
+            .prepare(`INSERT OR REPLACE INTO settings (key, value) VALUES ('lastGdriveSync', ?)`)
+            .run(new Date().toISOString())
         } catch (dbErr) {
           console.warn('Could not update last backup file info in downloaded DB:', dbErr)
         }

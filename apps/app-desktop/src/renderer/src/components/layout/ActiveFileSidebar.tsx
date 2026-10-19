@@ -221,7 +221,9 @@ export function ActiveFileSidebar(): React.JSX.Element | null {
           {!isCollapsed && (
             <div className="flex-1 min-w-0 pr-1">
               <div className="text-xs truncate font-bold">İhtiyaç Raporu & Lüzum</div>
-              <div className="text-[10px] text-cyan-600/70 dark:text-cyan-400/70 truncate">Ön Hazırlık</div>
+              <div className="text-[10px] text-cyan-600/70 dark:text-cyan-400/70 truncate">
+                Ön Hazırlık
+              </div>
             </div>
           )}
         </button>

@@ -157,12 +157,18 @@ export function parseEkapFile(
   }
 
   // Başlık satırını bul ve sütun indekslerini eşleştir
-  const headerRow = (rawRows[0] || []).map((h) => String(h || '').trim().toLowerCase())
+  const headerRow = (rawRows[0] || []).map((h) =>
+    String(h || '')
+      .trim()
+      .toLowerCase()
+  )
 
   const colIdx = {
     pozNo: headerRow.findIndex((h) => h.includes('poz')),
     okas: headerRow.findIndex((h) => h.includes('okas')),
-    ad: headerRow.findIndex((h) => h.includes('ad') || h.includes('açıklama') || h.includes('aciklama')),
+    ad: headerRow.findIndex(
+      (h) => h.includes('ad') || h.includes('açıklama') || h.includes('aciklama')
+    ),
     miktar: headerRow.findIndex((h) => h.includes('miktar')),
     birim: headerRow.findIndex((h) => h.includes('birim') && !h.includes('fiyat')),
     fiyat: headerRow.findIndex((h) => h.includes('fiyat'))
@@ -197,7 +203,14 @@ export function parseEkapFile(
     const rawFiyat = row[colIdx.fiyat]
 
     // Boş satır kontrolü
-    if (!rawPozNo && !rawOkas && !rawAd && rawMiktar === undefined && !rawBirim && rawFiyat === undefined) {
+    if (
+      !rawPozNo &&
+      !rawOkas &&
+      !rawAd &&
+      rawMiktar === undefined &&
+      !rawBirim &&
+      rawFiyat === undefined
+    ) {
       continue
     }
 
@@ -286,12 +299,15 @@ export function parseEkapFile(
           rowNumber,
           field: 'OKAS Kodu',
           message: `Girilen OKAS kodu ('${okasKodu}') resmi EKAP listesinde bulunamadı.`,
-          suggestion: suggestedOkas ? `Önerilen: ${suggestedOkas.kod} (${suggestedOkas.ad})` : undefined
+          suggestion: suggestedOkas
+            ? `Önerilen: ${suggestedOkas.kod} (${suggestedOkas.ad})`
+            : undefined
         })
       }
     }
 
-    const isValid = errors.filter((e) => e.field !== 'Birim' && e.field !== 'OKAS Kodu').length === 0
+    const isValid =
+      errors.filter((e) => e.field !== 'Birim' && e.field !== 'OKAS Kodu').length === 0
     const satirTutari = miktar * birimFiyat
 
     if (isValid) {
@@ -374,7 +390,12 @@ export function diffNewTemplateFromBuffer(newBuffer: ArrayBuffer | Uint8Array): 
       newBirimlerSet.add(birim.trim())
     }
 
-    if (okasRaw && typeof okasRaw === 'string' && okasRaw.trim() && okasRaw.trim() !== 'DEĞİŞTİRMEYİN') {
+    if (
+      okasRaw &&
+      typeof okasRaw === 'string' &&
+      okasRaw.trim() &&
+      okasRaw.trim() !== 'DEĞİŞTİRMEYİN'
+    ) {
       const lastDash = okasRaw.lastIndexOf('-')
       if (lastDash > 0) {
         const ad = okasRaw.substring(0, lastDash).trim()

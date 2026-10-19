@@ -9,8 +9,7 @@ interface DosyaYonetimi2886StatsProps {
 
 export const DosyaYonetimi2886Stats: React.FC<DosyaYonetimi2886StatsProps> = ({ dosyalar }) => {
   const totalHacim = dosyalar.reduce((acc, d) => {
-    const val =
-      d.muhammenBedel?.takdirEdilenMuhammenBedel || d.muhammenBedel?.hesaplananBedel || 0
+    const val = d.muhammenBedel?.takdirEdilenMuhammenBedel || d.muhammenBedel?.hesaplananBedel || 0
     return acc + val
   }, 0)
 
@@ -47,9 +46,7 @@ export const DosyaYonetimi2886Stats: React.FC<DosyaYonetimi2886StatsProps> = ({ 
           </div>
         </div>
         <div className="mt-2 flex items-baseline gap-1.5">
-          <span className="text-xl font-black text-blue-600 dark:text-blue-400">
-            {satisCount}
-          </span>
+          <span className="text-xl font-black text-blue-600 dark:text-blue-400">{satisCount}</span>
           <span className="text-[10px] text-blue-500 font-semibold">Md. 35/36/45</span>
         </div>
       </div>
@@ -63,9 +60,7 @@ export const DosyaYonetimi2886Stats: React.FC<DosyaYonetimi2886StatsProps> = ({ 
           </div>
         </div>
         <div className="mt-2 flex items-baseline gap-1.5">
-          <span className="text-xl font-black text-amber-600 dark:text-amber-400">
-            {kiraCount}
-          </span>
+          <span className="text-xl font-black text-amber-600 dark:text-amber-400">{kiraCount}</span>
           <span className="text-[10px] text-amber-500 font-semibold">Kira Takibi</span>
         </div>
       </div>

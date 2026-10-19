@@ -69,7 +69,9 @@ test.describe('E2E: Kullanıcı Arayüzü Üzerinden Gerçek Dosya Açma ve Etki
     const passwordInput = page.locator('input[type="password"]')
     if (await passwordInput.isVisible({ timeout: 5000 }).catch(() => false)) {
       await passwordInput.fill('123456')
-      const loginButton = page.locator('button:has-text("Giriş Yap"), button:has-text("Şifre Belirle ve Giriş Yap")').first()
+      const loginButton = page
+        .locator('button:has-text("Giriş Yap"), button:has-text("Şifre Belirle ve Giriş Yap")')
+        .first()
       await loginButton.click()
       // Kilit ekranının kapandığını doğrula
       await expect(passwordInput).not.toBeVisible({ timeout: 15000 })

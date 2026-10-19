@@ -16,13 +16,9 @@ export const PozSecimFooter: React.FC<PozSecimFooterProps> = ({
     <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 flex items-center justify-between gap-3">
       <div className="text-[11px] text-slate-500">
         {activeTab === 'katalog' ? (
-          <span>
-            💡 Veritabanında kayıtlı pozlardan seçebilir veya yeni poz ekleyebilirsiniz.
-          </span>
+          <span>💡 Veritabanında kayıtlı pozlardan seçebilir veya yeni poz ekleyebilirsiniz.</span>
         ) : (
-          <span>
-            ✨ Poz bilgileri form alanlarına ve yaklaşık maliyet cetvellerine aktarılır.
-          </span>
+          <span>✨ Poz bilgileri form alanlarına ve yaklaşık maliyet cetvellerine aktarılır.</span>
         )}
       </div>
 

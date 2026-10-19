@@ -1,11 +1,5 @@
 import React from 'react'
-import {
-  FileImage,
-  Globe,
-  Image as ImageIcon,
-  Trash2,
-  Upload
-} from 'lucide-react'
+import { FileImage, Globe, Image as ImageIcon, Trash2, Upload } from 'lucide-react'
 import { cn } from '../../../utils/cn'
 import type { Kalem } from '../malzemeler.hooks'
 

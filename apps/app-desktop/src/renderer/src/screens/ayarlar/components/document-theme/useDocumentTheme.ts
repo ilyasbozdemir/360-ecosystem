@@ -26,10 +26,7 @@ export function useDocumentTheme() {
     type: 'success' | 'error' | 'info'
   } | null>(null)
 
-  const showNotification = (
-    text: string,
-    type: 'success' | 'error' | 'info' = 'success'
-  ): void => {
+  const showNotification = (text: string, type: 'success' | 'error' | 'info' = 'success'): void => {
     setNotification({ text, type })
     setTimeout(() => setNotification(null), 4000)
   }

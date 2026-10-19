@@ -52,14 +52,18 @@ export function useBelgeVeSablonStudyo(initialDosyaId?: string) {
   // Form Değerleri
   const [formData, setFormData] = useState<FormDataType>(() => {
     const initialList = getInitial2886Dosyalar()
-    const target = initialDosyaId ? initialList.find((d) => d.id === initialDosyaId) : initialList[0]
+    const target = initialDosyaId
+      ? initialList.find((d) => d.id === initialDosyaId)
+      : initialList[0]
     return getFormDataForDosya(target || null, initialList.length)
   })
 
   // Özel Dinamik Form Builder Alanları
   const [customFields, setCustomFields] = useState<CustomField[]>(() => {
     const initialList = getInitial2886Dosyalar()
-    const target = initialDosyaId ? initialList.find((d) => d.id === initialDosyaId) : initialList[0]
+    const target = initialDosyaId
+      ? initialList.find((d) => d.id === initialDosyaId)
+      : initialList[0]
     return getCustomFieldsForDosya(target || null)
   })
 
@@ -76,7 +80,9 @@ export function useBelgeVeSablonStudyo(initialDosyaId?: string) {
   const [selectedTemplateKod, setSelectedTemplateKod] = useState<string>('2886-EVR-01')
   const [editorContent, setEditorContent] = useState<string>(() => {
     const initialList = getInitial2886Dosyalar()
-    const target = initialDosyaId ? initialList.find((d) => d.id === initialDosyaId) : initialList[0]
+    const target = initialDosyaId
+      ? initialList.find((d) => d.id === initialDosyaId)
+      : initialList[0]
     return getEditorContentForDosya(target || null)
   })
   const [savedSuccess, setSavedSuccess] = useState(false)
@@ -199,9 +205,7 @@ export function useBelgeVeSablonStudyo(initialDosyaId?: string) {
 
   // Özel Alan Değerini Güncelleme
   const handleCustomFieldChange = (id: string, value: string): void => {
-    setCustomFields(
-      customFields.map((cf) => (cf.id === id ? { ...cf, deger: value } : cf))
-    )
+    setCustomFields(customFields.map((cf) => (cf.id === id ? { ...cf, deger: value } : cf)))
   }
 
   const saveDosyaToStorage = (savedItem: Dosya2886Item): void => {

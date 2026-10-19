@@ -23,9 +23,9 @@ export function getSmtpSetting(k1: string, k2: string, defaultValue: string = ''
   try {
     const db = workspaceManager.getDb()
     if (!db) return defaultValue
-    const row = db
-      .prepare('SELECT value FROM settings WHERE key = ? OR key = ?')
-      .get(k1, k2) as { value?: string } | undefined
+    const row = db.prepare('SELECT value FROM settings WHERE key = ? OR key = ?').get(k1, k2) as
+      | { value?: string }
+      | undefined
     return row?.value !== undefined && row?.value !== null ? row.value : defaultValue
   } catch {
     return defaultValue

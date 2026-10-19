@@ -96,7 +96,9 @@ describe('Aşama 7.1.3.1 - Commission Seed Service Lifecycle Tests', () => {
 
               if (sql.includes('SELECT COUNT(*) as cnt FROM DATA_TeminKomisyon')) {
                 const dosyaId = params[0]
-                const count = mockDbData.komisyonlar.filter((x) => x.temin_dosya_id === dosyaId).length
+                const count = mockDbData.komisyonlar.filter(
+                  (x) => x.temin_dosya_id === dosyaId
+                ).length
                 return { success: true, data: [{ cnt: count }] }
               }
 
@@ -161,7 +163,9 @@ describe('Aşama 7.1.3.1 - Commission Seed Service Lifecycle Tests', () => {
                 }
                 if (q.sql.includes('DELETE FROM DATA_TeminKomisyon WHERE temin_dosya_id = ?')) {
                   const dosyaId = q.params[0]
-                  mockDbData.komisyonlar = mockDbData.komisyonlar.filter((x) => x.temin_dosya_id !== dosyaId)
+                  mockDbData.komisyonlar = mockDbData.komisyonlar.filter(
+                    (x) => x.temin_dosya_id !== dosyaId
+                  )
                 }
               }
 
@@ -268,7 +272,9 @@ describe('Aşama 7.1.3.1 - Commission Seed Service Lifecycle Tests', () => {
     expect(res.success).toBe(true)
     expect(res.seededCount).toBe(2) // Personel 5 atlandı, sadece 6 ve 7 eklendi
 
-    const insertStatements = transactionExecuted.filter((q) => q.sql.includes('INSERT INTO DATA_TeminKomisyon'))
+    const insertStatements = transactionExecuted.filter((q) =>
+      q.sql.includes('INSERT INTO DATA_TeminKomisyon')
+    )
     expect(insertStatements.length).toBe(2)
 
     // Hiçbir insert ifadesi personel 5 içermemeli
@@ -282,7 +288,9 @@ describe('Aşama 7.1.3.1 - Commission Seed Service Lifecycle Tests', () => {
     expect(res.seededCount).toBe(3) // Tümü baştan eklendi
 
     // İlk ifade DELETE olmalı
-    expect(transactionExecuted[0].sql).toContain('DELETE FROM DATA_TeminKomisyon WHERE temin_dosya_id = ?')
+    expect(transactionExecuted[0].sql).toContain(
+      'DELETE FROM DATA_TeminKomisyon WHERE temin_dosya_id = ?'
+    )
     expect(transactionExecuted[0].params[0]).toBe(103)
   })
 

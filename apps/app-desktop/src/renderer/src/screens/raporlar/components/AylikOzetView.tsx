@@ -101,9 +101,13 @@ export const AylikOzetView: React.FC<AylikOzetViewProps> = ({ yil }) => {
             return (
               <div key={item.ay} className="space-y-1">
                 <div className="flex justify-between text-xs">
-                  <span className="font-semibold text-slate-700 dark:text-slate-200 w-24">{item.ay}</span>
+                  <span className="font-semibold text-slate-700 dark:text-slate-200 w-24">
+                    {item.ay}
+                  </span>
                   <span className="font-mono text-slate-500">{item.islem} işlem</span>
-                  <span className="font-mono font-bold text-slate-900 dark:text-slate-100">{fmt(item.harcama)}</span>
+                  <span className="font-mono font-bold text-slate-900 dark:text-slate-100">
+                    {fmt(item.harcama)}
+                  </span>
                 </div>
                 <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
                   <div

@@ -81,7 +81,6 @@ export function DosyalarPageHeader({
           <span className="md:hidden">AI</span>
         </button>
 
-
         {/* EXCEL HIZLI EKLEME */}
         <button
           onClick={() =>

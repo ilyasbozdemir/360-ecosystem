@@ -1,5 +1,14 @@
 import React from 'react'
-import { Clock, Download, FileSpreadsheet, FolderDown, Laptop, RefreshCw, Trash2, User } from 'lucide-react'
+import {
+  Clock,
+  Download,
+  FileSpreadsheet,
+  FolderDown,
+  Laptop,
+  RefreshCw,
+  Trash2,
+  User
+} from 'lucide-react'
 import { Button } from '../Button'
 import { formatDate } from '@renderer/utils/formatters'
 import { GDriveFile, formatFileSize } from './gdriveUtils'
@@ -26,9 +35,7 @@ export function DriveFileRow({
   const busy = isDownloading || isDeleting
 
   const rawDeviceLabel =
-    file.appProperties?.deviceLabel ||
-    file.description?.match(/\[Cihaz:\s*([^\]]+)\]/)?.[1] ||
-    ''
+    file.appProperties?.deviceLabel || file.description?.match(/\[Cihaz:\s*([^\]]+)\]/)?.[1] || ''
 
   const deviceName =
     file.appProperties?.deviceName ||

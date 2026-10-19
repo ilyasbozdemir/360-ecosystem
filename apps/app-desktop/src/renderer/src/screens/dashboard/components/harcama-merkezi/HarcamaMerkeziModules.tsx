@@ -1,14 +1,6 @@
 import React from 'react'
 import { Link } from '@tanstack/react-router'
-import {
-  Hammer,
-  Package,
-  Truck,
-  FileCheck,
-  Layers,
-  CheckCircle2,
-  ArrowRight
-} from 'lucide-react'
+import { Hammer, Package, Truck, FileCheck, Layers, CheckCircle2, ArrowRight } from 'lucide-react'
 import { Button } from '../../../../components/ui/Button'
 
 interface HarcamaMerkeziModulesProps {

@@ -59,9 +59,9 @@ export const DisclaimerModal: React.FC = () => {
         <div className="p-6 text-sm text-slate-600 dark:text-slate-300 leading-relaxed space-y-3.5 max-h-[60vh] overflow-y-auto">
           <div className="p-3.5 bg-blue-50 dark:bg-blue-950/30 rounded-xl border border-blue-200 dark:border-blue-900/50 text-blue-900 dark:text-blue-200 text-xs">
             💡 <strong>Ücretsiz Yardımcı Araç:</strong> Bu uygulama, satın alma birimleri ve kamu
-            görevlilerinin 4734 doğrudan temin / ihale ve 2886 devlet ihale süreçlerini kolaylaştırmak,
-            kendi veri ve şablonlarını düzenli yönetmelerini sağlamak amacıyla sunulmuş{' '}
-            <strong>ücretsiz bir masaüstü aracıdır</strong>.
+            görevlilerinin 4734 doğrudan temin / ihale ve 2886 devlet ihale süreçlerini
+            kolaylaştırmak, kendi veri ve şablonlarını düzenli yönetmelerini sağlamak amacıyla
+            sunulmuş <strong>ücretsiz bir masaüstü aracıdır</strong>.
           </div>
 
           <div className="p-3.5 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-900/50 text-amber-900 dark:text-amber-200 text-xs space-y-2">
@@ -70,19 +70,19 @@ export const DisclaimerModal: React.FC = () => {
             </div>
             <ul className="list-disc list-inside space-y-1.5 text-[11px] text-amber-900/90 dark:text-amber-300/90">
               <li>
-                <strong>Veri ve Mevzuat Güncelleme Yükümlülüğü Yoktur:</strong> Yazılım geliştiricisinin
-                sürekli değişen kamu ihale mevzuatını (4734, 4735, 2886), parasal limitleri, vergi/SGK
-                oranlarını veya Bakanlık birim fiyat pozlarını takip etme, güncelleme veya sisteme
-                yükleme gibi hiçbir taahhüdü ve yükümlülüğü bulunmamaktadır.
+                <strong>Veri ve Mevzuat Güncelleme Yükümlülüğü Yoktur:</strong> Yazılım
+                geliştiricisinin sürekli değişen kamu ihale mevzuatını (4734, 4735, 2886), parasal
+                limitleri, vergi/SGK oranlarını veya Bakanlık birim fiyat pozlarını takip etme,
+                güncelleme veya sisteme yükleme gibi hiçbir taahhüdü ve yükümlülüğü bulunmamaktadır.
               </li>
               <li>
-                <strong>Veri Yönetimi Kullanıcıya Aittir:</strong> Kurum ayarları, birim fiyat pozları,
-                komisyon listeleri, teklifler ve şablonlar kullanıcı/idare tarafından girilir ve
-                yönetilir.
+                <strong>Veri Yönetimi Kullanıcıya Aittir:</strong> Kurum ayarları, birim fiyat
+                pozları, komisyon listeleri, teklifler ve şablonlar kullanıcı/idare tarafından
+                girilir ve yönetilir.
               </li>
               <li>
-                <strong>Resmî Doğrulama Sorumluluğu:</strong> Resmî iş ve işlemlerde kullanılan tüm evrak,
-                oran, limit ve hesaplamaların güncelliğini Resmî Gazete,{' '}
+                <strong>Resmî Doğrulama Sorumluluğu:</strong> Resmî iş ve işlemlerde kullanılan tüm
+                evrak, oran, limit ve hesaplamaların güncelliğini Resmî Gazete,{' '}
                 <span className="font-semibold">mevzuat.gov.tr</span> ve{' '}
                 <span className="font-semibold">ihale.gov.tr</span> üzerinden teyit etmek tamamen{' '}
                 <strong>kullanıcının ve ilgili kamu idaresinin kendi sorumluluğundadır</strong>.
@@ -91,9 +91,9 @@ export const DisclaimerModal: React.FC = () => {
           </div>
 
           <p className="p-3 bg-slate-100 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 italic">
-            Geliştirici ve katkıda bulunanlar; veri girişi eksikliği, mevzuat değişiklikleri, hesaplama
-            farklılıkları veya hatalı kullanım sebebiyle oluşabilecek hiçbir hukuki, idari veya mali
-            sonuçtan hukuken sorumlu tutulamaz.
+            Geliştirici ve katkıda bulunanlar; veri girişi eksikliği, mevzuat değişiklikleri,
+            hesaplama farklılıkları veya hatalı kullanım sebebiyle oluşabilecek hiçbir hukuki, idari
+            veya mali sonuçtan hukuken sorumlu tutulamaz.
           </p>
         </div>
 

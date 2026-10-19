@@ -158,8 +158,7 @@ export function IstekliFirmalarYasaklilikModal({
                 e-Devlet Yasaklı Sorgula
               </span>
               <p className="text-[9px] text-slate-400 mt-1 leading-normal">
-                Vergi No, Yasaklanan Adı ve TCKN/VKN ile e-Devlet kapısı üzerinden sorgulama
-                yapın.
+                Vergi No, Yasaklanan Adı ve TCKN/VKN ile e-Devlet kapısı üzerinden sorgulama yapın.
               </p>
             </button>
           </div>

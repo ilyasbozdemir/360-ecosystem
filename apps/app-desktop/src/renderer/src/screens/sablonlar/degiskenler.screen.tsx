@@ -42,7 +42,10 @@ export default function DegiskenlerScreen(): React.JSX.Element {
               Doğrudan Temin Özel Belge & Dinamik Yer Tutucu Stüdyosu
             </h1>
             <p className="text-xs md:text-sm text-slate-300 max-w-3xl leading-relaxed">
-              4734 Sayılı Kanun Madde 22 doğrudan temin aşamalarına kurumsal ek evraklar bağlayabilir, dinamik yer tutucuları (&#123;&#123;makam&#125;&#125;, &#123;&#123;teslim_adresi&#125;&#125;, &#123;&#123;ozel_not&#125;&#125; vb.) veritabanı alanlarıyla canlı eşleştirebilirsiniz.
+              4734 Sayılı Kanun Madde 22 doğrudan temin aşamalarına kurumsal ek evraklar
+              bağlayabilir, dinamik yer tutucuları (&#123;&#123;makam&#125;&#125;,
+              &#123;&#123;teslim_adresi&#125;&#125;, &#123;&#123;ozel_not&#125;&#125; vb.)
+              veritabanı alanlarıyla canlı eşleştirebilirsiniz.
             </p>
           </div>
         </div>

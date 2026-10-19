@@ -40,7 +40,8 @@ export const PlaceholderNode = Node.create({
       },
       label: {
         default: '',
-        parseHTML: (el: HTMLElement) => el.getAttribute('data-label') || el.textContent?.replace(/^\{\{|\}\}$/g, '') || '',
+        parseHTML: (el: HTMLElement) =>
+          el.getAttribute('data-label') || el.textContent?.replace(/^\{\{|\}\}$/g, '') || '',
         renderHTML: (attrs) => ({ 'data-label': attrs.label || attrs.key })
       }
     }
@@ -132,7 +133,8 @@ export const ConditionBlockNode = Node.create({
       [
         'div',
         {
-          class: 'text-[11px] font-bold text-amber-800 dark:text-amber-400 select-none mb-1.5 flex items-center gap-1.5',
+          class:
+            'text-[11px] font-bold text-amber-800 dark:text-amber-400 select-none mb-1.5 flex items-center gap-1.5',
           contenteditable: 'false'
         },
         `⚙️ KOŞULLU BLOK: [${flag}]`
@@ -200,7 +202,8 @@ export const EachBlockNode = Node.create({
       [
         'div',
         {
-          class: 'text-[11px] font-bold text-emerald-800 dark:text-emerald-400 select-none mb-1.5 flex items-center gap-1.5',
+          class:
+            'text-[11px] font-bold text-emerald-800 dark:text-emerald-400 select-none mb-1.5 flex items-center gap-1.5',
           contenteditable: 'false'
         },
         `🔁 LİSTE DÖNGÜSÜ: [${list}]`

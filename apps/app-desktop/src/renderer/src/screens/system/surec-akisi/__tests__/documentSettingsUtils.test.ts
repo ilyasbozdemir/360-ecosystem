@@ -22,8 +22,14 @@ describe('Document Settings Utilities & Validation Rules', () => {
   describe('2. dagitimdanAlanlar', () => {
     it('gereği ve bilgi dağıtım muhataplarını doğru ayrıştırmalıdır', () => {
       const dagitim = [
-        { muhatap: { hitap: 'İç Denetim Birimi', hiyerarsi: 'es' as const }, tur: 'bilgi' as const },
-        { muhatap: { hitap: 'Destek Hizmetleri Dairesi', hiyerarsi: 'alt' as const }, tur: 'gereği' as const },
+        {
+          muhatap: { hitap: 'İç Denetim Birimi', hiyerarsi: 'es' as const },
+          tur: 'bilgi' as const
+        },
+        {
+          muhatap: { hitap: 'Destek Hizmetleri Dairesi', hiyerarsi: 'alt' as const },
+          tur: 'gereği' as const
+        },
         { muhatap: { hitap: 'Mali Hizmetler', hiyerarsi: 'es' as const }, tur: 'gereği' as const }
       ]
 
@@ -41,7 +47,12 @@ describe('Document Settings Utilities & Validation Rules', () => {
     it('aynı dosyadaki önceki belgelerden ilgi önerileri oluşturmalı ve mevcut belgeyi hariç tutmalıdır', () => {
       const docs = [
         { id: 'luzum-muzekkeresi', baslik: 'Lüzum Müzekkeresi', tarih: '10.05.2026', sayi: '101' },
-        { id: 'dogrudan-temin-onay-belgesi', baslik: 'Onay Belgesi', tarih: '12.05.2026', sayi: '102' }
+        {
+          id: 'dogrudan-temin-onay-belgesi',
+          baslik: 'Onay Belgesi',
+          tarih: '12.05.2026',
+          sayi: '102'
+        }
       ]
 
       const oneriler = ilgiOner(docs, 'dogrudan-temin-onay-belgesi')
@@ -158,7 +169,11 @@ describe('Document Settings Utilities & Validation Rules', () => {
         }
       }
 
-      const result = validateDocumentSettings('ozel-belge', { rotaOnaylandi: false }, template as TemplateType)
+      const result = validateDocumentSettings(
+        'ozel-belge',
+        { rotaOnaylandi: false },
+        template as TemplateType
+      )
       expect(result.isValid).toBe(false)
       expect(result.warnings).toContain('rota onaylanmadı')
       expect(result.missingFields).toContain('rota')

@@ -147,14 +147,18 @@ describe('Gerçek SQLite Motoru: İhtiyaç Raporu Transaction & Rollback Güvenc
 
   it('1. GERÇEK ROLLBACK KANITI (Üretim executeDbTransaction): SQL hatasında önceki işlemler geri alınmalı ve hata fırlatılmalıdır', () => {
     // 1. Adım: Başlangıç durumunu doğrula
-    const initialRapor = db.prepare('SELECT durum, temin_dosya_id FROM DATA_IhtiyacRaporu WHERE id = 1').get() as {
+    const initialRapor = db
+      .prepare('SELECT durum, temin_dosya_id FROM DATA_IhtiyacRaporu WHERE id = 1')
+      .get() as {
       durum: string
       temin_dosya_id: number | null
     }
     expect(initialRapor.durum).toBe('taslak')
     expect(initialRapor.temin_dosya_id).toBeNull()
 
-    const initialKalemCount = db.prepare('SELECT COUNT(*) as count FROM DATA_TeminKalem WHERE temin_dosya_id = 10').get() as {
+    const initialKalemCount = db
+      .prepare('SELECT COUNT(*) as count FROM DATA_TeminKalem WHERE temin_dosya_id = 10')
+      .get() as {
       count: number
     }
     expect(initialKalemCount.count).toBe(0)
@@ -181,14 +185,18 @@ describe('Gerçek SQLite Motoru: İhtiyaç Raporu Transaction & Rollback Güvenc
     }).toThrow(/no such table: NON_EXISTING_TABLE_TO_FORCE_SQLITE_ROLLBACK/)
 
     // 4. Adım: GERÇEK SQLITE VERİTABANI KONTROLÜ (Rollback kanıtı):
-    const postRollbackRapor = db.prepare('SELECT durum, temin_dosya_id FROM DATA_IhtiyacRaporu WHERE id = 1').get() as {
+    const postRollbackRapor = db
+      .prepare('SELECT durum, temin_dosya_id FROM DATA_IhtiyacRaporu WHERE id = 1')
+      .get() as {
       durum: string
       temin_dosya_id: number | null
     }
     expect(postRollbackRapor.durum).toBe('taslak')
     expect(postRollbackRapor.temin_dosya_id).toBeNull()
 
-    const postRollbackKalemCount = db.prepare('SELECT COUNT(*) as count FROM DATA_TeminKalem WHERE temin_dosya_id = 10').get() as {
+    const postRollbackKalemCount = db
+      .prepare('SELECT COUNT(*) as count FROM DATA_TeminKalem WHERE temin_dosya_id = 10')
+      .get() as {
       count: number
     }
     expect(postRollbackKalemCount.count).toBe(0)
@@ -210,7 +218,9 @@ describe('Gerçek SQLite Motoru: İhtiyaç Raporu Transaction & Rollback Güvenc
       executeDbTransaction(db, transactionStatements, { validateSql: true })
     }).toThrow(/FOREIGN KEY constraint failed/)
 
-    const savedRapor = db.prepare('SELECT durum, temin_dosya_id FROM DATA_IhtiyacRaporu WHERE id = 1').get() as {
+    const savedRapor = db
+      .prepare('SELECT durum, temin_dosya_id FROM DATA_IhtiyacRaporu WHERE id = 1')
+      .get() as {
       durum: string
       temin_dosya_id: number | null
     }
@@ -237,14 +247,20 @@ describe('Gerçek SQLite Motoru: İhtiyaç Raporu Transaction & Rollback Güvenc
     const result = executeDbTransaction(db, validStatements, { validateSql: true })
     expect(result.success).toBe(true)
 
-    const committedRapor = db.prepare('SELECT durum, temin_dosya_id FROM DATA_IhtiyacRaporu WHERE id = 1').get() as {
+    const committedRapor = db
+      .prepare('SELECT durum, temin_dosya_id FROM DATA_IhtiyacRaporu WHERE id = 1')
+      .get() as {
       durum: string
       temin_dosya_id: number | null
     }
     expect(committedRapor.durum).toBe('dosyaya_aktarildi')
     expect(committedRapor.temin_dosya_id).toBe(10)
 
-    const committedKalemler = db.prepare('SELECT sira_no, kalem_adi, miktar FROM DATA_TeminKalem WHERE temin_dosya_id = 10 ORDER BY sira_no ASC').all() as {
+    const committedKalemler = db
+      .prepare(
+        'SELECT sira_no, kalem_adi, miktar FROM DATA_TeminKalem WHERE temin_dosya_id = 10 ORDER BY sira_no ASC'
+      )
+      .all() as {
       sira_no: number
       kalem_adi: string
       miktar: number
@@ -327,7 +343,9 @@ describe('Gerçek SQLite Motoru: İhtiyaç Raporu Transaction & Rollback Güvenc
     expect(saveCalled).toBe(false) // Rollback anında dosya kaydedilmemeli
     expect(mutations.length).toBe(0) // Rollback anında mutation bildirilmemeli
 
-    const savedRapor = db.prepare('SELECT durum, temin_dosya_id FROM DATA_IhtiyacRaporu WHERE id = 1').get() as {
+    const savedRapor = db
+      .prepare('SELECT durum, temin_dosya_id FROM DATA_IhtiyacRaporu WHERE id = 1')
+      .get() as {
       durum: string
       temin_dosya_id: number | null
     }
@@ -358,7 +376,9 @@ describe('Gerçek SQLite Motoru: İhtiyaç Raporu Transaction & Rollback Güvenc
     expect(response.warning).toBeDefined()
 
     // 3. Veritabanındaki değişiklik kalıcı olmalı (commit geri alınmamış olmalı)
-    const committedRapor = db.prepare('SELECT durum FROM DATA_IhtiyacRaporu WHERE id = 1').get() as {
+    const committedRapor = db
+      .prepare('SELECT durum FROM DATA_IhtiyacRaporu WHERE id = 1')
+      .get() as {
       durum: string
     }
     expect(committedRapor.durum).toBe('onaylandi')
@@ -402,20 +422,26 @@ describe('Gerçek SQLite Motoru: İhtiyaç Raporu Transaction & Rollback Güvenc
     vi.spyOn(dbClient, 'run').mockImplementation(async (sql: string, params: any[] = []) => {
       const stmt = db.prepare(sql)
       const info = stmt.run(...params)
-      return { success: true, lastInsertRowid: info.lastInsertRowid, changes: Number(info.changes || 0) }
-    })
-
-    vi.spyOn(dbClient, 'transaction').mockImplementation(async (statements: { sql: string; params?: unknown[] }[]) => {
-      const res = await handleDbTransaction(db, statements as any, { validateSql: true })
-      if (!res.success) {
-        throw new Error(res.error || 'Transaction failed')
-      }
       return {
         success: true,
-        lastInsertRowid: res.lastInsertRowid,
-        changes: Number(res.changes || 0)
+        lastInsertRowid: info.lastInsertRowid,
+        changes: Number(info.changes || 0)
       }
     })
+
+    vi.spyOn(dbClient, 'transaction').mockImplementation(
+      async (statements: { sql: string; params?: unknown[] }[]) => {
+        const res = await handleDbTransaction(db, statements as any, { validateSql: true })
+        if (!res.success) {
+          throw new Error(res.error || 'Transaction failed')
+        }
+        return {
+          success: true,
+          lastInsertRowid: res.lastInsertRowid,
+          changes: Number(res.changes || 0)
+        }
+      }
+    )
 
     // Senaryo A: Başarılı aktarım (Rapor 1 -> Dosya 10)
     const successResult = await ihtiyacRaporuService.linkToDosya(1, 10, {
@@ -425,7 +451,9 @@ describe('Gerçek SQLite Motoru: İhtiyaç Raporu Transaction & Rollback Güvenc
     expect(successResult.success).toBe(true)
     expect(successResult.transferredCount).toBe(1)
 
-    const linkedRapor = db.prepare('SELECT durum, temin_dosya_id FROM DATA_IhtiyacRaporu WHERE id = 1').get() as {
+    const linkedRapor = db
+      .prepare('SELECT durum, temin_dosya_id FROM DATA_IhtiyacRaporu WHERE id = 1')
+      .get() as {
       durum: string
       temin_dosya_id: number
     }
@@ -445,7 +473,9 @@ describe('Gerçek SQLite Motoru: İhtiyaç Raporu Transaction & Rollback Güvenc
 
     // Fiziksel SQLite Doğrulaması:
     // Kalem ekleme başarısız olduğu için, İLK ADIMDA yapılan 'UPDATE DATA_IhtiyacRaporu' işlemi de SQLite tarafından ROLLBACK yapılmış olmalıdır!
-    const rolledBackRapor = db.prepare('SELECT durum, temin_dosya_id FROM DATA_IhtiyacRaporu WHERE id = 2').get() as {
+    const rolledBackRapor = db
+      .prepare('SELECT durum, temin_dosya_id FROM DATA_IhtiyacRaporu WHERE id = 2')
+      .get() as {
       durum: string
       temin_dosya_id: number | null
     }
@@ -515,7 +545,9 @@ describe('Gerçek SQLite Motoru: İhtiyaç Raporu Transaction & Rollback Güvenc
     expect(result.warning).toBeDefined()
 
     // 3. Veritabanındaki değişiklik kalıcı olmalı
-    const committedRapor = db.prepare('SELECT durum FROM DATA_IhtiyacRaporu WHERE id = 1').get() as {
+    const committedRapor = db
+      .prepare('SELECT durum FROM DATA_IhtiyacRaporu WHERE id = 1')
+      .get() as {
       durum: string
     }
     expect(committedRapor.durum).toBe('onaylandi')
@@ -570,5 +602,3 @@ describe('Gerçek SQLite Motoru: İhtiyaç Raporu Transaction & Rollback Güvenc
     expect(onMutationCalled).toBe(false)
   })
 })
-
-

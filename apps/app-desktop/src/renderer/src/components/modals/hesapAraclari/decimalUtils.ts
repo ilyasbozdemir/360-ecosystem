@@ -35,7 +35,8 @@ export const formatNum = (n: unknown, precision: string = 'auto'): string => {
   }
 }
 
-export const formatPct = (n: unknown, precision: string = 'auto'): string => '%' + formatNum(n, precision)
+export const formatPct = (n: unknown, precision: string = 'auto'): string =>
+  '%' + formatNum(n, precision)
 
 export const parseDecList = (s: string): Decimal[] => {
   if (!s) return []

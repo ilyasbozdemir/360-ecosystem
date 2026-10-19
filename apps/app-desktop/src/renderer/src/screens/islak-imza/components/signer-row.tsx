@@ -1,15 +1,15 @@
-import React from 'react';
-import { ArrowUp, ArrowDown, Trash2, CheckSquare, Square } from 'lucide-react';
-import { ImzaciSatiri, ImzaTipi } from '../types';
+import React from 'react'
+import { ArrowUp, ArrowDown, Trash2, CheckSquare, Square } from 'lucide-react'
+import { ImzaciSatiri, ImzaTipi } from '../types'
 
 interface SignerRowProps {
-  signer: ImzaciSatiri;
-  isFirst: boolean;
-  isLast: boolean;
-  onMoveUp: () => void;
-  onMoveDown: () => void;
-  onDelete: () => void;
-  onUpdate: (updated: Partial<ImzaciSatiri>) => void;
+  signer: ImzaciSatiri
+  isFirst: boolean
+  isLast: boolean
+  onMoveUp: () => void
+  onMoveDown: () => void
+  onDelete: () => void
+  onUpdate: (updated: Partial<ImzaciSatiri>) => void
 }
 
 export const SignerRow: React.FC<SignerRowProps> = ({
@@ -19,7 +19,7 @@ export const SignerRow: React.FC<SignerRowProps> = ({
   onMoveUp,
   onMoveDown,
   onDelete,
-  onUpdate,
+  onUpdate
 }) => {
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/80 transition-all hover:border-slate-300 dark:hover:border-slate-600">
@@ -119,5 +119,5 @@ export const SignerRow: React.FC<SignerRowProps> = ({
         </div>
       </div>
     </div>
-  );
-};
+  )
+}

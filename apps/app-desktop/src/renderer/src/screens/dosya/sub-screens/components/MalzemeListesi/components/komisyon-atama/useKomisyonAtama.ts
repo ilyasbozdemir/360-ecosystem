@@ -207,7 +207,8 @@ export function useKomisyonAtama({
                 (k: any) => resolveCommissionCategory(k) === 'maliyet'
               )
               const prevMuList = prevData.members.filter(
-                (k: any) => resolveCommissionCategory(k) === 'muayene' && isTaskEligibleForMuayene(k)
+                (k: any) =>
+                  resolveCommissionCategory(k) === 'muayene' && isTaskEligibleForMuayene(k)
               )
 
               if (prevMList.length > 0) {

@@ -158,23 +158,17 @@ export function registerDocumentIpcHandlers(): void {
   )
 
   // 13. Word (DOCX) ➔ PDF Converter
-  handleDoc(
-    'belge:convert-docx-to-pdf',
-    'convert-docx-to-pdf',
-    (_, payload?: any) => convertDocxToPdfHandler(payload)
+  handleDoc('belge:convert-docx-to-pdf', 'convert-docx-to-pdf', (_, payload?: any) =>
+    convertDocxToPdfHandler(payload)
   )
 
   // 14. Images (JPG/PNG/WEBP) ➔ PDF Converter
-  handleDoc(
-    'belge:convert-images-to-pdf',
-    'convert-images-to-pdf',
-    (_, payload: any) => convertImagesToPdfHandler(payload)
+  handleDoc('belge:convert-images-to-pdf', 'convert-images-to-pdf', (_, payload: any) =>
+    convertImagesToPdfHandler(payload)
   )
 
   // 15. Save Base64 File Directly
-  handleDoc(
-    'belge:save-base64-file',
-    'save-base64-file',
-    (_, payload: any) => saveBase64FileHandler(payload)
+  handleDoc('belge:save-base64-file', 'save-base64-file', (_, payload: any) =>
+    saveBase64FileHandler(payload)
   )
 }

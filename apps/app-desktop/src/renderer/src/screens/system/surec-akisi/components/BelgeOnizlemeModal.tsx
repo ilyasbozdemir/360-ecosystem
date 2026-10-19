@@ -29,7 +29,6 @@ export const BelgeOnizlemeModal: React.FC<BelgeOnizlemeModalProps> = ({
   dosyaContext,
   onDosyalariEkle
 }) => {
-
   if (!previewBelge) return null
 
   const belgeOnizlemeIcerigi = (belge: Belge) => {

@@ -82,10 +82,7 @@ export function ilgiOner(
 /**
  * Alım türüne ve şablona göre önerilen ek evrak listesi üretir
  */
-export function ekOner(
-  alimTuru?: string,
-  currentDocId?: string
-): EvrakEkKalemi[] {
+export function ekOner(alimTuru?: string, currentDocId?: string): EvrakEkKalemi[] {
   const commonEkler: Record<string, string[]> = {
     'luzum-muzekkeresi': [
       'İhtiyaç Malzeme Listesi',

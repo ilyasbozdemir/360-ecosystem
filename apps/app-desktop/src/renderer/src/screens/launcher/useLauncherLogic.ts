@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useTheme } from '../../components/providers/ThemeProvider'
 
 export function useLauncherLogic() {
-  const { openWorkspace, createWorkspace, convertAndOpenWorkspace } = useWorkspaceStore()
+  const { openWorkspace, createWorkspace } = useWorkspaceStore()
   const queryClient = useQueryClient()
   const { theme, setTheme } = useTheme()
 
@@ -12,10 +12,6 @@ export function useLauncherLogic() {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showNetworkModal, setShowNetworkModal] = useState(false)
   const [pendingFilePath, setPendingFilePath] = useState<string | null>(null)
-
-  // Format upgrade modal states
-  const [showFormatUpgradeModal, setShowFormatUpgradeModal] = useState(false)
-  const [upgradeFilePath, setUpgradeFilePath] = useState<string | null>(null)
 
   // Migration states
   const [showMigrationModal, setShowMigrationModal] = useState(false)
@@ -50,7 +46,7 @@ export function useLauncherLogic() {
       const res = await window.electron?.ipcRenderer.invoke('dialog:showSaveDialog')
       if (!res.canceled && res.filePath) {
         const fileName = res.filePath.split(/[/\\]/).pop() || 'Yeni Kurum'
-        const projectName = fileName.replace(/\.(temin|hkmp|dtal|dtm|dte|dta|tmn360)$/i, '')
+        const projectName = fileName.replace(/\.temin$/i, '')
 
         setPendingFilePath(res.filePath)
         setInstitutionName(projectName)
@@ -66,7 +62,7 @@ export function useLauncherLogic() {
       const res = await window.electron?.ipcRenderer.invoke('dialog:showSaveDialog')
       if (!res.canceled && res.filePath) {
         const fileName = res.filePath.split(/[/\\]/).pop() || 'Yeni Kurum'
-        const projectName = fileName.replace(/\.(temin|hkmp|dtal|dtm|dte|dta|tmn360)$/i, '')
+        const projectName = fileName.replace(/\.temin$/i, '')
         setPendingFilePath(res.filePath)
         if (
           !institutionName ||
@@ -109,22 +105,12 @@ export function useLauncherLogic() {
     }
   }
 
-  const handleUpgradeAndOpen = async (filePath: string): Promise<void> => {
-    const result = await convertAndOpenWorkspace(filePath)
-    if (result.success) {
-      queryClient.clear()
-    } else {
-      throw new Error(result.error || 'Dönüştürme başarısız oldu.')
-    }
-  }
-
   const handleOpenFile = async (): Promise<void> => {
     try {
       const res = await window.electron?.ipcRenderer.invoke('dialog:showOpenDialog')
       if (!res.canceled && res.filePath) {
         if (!res.filePath.toLowerCase().endsWith('.temin')) {
-          setUpgradeFilePath(res.filePath)
-          setShowFormatUpgradeModal(true)
+          alert('Yalnızca .temin uzantılı Temin 360 proje dosyaları desteklenmektedir.')
           return
         }
 
@@ -153,8 +139,7 @@ export function useLauncherLogic() {
   const handleOpenRecent = async (filePath: string): Promise<void> => {
     try {
       if (!filePath.toLowerCase().endsWith('.temin')) {
-        setUpgradeFilePath(filePath)
-        setShowFormatUpgradeModal(true)
+        alert('Yalnızca .temin uzantılı Temin 360 proje dosyaları desteklenmektedir.')
         return
       }
 
@@ -256,10 +241,6 @@ export function useLauncherLogic() {
     setShowNetworkModal,
     pendingFilePath,
     setPendingFilePath,
-    showFormatUpgradeModal,
-    setShowFormatUpgradeModal,
-    upgradeFilePath,
-    setUpgradeFilePath,
     showMigrationModal,
     setShowMigrationModal,
     migrationData,
@@ -277,7 +258,6 @@ export function useLauncherLogic() {
     handleCreateNewFile,
     handleChangeSaveLocation,
     handleModalSubmit,
-    handleUpgradeAndOpen,
     handleOpenFile,
     handleOpenRecent,
     handleRemoveRecent,

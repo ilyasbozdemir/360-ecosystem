@@ -367,7 +367,11 @@ export function applyCommonDataToTemplate(
     { key: mapping.tarihKey, val: commonData.tarih, label: 'Tarih' },
     { key: mapping.muhatapKey, val: commonData.muhatap, label: 'Muhatap' },
     { key: mapping.hazirlayanAdiKey, val: commonData.hazirlayanAdi, label: 'Hazırlayan Adı' },
-    { key: mapping.hazirlayanUnvanKey, val: commonData.hazirlayanUnvan, label: 'Hazırlayan Unvanı' },
+    {
+      key: mapping.hazirlayanUnvanKey,
+      val: commonData.hazirlayanUnvan,
+      label: 'Hazırlayan Unvanı'
+    },
     { key: mapping.onaylayanAdiKey, val: commonData.onaylayanAdi, label: 'Onaylayan Adı' },
     { key: mapping.onaylayanUnvanKey, val: commonData.onaylayanUnvan, label: 'Onaylayan Unvanı' },
     { key: mapping.talepEdenAdiKey, val: commonData.talepEdenAdi, label: 'Talep Eden Adı' },

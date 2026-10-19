@@ -101,7 +101,17 @@ export function ButceOdenekModal({
             birim_adi = ?, kurumsal_kod = ?, butce_kodu = ?, butce_kalemi = ?,
             butce_turu = ?, butce_yili = ?, yillik_odenek = ?, aciklama = ?, updated_at = CURRENT_TIMESTAMP
            WHERE id = ?`,
-          [birimAdi, kurumsalKod, butceKodu, butceKalemi, butceTuru, butceYili, odenekNum, aciklama, editingRecord.id]
+          [
+            birimAdi,
+            kurumsalKod,
+            butceKodu,
+            butceKalemi,
+            butceTuru,
+            butceYili,
+            odenekNum,
+            aciklama,
+            editingRecord.id
+          ]
         )
       } else {
         await window.electron.ipcRenderer.invoke(
@@ -134,10 +144,15 @@ export function ButceOdenekModal({
               <h3 className="text-base font-bold text-slate-800 dark:text-white">
                 {editingRecord ? 'Bütçe Ödeneğini Düzenle' : 'Yeni Bütçe / Ödenek Kalemi Tanımla'}
               </h3>
-              <p className="text-xs text-slate-500">4734 Madde 62/ı %10 limit takibi için tertip ödeneği</p>
+              <p className="text-xs text-slate-500">
+                4734 Madde 62/ı %10 limit takibi için tertip ödeneği
+              </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600">
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600"
+          >
             <X size={18} />
           </button>
         </div>
@@ -151,7 +166,9 @@ export function ButceOdenekModal({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Harcama Birimi</label>
+              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Harcama Birimi
+              </label>
               <input
                 type="text"
                 list="birim-list"
@@ -161,11 +178,15 @@ export function ButceOdenekModal({
                 className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl"
               />
               <datalist id="birim-list">
-                {birimler.map((b) => <option key={b.id} value={b.ad} />)}
+                {birimler.map((b) => (
+                  <option key={b.id} value={b.ad} />
+                ))}
               </datalist>
             </div>
             <div>
-              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Kurumsal Kod</label>
+              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Kurumsal Kod
+              </label>
               <input
                 type="text"
                 value={kurumsalKod}
@@ -178,7 +199,9 @@ export function ButceOdenekModal({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Bütçe Kodu</label>
+              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Bütçe Kodu
+              </label>
               <input
                 type="text"
                 value={butceKodu}
@@ -188,7 +211,9 @@ export function ButceOdenekModal({
               />
             </div>
             <div>
-              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Bütçe Türü</label>
+              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Bütçe Türü
+              </label>
               <select
                 value={butceTuru}
                 onChange={(e) => setButceTuru(e.target.value)}
@@ -203,7 +228,9 @@ export function ButceOdenekModal({
           </div>
 
           <div>
-            <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Bütçe Kalemi Adı</label>
+            <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+              Bütçe Kalemi Adı
+            </label>
             <input
               type="text"
               value={butceKalemi}
@@ -215,7 +242,9 @@ export function ButceOdenekModal({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Bütçe Yılı</label>
+              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Bütçe Yılı
+              </label>
               <input
                 type="number"
                 value={butceYili}
@@ -224,7 +253,9 @@ export function ButceOdenekModal({
               />
             </div>
             <div>
-              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Yıllık Toplam Ödenek (₺)</label>
+              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Yıllık Toplam Ödenek (₺)
+              </label>
               <input
                 type="text"
                 value={yillikOdenek}
@@ -236,7 +267,9 @@ export function ButceOdenekModal({
           </div>
 
           <div className="p-3 bg-purple-50/70 dark:bg-purple-950/30 rounded-xl border border-purple-200/50 flex justify-between items-center text-xs">
-            <span className="font-semibold text-purple-900 dark:text-purple-200">Hesaplanan Yasal %10 Tavanı:</span>
+            <span className="font-semibold text-purple-900 dark:text-purple-200">
+              Hesaplanan Yasal %10 Tavanı:
+            </span>
             <span className="font-mono font-bold text-purple-700 dark:text-purple-300 text-sm">
               {yuzdeOnTavan.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺
             </span>

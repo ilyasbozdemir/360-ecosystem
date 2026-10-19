@@ -1,12 +1,5 @@
 import React from 'react'
-import {
-  Filter,
-  Search,
-  Building2,
-  PlusCircle,
-  ExternalLink,
-  CheckCircle2
-} from 'lucide-react'
+import { Filter, Search, Building2, PlusCircle, ExternalLink, CheckCircle2 } from 'lucide-react'
 import { POZ_KURUMLARI, PozItem } from '../pozKitaplari.data'
 
 interface PozKatalogTabProps {
@@ -76,9 +69,7 @@ export const PozKatalogTab: React.FC<PozKatalogTabProps> = ({
             <input
               type="number"
               value={selectedYil}
-              onChange={(e) =>
-                setSelectedYil(Number(e.target.value) || new Date().getFullYear())
-              }
+              onChange={(e) => setSelectedYil(Number(e.target.value) || new Date().getFullYear())}
               placeholder="Yıl (Örn: 2026)"
               className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono font-bold text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500"
             />
@@ -140,8 +131,8 @@ export const PozKatalogTab: React.FC<PozKatalogTabProps> = ({
               </p>
               <p className="text-slate-400 text-xs leading-relaxed">
                 Resmî birim fiyat kitaplarından pozları eklemek için{' '}
-                <strong>Birim Fiyat Pozları</strong> ekranını kullanabilir veya kitap dışı
-                analizli özel poz tanımlayabilirsiniz.
+                <strong>Birim Fiyat Pozları</strong> ekranını kullanabilir veya kitap dışı analizli
+                özel poz tanımlayabilirsiniz.
               </p>
             </div>
             <div className="flex items-center gap-2 mt-2">

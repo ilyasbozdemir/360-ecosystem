@@ -51,13 +51,22 @@ export function useDokumanlarRaporu(filters: RaporFilters, searchTerm: string = 
         const mapped: RaporDokumanItem[] = res.data.map((r: any) => {
           const fileName = r.dosya_adi || 'Belge'
           let format = 'PDF'
-          if (fileName.toLowerCase().endsWith('.zip') || r.dosya_yolu?.toLowerCase().endsWith('.zip')) {
+          if (
+            fileName.toLowerCase().endsWith('.zip') ||
+            r.dosya_yolu?.toLowerCase().endsWith('.zip')
+          ) {
             format = 'ZIP'
-          } else if (fileName.toLowerCase().endsWith('.docx') || fileName.toLowerCase().endsWith('.doc')) {
+          } else if (
+            fileName.toLowerCase().endsWith('.docx') ||
+            fileName.toLowerCase().endsWith('.doc')
+          ) {
             format = 'DOCX'
           } else if (fileName.toLowerCase().endsWith('.udf')) {
             format = 'UDF'
-          } else if (fileName.toLowerCase().endsWith('.xlsx') || fileName.toLowerCase().endsWith('.xls')) {
+          } else if (
+            fileName.toLowerCase().endsWith('.xlsx') ||
+            fileName.toLowerCase().endsWith('.xls')
+          ) {
             format = 'XLSX'
           }
 
@@ -87,10 +96,14 @@ export function useDokumanlarRaporu(filters: RaporFilters, searchTerm: string = 
         }
 
         if (filters.tarihBaslangic) {
-          filtered = filtered.filter((item) => !item.eklenme_tarihi || item.eklenme_tarihi >= filters.tarihBaslangic!)
+          filtered = filtered.filter(
+            (item) => !item.eklenme_tarihi || item.eklenme_tarihi >= filters.tarihBaslangic!
+          )
         }
         if (filters.tarihBitis) {
-          filtered = filtered.filter((item) => !item.eklenme_tarihi || item.eklenme_tarihi <= filters.tarihBitis!)
+          filtered = filtered.filter(
+            (item) => !item.eklenme_tarihi || item.eklenme_tarihi <= filters.tarihBitis!
+          )
         }
         if (filters.seciliBirim && filters.seciliBirim !== 'tumu') {
           filtered = filtered.filter((item) => item.birim === filters.seciliBirim)

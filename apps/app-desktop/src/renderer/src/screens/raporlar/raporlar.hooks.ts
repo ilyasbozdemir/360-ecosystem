@@ -36,9 +36,7 @@ export interface RaporFilters {
 
 export function useRaporlarData(filtersOrYear: string | RaporFilters, ay?: string) {
   const filters: RaporFilters =
-    typeof filtersOrYear === 'string'
-      ? { seciliYil: filtersOrYear, seciliAy: ay }
-      : filtersOrYear
+    typeof filtersOrYear === 'string' ? { seciliYil: filtersOrYear, seciliAy: ay } : filtersOrYear
 
   const [data, setData] = useState<RaporDosyaItem[]>([])
   const [birimlerList, setBirimlerList] = useState<string[]>([])
@@ -105,7 +103,8 @@ export function useRaporlarData(filtersOrYear: string | RaporFilters, ay?: strin
           let normalizedTur = 'Mal Alımı'
           if (rawTur.includes('hizmet')) normalizedTur = 'Hizmet Alımı'
           else if (rawTur.includes('yapım') || rawTur.includes('yapim')) normalizedTur = 'Yapım İşi'
-          else if (rawTur.includes('danışman') || rawTur.includes('danisman')) normalizedTur = 'Danışmanlık'
+          else if (rawTur.includes('danışman') || rawTur.includes('danisman'))
+            normalizedTur = 'Danışmanlık'
 
           const tutar = Number(r.toplam_tutar) || 0
           const kdvDahil = tutar * 1.2
@@ -141,7 +140,8 @@ export function useRaporlarData(filtersOrYear: string | RaporFilters, ay?: strin
 
         if (filters.seciliYil) {
           filtered = filtered.filter((item) => {
-            const itemYear = item.butce_yili || item.tarih?.slice(0, 4) || item.created_at?.slice(0, 4)
+            const itemYear =
+              item.butce_yili || item.tarih?.slice(0, 4) || item.created_at?.slice(0, 4)
             return itemYear === filters.seciliYil
           })
         }
@@ -156,7 +156,9 @@ export function useRaporlarData(filtersOrYear: string | RaporFilters, ay?: strin
           filtered = filtered.filter((item) => item.birim === filters.seciliBirim)
         }
         if (filters.alimTuru && filters.alimTuru !== 'tumu') {
-          filtered = filtered.filter((item) => item.alim_turu.toLowerCase().includes(filters.alimTuru!.toLowerCase()))
+          filtered = filtered.filter((item) =>
+            item.alim_turu.toLowerCase().includes(filters.alimTuru!.toLowerCase())
+          )
         }
 
         setData(filtered)

@@ -1,10 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import {
-  applyRolePolicy,
-  dedupeMembers,
-  parseNumericPrice,
-  resolveFirmsAndItems
-} from '../index'
+import { applyRolePolicy, dedupeMembers, parseNumericPrice, resolveFirmsAndItems } from '../index'
 
 describe('DocumentPreviewModalV3 - previewData modular helpers', () => {
   it('parseNumericPrice handles numbers, strings with commas and dots correctly', () => {
@@ -45,9 +40,7 @@ describe('DocumentPreviewModalV3 - previewData modular helpers', () => {
       { id: 10, unvan: 'A Firması', kazandi_mi: 1 },
       { id: 20, unvan: 'B Firması', kazandi_mi: 0 }
     ]
-    const items = [
-      { id: 1, kalem_adi: 'Defter', miktar: 5, birim: 'Adet' }
-    ]
+    const items = [{ id: 1, kalem_adi: 'Defter', miktar: 5, birim: 'Adet' }]
     const bids = [
       { temin_kalem_id: 1, temin_firma_id: 10, birim_fiyat: 100 },
       { temin_kalem_id: 1, temin_firma_id: 20, birim_fiyat: 120 }

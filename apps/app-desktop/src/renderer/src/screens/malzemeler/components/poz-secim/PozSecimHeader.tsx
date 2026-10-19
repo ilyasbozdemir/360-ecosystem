@@ -1,12 +1,5 @@
 import React from 'react'
-import {
-  Building2,
-  ExternalLink,
-  X,
-  Sparkles,
-  BookOpen,
-  PlusCircle
-} from 'lucide-react'
+import { Building2, ExternalLink, X, Sparkles, BookOpen, PlusCircle } from 'lucide-react'
 
 interface PozSecimHeaderProps {
   activeTab: 'katalog' | 'ozel_poz'
@@ -73,8 +66,8 @@ export const PozSecimHeader: React.FC<PozSecimHeaderProps> = ({
           <Sparkles size={15} className="text-amber-600 dark:text-amber-400 shrink-0" />
           <span>
             <strong>Hızlı Poz Aktarımı:</strong> Bakanlık/idare pozlarını veya özel pozlarınızı{' '}
-            <em>Birim Fiyat Pozları</em> ekranından (Excel veya tek tek) ekleyip bu havuzdan
-            anında tek tıkla kaleminize aktarabilirsiniz.
+            <em>Birim Fiyat Pozları</em> ekranından (Excel veya tek tek) ekleyip bu havuzdan anında
+            tek tıkla kaleminize aktarabilirsiniz.
           </span>
         </div>
       </div>

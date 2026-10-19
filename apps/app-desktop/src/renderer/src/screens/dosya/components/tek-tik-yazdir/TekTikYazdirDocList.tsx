@@ -1,17 +1,7 @@
 import React from 'react'
-import {
-  CheckSquare,
-  Square,
-  Lock,
-  Unlock,
-  CheckCircle2,
-  AlertCircle
-} from 'lucide-react'
+import { CheckSquare, Square, Lock, Unlock, CheckCircle2, AlertCircle } from 'lucide-react'
 import { Sablon } from '../../../sablonlar/sablonlar.hooks'
-import {
-  usePrintQueueStore,
-  CURRENT_APP_VERSION
-} from '../../../../store/printQueueStore'
+import { usePrintQueueStore, CURRENT_APP_VERSION } from '../../../../store/printQueueStore'
 
 interface TekTikYazdirDocListProps {
   sablons: Sablon[]

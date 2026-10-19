@@ -1,11 +1,11 @@
-import React from 'react';
-import { FileText, Calendar, Building2, AlertCircle } from 'lucide-react';
-import { BELGE_TURU_SECENEKLERI } from '../mock-data';
-import { IslakImzaBelgeBilgileri } from '../types';
+import React from 'react'
+import { FileText, Calendar, Building2, AlertCircle } from 'lucide-react'
+import { BELGE_TURU_SECENEKLERI } from '../mock-data'
+import { IslakImzaBelgeBilgileri } from '../types'
 
 interface DocumentInfoFormProps {
-  bilgiler: IslakImzaBelgeBilgileri;
-  onChange: (updated: Partial<IslakImzaBelgeBilgileri>) => void;
+  bilgiler: IslakImzaBelgeBilgileri
+  onChange: (updated: Partial<IslakImzaBelgeBilgileri>) => void
 }
 
 export const DocumentInfoForm: React.FC<DocumentInfoFormProps> = ({ bilgiler, onChange }) => {
@@ -74,11 +74,11 @@ export const DocumentInfoForm: React.FC<DocumentInfoFormProps> = ({ bilgiler, on
             type="text"
             value={bilgiler.muhatap}
             onChange={(e) => {
-              const val = e.target.value;
+              const val = e.target.value
               onChange({
                 muhatap: val,
-                hitap: val ? `Sayın ${val}` : '',
-              });
+                hitap: val ? `Sayın ${val}` : ''
+              })
             }}
             placeholder="Örn: Destek Hizmetleri Dairesi"
             className="w-full text-xs font-medium bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
@@ -153,5 +153,5 @@ export const DocumentInfoForm: React.FC<DocumentInfoFormProps> = ({ bilgiler, on
         </div>
       </div>
     </div>
-  );
-};
+  )
+}

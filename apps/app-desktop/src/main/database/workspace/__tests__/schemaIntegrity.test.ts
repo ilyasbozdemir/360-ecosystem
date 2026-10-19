@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { schema, manifests, CURRENT_SCHEMA_VERSION, getMaxSchemaVersion, runMigrations } from '@dt/database'
+import {
+  schema,
+  manifests,
+  CURRENT_SCHEMA_VERSION,
+  getMaxSchemaVersion,
+  runMigrations
+} from '@dt/database'
 
 describe('Database Schema Integrity & Manifest Tests', () => {
   it('should have all tables properly defined in @dt/database schema', () => {
@@ -67,17 +73,28 @@ describe('Database Schema Integrity & Manifest Tests', () => {
 
     for (const table of schema.tables) {
       expect(table.name).toBeTruthy()
-      expect(Array.isArray(table.columns), `Table "${table.name}" columns must be an array`).toBe(true)
-      expect(table.columns.length, `Table "${table.name}" must have at least one column`).toBeGreaterThan(0)
+      expect(Array.isArray(table.columns), `Table "${table.name}" columns must be an array`).toBe(
+        true
+      )
+      expect(
+        table.columns.length,
+        `Table "${table.name}" must have at least one column`
+      ).toBeGreaterThan(0)
 
       const colNames = new Set<string>()
       for (const col of table.columns) {
         expect(col.name, `Column in "${table.name}" must have a name`).toBeTruthy()
-        expect(colNames.has(col.name), `Duplicate column "${col.name}" in table "${table.name}"`).toBe(false)
+        expect(
+          colNames.has(col.name),
+          `Duplicate column "${col.name}" in table "${table.name}"`
+        ).toBe(false)
         colNames.add(col.name)
 
         const rawType = (col.type || '').toUpperCase()
-        expect(validTypes.has(rawType), `Invalid column type "${col.type}" for column "${col.name}" in table "${table.name}"`).toBe(true)
+        expect(
+          validTypes.has(rawType),
+          `Invalid column type "${col.type}" for column "${col.name}" in table "${table.name}"`
+        ).toBe(true)
       }
     }
   })
@@ -87,16 +104,26 @@ describe('Database Schema Integrity & Manifest Tests', () => {
     expect(teminDosyasi).toBeDefined()
     const teminCols = new Set(teminDosyasi.columns.map((c: any) => c.name))
     expect(teminCols.has('birim'), 'DATA_TeminDosyasi must have "birim" column').toBe(true)
-    expect(teminCols.has('harcama_birimi'), 'DATA_TeminDosyasi must have "harcama_birimi" column').toBe(true)
-    expect(teminCols.has('butce_yili'), 'DATA_TeminDosyasi must have "butce_yili" column').toBe(true)
+    expect(
+      teminCols.has('harcama_birimi'),
+      'DATA_TeminDosyasi must have "harcama_birimi" column'
+    ).toBe(true)
+    expect(teminCols.has('butce_yili'), 'DATA_TeminDosyasi must have "butce_yili" column').toBe(
+      true
+    )
     expect(teminCols.has('tur'), 'DATA_TeminDosyasi must have "tur" column').toBe(true)
 
     const butceOdenek = schema.tables.find((t: any) => t.name === 'TANIM_ButceOdenek')
     expect(butceOdenek).toBeDefined()
     const odenekCols = new Set(butceOdenek.columns.map((c: any) => c.name))
     expect(odenekCols.has('birim_adi'), 'TANIM_ButceOdenek must have "birim_adi" column').toBe(true)
-    expect(odenekCols.has('butce_kodu'), 'TANIM_ButceOdenek must have "butce_kodu" column').toBe(true)
-    expect(odenekCols.has('yillik_odenek'), 'TANIM_ButceOdenek must have "yillik_odenek" column').toBe(true)
+    expect(odenekCols.has('butce_kodu'), 'TANIM_ButceOdenek must have "butce_kodu" column').toBe(
+      true
+    )
+    expect(
+      odenekCols.has('yillik_odenek'),
+      'TANIM_ButceOdenek must have "yillik_odenek" column'
+    ).toBe(true)
   })
 
   it('should have consistent schema version and migration manifests', () => {

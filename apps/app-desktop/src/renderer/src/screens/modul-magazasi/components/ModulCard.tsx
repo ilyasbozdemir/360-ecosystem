@@ -73,51 +73,65 @@ const COLOR_MAP: Record<
 > = {
   blue: {
     border: 'hover:border-blue-500/50',
-    badge: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/30',
+    badge:
+      'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/30',
     glow: 'from-blue-500/10 dark:from-blue-600/10 to-transparent',
-    iconBg: 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/30',
+    iconBg:
+      'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/30',
     text: 'text-blue-600 dark:text-blue-400'
   },
   emerald: {
     border: 'hover:border-emerald-500/50',
-    badge: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30',
+    badge:
+      'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30',
     glow: 'from-emerald-500/10 dark:from-emerald-600/10 to-transparent',
-    iconBg: 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-400 dark:border-emerald-500/30',
+    iconBg:
+      'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-400 dark:border-emerald-500/30',
     text: 'text-emerald-600 dark:text-emerald-400'
   },
   purple: {
     border: 'hover:border-purple-500/50',
-    badge: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/30',
+    badge:
+      'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/30',
     glow: 'from-purple-500/10 dark:from-purple-600/10 to-transparent',
-    iconBg: 'bg-purple-50 text-purple-600 border-purple-200 dark:bg-purple-500/20 dark:text-purple-400 dark:border-purple-500/30',
+    iconBg:
+      'bg-purple-50 text-purple-600 border-purple-200 dark:bg-purple-500/20 dark:text-purple-400 dark:border-purple-500/30',
     text: 'text-purple-600 dark:text-purple-400'
   },
   amber: {
     border: 'hover:border-amber-500/50',
-    badge: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/30',
+    badge:
+      'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/30',
     glow: 'from-amber-500/10 dark:from-amber-600/10 to-transparent',
-    iconBg: 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-500/20 dark:text-amber-400 dark:border-amber-500/30',
+    iconBg:
+      'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-500/20 dark:text-amber-400 dark:border-amber-500/30',
     text: 'text-amber-600 dark:text-amber-400'
   },
   cyan: {
     border: 'hover:border-cyan-500/50',
-    badge: 'bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-500/10 dark:text-cyan-400 dark:border-cyan-500/30',
+    badge:
+      'bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-500/10 dark:text-cyan-400 dark:border-cyan-500/30',
     glow: 'from-cyan-500/10 dark:from-cyan-600/10 to-transparent',
-    iconBg: 'bg-cyan-50 text-cyan-600 border-cyan-200 dark:bg-cyan-500/20 dark:text-cyan-400 dark:border-cyan-500/30',
+    iconBg:
+      'bg-cyan-50 text-cyan-600 border-cyan-200 dark:bg-cyan-500/20 dark:text-cyan-400 dark:border-cyan-500/30',
     text: 'text-cyan-600 dark:text-cyan-400'
   },
   rose: {
     border: 'hover:border-rose-500/50',
-    badge: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/30',
+    badge:
+      'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/30',
     glow: 'from-rose-500/10 dark:from-rose-600/10 to-transparent',
-    iconBg: 'bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-500/20 dark:text-rose-400 dark:border-rose-500/30',
+    iconBg:
+      'bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-500/20 dark:text-rose-400 dark:border-rose-500/30',
     text: 'text-rose-600 dark:text-rose-400'
   },
   indigo: {
     border: 'hover:border-indigo-500/50',
-    badge: 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/30',
+    badge:
+      'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/30',
     glow: 'from-indigo-500/10 dark:from-indigo-600/10 to-transparent',
-    iconBg: 'bg-indigo-50 text-indigo-600 border-indigo-200 dark:bg-indigo-500/20 dark:text-indigo-400 dark:border-indigo-500/30',
+    iconBg:
+      'bg-indigo-50 text-indigo-600 border-indigo-200 dark:bg-indigo-500/20 dark:text-indigo-400 dark:border-indigo-500/30',
     text: 'text-indigo-600 dark:text-indigo-400'
   }
 }
@@ -210,7 +224,9 @@ export const ModulCard: React.FC<ModulCardProps> = ({
                     ÇEKİRDEK
                   </span>
                 )}
-                <span className="text-slate-400 dark:text-slate-500 text-xs font-mono">{modul.versiyon}</span>
+                <span className="text-slate-400 dark:text-slate-500 text-xs font-mono">
+                  {modul.versiyon}
+                </span>
               </div>
               <span className="text-xs text-slate-500 dark:text-slate-400 font-medium block mt-0.5">
                 {modul.mevzuat}

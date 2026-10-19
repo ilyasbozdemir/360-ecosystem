@@ -26,9 +26,7 @@ export const routeComponents: Record<string, () => React.ReactElement> = {
   '/degiskenler': lazyRoute(() => import('../../screens/sablonlar/degiskenler.screen')),
   '/komisyonlar': lazyRoute(() => import('../../screens/komisyonlar/index.v2.screen')),
   '/komisyonlar/detay': lazyRoute(() => import('../../screens/komisyonlar/detay.screen')),
-  '/komisyon-gorevleri': lazyRoute(
-    () => import('../../screens/komisyon-gorevleri/index.screen')
-  ),
+  '/komisyon-gorevleri': lazyRoute(() => import('../../screens/komisyon-gorevleri/index.screen')),
   '/takip': lazyRoute(() => import('../../screens/system/TakipScreen'), 'TakipScreen'),
   '/taslakyonetim': lazyRoute(() => import('../../screens/system/TaslakYoneticisi')),
   '/raporlar': lazyRoute(() => import('../../screens/raporlar/index.screen')),
@@ -108,5 +106,7 @@ export const routeComponents: Record<string, () => React.ReactElement> = {
   '/dosya/belge-onizleme': lazyRoute(() => import('../../screens/dosya/BelgeOnizleme.screen')),
   '/modul-magazasi': lazyRoute(() => import('../../screens/modul-magazasi/index.screen')),
   '/belgelerim': lazyRoute(() => import('../../screens/belgelerim/BelgelerimScreen')),
-  '/ihtiyac-raporlari': lazyRoute(() => import('../../screens/ihtiyac-raporlari/IhtiyacRaporlariScreen'))
+  '/ihtiyac-raporlari': lazyRoute(
+    () => import('../../screens/ihtiyac-raporlari/IhtiyacRaporlariScreen')
+  )
 }

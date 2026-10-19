@@ -105,7 +105,7 @@ describe('DosyaSihirbaziModal (Unified Dosya Creation)', () => {
         on: vi.fn(),
         removeListener: vi.fn()
       }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any
   })
 

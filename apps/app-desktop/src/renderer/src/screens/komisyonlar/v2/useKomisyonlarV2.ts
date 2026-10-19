@@ -89,17 +89,15 @@ export function useKomisyonlarV2() {
         return str.includes('muayene') || str.includes('kabul')
       }
 
-      const piyasaDefaults: DosyaKomisyonMember[] = members
-        .filter(isPiyasaCheck)
-        .map((m: any) => ({
-          id: m.role_id,
-          personel_id: m.personel_id,
-          ad_soyad: m.ad_soyad,
-          unvan: m.unvan,
-          gorev_adi: m.gorev_adi,
-          asli_mi: m.asil_mi,
-          asli_yedek: m.asil_mi === 1 ? 'Asil' : 'Yedek'
-        }))
+      const piyasaDefaults: DosyaKomisyonMember[] = members.filter(isPiyasaCheck).map((m: any) => ({
+        id: m.role_id,
+        personel_id: m.personel_id,
+        ad_soyad: m.ad_soyad,
+        unvan: m.unvan,
+        gorev_adi: m.gorev_adi,
+        asli_mi: m.asil_mi,
+        asli_yedek: m.asil_mi === 1 ? 'Asil' : 'Yedek'
+      }))
 
       const muayeneDefaults: DosyaKomisyonMember[] = members
         .filter(isMuayeneCheck)

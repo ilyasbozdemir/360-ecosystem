@@ -188,9 +188,7 @@ export function YeniPozPreviewPanel({
           ) : (
             <Save size={16} />
           )}
-          <span>
-            {editId ? 'Değişiklikleri Kaydet' : 'Pozu & Fiyat Geçmişini Sisteme Ekle'}
-          </span>
+          <span>{editId ? 'Değişiklikleri Kaydet' : 'Pozu & Fiyat Geçmişini Sisteme Ekle'}</span>
         </Button>
       </div>
     </div>

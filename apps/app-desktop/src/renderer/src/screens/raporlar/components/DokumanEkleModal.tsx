@@ -8,7 +8,9 @@ interface DokumanEkleModalProps {
 }
 
 export function DokumanEkleModal({ isOpen, onClose, onSuccess }: DokumanEkleModalProps) {
-  const [dosyalar, setDosyalar] = useState<Array<{ id: number; dosya_no: string; is_adi: string }>>([])
+  const [dosyalar, setDosyalar] = useState<Array<{ id: number; dosya_no: string; is_adi: string }>>(
+    []
+  )
   const [seciliDosyaId, setSeciliDosyaId] = useState<string>('')
   const [belgeAdi, setBelgeAdi] = useState<string>('')
   const [dosyaYolu, setDosyaYolu] = useState<string>('')
@@ -63,7 +65,13 @@ export function DokumanEkleModal({ isOpen, onClose, onSuccess }: DokumanEkleModa
         'db:query',
         `INSERT INTO DATA_TeminBelge (temin_dosya_id, dosya_id, belge_adi, dosya_yolu, belge_tarihi) 
          VALUES (?, ?, ?, ?, ?)`,
-        [Number(seciliDosyaId), Number(seciliDosyaId), belgeAdi.trim(), dosyaYolu.trim(), belgeTarihi]
+        [
+          Number(seciliDosyaId),
+          Number(seciliDosyaId),
+          belgeAdi.trim(),
+          dosyaYolu.trim(),
+          belgeTarihi
+        ]
       )
 
       if (res.success) {

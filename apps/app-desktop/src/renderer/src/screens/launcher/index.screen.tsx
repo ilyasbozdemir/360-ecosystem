@@ -1,7 +1,6 @@
 import React from 'react'
 import { FolderOpen, PlusCircle } from 'lucide-react'
 import { NetworkSyncModal } from '../../components/network/NetworkSyncModal'
-import { FormatUpgradeModal } from '../../components/modals/FormatUpgradeModal'
 import { useLauncherLogic } from './useLauncherLogic'
 import { LauncherTitleBar } from './components/LauncherTitleBar'
 import { LauncherRecentFiles } from './components/LauncherRecentFiles'
@@ -18,10 +17,6 @@ export default function LauncherScreen(): React.ReactNode {
     setShowNetworkModal,
     pendingFilePath,
     setPendingFilePath,
-    showFormatUpgradeModal,
-    setShowFormatUpgradeModal,
-    upgradeFilePath,
-    setUpgradeFilePath,
     showMigrationModal,
     setShowMigrationModal,
     migrationData,
@@ -39,7 +34,6 @@ export default function LauncherScreen(): React.ReactNode {
     handleCreateNewFile,
     handleChangeSaveLocation,
     handleModalSubmit,
-    handleUpgradeAndOpen,
     handleOpenFile,
     handleOpenRecent,
     handleRemoveRecent,
@@ -102,7 +96,9 @@ export default function LauncherScreen(): React.ReactNode {
               </div>
               <div className="text-left">
                 <h3 className="font-bold text-base">Mevcut Kurumu Aç</h3>
-                <p className="text-xs opacity-80 mt-0.5">Önceden oluşturulmuş .temin dosyasını yükle</p>
+                <p className="text-xs opacity-80 mt-0.5">
+                  Önceden oluşturulmuş .temin dosyasını yükle
+                </p>
               </div>
             </button>
           </div>
@@ -150,17 +146,6 @@ export default function LauncherScreen(): React.ReactNode {
       />
 
       {showNetworkModal && <NetworkSyncModal onClose={() => setShowNetworkModal(false)} />}
-
-      {/* Eski Dosya Formatını .temin Yapma Zorunluluğu Modalı */}
-      <FormatUpgradeModal
-        isOpen={showFormatUpgradeModal}
-        filePath={upgradeFilePath}
-        onClose={() => {
-          setShowFormatUpgradeModal(false)
-          setUpgradeFilePath(null)
-        }}
-        onUpgradeAndOpen={handleUpgradeAndOpen}
-      />
     </div>
   )
 }

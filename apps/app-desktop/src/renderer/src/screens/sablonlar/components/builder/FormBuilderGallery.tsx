@@ -142,12 +142,7 @@ export const FormBuilderGallery: React.FC<FormBuilderGalleryProps> = ({
       filteredInput.length +
       filteredOfficial.length +
       filteredPresets.length,
-    [
-      filteredLayout.length,
-      filteredInput.length,
-      filteredOfficial.length,
-      filteredPresets.length
-    ]
+    [filteredLayout.length, filteredInput.length, filteredOfficial.length, filteredPresets.length]
   )
 
   const categories = useMemo(

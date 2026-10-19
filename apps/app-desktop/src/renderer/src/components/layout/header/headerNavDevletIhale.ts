@@ -94,7 +94,10 @@ export function getDevletIhale2886Menus(navigate: NavigateFn): HeaderMenu[] {
         {
           label: '📈 Yİ-ÜFE Kira Artış Oranları & Endeksler',
           onClick: (): Promise<void> =>
-            navigate({ to: APP_ROUTES.MEVZUAT, search: { tab: 'yi-ufe' } as Record<string, string> })
+            navigate({
+              to: APP_ROUTES.MEVZUAT,
+              search: { tab: 'yi-ufe' } as Record<string, string>
+            })
         }
       ]
     }

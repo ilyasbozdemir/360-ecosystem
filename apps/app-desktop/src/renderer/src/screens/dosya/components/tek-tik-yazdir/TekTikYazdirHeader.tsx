@@ -36,8 +36,8 @@ export const TekTikYazdirHeader: React.FC<TekTikYazdirHeaderProps> = ({
             )}
           </div>
           <p className="text-xs text-slate-400 mt-0.5">
-            Resmi evraklarınızı canlı sayfa düzeninde önizleyin, yazdırma ayarlarını yapılandırın
-            ve tek seferde yazdırın.
+            Resmi evraklarınızı canlı sayfa düzeninde önizleyin, yazdırma ayarlarını yapılandırın ve
+            tek seferde yazdırın.
           </p>
         </div>
       </div>

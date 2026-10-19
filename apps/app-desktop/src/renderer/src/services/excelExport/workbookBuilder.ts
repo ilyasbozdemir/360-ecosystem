@@ -4,21 +4,12 @@ import type { ExportContext, MasterExcelExportData } from './types'
 import { buildDashboardSheet } from './sheets/dashboardSheet'
 import { buildKalemlerSheet } from './sheets/kalemlerSheet'
 import { buildTekliflerSheet } from './sheets/tekliflerSheet'
-import {
-  buildA4IhtiyacSheet,
-  buildA4OnaySheet,
-  buildA4PiyasaSheet
-} from './sheets/a4Sheets'
+import { buildA4IhtiyacSheet, buildA4OnaySheet, buildA4PiyasaSheet } from './sheets/a4Sheets'
 import { buildKomisyonSheet } from './sheets/komisyonSheet'
 import { buildSablonSheet } from './sheets/sablonSheet'
 
 export function createExportContext(data: MasterExcelExportData): ExportContext {
-  const {
-    dosya,
-    kalemler = [],
-    firmalar = [],
-    kurum
-  } = data
+  const { dosya, kalemler = [], firmalar = [], kurum } = data
 
   const dosyaNoStr = formatDosyaNo(dosya)
   const kurumAdi = (kurum?.ad || kurum?.kurum_adi || 'T.C. KAMU İDARESİ').toUpperCase()

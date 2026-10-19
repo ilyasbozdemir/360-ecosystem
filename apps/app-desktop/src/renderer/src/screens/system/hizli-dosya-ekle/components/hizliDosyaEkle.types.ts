@@ -64,7 +64,13 @@ export const normalizeTeminTuru = (raw?: string | null): string => {
   const lower = raw.trim().toLowerCase()
   if (lower.startsWith('mal')) return 'Mal'
   if (lower.startsWith('hizmet')) return 'Hizmet'
-  if (lower.startsWith('yap') || lower.includes('yapım') || lower.includes('insaat') || lower.includes('inşaat')) return 'Yapım İşi'
+  if (
+    lower.startsWith('yap') ||
+    lower.includes('yapım') ||
+    lower.includes('insaat') ||
+    lower.includes('inşaat')
+  )
+    return 'Yapım İşi'
   if (lower.startsWith('dan') || lower.includes('danışman')) return 'Danışmanlık'
   return teminKisaLabel(raw, 'Mal')
 }

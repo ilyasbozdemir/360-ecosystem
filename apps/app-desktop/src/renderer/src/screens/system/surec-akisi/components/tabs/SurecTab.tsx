@@ -209,7 +209,8 @@ export const SurecTab: React.FC<SurecTabProps> = ({
               Aşamalara Göre Resmi Belgeler & İmzalı PDF Takibi
             </h4>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Tek tek indirmek yerine Çıktı Merkezi ile toplu alabilir, yükleme sonrası içerik kontrol tikleri ile eksiksiz takip edebilirsiniz.
+              Tek tek indirmek yerine Çıktı Merkezi ile toplu alabilir, yükleme sonrası içerik
+              kontrol tikleri ile eksiksiz takip edebilirsiniz.
             </p>
           </div>
 
@@ -247,7 +248,9 @@ export const SurecTab: React.FC<SurecTabProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredBelgeler.map((b) => {
             const checks = belgeChecklist[b.id] || {}
-            const totalDone = [checks.imza, checks.onay, checks.ekler, checks.teslim].filter(Boolean).length
+            const totalDone = [checks.imza, checks.onay, checks.ekler, checks.teslim].filter(
+              Boolean
+            ).length
 
             return (
               <div
@@ -285,7 +288,9 @@ export const SurecTab: React.FC<SurecTabProps> = ({
                     <span className="truncate flex items-center gap-1.5 font-bold">
                       <FileCheck2 size={13} className="text-emerald-600" /> {b.pdfDosyaAdi}
                     </span>
-                    <span className="shrink-0 text-slate-400 font-mono text-[9.5px]">{b.pdfBoyut}</span>
+                    <span className="shrink-0 text-slate-400 font-mono text-[9.5px]">
+                      {b.pdfBoyut}
+                    </span>
                   </div>
                 )}
 
@@ -295,7 +300,9 @@ export const SurecTab: React.FC<SurecTabProps> = ({
                     <span className="flex items-center gap-1">
                       <CheckSquare size={11} className="text-blue-500" /> İçerik & Evrak Kontrolü
                     </span>
-                    <span className={`px-1.5 py-0.2 rounded-full font-extrabold ${totalDone === 4 ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-600'}`}>
+                    <span
+                      className={`px-1.5 py-0.2 rounded-full font-extrabold ${totalDone === 4 ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-600'}`}
+                    >
                       {totalDone}/4 Hazır
                     </span>
                   </div>
@@ -312,7 +319,9 @@ export const SurecTab: React.FC<SurecTabProps> = ({
                       }`}
                       title="Islak / e-İmza Tamamlandı"
                     >
-                      <span className={`w-3.5 h-3.5 rounded flex items-center justify-center text-[9px] shrink-0 ${checks.imza ? 'bg-emerald-600 text-white' : 'border border-slate-300 dark:border-slate-600'}`}>
+                      <span
+                        className={`w-3.5 h-3.5 rounded flex items-center justify-center text-[9px] shrink-0 ${checks.imza ? 'bg-emerald-600 text-white' : 'border border-slate-300 dark:border-slate-600'}`}
+                      >
                         {checks.imza ? '✓' : ''}
                       </span>
                       <span className="truncate">İmzalı Nüsha</span>
@@ -329,7 +338,9 @@ export const SurecTab: React.FC<SurecTabProps> = ({
                       }`}
                       title="Onay & Sayı Alındı"
                     >
-                      <span className={`w-3.5 h-3.5 rounded flex items-center justify-center text-[9px] shrink-0 ${checks.onay ? 'bg-blue-600 text-white' : 'border border-slate-300 dark:border-slate-600'}`}>
+                      <span
+                        className={`w-3.5 h-3.5 rounded flex items-center justify-center text-[9px] shrink-0 ${checks.onay ? 'bg-blue-600 text-white' : 'border border-slate-300 dark:border-slate-600'}`}
+                      >
                         {checks.onay ? '✓' : ''}
                       </span>
                       <span className="truncate">Sayı / Onay</span>
@@ -346,7 +357,9 @@ export const SurecTab: React.FC<SurecTabProps> = ({
                       }`}
                       title="Ekler & Tutanaklar Tam"
                     >
-                      <span className={`w-3.5 h-3.5 rounded flex items-center justify-center text-[9px] shrink-0 ${checks.ekler ? 'bg-indigo-600 text-white' : 'border border-slate-300 dark:border-slate-600'}`}>
+                      <span
+                        className={`w-3.5 h-3.5 rounded flex items-center justify-center text-[9px] shrink-0 ${checks.ekler ? 'bg-indigo-600 text-white' : 'border border-slate-300 dark:border-slate-600'}`}
+                      >
                         {checks.ekler ? '✓' : ''}
                       </span>
                       <span className="truncate">Ekler Tam</span>
@@ -363,7 +376,9 @@ export const SurecTab: React.FC<SurecTabProps> = ({
                       }`}
                       title="Fiziki Dosyalandı & Teslim Edildi"
                     >
-                      <span className={`w-3.5 h-3.5 rounded flex items-center justify-center text-[9px] shrink-0 ${checks.teslim ? 'bg-purple-600 text-white' : 'border border-slate-300 dark:border-slate-600'}`}>
+                      <span
+                        className={`w-3.5 h-3.5 rounded flex items-center justify-center text-[9px] shrink-0 ${checks.teslim ? 'bg-purple-600 text-white' : 'border border-slate-300 dark:border-slate-600'}`}
+                      >
                         {checks.teslim ? '✓' : ''}
                       </span>
                       <span className="truncate">Dosyalandı</span>

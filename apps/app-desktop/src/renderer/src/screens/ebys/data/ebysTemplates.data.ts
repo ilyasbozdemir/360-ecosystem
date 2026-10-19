@@ -487,7 +487,7 @@ export const EBYS_TEMPLATES: EbysTemplate[] = [
       konu: 'Piyasa Fiyat Araştırma Görevlendirmesi ve Alım Onayı',
       muhatap: 'BÖLGE MÜDÜRLÜĞÜ MAKAMINA',
       metin:
-        'Bölge Müdürlüğümüz bünyesinde yürütülmekte olan taşkın koruma tesislerinin periyodik bakımında kullanılmak üzere ihtiyaç duyulan hidrolik vana ve yedek parçaların, 4734 sayılı Kamu İhale Kanununun 22/d maddesi uyarınca doğrudan temin usulüyle satın alınması planlanmaktadır.\n\nSöz konusu alım için piyasa fiyat araştırması yapmak ve yaklaşık maliyeti tespit etmek üzere Şube Müdürümüz Sn. Ali KILIÇ ve Mühendis Sn. Zehra GÜL\'ün görevlendirilmesi hususunu tensiplerinize arz ederim.',
+        "Bölge Müdürlüğümüz bünyesinde yürütülmekte olan taşkın koruma tesislerinin periyodik bakımında kullanılmak üzere ihtiyaç duyulan hidrolik vana ve yedek parçaların, 4734 sayılı Kamu İhale Kanununun 22/d maddesi uyarınca doğrudan temin usulüyle satın alınması planlanmaktadır.\n\nSöz konusu alım için piyasa fiyat araştırması yapmak ve yaklaşık maliyeti tespit etmek üzere Şube Müdürümüz Sn. Ali KILIÇ ve Mühendis Sn. Zehra GÜL'ün görevlendirilmesi hususunu tensiplerinize arz ederim.",
       sonucParagrafi: 'Tensiplerinize arz ederim.',
       imzaAdi: 'Kemal AKSOY',
       imzaUnvani: 'Makine İkmal Şube Müdürü',
@@ -785,7 +785,10 @@ export const EBYS_TEMPLATES: EbysTemplate[] = [
         'Ek-1: Kış Tedbirleri Denetim Formu (3 Sayfa)',
         'Ek-2: Jeneratör ve Gaz Sistemleri Bakım Yönergesi (8 Sayfa)'
       ],
-      dagitimGeregi: ['81 İl Valiliğine (İl Sağlık Müdürlükleri)', 'Şehir Hastaneleri Koordinatörlüklerine'],
+      dagitimGeregi: [
+        '81 İl Valiliğine (İl Sağlık Müdürlükleri)',
+        'Şehir Hastaneleri Koordinatörlüklerine'
+      ],
       dagitimBilgi: ['Sağlık Hizmetleri Genel Müdürlüğüne', 'Teftiş Kurulu Başkanlığına'],
       iletisimAdres: 'Bilkent Yerleşkesi Üniversiteler Mah. Çankaya / ANKARA',
       evrakDogrulamaKodu: 'F990-2810-0012'
@@ -890,7 +893,7 @@ export const EBYS_TEMPLATES: EbysTemplate[] = [
       konu: 'Geçici Görevlendirme (İzmir Teknopark)',
       muhatap: 'BAŞKANLIK MAKAMINA',
       metin:
-        'Enstitümüz Siber Güvenlik Laboratuvarında görevli Başuzman Araştırmacı Dr. Emre KOÇ ve Uzman Canan AYDIN\'ın, TÜBİTAK ARDEB 1001 projesi saha doğrulama testlerini icra etmek üzere 18.10.2026 - 22.10.2026 tarihleri arasında İzmir ilinde geçici olarak görevlendirilmeleri planlanmaktadır.\n\nİlgililerin gidiş-dönüş uçak biletleri ile Harcırah Kanunu uyarınca yevmiye ve konaklama giderlerinin ilgili proje bütçesinden karşılanması hususunda olurlarınızı arz ederim.',
+        "Enstitümüz Siber Güvenlik Laboratuvarında görevli Başuzman Araştırmacı Dr. Emre KOÇ ve Uzman Canan AYDIN'ın, TÜBİTAK ARDEB 1001 projesi saha doğrulama testlerini icra etmek üzere 18.10.2026 - 22.10.2026 tarihleri arasında İzmir ilinde geçici olarak görevlendirilmeleri planlanmaktadır.\n\nİlgililerin gidiş-dönüş uçak biletleri ile Harcırah Kanunu uyarınca yevmiye ve konaklama giderlerinin ilgili proje bütçesinden karşılanması hususunda olurlarınızı arz ederim.",
       sonucParagrafi: 'Olurlarınıza arz ederim.',
       imzaAdi: 'Prof. Dr. Selim KAYA',
       imzaUnvani: 'Enstitü Müdürü',

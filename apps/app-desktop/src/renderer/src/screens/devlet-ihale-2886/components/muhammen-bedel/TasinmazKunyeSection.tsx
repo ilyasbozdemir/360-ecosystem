@@ -197,9 +197,7 @@ export const TasinmazKunyeSection: React.FC<TasinmazKunyeSectionProps> = ({
           <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-              <span className="font-bold text-slate-800 dark:text-slate-200">
-                Kiralama Süresi:
-              </span>
+              <span className="font-bold text-slate-800 dark:text-slate-200">Kiralama Süresi:</span>
               <select
                 value={kiralamaSuresiYil}
                 onChange={(e) => setKiralamaSuresiYil(Number(e.target.value))}

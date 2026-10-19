@@ -5,14 +5,8 @@ import { DocumentPreviewModalV3 } from './components/DocumentPreviewModalV3'
 import { APP_ROUTES } from '@renderer/constants/routeConstants'
 
 export function BelgeOnizlemeScreen(): React.JSX.Element | null {
-  const {
-    tabs,
-    activeTabId,
-    switchTab,
-    closeTab,
-    openDocument,
-    closeDocument
-  } = useGlobalDocumentPreviewStore()
+  const { tabs, activeTabId, switchTab, closeTab, openDocument, closeDocument } =
+    useGlobalDocumentPreviewStore()
   const { activeTabPath, closeTab: closeAppTab } = useTabStore()
 
   // URL'den olası parametreleri oku
@@ -22,7 +16,9 @@ export function BelgeOnizlemeScreen(): React.JSX.Element | null {
 
   const urlDocId = searchParams.get('doc') || searchParams.get('documentId') || null
   const urlDosyaId = searchParams.get('id') ? Number(searchParams.get('id')) : null
-  const urlTitle = searchParams.get('title') ? decodeURIComponent(searchParams.get('title') || '') : undefined
+  const urlTitle = searchParams.get('title')
+    ? decodeURIComponent(searchParams.get('title') || '')
+    : undefined
 
   // Eğer store'da henüz sekme yoksa ama URL'de parametre varsa otomatik olarak store'a yükle
   useEffect(() => {
@@ -121,6 +117,7 @@ export function BelgeOnizlemeScreen(): React.JSX.Element | null {
       isOpen={true}
       documentId={activeTab.documentId}
       dosyaId={activeTab.dosyaId}
+      currentStage={activeTab.stage || undefined}
       invitedFirms={activeTab.invitedFirms}
       selectedFirma={activeTab.selectedFirma}
       initialData={activeTab.initialData || undefined}

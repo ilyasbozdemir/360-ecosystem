@@ -1,11 +1,5 @@
 import React from 'react'
-import {
-  CheckCircle2,
-  Download,
-  Palette,
-  Sliders,
-  Upload
-} from 'lucide-react'
+import { CheckCircle2, Download, Palette, Sliders, Upload } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { useTemaScreen } from './theme/useTemaScreen'
 import { TemaPresetsTab } from './theme/components/TemaPresetsTab'

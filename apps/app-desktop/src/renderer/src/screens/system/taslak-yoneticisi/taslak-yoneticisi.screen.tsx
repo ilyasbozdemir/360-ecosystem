@@ -19,12 +19,7 @@ export default function TaslakYoneticisi(): React.JSX.Element {
   const { data: sablonlar = [] } = useSablonlar()
   const { activeDosyaId, activeStarredDocs, setActiveStarredDocs } = useWorkspaceStore()
 
-  const {
-    sablons,
-    handleOpenPreviewForSablon,
-    quickPrint,
-    quickExport
-  } = useDosyaAsamasiSablons()
+  const { sablons, handleOpenPreviewForSablon, quickPrint, quickExport } = useDosyaAsamasiSablons()
 
   const [activeStage, setActiveStage] = useState<string>('1. İhtiyaç Tespiti & Başlangıç')
   const [isEditing, setIsEditing] = useState<boolean>(false)

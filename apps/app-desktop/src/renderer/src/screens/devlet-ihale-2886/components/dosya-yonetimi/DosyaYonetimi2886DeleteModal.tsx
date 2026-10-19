@@ -26,9 +26,7 @@ export const DosyaYonetimi2886DeleteModal: React.FC<DosyaYonetimi2886DeleteModal
             <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100">
               2886 İhale Dosyasını Sil
             </h4>
-            <p className="text-xs text-slate-500 font-mono">
-              {deleteModalDosya.ihaleKayitNo}
-            </p>
+            <p className="text-xs text-slate-500 font-mono">{deleteModalDosya.ihaleKayitNo}</p>
           </div>
         </div>
 
@@ -36,7 +34,8 @@ export const DosyaYonetimi2886DeleteModal: React.FC<DosyaYonetimi2886DeleteModal
           <span className="font-bold text-slate-800 dark:text-slate-100 block mb-1">
             {deleteModalDosya.ihaleAdi}
           </span>
-          Bu 2886 ihale dosyasını sistemden ve tüm ilişkili verilerinden tamamen silmek istediğinize emin misiniz?
+          Bu 2886 ihale dosyasını sistemden ve tüm ilişkili verilerinden tamamen silmek istediğinize
+          emin misiniz?
         </p>
 
         <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">

@@ -333,8 +333,7 @@ export function YiUfeFiyatGuncellemeModal({
                     : 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300'
                 }`}
               >
-                {percentChange >= 0 ? '+' : ''}
-                %{percentChange.toFixed(2)}
+                {percentChange >= 0 ? '+' : ''}%{percentChange.toFixed(2)}
               </span>
             </div>
 
@@ -398,9 +397,7 @@ export function YiUfeFiyatGuncellemeModal({
                 <input
                   type="checkbox"
                   id="select-all"
-                  checked={
-                    selectedKalemIds.size === kalemler.length && kalemler.length > 0
-                  }
+                  checked={selectedKalemIds.size === kalemler.length && kalemler.length > 0}
                   onChange={toggleSelectAll}
                   className="w-4 h-4 text-cyan-600 rounded cursor-pointer"
                 />

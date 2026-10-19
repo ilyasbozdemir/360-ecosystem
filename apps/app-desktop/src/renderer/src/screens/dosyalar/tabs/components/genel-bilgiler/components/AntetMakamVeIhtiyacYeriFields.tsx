@@ -31,10 +31,9 @@ export const AntetMakamVeIhtiyacYeriFields: React.FC<YeniDosyaTabProps> = (props
         {(() => {
           const makamOptions = Array.from(
             new Set(
-              [
-                kurum?.makam_adi,
-                ...(birimler ? birimler.map((b) => b.sunum_makami) : [])
-              ].filter(Boolean)
+              [kurum?.makam_adi, ...(birimler ? birimler.map((b) => b.sunum_makami) : [])].filter(
+                Boolean
+              )
             )
           )
           const isCustom =
@@ -96,9 +95,7 @@ export const AntetMakamVeIhtiyacYeriFields: React.FC<YeniDosyaTabProps> = (props
               if (seciliBirim.ihtiyac_yeri_eki.startsWith('[')) {
                 seciliBirimYerleri = JSON.parse(seciliBirim.ihtiyac_yeri_eki)
               } else {
-                seciliBirimYerleri = seciliBirim.ihtiyac_yeri_eki
-                  .split(',')
-                  .map((s) => s.trim())
+                seciliBirimYerleri = seciliBirim.ihtiyac_yeri_eki.split(',').map((s) => s.trim())
               }
             } catch {
               seciliBirimYerleri = [seciliBirim.ihtiyac_yeri_eki]
@@ -116,9 +113,7 @@ export const AntetMakamVeIhtiyacYeriFields: React.FC<YeniDosyaTabProps> = (props
                       tumBirimYerleri.push(...parsed)
                     }
                   } else {
-                    tumBirimYerleri.push(
-                      ...b.ihtiyac_yeri_eki.split(',').map((s) => s.trim())
-                    )
+                    tumBirimYerleri.push(...b.ihtiyac_yeri_eki.split(',').map((s) => s.trim()))
                   }
                 } catch {
                   tumBirimYerleri.push(b.ihtiyac_yeri_eki)
@@ -146,8 +141,7 @@ export const AntetMakamVeIhtiyacYeriFields: React.FC<YeniDosyaTabProps> = (props
               ].filter(Boolean) as string[]
             )
           )
-          const isCustom =
-            formData.ihtiyac_yeri && !ihtiyacOptions.includes(formData.ihtiyac_yeri)
+          const isCustom = formData.ihtiyac_yeri && !ihtiyacOptions.includes(formData.ihtiyac_yeri)
 
           return (
             <div className="space-y-2">

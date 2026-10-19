@@ -169,7 +169,9 @@ export const VitestRunnerCard: React.FC = () => {
                         {file.testsCount} test
                       </span>
                       {file.duration && (
-                        <span className="text-[11px] font-mono text-slate-400">{file.duration}</span>
+                        <span className="text-[11px] font-mono text-slate-400">
+                          {file.duration}
+                        </span>
                       )}
                     </div>
                   </div>

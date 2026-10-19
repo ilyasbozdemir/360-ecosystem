@@ -8,11 +8,7 @@ interface DraftsModalProps {
   onSelectDraft: (draft: EbysDraftItem) => void
 }
 
-export const DraftsModal: React.FC<DraftsModalProps> = ({
-  isOpen,
-  onClose,
-  onSelectDraft
-}) => {
+export const DraftsModal: React.FC<DraftsModalProps> = ({ isOpen, onClose, onSelectDraft }) => {
   const { drafts, deleteDraft } = useEbysStudioStore()
 
   if (!isOpen) return null
@@ -56,7 +52,8 @@ export const DraftsModal: React.FC<DraftsModalProps> = ({
                 Henüz kaydedilmiş bir taslak çalışma bulunmuyor.
               </p>
               <p className="text-[11px] text-slate-400 max-w-xs mx-auto">
-                TipTap editöründe hazırladığınız yazıları "Taslağı Kaydet" butonu ile saklayabilirsiniz.
+                TipTap editöründe hazırladığınız yazıları "Taslağı Kaydet" butonu ile
+                saklayabilirsiniz.
               </p>
             </div>
           ) : (

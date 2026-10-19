@@ -107,37 +107,33 @@ export function useKomisyonlarScreenLogic() {
              'fiyat araştırma ve yaklaşık maliyet tespit komisyonu'
            )
            ORDER BY CASE WHEN LOWER(TRIM(ad)) LIKE '%yaklaşık%' THEN 1 ELSE 2 END, id ASC`
-        );
+        )
 
         let primaryYaklasikId = 1
-        if (
-          yaklasikListRes.success &&
-          yaklasikListRes.data &&
-          yaklasikListRes.data.length > 0
-        ) {
+        if (yaklasikListRes.success && yaklasikListRes.data && yaklasikListRes.data.length > 0) {
           primaryYaklasikId = yaklasikListRes.data[0].id
           await window.electron.ipcRenderer.invoke(
             'db:run',
             "UPDATE TANIM_Komisyon SET ad = 'Yaklaşık Maliyet Tespit Komisyonu', aktif_mi = 1 WHERE id = ?",
             [primaryYaklasikId]
-          );
+          )
           for (let i = 1; i < yaklasikListRes.data.length; i++) {
             const dupId = yaklasikListRes.data[i].id
             await window.electron.ipcRenderer.invoke(
               'db:run',
               'UPDATE OR IGNORE TANIM_KomisyonUye SET komisyon_id = ? WHERE komisyon_id = ?',
               [primaryYaklasikId, dupId]
-            );
+            )
             await window.electron.ipcRenderer.invoke(
               'db:run',
               'DELETE FROM TANIM_Komisyon_Sablon WHERE komisyon_id = ?',
               [dupId]
-            );
+            )
             await window.electron.ipcRenderer.invoke(
               'db:run',
               'DELETE FROM TANIM_Komisyon WHERE id = ?',
               [dupId]
-            );
+            )
           }
         }
 
@@ -150,37 +146,33 @@ export function useKomisyonlarScreenLogic() {
              'muayene ve kabul komisyonu'
            )
            ORDER BY id ASC`
-        );
+        )
 
         let primaryMuayeneId = 2
-        if (
-          muayeneListRes.success &&
-          muayeneListRes.data &&
-          muayeneListRes.data.length > 0
-        ) {
+        if (muayeneListRes.success && muayeneListRes.data && muayeneListRes.data.length > 0) {
           primaryMuayeneId = muayeneListRes.data[0].id
           await window.electron.ipcRenderer.invoke(
             'db:run',
             "UPDATE TANIM_Komisyon SET ad = 'Muayene Kabul ve Tespit Komisyonu', aktif_mi = 1 WHERE id = ?",
             [primaryMuayeneId]
-          );
+          )
           for (let i = 1; i < muayeneListRes.data.length; i++) {
             const dupId = muayeneListRes.data[i].id
             await window.electron.ipcRenderer.invoke(
               'db:run',
               'UPDATE OR IGNORE TANIM_KomisyonUye SET komisyon_id = ? WHERE komisyon_id = ?',
               [primaryMuayeneId, dupId]
-            );
+            )
             await window.electron.ipcRenderer.invoke(
               'db:run',
               'DELETE FROM TANIM_Komisyon_Sablon WHERE komisyon_id = ?',
               [dupId]
-            );
+            )
             await window.electron.ipcRenderer.invoke(
               'db:run',
               'DELETE FROM TANIM_Komisyon WHERE id = ?',
               [dupId]
-            );
+            )
           }
         }
 
@@ -191,7 +183,7 @@ export function useKomisyonlarScreenLogic() {
            WHERE rowid NOT IN (
              SELECT MIN(rowid) FROM TANIM_Komisyon_Sablon GROUP BY komisyon_id, sablon_id
            )`
-        );
+        )
       } catch (normErr) {
         console.warn('Komisyon normalizasyonu hatası:', normErr)
       }
@@ -199,7 +191,7 @@ export function useKomisyonlarScreenLogic() {
       const res = await window.electron.ipcRenderer.invoke(
         'db:query',
         'SELECT * FROM TANIM_Komisyon WHERE aktif_mi = 1 ORDER BY id ASC'
-      );
+      )
       if (!res.success) throw new Error(res.error)
 
       const membersRes = await window.electron.ipcRenderer.invoke(
@@ -209,16 +201,14 @@ export function useKomisyonlarScreenLogic() {
          LEFT JOIN TANIM_Personel p ON u.personel_id = p.id
          JOIN TANIM_KomisyonGorevi g ON u.gorev_id = g.id
          ORDER BY u.id ASC`
-      );
+      )
 
       const sablonlarRes = await window.electron.ipcRenderer.invoke(
         'db:query',
         'SELECT komisyon_id, sablon_id FROM TANIM_Komisyon_Sablon'
-      );
+      )
       const rawSablonData: Array<{ komisyon_id: number; sablon_id: string }> =
-        sablonlarRes.success && Array.isArray(sablonlarRes.data)
-          ? sablonlarRes.data
-          : []
+        sablonlarRes.success && Array.isArray(sablonlarRes.data) ? sablonlarRes.data : []
 
       const allRegistryTemplates = TemplateRegistryService.getAllTemplates()
 
@@ -279,7 +269,7 @@ export function useKomisyonlarScreenLogic() {
        FROM DATA_TeminDosyasi d
        WHERE COALESCE(d.is_deleted, 0) = 0
        ORDER BY d.id DESC`
-      );
+      )
       if (!dosyaRes.success) return []
       const dosyalar = dosyaRes.data || []
 
@@ -292,7 +282,7 @@ export function useKomisyonlarScreenLogic() {
        FROM DATA_TeminKomisyon k
        LEFT JOIN TANIM_Personel p ON k.personel_id = p.id
        ORDER BY k.id ASC`
-      );
+      )
       const members = membersRes.success ? membersRes.data || [] : []
 
       return dosyalar.map((d: any) => {
@@ -331,7 +321,7 @@ export function useKomisyonlarScreenLogic() {
         'db:query',
         `SELECT * FROM DATA_TeminKomisyonHistory WHERE temin_dosya_id = ? ORDER BY id DESC`,
         [historyDosya?.id]
-      );
+      )
       return res.success ? res.data : []
     }
   })
@@ -363,10 +353,7 @@ export function useKomisyonlarScreenLogic() {
     return <ShieldCheck className="w-5 h-5 shrink-0" />
   }
 
-  const isKomisyonMatchingMode = (
-    k: any,
-    mode: 'all' | 'dogrudan_temin' | 'ihale'
-  ): boolean => {
+  const isKomisyonMatchingMode = (k: any, mode: 'all' | 'dogrudan_temin' | 'ihale'): boolean => {
     if (mode === 'all') return true
     const text = `${k.ad || ''} ${k.aciklama || ''}`.toLowerCase()
     if (mode === 'dogrudan_temin') {
@@ -428,7 +415,7 @@ export function useKomisyonlarScreenLogic() {
         'db:run',
         "UPDATE TANIM_Komisyon SET aktif_mi = 0, ad = ad || ' (Silindi ' || id || ')' WHERE id = ?",
         [komisyonId]
-      );
+      )
       if (res.success) {
         queryClient.invalidateQueries({ queryKey: ['komisyonlar'] })
       } else {

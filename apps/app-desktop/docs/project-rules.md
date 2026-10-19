@@ -26,7 +26,7 @@ göz önünde bulunduracağım.
 
 - **Çevrimdışı (Offline) Çalışma:** Uygulama tamamen çevrimdışı çalışmalıdır.
   Hiçbir veri buluta veya dış sunucuya gönderilmeyecektir.
-- **.dtal Dosya Formatı:** Veriler ZIP tabanlı `.dtal` dosyalarında
+- **.temin Dosya Formatı:** Veriler ZIP tabanlı `.temin` dosyalarında
   tutulacaktır. Bu dosya içinde `database.sqlite` (ana veri) ve `attachments/`
   (ekler) bulunacaktır.
 - **Mevzuata Uygunluk:** 4734 Sayılı Kamu İhale Kanunu Madde 22 kapsamında

@@ -87,11 +87,15 @@ describe('BelgeVeSablonStudyo - Modular Components and Data', () => {
     const customContentDosya: Partial<Dosya2886Item> = {
       belgeIcerikHtml: '<p>Özel Belge İçeriği</p>'
     }
-    expect(getEditorContentForDosya(customContentDosya as Dosya2886Item)).toBe('<p>Özel Belge İçeriği</p>')
+    expect(getEditorContentForDosya(customContentDosya as Dosya2886Item)).toBe(
+      '<p>Özel Belge İçeriği</p>'
+    )
 
     const templateCodeDosya: Partial<Dosya2886Item> = {
       aktifSablonKodu: '2886-EVR-02'
     }
-    expect(getEditorContentForDosya(templateCodeDosya as Dosya2886Item)).toContain('TAŞINMAZ {{islem_turu_adi}} İHALE ŞARTNAMESİ')
+    expect(getEditorContentForDosya(templateCodeDosya as Dosya2886Item)).toContain(
+      'TAŞINMAZ {{islem_turu_adi}} İHALE ŞARTNAMESİ'
+    )
   })
 })

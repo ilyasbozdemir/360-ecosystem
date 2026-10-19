@@ -10,10 +10,7 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1, // Electron pencereleri tekil çalıştırılır
   retries: 0,
-  reporter: [
-    ['list'],
-    ['html', { outputFolder: 'e2e-report', open: 'never' }]
-  ],
+  reporter: [['list'], ['html', { outputFolder: 'e2e-report', open: 'never' }]],
   use: {
     trace: 'retain-on-failure',
     screenshot: 'on',

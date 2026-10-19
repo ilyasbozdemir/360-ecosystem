@@ -23,9 +23,6 @@ const DisclaimerModal = React.lazy(() =>
 const GoogleDriveModal = React.lazy(() =>
   import('../ui/GoogleDriveModal').then((m) => ({ default: m.GoogleDriveModal }))
 )
-const FormatUpgradeModal = React.lazy(() =>
-  import('../modals/FormatUpgradeModal').then((m) => ({ default: m.FormatUpgradeModal }))
-)
 const SayiyiYaziyaCevirModal = React.lazy(() =>
   import('../modals/SayiyiYaziyaCevirModal').then((m) => ({ default: m.SayiyiYaziyaCevirModal }))
 )
@@ -96,12 +93,7 @@ export function PageWrapper(): React.ReactNode {
 
   const { expiredPaths } = useInactiveTabCleaner(tabs, activeTabPath)
 
-  const {
-    showFormatUpgradeModal,
-    setShowFormatUpgradeModal,
-    upgradeFilePath,
-    handleUpgradeAndOpen
-  } = useWorkspaceLifecycle(isAnyWindowMode, navigate, queryClient)
+  useWorkspaceLifecycle(isAnyWindowMode, navigate, queryClient)
 
   useEffect(() => {
     if (activeFilePath && isAuthenticated) {
@@ -199,14 +191,6 @@ export function PageWrapper(): React.ReactNode {
         onConfirm={handleConfirmClose}
       />
       <GoogleDriveModal isOpen={isGDriveModalOpen} onClose={() => setIsGDriveModalOpen(false)} />
-      <FormatUpgradeModal
-        isOpen={showFormatUpgradeModal}
-        filePath={upgradeFilePath}
-        onClose={() => {
-          setShowFormatUpgradeModal(false)
-        }}
-        onUpgradeAndOpen={handleUpgradeAndOpen}
-      />
       <ShutdownOverlay
         isOpen={isShuttingDown}
         fileName={fileName}

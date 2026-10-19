@@ -153,7 +153,8 @@ export const BirimDetail: React.FC<BirimDetailProps> = ({
 
           {viewingBirim.ihtiyac_yeri_eki &&
             viewingBirim.ihtiyac_yeri_eki !== '[]' &&
-            viewingBirim.ihtiyac_yeri_eki !== '[""]' && (() => {
+            viewingBirim.ihtiyac_yeri_eki !== '[""]' &&
+            (() => {
               let items: string[] = []
               try {
                 if (viewingBirim.ihtiyac_yeri_eki.startsWith('[')) {
@@ -164,7 +165,10 @@ export const BirimDetail: React.FC<BirimDetailProps> = ({
                 }
               } catch {}
               if (items.length === 0) {
-                items = viewingBirim.ihtiyac_yeri_eki.split('\n').map((y: string) => y.trim()).filter(Boolean)
+                items = viewingBirim.ihtiyac_yeri_eki
+                  .split('\n')
+                  .map((y: string) => y.trim())
+                  .filter(Boolean)
               }
               if (items.length === 0) return null
 

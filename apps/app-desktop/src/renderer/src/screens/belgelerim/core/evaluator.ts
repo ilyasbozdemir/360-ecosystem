@@ -1,30 +1,24 @@
-import {
-  KosulKurali,
-  KosulGrubu,
-  KosulTanimi,
-  RenderContext
-} from './types'
+import { KosulKurali, KosulGrubu, KosulTanimi, RenderContext } from './types'
 
 /**
  * eval ve new Function KULLANMAYAN güvenli tekil kural değerlendiricisi
  */
-export function evaluateSingleRule(
-  rule: KosulKurali,
-  context: RenderContext
-): boolean {
+export function evaluateSingleRule(rule: KosulKurali, context: RenderContext): boolean {
   const rawValue = context[rule.kaynak]
   const targetValue = rule.deger
 
   switch (rule.op) {
     case 'eq': {
       if (rawValue === targetValue) return true
-      if (rawValue === undefined || rawValue === null) return targetValue === '' || targetValue === null || targetValue === undefined
+      if (rawValue === undefined || rawValue === null)
+        return targetValue === '' || targetValue === null || targetValue === undefined
       return String(rawValue).trim().toLowerCase() === String(targetValue).trim().toLowerCase()
     }
 
     case 'ne': {
       if (rawValue === targetValue) return false
-      if (rawValue === undefined || rawValue === null) return !(targetValue === '' || targetValue === null || targetValue === undefined)
+      if (rawValue === undefined || rawValue === null)
+        return !(targetValue === '' || targetValue === null || targetValue === undefined)
       return String(rawValue).trim().toLowerCase() !== String(targetValue).trim().toLowerCase()
     }
 
@@ -88,10 +82,7 @@ export function evaluateSingleRule(
 /**
  * Koşul tanımını (tekil veya VE/VEYA grubu) boolean'a çevirir
  */
-export function evaluateCondition(
-  condition: KosulTanimi,
-  context: RenderContext
-): boolean {
+export function evaluateCondition(condition: KosulTanimi, context: RenderContext): boolean {
   // Koşul grubu ise (VE / VEYA)
   if ('baglac' in condition && Array.isArray(condition.kurallar)) {
     if (condition.kurallar.length === 0) return true

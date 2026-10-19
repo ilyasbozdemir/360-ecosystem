@@ -99,13 +99,7 @@ export function StudyoBuilderTab({
                 value={newFieldTip}
                 onChange={(e) =>
                   onSetNewFieldTip(
-                    e.target.value as
-                      | 'metin'
-                      | 'sayi'
-                      | 'para'
-                      | 'tarih'
-                      | 'secim'
-                      | 'cok_satirli'
+                    e.target.value as 'metin' | 'sayi' | 'para' | 'tarih' | 'secim' | 'cok_satirli'
                   )
                 }
                 className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs"

@@ -1,10 +1,5 @@
 import React, { useState } from 'react'
-import {
-  Clock,
-  AlertCircle,
-  Eye,
-  Layers
-} from 'lucide-react'
+import { Clock, AlertCircle, Eye, Layers } from 'lucide-react'
 import { Modal } from '../../../../components/ui/Modal'
 import { BelgeKanbanItem, BelgeKanbanStatus, BELGE_KANBAN_COLUMNS } from './belgeKanbanTypes'
 
@@ -114,9 +109,7 @@ function BelgeDetayDialogContent({
                     : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400'
                 }`}
               >
-                <div className={`text-xs ${isSelected ? col.accentColor : ''}`}>
-                  {col.title}
-                </div>
+                <div className={`text-xs ${isSelected ? col.accentColor : ''}`}>{col.title}</div>
                 <div className="text-[10px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
                   {col.subtitle}
                 </div>

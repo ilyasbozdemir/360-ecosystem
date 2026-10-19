@@ -30,7 +30,8 @@ export const DosyaYonetimi2886Grid: React.FC<DosyaYonetimi2886GridProps> = ({
           Kayıtlı 2886 İhale Dosyası Bulunamadı
         </h4>
         <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
-          Arama kriterlerinizi değiştirebilir veya yukarıdaki butonu kullanarak yeni bir ihale dosyası oluşturabilirsiniz.
+          Arama kriterlerinizi değiştirebilir veya yukarıdaki butonu kullanarak yeni bir ihale
+          dosyası oluşturabilirsiniz.
         </p>
         <button
           type="button"
@@ -47,12 +48,9 @@ export const DosyaYonetimi2886Grid: React.FC<DosyaYonetimi2886GridProps> = ({
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
       {filteredDosyalar.map((d) => {
         const isActive =
-          activeDosyaId === d.id ||
-          localStorage.getItem('temin_2886_active_dosya')?.includes(d.id)
+          activeDosyaId === d.id || localStorage.getItem('temin_2886_active_dosya')?.includes(d.id)
         const bedel =
-          d.muhammenBedel?.takdirEdilenMuhammenBedel ||
-          d.muhammenBedel?.hesaplananBedel ||
-          0
+          d.muhammenBedel?.takdirEdilenMuhammenBedel || d.muhammenBedel?.hesaplananBedel || 0
 
         return (
           <div

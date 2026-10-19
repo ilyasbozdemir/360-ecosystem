@@ -212,7 +212,11 @@ export default function BirimlerScreen({
       ilgili_personel_id: birim.ilgili_personel_id || null
     })
     let parsedIhtiyacList = ['']
-    if (birim.ihtiyac_yeri_eki && birim.ihtiyac_yeri_eki !== '[]' && birim.ihtiyac_yeri_eki !== '[""]') {
+    if (
+      birim.ihtiyac_yeri_eki &&
+      birim.ihtiyac_yeri_eki !== '[]' &&
+      birim.ihtiyac_yeri_eki !== '[""]'
+    ) {
       try {
         if (birim.ihtiyac_yeri_eki.startsWith('[')) {
           const parsed = JSON.parse(birim.ihtiyac_yeri_eki)

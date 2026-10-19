@@ -88,8 +88,18 @@ describe('Belgelerim Çekirdek Motoru (Faz 1)', () => {
     })
 
     it('icerir operatörü (metin içinde arama ve dizi elemanı)', () => {
-      const icerirMetin: KosulKurali = { ad: 'c9', kaynak: 'konu', op: 'icerir', deger: 'kırtasiye' }
-      const icerirDizi: KosulKurali = { ad: 'c10', kaynak: 'etiketler', op: 'icerir', deger: 'acil' }
+      const icerirMetin: KosulKurali = {
+        ad: 'c9',
+        kaynak: 'konu',
+        op: 'icerir',
+        deger: 'kırtasiye'
+      }
+      const icerirDizi: KosulKurali = {
+        ad: 'c10',
+        kaynak: 'etiketler',
+        op: 'icerir',
+        deger: 'acil'
+      }
 
       expect(evaluateSingleRule(icerirMetin, { konu: 'Yıllık Kırtasiye Alımı' })).toBe(true)
       expect(evaluateSingleRule(icerirMetin, { konu: 'Bilgisayar Alımı' })).toBe(false)
@@ -132,17 +142,35 @@ describe('Belgelerim Çekirdek Motoru (Faz 1)', () => {
   describe('3. Scope Resolver (Kapsam Çözümleme: Belge > Grup > Genel)', () => {
     it('aynı anahtara sahip yer tutucularda öncelik kuralını uygular (belge > grup > genel)', () => {
       const genel: YerTutucuTanimi[] = [
-        { anahtar: 'makam', etiket: 'Genel Makam', tip: 'metin', kapsam: 'genel', varsayilan: 'Genel Değer' },
+        {
+          anahtar: 'makam',
+          etiket: 'Genel Makam',
+          tip: 'metin',
+          kapsam: 'genel',
+          varsayilan: 'Genel Değer'
+        },
         { anahtar: 'tarih', etiket: 'Belge Tarihi', tip: 'tarih', kapsam: 'genel' }
       ]
 
       const grup: YerTutucuTanimi[] = [
-        { anahtar: 'makam', etiket: 'Grup Makamı', tip: 'metin', kapsam: 'grup', varsayilan: 'Grup Değeri' },
+        {
+          anahtar: 'makam',
+          etiket: 'Grup Makamı',
+          tip: 'metin',
+          kapsam: 'grup',
+          varsayilan: 'Grup Değeri'
+        },
         { anahtar: 'grupKodu', etiket: 'Grup Kodu', tip: 'metin', kapsam: 'grup' }
       ]
 
       const belge: YerTutucuTanimi[] = [
-        { anahtar: 'makam', etiket: 'Özel Makam', tip: 'metin', kapsam: 'belge', varsayilan: 'Özel Değer' }
+        {
+          anahtar: 'makam',
+          etiket: 'Özel Makam',
+          tip: 'metin',
+          kapsam: 'belge',
+          varsayilan: 'Özel Değer'
+        }
       ]
 
       const resolved = resolvePlaceholders(genel, grup, belge)
@@ -222,9 +250,7 @@ describe('Belgelerim Çekirdek Motoru (Faz 1)', () => {
     it('koşul sağlanmadığında koşullu blok gizlenir', () => {
       const templateHtml = '<div data-cond="indirimVar"><p>Özel İndirim!</p></div>'
       const context = { oran: 0 }
-      const conditions: KosulKurali[] = [
-        { ad: 'indirimVar', kaynak: 'oran', op: 'gt', deger: 0 }
-      ]
+      const conditions: KosulKurali[] = [{ ad: 'indirimVar', kaynak: 'oran', op: 'gt', deger: 0 }]
 
       const result = renderBelge(templateHtml, context, conditions)
       expect(result).not.toContain('Özel İndirim!')

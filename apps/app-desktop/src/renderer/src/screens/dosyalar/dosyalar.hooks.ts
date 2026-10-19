@@ -179,7 +179,10 @@ export function useDosyalarHooks() {
     onSuccess: async (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['temin_dosyalari'] })
       const insertedId = (data as { lastInsertRowid?: number })?.lastInsertRowid
-      if (insertedId && (variables.komisyon_seed_edildi === undefined || variables.komisyon_seed_edildi === 0)) {
+      if (
+        insertedId &&
+        (variables.komisyon_seed_edildi === undefined || variables.komisyon_seed_edildi === 0)
+      ) {
         try {
           await seedDossierCommission(insertedId, { mode: 'initial' })
         } catch (seedErr) {

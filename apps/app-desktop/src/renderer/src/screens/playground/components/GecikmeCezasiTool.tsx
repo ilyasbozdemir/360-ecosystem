@@ -1,11 +1,6 @@
 import React, { useState, useMemo } from 'react'
-import {
-  Clock
-} from 'lucide-react'
-import {
-  calculateGecikmeCezasi,
-  formatCurrency
-} from '../../../utils/turkishCalculationUtils'
+import { Clock } from 'lucide-react'
+import { calculateGecikmeCezasi, formatCurrency } from '../../../utils/turkishCalculationUtils'
 
 export function GecikmeCezasiTool(): React.JSX.Element {
   const [cezaSozlesmeBedeli, setCezaSozlesmeBedeli] = useState<string>('750000')

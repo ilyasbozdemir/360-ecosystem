@@ -1,12 +1,5 @@
 import React from 'react'
-import {
-  Check,
-  Edit2,
-  Package,
-  RefreshCw,
-  Trash2,
-  X
-} from 'lucide-react'
+import { Check, Edit2, Package, RefreshCw, Trash2, X } from 'lucide-react'
 import { cn } from '../../../../../../../utils/cn'
 
 interface MalzemeTablosuBodyProps {

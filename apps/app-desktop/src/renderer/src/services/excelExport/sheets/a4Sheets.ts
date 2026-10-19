@@ -151,14 +151,7 @@ export function buildA4OnaySheet(
   ctx: ExportContext
 ): void {
   const { dosya, komisyon = [] } = data
-  const {
-    kurumAdi,
-    birimAdi,
-    dosyaKonusu,
-    ihaleSekli,
-    kalemlerSheetName,
-    kalemTotalRow
-  } = ctx
+  const { kurumAdi, birimAdi, dosyaKonusu, ihaleSekli, kalemlerSheetName, kalemTotalRow } = ctx
 
   const wsA4Onay = workbook.addWorksheet('A4 - Doğrudan Temin Onayı', {
     pageSetup: {
@@ -274,14 +267,7 @@ export function buildA4PiyasaSheet(
   ctx: ExportContext
 ): void {
   const { kalemler = [] } = data
-  const {
-    kurumAdi,
-    birimAdi,
-    dosyaKonusu,
-    dosyaNoStr,
-    effectiveFirms,
-    kalemlerSheetName
-  } = ctx
+  const { kurumAdi, birimAdi, dosyaKonusu, dosyaNoStr, effectiveFirms, kalemlerSheetName } = ctx
 
   const totalColsCount = 4 + effectiveFirms.length * 2 + 2
 

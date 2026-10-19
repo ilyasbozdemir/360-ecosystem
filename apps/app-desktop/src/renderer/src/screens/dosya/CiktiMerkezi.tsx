@@ -129,8 +129,8 @@ export function CiktiMerkezi(): React.JSX.Element {
         <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900/30 text-amber-800 dark:text-amber-400 p-6 rounded-2xl flex items-center gap-3">
           <FileText className="w-6 h-6" />
           <div className="font-semibold">
-            Lütfen önce bir dosya seçin. İşlem yapabilmek için sol taraftan veya &quot;Dosyalar&quot;
-            menüsünden aktif bir dosya seçmeniz gerekmektedir.
+            Lütfen önce bir dosya seçin. İşlem yapabilmek için sol taraftan veya
+            &quot;Dosyalar&quot; menüsünden aktif bir dosya seçmeniz gerekmektedir.
           </div>
         </div>
       </div>

@@ -19,19 +19,57 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     renk: 'blue',
     versiyon: 'v2.4.0',
     surumAsamasi: 'Kararlı',
-    etiketler: ['Doğrudan Temin', '22/d', 'Piyasa Araştırması', 'KİK Standart Formlar', 'Muayene Kabul'],
+    etiketler: [
+      'Doğrudan Temin',
+      '22/d',
+      'Piyasa Araştırması',
+      'KİK Standart Formlar',
+      'Muayene Kabul'
+    ],
     routePath: '/dosyalar',
     removable: false,
     silinebilir: false,
-    araclar: ['KİK Parasal Limit Denetleyicisi', 'KDV Tevkifat Hesaplama', 'EKAP Yasaklılık Kontrol'],
+    araclar: [
+      'KİK Parasal Limit Denetleyicisi',
+      'KDV Tevkifat Hesaplama',
+      'EKAP Yasaklılık Kontrol'
+    ],
     asamalar: [
-      { sira: 1, baslik: 'İhtiyaç Tespiti & Talep', aciklama: 'Birim talep fişi ve ihtiyaç gerekçesinin oluşturulması.' },
-      { sira: 2, baslik: 'Harcama Yetkilisi Onayı', aciklama: '22/d Onay Belgesi ve bütçe ödeneği bloke işlemi.' },
-      { sira: 3, baslik: 'Piyasa Fiyat Araştırması', aciklama: 'Firmalara teklif isteme mektubu ve tekliflerin toplanması.' },
-      { sira: 4, baslik: 'Piyasa Araştırma Tutanağı', aciklama: 'En avantajlı teklifin tespiti ve komisyon/görevli imzaları.' },
-      { sira: 5, baslik: 'Sipariş veya Sözleşme', aciklama: 'Yükleniciye sipariş mektubu veya doğrudan temin sözleşmesi.' },
-      { sira: 6, baslik: 'Muayene & Kabul', aciklama: 'Malın/hizmetin teslim alınarak kabul tutanağının düzenlenmesi.' },
-      { sira: 7, baslik: 'Ödeme Emri & Muhasebe', aciklama: 'Fatura tahakkuk müzekkeresi ve harcama evraklarının teslimi.' }
+      {
+        sira: 1,
+        baslik: 'İhtiyaç Tespiti & Talep',
+        aciklama: 'Birim talep fişi ve ihtiyaç gerekçesinin oluşturulması.'
+      },
+      {
+        sira: 2,
+        baslik: 'Harcama Yetkilisi Onayı',
+        aciklama: '22/d Onay Belgesi ve bütçe ödeneği bloke işlemi.'
+      },
+      {
+        sira: 3,
+        baslik: 'Piyasa Fiyat Araştırması',
+        aciklama: 'Firmalara teklif isteme mektubu ve tekliflerin toplanması.'
+      },
+      {
+        sira: 4,
+        baslik: 'Piyasa Araştırma Tutanağı',
+        aciklama: 'En avantajlı teklifin tespiti ve komisyon/görevli imzaları.'
+      },
+      {
+        sira: 5,
+        baslik: 'Sipariş veya Sözleşme',
+        aciklama: 'Yükleniciye sipariş mektubu veya doğrudan temin sözleşmesi.'
+      },
+      {
+        sira: 6,
+        baslik: 'Muayene & Kabul',
+        aciklama: 'Malın/hizmetin teslim alınarak kabul tutanağının düzenlenmesi.'
+      },
+      {
+        sira: 7,
+        baslik: 'Ödeme Emri & Muhasebe',
+        aciklama: 'Fatura tahakkuk müzekkeresi ve harcama evraklarının teslimi.'
+      }
     ],
     belgeler: [
       {
@@ -61,7 +99,8 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
       {
         ad: 'Standart Form-KİK054.0/M: Muayene ve Kabul Komisyon Kararı ve Tutanağı',
         kod: 'DT-05 / KİK054.0/M',
-        aciklama: 'Mal veya hizmet alımlarında şartnameye uygunluğu tescil eden muayene kabul tutanağı.',
+        aciklama:
+          'Mal veya hizmet alımlarında şartnameye uygunluğu tescil eden muayene kabul tutanağı.',
         zorunluMu: true
       },
       {
@@ -131,21 +170,74 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     routePath: '/devlet-ihale-2886',
     removable: true,
     silinebilir: true,
-    araclar: ['Muhammen Bedel & %3 Geçici Teminat Hesabı', 'Yİ-ÜFE Kira Artış Robotu', 'İhale Usul Karar Matrisi'],
+    araclar: [
+      'Muhammen Bedel & %3 Geçici Teminat Hesabı',
+      'Yİ-ÜFE Kira Artış Robotu',
+      'İhale Usul Karar Matrisi'
+    ],
     asamalar: [
-      { sira: 1, baslik: 'Taşınmaz Tespiti & Tapu Kaydı', aciklama: 'Ada, parsel, yüzölçümü ve mülkiyet bilgilerinin tescili.' },
-      { sira: 2, baslik: 'Kıymet Takdiri (Muhammen Bedel)', aciklama: 'Takdir komisyonunca tahmini bedel ve geçici teminatın belirlenmesi.' },
-      { sira: 3, baslik: 'İhale Onayı & Usul Seçimi', aciklama: 'Encümen / İta amirinden alınan onay ve 45/36/51 usul tespiti.' },
-      { sira: 4, baslik: 'Şartname ve İlan Yayını', aciklama: 'Resmi Gazete veya yerel gazetede ilan metninin yayınlanması.' },
-      { sira: 5, baslik: 'İhale Günü & Teklifler', aciklama: 'Zarf açımı, açık artırma peyleri ve komisyon kararının yazımı.' },
-      { sira: 6, baslik: 'Onay, Tebligat & Kesinleşme', aciklama: 'İta amiri onayı ve istekliye noter/iadeli taahhütlü tebligat.' }
+      {
+        sira: 1,
+        baslik: 'Taşınmaz Tespiti & Tapu Kaydı',
+        aciklama: 'Ada, parsel, yüzölçümü ve mülkiyet bilgilerinin tescili.'
+      },
+      {
+        sira: 2,
+        baslik: 'Kıymet Takdiri (Muhammen Bedel)',
+        aciklama: 'Takdir komisyonunca tahmini bedel ve geçici teminatın belirlenmesi.'
+      },
+      {
+        sira: 3,
+        baslik: 'İhale Onayı & Usul Seçimi',
+        aciklama: 'Encümen / İta amirinden alınan onay ve 45/36/51 usul tespiti.'
+      },
+      {
+        sira: 4,
+        baslik: 'Şartname ve İlan Yayını',
+        aciklama: 'Resmi Gazete veya yerel gazetede ilan metninin yayınlanması.'
+      },
+      {
+        sira: 5,
+        baslik: 'İhale Günü & Teklifler',
+        aciklama: 'Zarf açımı, açık artırma peyleri ve komisyon kararının yazımı.'
+      },
+      {
+        sira: 6,
+        baslik: 'Onay, Tebligat & Kesinleşme',
+        aciklama: 'İta amiri onayı ve istekliye noter/iadeli taahhütlü tebligat.'
+      }
     ],
     belgeler: [
-      { ad: '2886 İhale Onay Belgesi', kod: 'DİK-01', aciklama: 'Encümene sunulacak ihale açılış onayı.', zorunluMu: true },
-      { ad: 'Kıymet Takdir Komisyonu Raporu', kod: 'DİK-02', aciklama: 'Taşınmazın muhammen bedelinin tespit edildiği gerekçeli rapor.', zorunluMu: true },
-      { ad: 'Taşınmaz Satış / Kira İdari Şartnamesi', kod: 'DİK-03', aciklama: 'İhaleye katılma koşullarını belirten şartname metni.', zorunluMu: true },
-      { ad: 'Basın ve Gazete İlan Metni Taslağı', kod: 'DİK-04', aciklama: '2886 m.17 gereğince yayınlanacak standart ilan metni.', zorunluMu: true },
-      { ad: 'İhale Komisyonu (Encümen) Kararı', kod: 'DİK-05', aciklama: 'İhalenin kime kaldığını bildiren resmi karar zaptı.', zorunluMu: true }
+      {
+        ad: '2886 İhale Onay Belgesi',
+        kod: 'DİK-01',
+        aciklama: 'Encümene sunulacak ihale açılış onayı.',
+        zorunluMu: true
+      },
+      {
+        ad: 'Kıymet Takdir Komisyonu Raporu',
+        kod: 'DİK-02',
+        aciklama: 'Taşınmazın muhammen bedelinin tespit edildiği gerekçeli rapor.',
+        zorunluMu: true
+      },
+      {
+        ad: 'Taşınmaz Satış / Kira İdari Şartnamesi',
+        kod: 'DİK-03',
+        aciklama: 'İhaleye katılma koşullarını belirten şartname metni.',
+        zorunluMu: true
+      },
+      {
+        ad: 'Basın ve Gazete İlan Metni Taslağı',
+        kod: 'DİK-04',
+        aciklama: '2886 m.17 gereğince yayınlanacak standart ilan metni.',
+        zorunluMu: true
+      },
+      {
+        ad: 'İhale Komisyonu (Encümen) Kararı',
+        kod: 'DİK-05',
+        aciklama: 'İhalenin kime kaldığını bildiren resmi karar zaptı.',
+        zorunluMu: true
+      }
     ]
   },
 
@@ -173,16 +265,48 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     silinebilir: true,
     araclar: ['EYP 2.0 Doğrulayıcı', 'Dinamik Makam Hitap Üretici', 'EBYS Rota & Paraf Motoru'],
     asamalar: [
-      { sira: 1, baslik: 'Taslak Hazırlama & Şablon Seçimi', aciklama: 'Resmî yazı tipine göre uygun şablonun seçilmesi.' },
-      { sira: 2, baslik: 'Muhatap & Dağıtım Belirleme', aciklama: 'Gereği ve bilgi muhataplarının belirlenmesi.' },
-      { sira: 3, baslik: 'Paraf & İmza Rotası', aciklama: 'Hazırlayan, kontrol eden ve imza makamı adımları.' },
+      {
+        sira: 1,
+        baslik: 'Taslak Hazırlama & Şablon Seçimi',
+        aciklama: 'Resmî yazı tipine göre uygun şablonun seçilmesi.'
+      },
+      {
+        sira: 2,
+        baslik: 'Muhatap & Dağıtım Belirleme',
+        aciklama: 'Gereği ve bilgi muhataplarının belirlenmesi.'
+      },
+      {
+        sira: 3,
+        baslik: 'Paraf & İmza Rotası',
+        aciklama: 'Hazırlayan, kontrol eden ve imza makamı adımları.'
+      },
       { sira: 4, baslik: 'Baskı & Çıktı', aciklama: 'Resmi antetli A4 çıktısının üretilmesi.' }
     ],
     belgeler: [
-      { ad: 'Resmî Üst Yazı Şablonu', kod: 'EBYS-01', aciklama: 'Kurumlar arası giden evrak standart şablonu.', zorunluMu: true },
-      { ad: 'Birim İçi Olur / Onay Yazısı', kod: 'EBYS-02', aciklama: 'Makam onayına sunulan teklif ve olur belgesi.', zorunluMu: true },
-      { ad: 'Dağıtımlı Genelge / Duyuru Yazısı', kod: 'EBYS-03', aciklama: 'Çoklu birim veya dış idarelere hitap eden dağıtımlı yazı.', zorunluMu: false },
-      { ad: 'İç Yazışma / Müzekkere', kod: 'EBYS-04', aciklama: 'Birimler arası bilgi ve koordinasyon yazısı.', zorunluMu: false }
+      {
+        ad: 'Resmî Üst Yazı Şablonu',
+        kod: 'EBYS-01',
+        aciklama: 'Kurumlar arası giden evrak standart şablonu.',
+        zorunluMu: true
+      },
+      {
+        ad: 'Birim İçi Olur / Onay Yazısı',
+        kod: 'EBYS-02',
+        aciklama: 'Makam onayına sunulan teklif ve olur belgesi.',
+        zorunluMu: true
+      },
+      {
+        ad: 'Dağıtımlı Genelge / Duyuru Yazısı',
+        kod: 'EBYS-03',
+        aciklama: 'Çoklu birim veya dış idarelere hitap eden dağıtımlı yazı.',
+        zorunluMu: false
+      },
+      {
+        ad: 'İç Yazışma / Müzekkere',
+        kod: 'EBYS-04',
+        aciklama: 'Birimler arası bilgi ve koordinasyon yazısı.',
+        zorunluMu: false
+      }
     ]
   },
 
@@ -210,16 +334,47 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     silinebilir: true,
     araclar: ['657 / 4857 İzin Gün Hesabı Motoru', 'Otomatik İzin Onay Belgesi Üretici'],
     asamalar: [
-      { sira: 1, baslik: 'İzin / Rapor Talebi', aciklama: 'Personelin gerekçeli talep dilekçesi veya sağlık raporu.' },
-      { sira: 2, baslik: 'İdare ve Görev Taksimi', aciklama: 'Vekil personel belirlenmesi ve birim amiri parafı.' },
-      { sira: 3, baslik: 'Harcama Yetkilisi Onayı', aciklama: 'Resmi izin onay belgesi imza süreci.' }
+      {
+        sira: 1,
+        baslik: 'İzin / Rapor Talebi',
+        aciklama: 'Personelin gerekçeli talep dilekçesi veya sağlık raporu.'
+      },
+      {
+        sira: 2,
+        baslik: 'İdare ve Görev Taksimi',
+        aciklama: 'Vekil personel belirlenmesi ve birim amiri parafı.'
+      },
+      {
+        sira: 3,
+        baslik: 'Harcama Yetkilisi Onayı',
+        aciklama: 'Resmi izin onay belgesi imza süreci.'
+      }
     ],
     belgeler: [
-      { ad: '657 Memur Yıllık İzin Onay Belgesi', kod: 'İZN-01', aciklama: 'Harcama yetkilisi onaylı standart resmi memur izin formu.', zorunluMu: true },
-      { ad: '4857 Sürekli İşçi Yıllık İzin Talep Formu', kod: 'İZN-02', aciklama: 'İş günü esasına göre hesaplanan sürekli işçi izin belgesi.', zorunluMu: true },
-      { ad: 'Mazeret İzni Talep Dilekçesi', kod: 'İZN-03', aciklama: 'Babalık, evlilik, vefat gibi yasal mazeret dilekçesi.', zorunluMu: false },
-      { ad: 'Hastalık / Sağlık Raporu İntikal Yazısı', kod: 'İZN-04', aciklama: 'İstirahat raporunun izne dönüştürülme formu.', zorunluMu: false }
+      {
+        ad: '657 Memur Yıllık İzin Onay Belgesi',
+        kod: 'İZN-01',
+        aciklama: 'Harcama yetkilisi onaylı standart resmi memur izin formu.',
+        zorunluMu: true
+      },
+      {
+        ad: '4857 Sürekli İşçi Yıllık İzin Talep Formu',
+        kod: 'İZN-02',
+        aciklama: 'İş günü esasına göre hesaplanan sürekli işçi izin belgesi.',
+        zorunluMu: true
+      },
+      {
+        ad: 'Mazeret İzni Talep Dilekçesi',
+        kod: 'İZN-03',
+        aciklama: 'Babalık, evlilik, vefat gibi yasal mazeret dilekçesi.',
+        zorunluMu: false
+      },
+      {
+        ad: 'Hastalık / Sağlık Raporu İntikal Yazısı',
+        kod: 'İZN-04',
+        aciklama: 'İstirahat raporunun izne dönüştürülme formu.',
+        zorunluMu: false
+      }
     ]
   }
 ]
-

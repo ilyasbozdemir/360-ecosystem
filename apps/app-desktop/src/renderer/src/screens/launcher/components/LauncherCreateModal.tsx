@@ -1,13 +1,5 @@
 import React from 'react'
-import {
-  Building,
-  Eye,
-  EyeOff,
-  Folder,
-  KeyRound,
-  ShieldAlert,
-  User
-} from 'lucide-react'
+import { Building, Eye, EyeOff, Folder, KeyRound, ShieldAlert, User } from 'lucide-react'
 
 interface LauncherCreateModalProps {
   isOpen: boolean

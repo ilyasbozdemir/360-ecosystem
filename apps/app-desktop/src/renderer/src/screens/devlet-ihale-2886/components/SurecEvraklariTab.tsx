@@ -1,12 +1,5 @@
 import React, { useState } from 'react'
-import {
-  FileText,
-  Edit3,
-  Download,
-  Eye,
-  CheckCircle2,
-  FolderOpen
-} from 'lucide-react'
+import { FileText, Edit3, Download, Eye, CheckCircle2, FolderOpen } from 'lucide-react'
 import Mustache from 'mustache'
 import { SurecEvrakiItem } from '../types/devletIhale2886.types'
 import {
@@ -72,7 +65,10 @@ export function SurecEvraklariTab({ selectedDosya }: SurecEvraklariTabProps): Re
       sayi_no: d ? `E-2886-${d.id}` : 'E-2886-2026/001',
       tarih: new Date().toLocaleDateString('tr-TR'),
       dosya_no: d?.ihaleKayitNo || d?.dosyaNo || '2026/2886-ST-01',
-      tasinmaz_adi: d?.ihaleAdi || d?.tasinmazAdi || 'Merkez Mah. 104 Ada 12 Parsel 1.450 m² Ticari İmarlı Arsa Satışı İhalesi',
+      tasinmaz_adi:
+        d?.ihaleAdi ||
+        d?.tasinmazAdi ||
+        'Merkez Mah. 104 Ada 12 Parsel 1.450 m² Ticari İmarlı Arsa Satışı İhalesi',
       islem_turu_adi:
         d?.islemTuru === 'satis'
           ? 'Mülkiyet Satışı'
@@ -177,7 +173,10 @@ export function SurecEvraklariTab({ selectedDosya }: SurecEvraklariTabProps): Re
             <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
               <span>{selectedDosya ? selectedDosya.ihaleKayitNo : '2026/2886-ST-01'}</span>
               <span className="text-xs font-normal text-slate-500">
-                — {selectedDosya ? selectedDosya.ihaleAdi : 'Merkez Mah. 104 Ada 12 Parsel 1.450 m² Ticari İmarlı Arsa Satışı İhalesi'}
+                —{' '}
+                {selectedDosya
+                  ? selectedDosya.ihaleAdi
+                  : 'Merkez Mah. 104 Ada 12 Parsel 1.450 m² Ticari İmarlı Arsa Satışı İhalesi'}
               </span>
             </h3>
           </div>
@@ -342,7 +341,9 @@ export function SurecEvraklariTab({ selectedDosya }: SurecEvraklariTabProps): Re
                   type="button"
                   onClick={() => {
                     navigator.clipboard.writeText(tag)
-                    alert(`"${tag}" panoya kopyalandı! Editörde dilediğiniz yere yapıştırabilirsiniz.`)
+                    alert(
+                      `"${tag}" panoya kopyalandı! Editörde dilediğiniz yere yapıştırabilirsiniz.`
+                    )
                   }}
                   className="inline-block font-mono bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 rounded text-[10px] text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 mr-1.5 mb-1 cursor-pointer"
                   title="Kopyalamak için tıkla"

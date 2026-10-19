@@ -1,63 +1,61 @@
-import React from "react";
-import { Link } from "@tanstack/react-router";
-import { ClipboardList, Landmark, Layers, Printer } from "lucide-react";
-import { TeminSelector } from "../TeminSelector";
+import React from 'react'
+import { Link } from '@tanstack/react-router'
+import { ClipboardList, Landmark, Layers, Printer } from 'lucide-react'
+import { TeminSelector } from '../TeminSelector'
 
 interface HeaderBottomRowProps {
-  isDt?: boolean;
-  procurementMode?: "dogrudan_temin" | "ihale" | "devlet_ihale_2886";
-  handleModeChange: (
-    mode: "dogrudan_temin" | "ihale" | "devlet_ihale_2886",
-  ) => void;
-  activeDosyaId?: number | string | null;
+  isDt?: boolean
+  procurementMode?: 'dogrudan_temin' | 'ihale' | 'devlet_ihale_2886'
+  handleModeChange: (mode: 'dogrudan_temin' | 'ihale' | 'devlet_ihale_2886') => void
+  activeDosyaId?: number | string | null
 }
 
 export const HeaderBottomRow = React.memo(function HeaderBottomRow({
   isDt,
-  procurementMode = isDt ? "dogrudan_temin" : "ihale",
+  procurementMode = isDt ? 'dogrudan_temin' : 'ihale',
   handleModeChange,
-  activeDosyaId,
+  activeDosyaId
 }: HeaderBottomRowProps): React.JSX.Element {
-  const currentMode = procurementMode;
+  const currentMode = procurementMode
 
   const handleNextMode = (): void => {
-    if (currentMode === "dogrudan_temin") {
-      handleModeChange("ihale");
-    } else if (currentMode === "ihale") {
-      handleModeChange("devlet_ihale_2886");
+    if (currentMode === 'dogrudan_temin') {
+      handleModeChange('ihale')
+    } else if (currentMode === 'ihale') {
+      handleModeChange('devlet_ihale_2886')
     } else {
-      handleModeChange("dogrudan_temin");
+      handleModeChange('dogrudan_temin')
     }
-  };
+  }
 
   const getBadgeStyle = (): { container: string; dot: string } => {
-    if (currentMode === "dogrudan_temin") {
+    if (currentMode === 'dogrudan_temin') {
       return {
         container:
-          "bg-blue-50/90 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-200/60 dark:border-blue-800/40",
-        dot: "bg-blue-500",
-      };
+          'bg-blue-50/90 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-200/60 dark:border-blue-800/40',
+        dot: 'bg-blue-500'
+      }
     }
-    if (currentMode === "devlet_ihale_2886") {
+    if (currentMode === 'devlet_ihale_2886') {
       return {
         container:
-          "bg-amber-50/90 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200/60 dark:border-amber-800/40",
-        dot: "bg-amber-500",
-      };
+          'bg-amber-50/90 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200/60 dark:border-amber-800/40',
+        dot: 'bg-amber-500'
+      }
     }
     return {
       container:
-        "bg-indigo-50/90 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border-indigo-200/60 dark:border-indigo-800/40",
-      dot: "bg-indigo-500",
-    };
-  };
+        'bg-indigo-50/90 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border-indigo-200/60 dark:border-indigo-800/40',
+      dot: 'bg-indigo-500'
+    }
+  }
 
-  const style = getBadgeStyle();
+  const style = getBadgeStyle()
 
   return (
     <div
       className="min-h-9 py-1 flex items-center justify-between gap-1 sm:gap-2.5 bg-slate-100/50 dark:bg-slate-950/20 border-t border-slate-200/30 dark:border-slate-800/30 select-none px-2 sm:px-3 relative z-20 w-full"
-      style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+      style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
     >
       {/* Sol: İnce ve Şık Aktif Çalışma Modu Rozeti */}
       <div className="shrink-0 flex items-center">
@@ -67,29 +65,27 @@ export const HeaderBottomRow = React.memo(function HeaderBottomRow({
           title="Süreç rejimini değiştirmek için tıklayın (Doğrudan Temin ↔ 4734 İhale ↔ 2886 Devlet İhale)"
           className={`inline-flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-full text-[11px] font-medium transition-all duration-300 border cursor-pointer hover:opacity-85 ${style.container}`}
         >
-          <span
-            className={`w-1.5 h-1.5 rounded-full ${style.dot} animate-pulse shrink-0`}
-          />
+          <span className={`w-1.5 h-1.5 rounded-full ${style.dot} animate-pulse shrink-0`} />
           <span className="hidden 2xl:inline">
-            {currentMode === "dogrudan_temin"
-              ? "Doğrudan Temin (Md. 22)"
-              : currentMode === "devlet_ihale_2886"
-              ? "Devlet İhale (2886 Sayılı Kanun)"
-              : "İhale İşlemleri (Md. 19 / 21)"}
+            {currentMode === 'dogrudan_temin'
+              ? 'Doğrudan Temin (Md. 22)'
+              : currentMode === 'devlet_ihale_2886'
+                ? 'Devlet İhale (2886 Sayılı Kanun)'
+                : 'İhale İşlemleri (Md. 19 / 21)'}
           </span>
           <span className="hidden xl:inline 2xl:hidden font-semibold">
-            {currentMode === "dogrudan_temin"
-              ? "DT (Md. 22)"
-              : currentMode === "devlet_ihale_2886"
-              ? "2886 DİK"
-              : "İhale (19/21)"}
+            {currentMode === 'dogrudan_temin'
+              ? 'DT (Md. 22)'
+              : currentMode === 'devlet_ihale_2886'
+                ? '2886 DİK'
+                : 'İhale (19/21)'}
           </span>
           <span className="hidden sm:inline xl:hidden font-semibold">
-            {currentMode === "dogrudan_temin"
-              ? "DT"
-              : currentMode === "devlet_ihale_2886"
-              ? "2886"
-              : "İhale"}
+            {currentMode === 'dogrudan_temin'
+              ? 'DT'
+              : currentMode === 'devlet_ihale_2886'
+                ? '2886'
+                : 'İhale'}
           </span>
         </button>
       </div>
@@ -190,5 +186,5 @@ export const HeaderBottomRow = React.memo(function HeaderBottomRow({
         </div>
       ) : null}
     </div>
-  );
-});
+  )
+})

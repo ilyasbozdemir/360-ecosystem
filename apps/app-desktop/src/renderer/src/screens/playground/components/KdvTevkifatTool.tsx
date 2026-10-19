@@ -1,7 +1,5 @@
 import React, { useState, useMemo } from 'react'
-import {
-  Percent
-} from 'lucide-react'
+import { Percent } from 'lucide-react'
 import {
   calculateKdvTevkifat,
   formatCurrency,
@@ -195,8 +193,7 @@ export function KdvTevkifatTool(): React.JSX.Element {
                 </tr>
                 <tr className="bg-amber-50/30 dark:bg-amber-950/10">
                   <td className="p-2.5 font-medium text-amber-700 dark:text-amber-300">
-                    3. Tevkif Edilen KDV ({selectedTevkifatKod} - İdarece Vergi Dairesine
-                    Ödenir)
+                    3. Tevkif Edilen KDV ({selectedTevkifatKod} - İdarece Vergi Dairesine Ödenir)
                   </td>
                   <td className="p-2.5 font-bold text-amber-700 dark:text-amber-300 text-right">
                     - {formatCurrency(kdvTevkifatSonuc.tevkifEdilenKdv)}

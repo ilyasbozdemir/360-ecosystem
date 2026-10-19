@@ -2,10 +2,7 @@ import { ipcMain, BrowserWindow, dialog } from 'electron'
 import { basename, resolve } from 'path'
 import fs from 'fs'
 import { workspaceManager } from '../database/workspace'
-import {
-  allFormatsFilter
-} from '../config/fileFormats'
-import { recentFilesStore } from '../store/recentFiles'
+import { allFormatsFilter } from '../config/fileFormats'
 import { getDeviceInfo } from '../utils/deviceInfo'
 import { registerGdriveIpcHandlers } from './workspace/gdrive.ipc'
 import { registerRemoteSyncIpcHandlers } from './workspace/remoteSync.ipc'
@@ -80,47 +77,6 @@ export function registerWorkspaceIpcHandlers(closeAllSecondaryWindows: () => voi
       return { success: true, newFilePath: dest }
     } catch (error: any) {
       console.error('Save as error:', error)
-      return { success: false, error: error.message }
-    }
-  })
-
-  ipcMain.handle('workspace:upgrade-to-temin', async () => {
-    try {
-      const res = workspaceManager.convertToTemin()
-      return res
-    } catch (error: any) {
-      console.error('Upgrade workspace to .temin error:', error)
-      return { success: false, error: error.message }
-    }
-  })
-
-  ipcMain.handle('workspace:convert-and-open', async (_, filePath: string) => {
-    try {
-      closeAllSecondaryWindows()
-      const meta = workspaceManager.open(filePath, true)
-      const convertRes = workspaceManager.convertToTemin()
-      if (!convertRes.success) {
-        return { success: false, error: convertRes.error || 'Dönüştürme başarısız oldu.' }
-      }
-      const newFilePath = convertRes.newPath || workspaceManager.getCurrentFilePath()
-
-      // Update recent files list
-      try {
-        recentFilesStore.removeRecentFile(filePath)
-        const instName = meta?.institution || basename(newFilePath!, '.temin')
-        recentFilesStore.addRecentFile(newFilePath!, instName)
-      } catch (rErr) {
-        console.warn('Recent files update error:', rErr)
-      }
-
-      return {
-        success: true,
-        meta,
-        newFilePath,
-        oldFilePath: filePath
-      }
-    } catch (error: any) {
-      console.error('Convert and open workspace error:', error)
       return { success: false, error: error.message }
     }
   })

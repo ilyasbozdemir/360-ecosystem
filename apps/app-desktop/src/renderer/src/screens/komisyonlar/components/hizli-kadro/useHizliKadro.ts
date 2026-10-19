@@ -67,7 +67,6 @@ export function useHizliKadro({
     setStatusMessage(null)
 
     const fetchCurrentMembers = async () => {
-
       try {
         // 1. Her durumda kurumsal TANIM_KomisyonUye kayıtlarını al (Master şablon)
         const masterRes = await window.electron.ipcRenderer.invoke(
@@ -336,7 +335,6 @@ export function useHizliKadro({
     mutationFn: async () => {
       if (!komisyonId) throw new Error('Komisyon kimliği bulunamadı.')
 
-
       // Görev isimlerini tamamla
       for (const row of rows) {
         if (!row.gorevId && row.gorevAd) {
@@ -368,7 +366,8 @@ export function useHizliKadro({
       for (let i = 0; i < rows.length; i++) {
         const r = rows[i]
         const isShow = r.belgeSablonIds === null || r.belgeSablonIds.length > 0
-        const scope = r.belgeSablonIds === null ? 'tumu' : r.belgeSablonIds.length === 0 ? 'gizli' : 'ozel'
+        const scope =
+          r.belgeSablonIds === null ? 'tumu' : r.belgeSablonIds.length === 0 ? 'gizli' : 'ozel'
         const hedefJson = JSON.stringify(r.belgeSablonIds === null ? ['*'] : r.belgeSablonIds)
         txStatements.push({
           sql: 'INSERT INTO TANIM_KomisyonUye (komisyon_id, gorev_id, personel_id, asil_mi, sira, belgede_goster, belge_kapsami, hedef_belgeler) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
@@ -410,7 +409,12 @@ export function useHizliKadro({
                     ? 'Başkan'
                     : 'Üye'
               const isShow = r.belgeSablonIds === null || r.belgeSablonIds.length > 0
-              const scope = r.belgeSablonIds === null ? 'tumu' : r.belgeSablonIds.length === 0 ? 'gizli' : 'ozel'
+              const scope =
+                r.belgeSablonIds === null
+                  ? 'tumu'
+                  : r.belgeSablonIds.length === 0
+                    ? 'gizli'
+                    : 'ozel'
               const hedefJson = JSON.stringify(r.belgeSablonIds === null ? ['*'] : r.belgeSablonIds)
               txStatements.push({
                 sql: `INSERT INTO DATA_TeminKomisyon 

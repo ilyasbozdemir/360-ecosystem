@@ -1,7 +1,11 @@
 import React from 'react'
 import { Eye, PlusCircle, Users, ChevronDown, UserCheck } from 'lucide-react'
 import { Komisyon, Belge } from '../../types'
-import { getKomisyonDurumBadge, getKomisyonDurumLabel, resolveSurecBelgeKod } from '../../utils/helpers'
+import {
+  getKomisyonDurumBadge,
+  getKomisyonDurumLabel,
+  resolveSurecBelgeKod
+} from '../../utils/helpers'
 import { useGlobalDocumentPreviewStore } from '../../../../../store/globalDocumentPreviewStore'
 import { IlgiliBelgeCubugu } from '../IlgiliBelgeCubugu'
 

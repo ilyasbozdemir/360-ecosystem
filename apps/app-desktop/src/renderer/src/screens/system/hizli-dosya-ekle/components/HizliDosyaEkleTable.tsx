@@ -82,7 +82,8 @@ export const HizliDosyaEkleTable: React.FC<HizliDosyaEkleTableProps> = ({
         <span className="inline-block w-2.5 h-2.5 rounded bg-green-200 dark:bg-green-900 mr-1" />
         Yeni Kayıt &nbsp;·&nbsp; Excel sütun sırası:{' '}
         <strong>
-          Dosya No | DT No | Dosya Adı | Açıklama | Temin Türü | Temin Şekli | Açılış Tarihi | Son Teklif Tarih/Saati | Tahmini Bitiş | Süreç Aşaması
+          Dosya No | DT No | Dosya Adı | Açıklama | Temin Türü | Temin Şekli | Açılış Tarihi | Son
+          Teklif Tarih/Saati | Tahmini Bitiş | Süreç Aşaması
         </strong>
       </p>
 
@@ -249,7 +250,9 @@ export const HizliDosyaEkleTable: React.FC<HizliDosyaEkleTableProps> = ({
                       type="datetime-local"
                       title="Son Teklif Verme Tarih & Saati"
                       value={formatDateTimeLocal(row.son_teklif_verme_tarihi)}
-                      onChange={(e) => updateRow(row._key, 'son_teklif_verme_tarihi', e.target.value)}
+                      onChange={(e) =>
+                        updateRow(row._key, 'son_teklif_verme_tarihi', e.target.value)
+                      }
                       className={`${cell} min-w-[155px] font-mono text-xs`}
                     />
                   </td>

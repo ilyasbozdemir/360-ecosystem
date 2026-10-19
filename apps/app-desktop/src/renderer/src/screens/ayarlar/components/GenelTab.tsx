@@ -26,7 +26,8 @@ export const GenelTab: React.FC<GenelTabProps> = ({
             Genel Sistem Ayarları
           </h2>
           <p className="text-xs text-slate-500">
-            Uygulamanın genel davranışını, çöp kutusu saklama politikasını ve belge akış yönlendirmelerini düzenleyin.
+            Uygulamanın genel davranışını, çöp kutusu saklama politikasını ve belge akış
+            yönlendirmelerini düzenleyin.
           </p>
         </div>
       </div>
@@ -41,9 +42,9 @@ export const GenelTab: React.FC<GenelTabProps> = ({
                 Çöp Kutusu & Silinen Dosyaları Saklama Süresi (Soft Delete Retention)
               </label>
               <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-2xl">
-                Doğrudan temin dosyaları veya modüller kaldırıldığında hemen yok edilmez; Çöp Kutusu&apos;nda
-                güvenle bekletilir. Bu süre zarfında dilediğiniz an tek tıkla geri yükleyebilirsiniz.
-                Süre dolduğunda kalıcı olarak temizlenir.
+                Doğrudan temin dosyaları veya modüller kaldırıldığında hemen yok edilmez; Çöp
+                Kutusu&apos;nda güvenle bekletilir. Bu süre zarfında dilediğiniz an tek tıkla geri
+                yükleyebilirsiniz. Süre dolduğunda kalıcı olarak temizlenir.
               </p>
             </div>
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 shrink-0">
@@ -68,7 +69,11 @@ export const GenelTab: React.FC<GenelTabProps> = ({
                 >
                   <div className="text-base font-extrabold">{days} Gün</div>
                   <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
-                    {days === 30 ? 'Standart (Önerilen)' : days < 30 ? 'Kısa Süreli' : 'Genişletilmiş'}
+                    {days === 30
+                      ? 'Standart (Önerilen)'
+                      : days < 30
+                        ? 'Kısa Süreli'
+                        : 'Genişletilmiş'}
                   </div>
                 </button>
               )
@@ -78,7 +83,8 @@ export const GenelTab: React.FC<GenelTabProps> = ({
           <div className="flex items-center gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 text-[11px] text-slate-600 dark:text-slate-400 border border-slate-100 dark:border-slate-800">
             <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
             <span>
-              Süre dolmadan önce <strong>Bildirimler</strong> panelinde hatırlatıcı bildirim gösterilir.
+              Süre dolmadan önce <strong>Bildirimler</strong> panelinde hatırlatıcı bildirim
+              gösterilir.
             </span>
           </div>
         </div>

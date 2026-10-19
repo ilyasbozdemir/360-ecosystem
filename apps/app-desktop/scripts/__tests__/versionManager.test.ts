@@ -140,7 +140,9 @@ describe('Merkezi Version Manager & Sürüm Karşılaştırma Testleri', () => {
     })
 
     it('kanal düşürme teşebbüslerini engeller (örn: rc -> beta)', () => {
-      expect(() => computeNextVersion('1.0.0-rc.1', { channel: 'beta' })).toThrow(/Kanal düşürme engellendi/)
+      expect(() => computeNextVersion('1.0.0-rc.1', { channel: 'beta' })).toThrow(
+        /Kanal düşürme engellendi/
+      )
     })
 
     it('allowChannelUpgrade: false olduğunda kanal yükseltmeyi engeller', () => {
@@ -361,7 +363,11 @@ describe('Merkezi Version Manager & Sürüm Karşılaştırma Testleri', () => {
             channelOrder: { beta: 1, stable: 2 },
             defaultChannel: 'beta',
             tagPrefix: 'v',
-            prerelease: { allowChannelUpgrade: true, allowChannelDowngrade: false, allowAutoUpdate: true },
+            prerelease: {
+              allowChannelUpgrade: true,
+              allowChannelDowngrade: false,
+              allowAutoUpdate: true
+            },
             channelMeta: {}
           }
         })
@@ -406,9 +412,9 @@ describe('Merkezi Version Manager & Sürüm Karşılaştırma Testleri', () => {
         expect(loadVersionPolicy({ fallbackToDefault: true })).toEqual(DEFAULT_VERSION_POLICY)
 
         // 3. customPath için fallbackToDefault: true
-        expect(
-          loadVersionPolicy('/non/existent/policy.yaml', { fallbackToDefault: true })
-        ).toEqual(DEFAULT_VERSION_POLICY)
+        expect(loadVersionPolicy('/non/existent/policy.yaml', { fallbackToDefault: true })).toEqual(
+          DEFAULT_VERSION_POLICY
+        )
       } finally {
         fs.existsSync = originalExistsSync
       }
@@ -421,7 +427,10 @@ describe('Merkezi Version Manager & Sürüm Karşılaştırma Testleri', () => {
 
       try {
         // Paket içi resources dizinine geçerli politika kopyala
-        const realPolicyContent = fs.readFileSync(path.join(GIT_ROOT, 'version-policy.yaml'), 'utf-8')
+        const realPolicyContent = fs.readFileSync(
+          path.join(GIT_ROOT, 'version-policy.yaml'),
+          'utf-8'
+        )
         fs.writeFileSync(tempPolicyFile, realPolicyContent, 'utf-8')
 
         // Electron packaged resourcesPath taklit et
@@ -448,7 +457,12 @@ describe('Merkezi Version Manager & Sürüm Karşılaştırma Testleri', () => {
           }
 
           const discoveredFromPackaged = loadVersionPolicy()
-          expect(discoveredFromPackaged.versioning.channels).toEqual(['alpha', 'beta', 'rc', 'stable'])
+          expect(discoveredFromPackaged.versioning.channels).toEqual([
+            'alpha',
+            'beta',
+            'rc',
+            'stable'
+          ])
           expect(discoveredFromPackaged.versioning.defaultChannel).toBe('rc')
         } finally {
           fs.existsSync = originalExistsSync
@@ -503,14 +517,19 @@ describe('Merkezi Version Manager & Sürüm Karşılaştırma Testleri', () => {
 
     it('geçersiz veya var olmayan bir dizin verildiğinde Git hatasını açıkça fırlatır', () => {
       const invalidPath = path.join(GIT_ROOT, 'non/existent/folder/path')
-      expect(() => checkTagExists('v1.0.0', invalidPath)).toThrow(/Git etiket kontrolü başarısız oldu/)
+      expect(() => checkTagExists('v1.0.0', invalidPath)).toThrow(
+        /Git etiket kontrolü başarısız oldu/
+      )
     })
   })
 
   describe('6.1 Kök ve Paket İçi version-policy.yaml Dosyalarının Tutarlılığı', () => {
     it('kök (root) ve paket içi (resources) version-policy.yaml dosyaları birebir aynı ve tutarlıdır', () => {
       const rootPolicyPath = path.join(GIT_ROOT, 'version-policy.yaml')
-      const packagePolicyPath = path.join(GIT_ROOT, 'apps/app-desktop/resources/version-policy.yaml')
+      const packagePolicyPath = path.join(
+        GIT_ROOT,
+        'apps/app-desktop/resources/version-policy.yaml'
+      )
 
       expect(fs.existsSync(rootPolicyPath)).toBe(true)
       expect(fs.existsSync(packagePolicyPath)).toBe(true)
@@ -562,10 +581,13 @@ describe('Merkezi Version Manager & Sürüm Karşılaştırma Testleri', () => {
           })
         }).toThrow(/Kanal düşürme engellendi/)
       } else {
-        const raw = execSync('node apps/app-desktop/scripts/release.js --channel beta --patch --dry-run', {
-          cwd: GIT_ROOT,
-          encoding: 'utf-8'
-        })
+        const raw = execSync(
+          'node apps/app-desktop/scripts/release.js --channel beta --patch --dry-run',
+          {
+            cwd: GIT_ROOT,
+            encoding: 'utf-8'
+          }
+        )
         const output = stripAnsi(raw)
         expect(output).toContain('DRY RUN - Hiçbir değişiklik yapılmadı')
       }

@@ -12,7 +12,13 @@ export interface UseResmiUstYaziOptions {
 }
 
 export function useResmiUstYazi(options?: UseResmiUstYaziOptions) {
-  const { dosya, dosyaContext, kalemler: initialKalemler, firmalar: initialFirmalar, komisyonlar: initialKomisyonlar } = options || {}
+  const {
+    dosya,
+    dosyaContext,
+    kalemler: initialKalemler,
+    firmalar: initialFirmalar,
+    komisyonlar: initialKomisyonlar
+  } = options || {}
 
   // Uygulamadaki dinamik kurum ayarları
   const {
@@ -141,9 +147,7 @@ export function useResmiUstYazi(options?: UseResmiUstYaziOptions) {
   const [web, setWeb] = useState(BASE_DATA.web)
   const [eposta, setEposta] = useState(BASE_DATA.eposta)
   const [kep, setKep] = useState(BASE_DATA.kep)
-  const [hazad, setHazad] = useState(
-    dosya?.hazirlayan_personel_adi || adminName || BASE_DATA.hazad
-  )
+  const [hazad, setHazad] = useState(dosya?.hazirlayan_personel_adi || adminName || BASE_DATA.hazad)
   const [hazun, setHazun] = useState(
     dosya?.hazirlayan_personel_unvani || adminTitle || BASE_DATA.hazun
   )
@@ -257,10 +261,28 @@ export function useResmiUstYazi(options?: UseResmiUstYaziOptions) {
     }
   }
 
-  const antetLines = useMemo(() => antet.split('\n').map((l) => l.trim()).filter(Boolean), [antet])
-  const ilgiLines = useMemo(() => ilgi.split('\n').map((l) => l.trim()).filter(Boolean), [ilgi])
+  const antetLines = useMemo(
+    () =>
+      antet
+        .split('\n')
+        .map((l) => l.trim())
+        .filter(Boolean),
+    [antet]
+  )
+  const ilgiLines = useMemo(
+    () =>
+      ilgi
+        .split('\n')
+        .map((l) => l.trim())
+        .filter(Boolean),
+    [ilgi]
+  )
   const aciklamaParagraphs = useMemo(
-    () => aciklama.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean),
+    () =>
+      aciklama
+        .split(/\n\s*\n/)
+        .map((p) => p.trim())
+        .filter(Boolean),
     [aciklama]
   )
   const imzaList = useMemo(
@@ -284,9 +306,30 @@ export function useResmiUstYazi(options?: UseResmiUstYaziOptions) {
         .map((x) => x.split('|').map((z) => z.trim())),
     [kalemler]
   )
-  const ekLines = useMemo(() => ek.split('\n').map((l) => l.trim()).filter(Boolean), [ek])
-  const geregLines = useMemo(() => gereg.split('\n').map((l) => l.trim()).filter(Boolean), [gereg])
-  const bilgiLines = useMemo(() => bilgi.split('\n').map((l) => l.trim()).filter(Boolean), [bilgi])
+  const ekLines = useMemo(
+    () =>
+      ek
+        .split('\n')
+        .map((l) => l.trim())
+        .filter(Boolean),
+    [ek]
+  )
+  const geregLines = useMemo(
+    () =>
+      gereg
+        .split('\n')
+        .map((l) => l.trim())
+        .filter(Boolean),
+    [gereg]
+  )
+  const bilgiLines = useMemo(
+    () =>
+      bilgi
+        .split('\n')
+        .map((l) => l.trim())
+        .filter(Boolean),
+    [bilgi]
+  )
 
   const formatTrDate = (isoDate: string) => {
     if (!isoDate) return ''
@@ -308,9 +351,7 @@ export function useResmiUstYazi(options?: UseResmiUstYaziOptions) {
   }
 
   const handleUpdateRotaStep = (index: number, field: keyof RotaAdimi, value: any) => {
-    setRota((prev) =>
-      prev.map((step, idx) => (idx === index ? { ...step, [field]: value } : step))
-    )
+    setRota((prev) => prev.map((step, idx) => (idx === index ? { ...step, [field]: value } : step)))
   }
 
   return {

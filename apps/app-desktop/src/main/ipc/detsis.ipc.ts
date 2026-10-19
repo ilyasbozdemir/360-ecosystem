@@ -395,9 +395,7 @@ export function registerDetsisIpcHandlers(): void {
     const db = workspaceManager.getDb()
     if (!db) return null
     try {
-      const row = db
-        .prepare('SELECT * FROM TANIM_DetsisCache WHERE detsis_no = ?')
-        .get(cleanNo) as
+      const row = db.prepare('SELECT * FROM TANIM_DetsisCache WHERE detsis_no = ?').get(cleanNo) as
         | {
             detsis_no: string
             is_verified: number

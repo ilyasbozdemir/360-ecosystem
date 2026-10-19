@@ -60,7 +60,8 @@ export default function SurecAkisiScreen(): React.JSX.Element {
     { id: 'surec', label: 'Süreç' }
   ]
 
-  const handleNavigateCiktiMerkezi = () => navigate({ to: APP_ROUTES.CIKTI_MERKEZI_DASHBOARD as any })
+  const handleNavigateCiktiMerkezi = () =>
+    navigate({ to: APP_ROUTES.CIKTI_MERKEZI_DASHBOARD as any })
   const handleNavigateFirmalar = () => navigate({ to: APP_ROUTES.FIRMALAR as any })
   const handleNavigateKomisyonlar = () => navigate({ to: APP_ROUTES.KOMISYONLAR as any })
 

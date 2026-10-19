@@ -201,7 +201,8 @@ export default function DevletIhale2886Screen(): React.JSX.Element {
         {
           id: 'tahsilat',
           stepNum: 6,
-          label: islemTuru === 'kiralama' ? 'Kira Geliri & Artış Takibi' : 'Tahsilat & Taksit Planı',
+          label:
+            islemTuru === 'kiralama' ? 'Kira Geliri & Artış Takibi' : 'Tahsilat & Taksit Planı',
           subtitle: '5018 Gelir & Tahakkuk takibi',
           icon: CreditCard,
           badge: '5018 Gelir'
@@ -236,7 +237,8 @@ export default function DevletIhale2886Screen(): React.JSX.Element {
               <span>Taşınmaz Satış, Kiralama ve Gelir Yönetimi</span>
             </h1>
             <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
-              4734&apos;ten bağımsız gelir odaklı ihale süreçleri, kıymet takdir komisyonu, açık artırma ve tahsilat takibi.
+              4734&apos;ten bağımsız gelir odaklı ihale süreçleri, kıymet takdir komisyonu, açık
+              artırma ve tahsilat takibi.
             </p>
           </div>
 
@@ -416,7 +418,10 @@ export default function DevletIhale2886Screen(): React.JSX.Element {
               <div className="flex items-center justify-between text-[10px] text-slate-500 pt-1 border-t border-slate-200/60 dark:border-slate-800">
                 <span>Muhammen Bedel:</span>
                 <span className="font-bold text-slate-700 dark:text-slate-300">
-                  ₺{Number(selectedDosya.muhammenBedel?.takdirEdilenMuhammenBedel || 0).toLocaleString('tr-TR')}
+                  ₺
+                  {Number(
+                    selectedDosya.muhammenBedel?.takdirEdilenMuhammenBedel || 0
+                  ).toLocaleString('tr-TR')}
                 </span>
               </div>
               <button
@@ -469,7 +474,9 @@ export default function DevletIhale2886Screen(): React.JSX.Element {
                 onOpenStudyo={() => setActiveTab('studyo')}
               />
             )}
-            {activeTab === 'studyo' && <BelgeVeSablonStudyoTab initialDosyaId={selectedDosya?.id} />}
+            {activeTab === 'studyo' && (
+              <BelgeVeSablonStudyoTab initialDosyaId={selectedDosya?.id} />
+            )}
             {activeTab === 'takdir' && <MuhammenBedelVeTakdirTab islemTuru={islemTuru} />}
             {activeTab === 'usul' && <UsulVeKararMatrisiTab />}
             {activeTab === 'evraklar' && <SurecEvraklariTab selectedDosya={selectedDosya} />}

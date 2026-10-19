@@ -53,24 +53,24 @@ export async function withSchemaRetry<T>(
       throw error
     }
 
-   const col = extractMissingColumn(error)
+    const col = extractMissingColumn(error)
     if (col && knownColumns && !knownColumns.has(col)) {
       console.error(
         `\x1b[1;41;37m [KOD HATASI] \x1b[0m Sutun semada tanimli degil: "${col}"\n` +
-        `>> SQL: ${sqlQuery || 'Bilinmiyor'}\n` +
-        `>> Onarim calistirilmadi; sorgudaki sutun adini duzeltin.`
+          `>> SQL: ${sqlQuery || 'Bilinmiyor'}\n` +
+          `>> Onarim calistirilmadi; sorgudaki sutun adini duzeltin.`
       )
       throw error
     }
-    
+
     // ANSI Color formatting with clean cross-platform ASCII delimiters for console visibility
     console.error(
       `\x1b[1;31m===========================================================================\x1b[0m\n` +
-      `\x1b[1;41;37m [SEMA UYARISI / EKSIK SUTUN VEYA TABLO TESPIT EDILDI] \x1b[0m\n` +
-      `\x1b[1;31m>> HATA DETAYI : \x1b[0m\x1b[31m${error?.message || error}\x1b[0m\n` +
-      `\x1b[1;33m>> CALISAN SQL : \x1b[0m\x1b[33m${sqlQuery || 'Bilinmiyor'}\x1b[0m\n` +
-      `\x1b[1;36m>> Sema otomatik onarim (schema auto-repair) devreye aliniyor...\x1b[0m\n` +
-      `\x1b[1;31m===========================================================================\x1b[0m`
+        `\x1b[1;41;37m [SEMA UYARISI / EKSIK SUTUN VEYA TABLO TESPIT EDILDI] \x1b[0m\n` +
+        `\x1b[1;31m>> HATA DETAYI : \x1b[0m\x1b[31m${error?.message || error}\x1b[0m\n` +
+        `\x1b[1;33m>> CALISAN SQL : \x1b[0m\x1b[33m${sqlQuery || 'Bilinmiyor'}\x1b[0m\n` +
+        `\x1b[1;36m>> Sema otomatik onarim (schema auto-repair) devreye aliniyor...\x1b[0m\n` +
+        `\x1b[1;31m===========================================================================\x1b[0m`
     )
 
     // Reuse in-flight repair promise to prevent race conditions during concurrent queries

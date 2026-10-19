@@ -3,14 +3,7 @@
  */
 
 /** Yer tutucu veri tipleri */
-export type YerTutucuTipi =
-  | 'metin'
-  | 'sayi'
-  | 'para'
-  | 'tarih'
-  | 'secim'
-  | 'cok_satirli'
-  | 'liste'
+export type YerTutucuTipi = 'metin' | 'sayi' | 'para' | 'tarih' | 'secim' | 'cok_satirli' | 'liste'
 
 /** Liste tipi yer tutucu için alt alan tanımı */
 export interface AltAlanTanimi {
@@ -45,16 +38,7 @@ export interface YerTutucuTanimi {
 }
 
 /** Koşul karşılaştırma operatörleri */
-export type KosulOperatoru =
-  | 'eq'
-  | 'ne'
-  | 'gt'
-  | 'gte'
-  | 'lt'
-  | 'lte'
-  | 'dolu'
-  | 'bos'
-  | 'icerir'
+export type KosulOperatoru = 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte' | 'dolu' | 'bos' | 'icerir'
 
 /** Tekil koşul kuralı */
 export interface KosulKurali {

@@ -41,7 +41,9 @@ export function PersonnelSelectField({
   return (
     <div className="relative">
       <div className="flex items-center justify-between mb-1.5">
-        <label className="block text-xs font-bold text-slate-600 dark:text-slate-400">{label}</label>
+        <label className="block text-xs font-bold text-slate-600 dark:text-slate-400">
+          {label}
+        </label>
         {selectedPerson && (
           <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${badgeClass}`}>
             {badgeText}

@@ -16,7 +16,8 @@ export const EbysMevzuatGuide: React.FC = () => {
               Türkiye EBYS Resmî Yazışma Mevzuatı &amp; Kaynaklar
             </h2>
             <p className="text-xs text-slate-600 dark:text-slate-400">
-              Resmî Yazışmalarda Uygulanacak Usul ve Esaslar Hakkında Yönetmelik ve e-Yazışma Paketi (EYP 2.0)
+              Resmî Yazışmalarda Uygulanacak Usul ve Esaslar Hakkında Yönetmelik ve e-Yazışma Paketi
+              (EYP 2.0)
             </p>
           </div>
         </div>

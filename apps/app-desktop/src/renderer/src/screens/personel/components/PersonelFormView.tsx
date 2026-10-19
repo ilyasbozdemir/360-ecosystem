@@ -81,11 +81,7 @@ export function PersonelFormView({
               </label>
               <div className="relative group w-24 h-24 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-850 border-2 border-dashed border-slate-300 dark:border-slate-700 flex items-center justify-center cursor-pointer shadow-inner hover:border-blue-500 dark:hover:border-blue-400 transition-colors">
                 {formData.avatar ? (
-                  <img
-                    src={formData.avatar}
-                    alt="Avatar"
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={formData.avatar} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
                   <Users className="w-10 h-10 text-slate-400 dark:text-slate-600" />
                 )}

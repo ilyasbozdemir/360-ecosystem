@@ -3,9 +3,10 @@ import { GetDosyaSablonVeriQuery } from './GetDosyaSablonVeriQuery'
 import { DosyaSablonVeriDto } from '../dtos/DosyaSablonVeriDto'
 import { dbClient } from '../../../services/db/dbClient'
 
-export class GetDosyaSablonVeriQueryHandler
-  implements IRequestHandler<GetDosyaSablonVeriQuery, DosyaSablonVeriDto | null>
-{
+export class GetDosyaSablonVeriQueryHandler implements IRequestHandler<
+  GetDosyaSablonVeriQuery,
+  DosyaSablonVeriDto | null
+> {
   async handle(query: GetDosyaSablonVeriQuery): Promise<DosyaSablonVeriDto | null> {
     const row = await dbClient.queryFirst<DosyaSablonVeriDto>(
       `SELECT id, temin_dosya_id, sablon_kodu, veri_json, updated_at 

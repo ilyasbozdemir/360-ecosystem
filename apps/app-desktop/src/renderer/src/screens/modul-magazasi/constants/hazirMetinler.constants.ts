@@ -15,12 +15,14 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       id: 'dt-metin-ihtiyac',
       kategori: 'İhtiyaç & Gerekçe',
       baslik: 'Mal Alımı İhtiyaç & Talep Gerekçesi',
-      kisaAciklama: 'Birimce acil ihtiyaç duyulan sarf malzeme veya demirbaş alımı için standart gerekçe metni.',
+      kisaAciklama:
+        'Birimce acil ihtiyaç duyulan sarf malzeme veya demirbaş alımı için standart gerekçe metni.',
       varsayilanHitap: 'DESTEK HİZMETLERİ DAİRESİ BAŞKANLIĞINA',
       varsayilanKonu: 'Doğrudan Temin Usulü İle Malzeme Alımı Talebi',
       tamMetin:
         'Birimimizin yürütmekte olduğu kamu hizmetlerinin aksamadan sürdürülebilmesi ve iş ve işlemlerin kesintiye uğramaması amacıyla, aşağıda teknik özellikleri ve adetleri belirtilen malzemelerin 4734 Sayılı Kamu İhale Kanununun 22/d maddesi kapsamında doğrudan temin usulüyle satın alınması hususunda gereğini tensiplerinize arz ederim.',
-      rehberNotu: 'Bu metin harcama birimi üst yazısına bağlanır. İhtiyaç listesi ek olarak iliştirilmelidir.',
+      rehberNotu:
+        'Bu metin harcama birimi üst yazısına bağlanır. İhtiyaç listesi ek olarak iliştirilmelidir.',
       etiket: 'Gerekçe',
       formTipi: 'dilekce'
     },
@@ -33,7 +35,8 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       varsayilanKonu: 'Fiyat Teklifi İstemi (4734 / 22-d)',
       tamMetin:
         'İdaremiz ihtiyacı olan ve ekli şartnamede/listede cinsi, miktarı ve özellikleri belirtilen mal/hizmet alımı işi 4734 Sayılı Kamu İhale Kanununun 22/d maddesi gereğince doğrudan temin yöntemiyle yaptırılacaktır. Söz konusu alıma ilişkin KDV hariç birim ve toplam fiyat teklifinizin kaşeli ve imzalı olarak en geç belirtilen tarih ve saate kadar İdaremize ulaştırılmasını rica ederiz.',
-      rehberNotu: 'Faks veya e-posta ile gönderilecekse teyit alındı belgesinin dosyaya eklenmesi Sayıştay denetiminde aranır.',
+      rehberNotu:
+        'Faks veya e-posta ile gönderilecekse teyit alındı belgesinin dosyaya eklenmesi Sayıştay denetiminde aranır.',
       etiket: 'Teklif',
       formTipi: 'ust_yazi'
     },
@@ -41,12 +44,14 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       id: 'dt-metin-yaklasik-maliyet',
       kategori: 'Maliyet & Onay',
       baslik: 'Yaklaşık Maliyet Tespit Tutanağı Açıklaması',
-      kisaAciklama: 'Fiyat araştırması verilerine dayanılarak tahmini bedelin nasıl hesaplandığını açıklayan şerh.',
+      kisaAciklama:
+        'Fiyat araştırması verilerine dayanılarak tahmini bedelin nasıl hesaplandığını açıklayan şerh.',
       varsayilanHitap: 'HARCAMA YETKİLİSİNE',
       varsayilanKonu: 'Yaklaşık Maliyet Tespit Kararı',
       tamMetin:
         '4734 Sayılı Kamu İhale Kanununun 9. maddesi ve Doğrudan Temin Esasları uyarınca yapılan piyasa araştırmasında, en az 3 farklı yetkili tedarikçiden alınan proforma faturalar ve piyasa rayiçleri incelenmiş; aritmetik ortalaması ve piyasa koşulları dikkate alınarak işin yaklaşık maliyeti KDV hariç olarak tespit edilerek onayınıza sunulmuştur.',
-      rehberNotu: 'Yaklaşık maliyet gizlidir; piyasa araştırma görevlileri ve harcama yetkilisi haricinde kimseyle paylaşılmaz.',
+      rehberNotu:
+        'Yaklaşık maliyet gizlidir; piyasa araştırma görevlileri ve harcama yetkilisi haricinde kimseyle paylaşılmaz.',
       etiket: 'Maliyet',
       formTipi: 'tutanak'
     },
@@ -59,7 +64,8 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       varsayilanKonu: 'Tek Kaynak Gerekçeli Alım Onayı',
       tamMetin:
         'Alımı planlanan ürünün/yazılımın Türkiye yetkili tek dağıtıcısı ve patent/telif hakları sahibi olduğu belgelendirildiğinden; başka bir kaynaktan temini teknik ve hukuki açıdan mümkün bulunmamaktadır. Bu nedenle alımın 4734 Sayılı Kanunun 22/a (veya 22/c) bendi uyarınca tek kaynaktan temin edilmesi hususunu olurlarınıza arz ederim.',
-      rehberNotu: 'Telif/patent veya tek yetkili satıcılık belgesinin onay belgesine eklenmesi mecburidir.',
+      rehberNotu:
+        'Telif/patent veya tek yetkili satıcılık belgesinin onay belgesine eklenmesi mecburidir.',
       etiket: 'Tek Kaynak',
       formTipi: 'onay_belgesi'
     },
@@ -72,7 +78,8 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       varsayilanKonu: 'Teslim Edilen Mallardaki Ayıplar ve Düzeltme İhtarı',
       tamMetin:
         'İdaremiz ile firmanız arasında akdedilen doğrudan temin siparişi kapsamında teslim edilen malların Muayene ve Kabul Komisyonumuzca yapılan fiziki ve fonksiyonel incelenmesinde; bazı kalemlerin teknik şartnamede belirtilen kriterleri karşılamadığı tespit edilmiştir. Söz konusu eksikliklerin sözleşme şartları gereği 3 (üç) iş günü içerisinde giderilerek uygun ürünlerle değiştirilmesi, aksi halde siparişin iptal edilerek gecikme cezası uygulanacağı hususu ihtaren bildirilir.',
-      rehberNotu: 'Bu metin noterden veya iadeli taahhütlü/imzalı tebligat yoluyla firmaya ulaştırılmalıdır.',
+      rehberNotu:
+        'Bu metin noterden veya iadeli taahhütlü/imzalı tebligat yoluyla firmaya ulaştırılmalıdır.',
       etiket: 'İhtar',
       formTipi: 'ust_yazi'
     },
@@ -80,12 +87,14 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       id: 'dt-metin-odeme-tahakkuk',
       kategori: 'Maliyet & Onay',
       baslik: 'Ödeme Emri Belgesi Tahakkuk Açıklama Notu',
-      kisaAciklama: 'Muhasebe servisine gönderilen ödeme emri belgesi üzerindeki standart gerekçe şerhi.',
+      kisaAciklama:
+        'Muhasebe servisine gönderilen ödeme emri belgesi üzerindeki standart gerekçe şerhi.',
       varsayilanHitap: 'STRATEJİ GELİŞTİRME DAİRESİ BAŞKANLIĞINA (Muhasebe Birimi)',
       varsayilanKonu: 'Ödeme Emri ve Hakediş Tahakkuku',
       tamMetin:
         'İdaremiz 4734 sayılı Kanunun 22/d maddesi gereğince gerçekleştirilen alıma ait fatura, muayene kabul tutanağı, piyasa fiyat araştırması tutanağı ve onay belgesi ekte sunulmuştur. İş eksiksiz teslim alınmış olup, ilgili mevzuat ve vergi kesintileri tatbik edilerek hakediş bedelinin yüklenicinin kayıtlı IBAN hesabına ödenmesini arz ederim.',
-      rehberNotu: 'Vergi borcu sorgulaması (6183 m.22/A) 5.000 TL üzerindeki tüm kamu ödemelerinde eklenmelidir.',
+      rehberNotu:
+        'Vergi borcu sorgulaması (6183 m.22/A) 5.000 TL üzerindeki tüm kamu ödemelerinde eklenmelidir.',
       etiket: 'Ödeme',
       formTipi: 'dilekce'
     },
@@ -111,7 +120,8 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       varsayilanKonu: 'Ayıplı Malzeme Tespit Tutanağı',
       tamMetin:
         'Yüklenici firma tarafından idaremize teslim edilmek üzere getirilen kolilerin açılması esnasında; ambalajın ezilmiş olduğu ve içerisindeki malzemenin kırık/kullanılamaz vaziyette bulunduğu tespit edilmiştir. İlgili mal teslim alınmamış, durum tespit edilerek işbu tutanak kurye ve ambar görevlileri huzurunda müştereken imza altına alınmıştır.',
-      rehberNotu: 'Fotoğraf çekilip tutanak ekine konulması hukuki uyuşmazlıklarda ispat kolaylığı sağlar.',
+      rehberNotu:
+        'Fotoğraf çekilip tutanak ekine konulması hukuki uyuşmazlıklarda ispat kolaylığı sağlar.',
       etiket: 'Hasar',
       formTipi: 'tutanak'
     },
@@ -119,7 +129,8 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       id: 'dt-metin-hizmet-is-artisi',
       kategori: 'İş Artışı & Süre',
       baslik: 'Hizmet / Yapım Alımı İş Artışı ve Süre Uzatımı Raporu',
-      kisaAciklama: 'Doğrudan temin kapsamında öngörülemeyen durumlar için yasal sınır dahilinde iş artışı gerekçesi.',
+      kisaAciklama:
+        'Doğrudan temin kapsamında öngörülemeyen durumlar için yasal sınır dahilinde iş artışı gerekçesi.',
       varsayilanHitap: 'HARCAMA YETKİLİSİNE',
       varsayilanKonu: 'İş Artışı ve Ek Süre Talebi',
       tamMetin:
@@ -145,12 +156,14 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       id: 'dt-metin-gecikme-ceza',
       kategori: 'Ceza & Kesinti',
       baslik: 'Gecikme Cezası Kesintisi ve Tahakkuk Müzekkeresi',
-      kisaAciklama: 'Mal veya hizmeti süresinde teslim etmeyen firmaya sözleşme gereği uygulanan ceza bildirimi.',
+      kisaAciklama:
+        'Mal veya hizmeti süresinde teslim etmeyen firmaya sözleşme gereği uygulanan ceza bildirimi.',
       varsayilanHitap: 'MUHASEBE VE MALİ HİZMETLER SERVİSİNE',
       varsayilanKonu: 'Gecikme Cezası Kesintisi Uygulanması',
       tamMetin:
         'İdaremiz Doğrudan Temin siparişi kapsamında [YÜKLENİCİ FİRMA] tarafından taahhüt edilen teslim süresi [SÖZLEŞME TARİHİ] olmasına rağmen, teslimat [GECİKME GÜN] gün gecikmeyle [FİİLİ TESLİM TARİHİ] tarihinde yapılmıştır. Şartname/sözleşme hükmü gereği günlük % [CEZA ORANI] oranında hesaplanan toplam [CEZA TUTARI] TL gecikme cezasının firmanın hakedişinden mahsup edilerek irat kaydedilmesini arz ederim.',
-      rehberNotu: 'Gecikme cezası KDV hariç hakediş bedeli üzerinden hesaplanmalı ve kesinti dekontu dosyalanmalıdır.',
+      rehberNotu:
+        'Gecikme cezası KDV hariç hakediş bedeli üzerinden hesaplanmalı ve kesinti dekontu dosyalanmalıdır.',
       etiket: 'Ceza',
       formTipi: 'ust_yazi'
     },
@@ -163,7 +176,8 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       varsayilanKonu: 'Fiyat Farkı Tahakkuku Kararı',
       tamMetin:
         'Kamu İhale Kanununa İlişkin Fiyat Farkı Esasları ve sözleşme hükümleri uyarınca; [TESLİM DÖNEMİ] ayında teslim edilen akaryakıt/malzeme için temel endeks ile cari endeks farkı uygulanarak toplam [FARK TUTARI] TL fiyat farkı tahakkuk ettirilmiş olup ödeme emrine bağlanması olurlarınıza sunulur.',
-      rehberNotu: 'Fiyat farkı hesabı tablosu ve EPDK/TÜİK resmi bülten çıktısı ödeme evrakına eklenmelidir.',
+      rehberNotu:
+        'Fiyat farkı hesabı tablosu ve EPDK/TÜİK resmi bülten çıktısı ödeme evrakına eklenmelidir.',
       etiket: 'Fiyat Farkı',
       formTipi: 'tutanak'
     },
@@ -171,12 +185,14 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       id: 'dt-metin-siparis-iptal',
       kategori: 'Fesih & İptal',
       baslik: 'Taahhüdün İfa Edilmemesi Sebebiyle Sipariş İptali ve Fesih',
-      kisaAciklama: 'Verilen ihtara rağmen ifada bulunmayan yükleniciye doğrudan temin siparişinin iptal bildirimi.',
+      kisaAciklama:
+        'Verilen ihtara rağmen ifada bulunmayan yükleniciye doğrudan temin siparişinin iptal bildirimi.',
       varsayilanHitap: 'YÜKLENİCİ SAYIN [FİRMA YETKİLİSİNE]',
       varsayilanKonu: 'Doğrudan Temin Siparişinin İptali ve Fesih Bildirimi',
       tamMetin:
         'İdaremizce tarafınıza verilen doğrudan temin siparişine ait mal ve hizmetlerin süresi içerisinde teslim edilmediği ve gönderilen düzeltme/ihtar yazısına rağmen ifada bulunulmadığı tespit edilmiştir. Söz konusu sipariş tek taraflı olarak feshedilerek iptal edilmiş olup; İdaremizin uğradığı menfi ve müspet zararları talep hakkı saklı tutulmuştur.',
-      rehberNotu: 'Fesih yazısı tebliğ edildikten sonra ihtiyaç başka bir tedarikçiden piyasa araştırmasıyla temin edilir.',
+      rehberNotu:
+        'Fesih yazısı tebliğ edildikten sonra ihtiyaç başka bir tedarikçiden piyasa araştırmasıyla temin edilir.',
       etiket: 'Fesih',
       formTipi: 'ust_yazi'
     },
@@ -184,7 +200,8 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       id: 'dt-metin-numune-degerlendirme',
       kategori: 'Kabul & Muayene',
       baslik: 'Numune İnceleme ve Teknik Uygunluk Kararı',
-      kisaAciklama: 'Satın alma öncesi isteklinin sunduğu prototip/numunenin şartnameye uygunluk kontrolü.',
+      kisaAciklama:
+        'Satın alma öncesi isteklinin sunduğu prototip/numunenin şartnameye uygunluk kontrolü.',
       varsayilanHitap: 'TUTANAKTIR',
       varsayilanKonu: 'Numune Uygunluk İnceleme Tutanağı',
       tamMetin:
@@ -197,12 +214,14 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       id: 'dt-metin-komisyon-teskili',
       kategori: 'Komisyon & Yetki',
       baslik: 'Piyasa Araştırması ve Muayene Kabul Görevlendirme Oluru',
-      kisaAciklama: '4734 m.22 uyarınca alım sürecini yürütecek personellerin resmi yetkilendirilmesi.',
+      kisaAciklama:
+        '4734 m.22 uyarınca alım sürecini yürütecek personellerin resmi yetkilendirilmesi.',
       varsayilanHitap: 'HARCAMA YETKİLİSİNE',
       varsayilanKonu: 'Piyasa Araştırma ve Muayene Komisyonu Teşkili',
       tamMetin:
         'Birimimizce 4734 Sayılı Kanunun 22/d maddesi kapsamında gerçekleştirilecek alıma ilişkin piyasa fiyat araştırmasını yürütmek ve teslim edilecek malzemelerin şartnameye uygunluk kontrollerini yapmak üzere aşağıda ad-soyad ve unvanları yazılı personellerin görevlendirilmesini olurlarınıza arz ederim.',
-      rehberNotu: 'Doğrudan teminde komisyon kurulması kanunen zorunlu olmayıp bir görevli de yetebilir, ancak heyet önerilir.',
+      rehberNotu:
+        'Doğrudan teminde komisyon kurulması kanunen zorunlu olmayıp bir görevli de yetebilir, ancak heyet önerilir.',
       etiket: 'Görevlendirme',
       formTipi: 'onay_belgesi'
     }
@@ -229,7 +248,8 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       id: 'dik-kiymet-takdir',
       kategori: 'Kıymet Takdiri',
       baslik: 'Kıymet Takdir Komisyonu Muhammen Bedel Tespit Kararı',
-      kisaAciklama: 'Taşınmazın muhammen bedelinin ve %3 geçici teminatının belirlendiği karar zaptı.',
+      kisaAciklama:
+        'Taşınmazın muhammen bedelinin ve %3 geçici teminatının belirlendiği karar zaptı.',
       varsayilanHitap: 'KIYMET TAKDİR KOMİSYONU KARARIDIR',
       varsayilanKonu: 'Muhammen Bedel Tespit Tutanağı',
       tamMetin:
@@ -255,12 +275,14 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       id: 'dik-teminat-iade',
       kategori: 'Teminat İşlemleri',
       baslik: 'Geçici Teminat İadesi Talep Dilekçesi',
-      kisaAciklama: 'İhaleyi kazanamayan veya çekilen isteklinin yatırdığı teminatı geri alma dilekçesi.',
+      kisaAciklama:
+        'İhaleyi kazanamayan veya çekilen isteklinin yatırdığı teminatı geri alma dilekçesi.',
       varsayilanHitap: 'MALİ HİZMETLER MÜDÜRLÜĞÜNE',
       varsayilanKonu: 'Geçici Teminatın İadesi',
       tamMetin:
         '2886 Sayılı Kanun uyarınca [TARİH] tarihinde yapılan ihaleye katılmak amacıyla yatırmış olduğum [MİKTAR] TL tutarındaki geçici teminatımın; ihale uhdemde kalmadığından dolayı aşağıda belirtmiş olduğum banka IBAN hesabıma iade edilmesini saygılarımla arz ederim.',
-      rehberNotu: 'İade yalnızca geçici teminatı yatıran şahıs veya şirketin kendi hesabına yapılabilir.',
+      rehberNotu:
+        'İade yalnızca geçici teminatı yatıran şahıs veya şirketin kendi hesabına yapılabilir.',
       etiket: 'Teminat İade',
       formTipi: 'dilekce'
     },
@@ -268,7 +290,8 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       id: 'dik-sozlesme-davet',
       kategori: 'Tebligat & Sözleşme',
       baslik: 'İhale Kararı Tebligatı ve Kesin Teminat / Sözleşmeye Davet Mektubu',
-      kisaAciklama: 'İhaleyi kazanan istekliye noter veya tebligat yoluyla gönderilen resmi davet mektubu.',
+      kisaAciklama:
+        'İhaleyi kazanan istekliye noter veya tebligat yoluyla gönderilen resmi davet mektubu.',
       varsayilanHitap: 'SAYIN [YÜKLENİCİ / İSTEKLİ]',
       varsayilanKonu: 'İhale Kararı ve Sözleşmeye Davet (2886 m.31 & m.57)',
       tamMetin:
@@ -281,7 +304,8 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       id: 'dik-teslim-tutanak',
       kategori: 'Teslim & Kabul',
       baslik: 'Taşınmaz Yer Teslim ve Tahliye Tespit Tutanağı',
-      kisaAciklama: 'Taşınmazın fiziki durumunun taraflarca tespit edilerek anahtarlarının teslim tutanağı.',
+      kisaAciklama:
+        'Taşınmazın fiziki durumunun taraflarca tespit edilerek anahtarlarının teslim tutanağı.',
       varsayilanHitap: 'TUTANAKTIR',
       varsayilanKonu: 'Taşınmaz Yer Teslim Tutanağı',
       tamMetin:
@@ -299,7 +323,8 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       varsayilanKonu: 'Kira Borcunun Ödenmesi ve Tahliye İhtarı (TBK m.315)',
       tamMetin:
         'İdaremiz kiracısı bulunduğunuz taşınmaza ait vadesi geçmiş [DÖNEM] aylarına ait toplam [BORÇ] TL kira borcunuz bulunmaktadır. İşbu ihtarnamenin tebliğinden itibaren Türk Borçlar Kanunu gereğince 30 (otuz) gün içinde ödenmesi, aksi halde sözleşmenin feshedilerek taşınmazın tahliyesi ve icra takibi başlatılacağı ihtaren bildirilir.',
-      rehberNotu: 'Sayıştay denetiminde tahakkuk ve tahsilat takibinin zamanında yapıldığı bu ihtarlarla ispatlanır.',
+      rehberNotu:
+        'Sayıştay denetiminde tahakkuk ve tahsilat takibinin zamanında yapıldığı bu ihtarlarla ispatlanır.',
       etiket: 'İhtarname',
       formTipi: 'ust_yazi'
     },
@@ -307,12 +332,14 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       id: 'dik-encumen-karar-zapti',
       kategori: 'Encümen Kararı',
       baslik: 'Belediye Encümeni 2886 İhale Karar Zaptı Metni',
-      kisaAciklama: 'Açık teklif veya pazarlık usulü ihale sonucunu tescil eden resmi encümen kararı.',
+      kisaAciklama:
+        'Açık teklif veya pazarlık usulü ihale sonucunu tescil eden resmi encümen kararı.',
       varsayilanHitap: 'BELEDİYE ENCÜMENİ KARARIDIR',
       varsayilanKonu: '2886 Sayılı Kanun m.45 İhale Kararı',
       tamMetin:
         'Belediyemiz Encümeni huzurunda 2886 Sayılı Devlet İhale Kanununun 45. maddesi uyarınca açık teklif usulüyle yapılan ihalede; iştirakçilerin sunduğu peyler incelenmiş olup en yüksek pey olan KDV hariç [SON TEKLİF] TL bedeli teklif eden [İSTEKLİ/YÜKLENİCİ] üzerine ihalenin bırakılmasına ve İta Amirinin onayına sunulmasına oy birliğiyle karar verildi.',
-      rehberNotu: 'Encümen kararı alındıktan sonra 15 iş günü içinde ita amirince onaylanması şarttır.',
+      rehberNotu:
+        'Encümen kararı alındıktan sonra 15 iş günü içinde ita amirince onaylanması şarttır.',
       etiket: 'Encümen Kararı',
       formTipi: 'tutanak'
     },
@@ -320,7 +347,8 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       id: 'dik-kira-artis-bildirim',
       kategori: 'Kira Yönetimi',
       baslik: 'Yıllık TÜFE / Yİ-ÜFE Kira Artış Bildirim Mektubu',
-      kisaAciklama: 'Kira yenileme döneminde resmi TÜİK oranına göre yeni bedelin kiracıya tebliği.',
+      kisaAciklama:
+        'Kira yenileme döneminde resmi TÜİK oranına göre yeni bedelin kiracıya tebliği.',
       varsayilanHitap: 'KİRACI SAYIN [KİRACI ADI / FİRMA]',
       varsayilanKonu: 'Yeni Dönem Kira Bedeli Artışı Bildirimi',
       tamMetin:
@@ -333,12 +361,14 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       id: 'dik-ecrimisil-ihbarnamesi',
       kategori: 'Ecrimisil & İşgal',
       baslik: 'İşgalli Taşınmaz Ecrimisil İhbarnamesi ve Tahakkuk Fişi',
-      kisaAciklama: 'Kamu taşınmazını haksız işgal eden şagile geriye dönük ecrimisil bedeli bildirimi.',
+      kisaAciklama:
+        'Kamu taşınmazını haksız işgal eden şagile geriye dönük ecrimisil bedeli bildirimi.',
       varsayilanHitap: 'SAYIN [İŞGALCİ / FUZULİ ŞAGİL]',
       varsayilanKonu: 'Ecrimisil İhbarnamesi (2886 Sayılı Kanun m.75)',
       tamMetin:
         'Mülkiyeti İdaremize ait olan [ADA/PARSEL] numaralı taşınmazı [DÖNEM] tarihleri arasında herhangi bir kira akdine dayanmaksızın fuzuli işgal ettiğiniz tespit edilmiştir. 2886 Sayılı Kanunun 75. maddesi uyarınca takdir edilen [ECRİMİSİL TUTARI] TL ecrimisil bedelinin tebliğden itibaren 30 gün içinde ödenmesi veya rızaen terk edilmesi hususu ihtaren bildirilir.',
-      rehberNotu: 'Ecrimisil geriye dönük en fazla 5 yıl için talep edilebilir; zamanaşımı süresi 5 yıldır.',
+      rehberNotu:
+        'Ecrimisil geriye dönük en fazla 5 yıl için talep edilebilir; zamanaşımı süresi 5 yıldır.',
       etiket: 'Ecrimisil',
       formTipi: 'ust_yazi'
     },
@@ -346,12 +376,14 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       id: 'dik-tahliye-zabita-tutanak',
       kategori: 'Tahliye & Güvenlik',
       baslik: '2886 Madde 75 Kolluk ve Zabıta Marifetiyle Tahliye Tutanağı',
-      kisaAciklama: 'Tahliye süresinde boşaltılmayan kamu taşınmazının mülki amir emriyle tahliye zabtı.',
+      kisaAciklama:
+        'Tahliye süresinde boşaltılmayan kamu taşınmazının mülki amir emriyle tahliye zabtı.',
       varsayilanHitap: 'TAHLİYE TUTANAĞIDIR',
       varsayilanKonu: '2886 m.75 Zorla Tahliye ve Kilit Değişimi',
       tamMetin:
         'İdaremiz taşınmazını tahliye etmesi yönünde verilen yasal sürenin dolmasına rağmen boşaltmayan fuzuli şagilin bulunduğu mahallin; Kaymakamlık Makamının oluruyla Zabıta ve Emniyet personeli eşliğinde tahliyesi gerçekleştirilmiş, kapı kilitleri değiştirilerek taşınmaz İdare yetkililerine teslim edilmiştir.',
-      rehberNotu: 'Tahliye sırasında içeride bulunan eşyalar yediemine teslim edilip zapt altına alınmalıdır.',
+      rehberNotu:
+        'Tahliye sırasında içeride bulunan eşyalar yediemine teslim edilip zapt altına alınmalıdır.',
       etiket: 'Zorla Tahliye',
       formTipi: 'tutanak'
     }
@@ -378,7 +410,8 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       id: 'ebys-avans-mahsup',
       kategori: 'Mali İşler',
       baslik: 'İş Avansı Mahsup ve Kapatma Dilekçesi',
-      kisaAciklama: 'Acil harcamalar için açılan iş avansının harcama belgeleriyle kapatılması dilekçesi.',
+      kisaAciklama:
+        'Acil harcamalar için açılan iş avansının harcama belgeleriyle kapatılması dilekçesi.',
       varsayilanHitap: 'STRATEJİ GELİŞTİRME DAİRESİ BAŞKANLIĞINA',
       varsayilanKonu: 'İş Avansı Mahsubu ve Kapatılması',
       tamMetin:
@@ -409,7 +442,8 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       varsayilanKonu: 'Teknik Görüş ve İnceleme Talebi',
       tamMetin:
         'İdaremizce yürütülmekte olan proje ve kamu hizmetleri kapsamında; mevzuat ve uygulamaya esas olmak üzere bahse konu husustaki teknik ve hukuki görüşünüz ile varsa ilgili kayıt ve belgelerin birer suretinin tarafımıza gönderilmesini arz ve rica ederim.',
-      rehberNotu: 'Üst makamlara "Arz ederim", ast veya muadillere "Rica ederim", karma dağıtımda "Arz ve rica ederim" kullanılır.',
+      rehberNotu:
+        'Üst makamlara "Arz ederim", ast veya muadillere "Rica ederim", karma dağıtımda "Arz ve rica ederim" kullanılır.',
       etiket: 'Resmi Yazı',
       formTipi: 'ust_yazi'
     },
@@ -434,8 +468,9 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       varsayilanHitap: 'DAĞITIM YERLERİNE',
       varsayilanKonu: 'Harcama ve Tasarruf Tedbirleri Uygulama Talimatı',
       tamMetin:
-        'Resmî Gazete\'de yayımlanarak yürürlüğe giren Tasarruf Tedbirleri Genelgesi gereğince; kurumumuz tüm birimlerince doğrudan temin, kırtasiye, akaryakıt ve temsil ağırlama giderlerinde azami tasarruf ilkelerine riayet edilmesi ve her üç ayda bir harcama icmallerinin Başkanlığımıza bildirilmesi hususunda gereğini önemle rica ederim.',
-      rehberNotu: 'Dağıtımlı yazılarda yazının sonunda DAĞITIM: Gereği ve Bilgi listesi ayrı ayrı belirtilmelidir.',
+        "Resmî Gazete'de yayımlanarak yürürlüğe giren Tasarruf Tedbirleri Genelgesi gereğince; kurumumuz tüm birimlerince doğrudan temin, kırtasiye, akaryakıt ve temsil ağırlama giderlerinde azami tasarruf ilkelerine riayet edilmesi ve her üç ayda bir harcama icmallerinin Başkanlığımıza bildirilmesi hususunda gereğini önemle rica ederim.",
+      rehberNotu:
+        'Dağıtımlı yazılarda yazının sonunda DAĞITIM: Gereği ve Bilgi listesi ayrı ayrı belirtilmelidir.',
       etiket: 'Genelge',
       formTipi: 'ust_yazi'
     },
@@ -448,7 +483,8 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       varsayilanKonu: '[YIL] Yılı Denetim Sorgusu No: [SORGU NO] Cevabı',
       tamMetin:
         'Sayıştay Denetçiliğinizce düzenlenen [SORGU NO] numaralı sorgu zaptı incelenmiştir. Bahse konu doğrudan temin alımında kamu zararı oluşmadığı, piyasa fiyat araştırmasında en uygun fiyatın tercih edildiği ve işlemlerin 4734 Sayılı Kanun m.22/d hükümlerine tam uygun gerçekleştirildiği ekli kanıtlayıcı belgelerle teyit edilmiş olup sorgunun kaldırılmasını arz ederim.',
-      rehberNotu: 'Sorgu tebliğinden itibaren 30 gün içinde cevap verilmezse sorgu zimmet zaptına dönüşebilir.',
+      rehberNotu:
+        'Sorgu tebliğinden itibaren 30 gün içinde cevap verilmezse sorgu zimmet zaptına dönüşebilir.',
       etiket: 'Sayıştay',
       formTipi: 'ust_yazi'
     },
@@ -456,7 +492,8 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       id: 'ebys-cimer-cevap',
       kategori: 'CİMER & Koordinasyon',
       baslik: 'CİMER Başvurusu İnceleme ve Sonuç Bildirme Müzekkeresi',
-      kisaAciklama: 'Vatandaşın Cumhurbaşkanlığı İletişim Merkezine yaptığı başvuruya verilen resmi cevap.',
+      kisaAciklama:
+        'Vatandaşın Cumhurbaşkanlığı İletişim Merkezine yaptığı başvuruya verilen resmi cevap.',
       varsayilanHitap: 'T.C. İLETİŞİM BAŞKANLIĞI CİMER BİRİMİNE',
       varsayilanKonu: 'CİMER Başvuru No: [CİMER NO] İnceleme Sonucu',
       tamMetin:
@@ -475,7 +512,8 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       id: 'pers-mazeret-evlilik-dogum',
       kategori: 'Mazeret İzni',
       baslik: '657 DMK Madde 104 Mazeret İzni Talep Dilekçesi',
-      kisaAciklama: 'Memurun evlilik, doğum, babalık veya birinci derece yakın vefatı mazeret izni dilekçesi.',
+      kisaAciklama:
+        'Memurun evlilik, doğum, babalık veya birinci derece yakın vefatı mazeret izni dilekçesi.',
       varsayilanHitap: 'İNSAN KAYNAKLARI VE EĞİTİM MÜDÜRLÜĞÜNE',
       varsayilanKonu: 'Mazeret İzni Talebi (657 Sayılı Kanun m.104)',
       tamMetin:
@@ -488,12 +526,14 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       id: 'pers-saglik-rapor-intikal',
       kategori: 'Sağlık & Rapor',
       baslik: 'İstirahat / Sağlık Raporu İntikal ve İzne Çevrilme Müzekkeresi',
-      kisaAciklama: 'Personelin sağlık tesisinden aldığı istirahat raporunun resmi izne dönüştürülmesi.',
+      kisaAciklama:
+        'Personelin sağlık tesisinden aldığı istirahat raporunun resmi izne dönüştürülmesi.',
       varsayilanHitap: 'HARCAMA YETKİLİĞİ MAKAMINA',
       varsayilanKonu: 'Sağlık Raporunun İzne Çevrilmesi',
       tamMetin:
-        'Birimimiz personeli [AD SOYAD]\'ın [SAĞLIK KURULUŞU] tarafından tanzim edilen ve [GÜN] gün istirahatini uygun gören sağlık raporu ekte sunulmuştur. Devlet Memurlarına Verilecek Hastalık Raporları Yönetmeliği uyarınca söz konusu raporun hastalık iznine dönüştürülmesini olurlarınıza arz ederim.',
-      rehberNotu: 'Tek hekim raporu en fazla 10 gün verilebilir; kontrol muayenesiyle toplam 20 günü geçemez.',
+        "Birimimiz personeli [AD SOYAD]'ın [SAĞLIK KURULUŞU] tarafından tanzim edilen ve [GÜN] gün istirahatini uygun gören sağlık raporu ekte sunulmuştur. Devlet Memurlarına Verilecek Hastalık Raporları Yönetmeliği uyarınca söz konusu raporun hastalık iznine dönüştürülmesini olurlarınıza arz ederim.",
+      rehberNotu:
+        'Tek hekim raporu en fazla 10 gün verilebilir; kontrol muayenesiyle toplam 20 günü geçemez.',
       etiket: 'Sağlık Raporu',
       formTipi: 'ust_yazi'
     },
@@ -501,12 +541,14 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       id: 'pers-gorev-devir-tutanak',
       kategori: 'Görev Devri',
       baslik: 'Yıllık İzin Öncesi İş ve Dosya Teslim-Tesellüm Tutanağı',
-      kisaAciklama: 'İzne çıkan personelin devam eden işlerini vekalet eden personele devir tutanağı.',
+      kisaAciklama:
+        'İzne çıkan personelin devam eden işlerini vekalet eden personele devir tutanağı.',
       varsayilanHitap: 'TUTANAKTIR',
       varsayilanKonu: 'İş ve Dosya Devir-Teslim Tutanağı',
       tamMetin:
-        'Müdürlüğümüzde yürütülmekte olan doğrudan temin ve satın alma dosyaları ile evrak kayıt defteri; kanuni izne ayrılan [DEVREDEN PERSONEL] tarafından, izin süresince takip edilmek üzere [TESLİM ALAN VEKİL PERSONEL]\'e noksansız ve tüm ekleriyle birlikte teslim edilmiş ve işbu tutanak mahallinde imza altına alınmıştır.',
-      rehberNotu: 'Sayıştay denetiminde acil sürelerin kaçırılmaması ve sorumluluk tespiti için hayati önem taşır.',
+        "Müdürlüğümüzde yürütülmekte olan doğrudan temin ve satın alma dosyaları ile evrak kayıt defteri; kanuni izne ayrılan [DEVREDEN PERSONEL] tarafından, izin süresince takip edilmek üzere [TESLİM ALAN VEKİL PERSONEL]'e noksansız ve tüm ekleriyle birlikte teslim edilmiş ve işbu tutanak mahallinde imza altına alınmıştır.",
+      rehberNotu:
+        'Sayıştay denetiminde acil sürelerin kaçırılmaması ve sorumluluk tespiti için hayati önem taşır.',
       etiket: 'Teslim Tutanağı',
       formTipi: 'tutanak'
     },
@@ -531,7 +573,7 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       varsayilanHitap: 'HARCAMA YETKİLİSİNE',
       varsayilanKonu: 'Geçici Görevlendirme ve Yolluk Onayı (6245 Sayılı Kanun)',
       tamMetin:
-        'Birimimiz personeli [AD SOYAD / UNVAN]\'ın [GÖREV YERİ] mahallinde gerçekleştirilecek inceleme, eğitim veya koordinasyon toplantısına katılmak üzere [TARİHLER] arasında geçici olarak görevlendirilmesini; 6245 Sayılı Harcırah Kanunu gereğince yolluk ve yevmiyesinin ilgili bütçe tertibinden ödenmesini uygun görüşle arz ederim.',
+        "Birimimiz personeli [AD SOYAD / UNVAN]'ın [GÖREV YERİ] mahallinde gerçekleştirilecek inceleme, eğitim veya koordinasyon toplantısına katılmak üzere [TARİHLER] arasında geçici olarak görevlendirilmesini; 6245 Sayılı Harcırah Kanunu gereğince yolluk ve yevmiyesinin ilgili bütçe tertibinden ödenmesini uygun görüşle arz ederim.",
       rehberNotu: 'Ulaşım aracı (otobüs, uçak, resmi araç) onay belgesinde açıkça belirtilmelidir.',
       etiket: 'Görevlendirme',
       formTipi: 'onay_belgesi'
@@ -545,7 +587,8 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       varsayilanKonu: 'Ücretsiz Mazeret İzni Talebi (4857 Sayılı Kanun)',
       tamMetin:
         'Kurumunuzda 4857 Sayılı İş Kanunu kapsamında sürekli işçi kadrosunda görev yapmaktayım. Ailevi ve şahsi mazeretim sebebiyle [TARİH-1] ile [TARİH-2] tarihleri arasında tarafıma [GÜN] gün ücretsiz izin verilmesini saygılarımla arz ederim.',
-      rehberNotu: 'İşverenin onayı olmadan ücretsiz izne çıkılamaz; SGK prim bildirgeleri buna göre düzenlenir.',
+      rehberNotu:
+        'İşverenin onayı olmadan ücretsiz izne çıkılamaz; SGK prim bildirgeleri buna göre düzenlenir.',
       etiket: 'İşçi İzni',
       formTipi: 'dilekce'
     },
@@ -570,8 +613,9 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       varsayilanHitap: 'ATAMAYA YETKİLİ AMİR MAKAMINA',
       varsayilanKonu: 'Aylıksız İzin Oluru (657 Sayılı Kanun m.108/E)',
       tamMetin:
-        'Müdürlüğümüz personeli [AD SOYAD]\'ın 657 Sayılı Devlet Memurları Kanununun 108/E maddesinde belirtilen 5 hizmet yılını tamamladığı anlaşılmıştır. İlgilinin gerekçeli talebi doğrultusunda [TARİH-1] - [TARİH-2] tarihleri arasında 1 (bir) yıl süreyle aylıksız izinli sayılmasını olurlarınıza arz ederim.',
-      rehberNotu: 'Memuriyet boyunca en fazla iki defada kullanılmak üzere toplam bir yıla kadar verilebilir.',
+        "Müdürlüğümüz personeli [AD SOYAD]'ın 657 Sayılı Devlet Memurları Kanununun 108/E maddesinde belirtilen 5 hizmet yılını tamamladığı anlaşılmıştır. İlgilinin gerekçeli talebi doğrultusunda [TARİH-1] - [TARİH-2] tarihleri arasında 1 (bir) yıl süreyle aylıksız izinli sayılmasını olurlarınıza arz ederim.",
+      rehberNotu:
+        'Memuriyet boyunca en fazla iki defada kullanılmak üzere toplam bir yıla kadar verilebilir.',
       etiket: 'Aylıksız İzin',
       formTipi: 'onay_belgesi'
     },
@@ -579,12 +623,14 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       id: 'pers-goreve-baslama-yazisi',
       kategori: 'Özlük & Başlama',
       baslik: 'İzin / Rapor / Askerlik Sonrası Göreve Başlama Bildirimi',
-      kisaAciklama: 'İzin süresi biten personelin fiilen göreve başladığına dair Personel Müdürlüğüne bildirim.',
+      kisaAciklama:
+        'İzin süresi biten personelin fiilen göreve başladığına dair Personel Müdürlüğüne bildirim.',
       varsayilanHitap: 'İNSAN KAYNAKLARI VE EĞİTİM MÜDÜRLÜĞÜNE',
       varsayilanKonu: 'Göreve Başlama Bildirimi',
       tamMetin:
         'Müdürlüğümüz personeli [AD SOYAD / UNVAN], kullanmış olduğu kanuni [YILLIK İZİN / SAĞLIK RAPORU / ASKERLİK] süresinin bitimini müteakip [TARİH] tarihi mesai başlangıcı itibarıyla birimimizdeki fiili görevine başlamıştır. Bilgilerinize arz ederim.',
-      rehberNotu: 'Maaş ve SGK kesintilerinin doğru tahakkuk edebilmesi için başlama tarihi gecikmeksizin intikal etmelidir.',
+      rehberNotu:
+        'Maaş ve SGK kesintilerinin doğru tahakkuk edebilmesi için başlama tarihi gecikmeksizin intikal etmelidir.',
       etiket: 'Göreve Başlama',
       formTipi: 'ust_yazi'
     },
@@ -592,12 +638,14 @@ export const HAZIR_METINLER_DATA: Record<string, HazirMetinKalibi[]> = {
       id: 'pers-disiplin-savunma-isteme',
       kategori: 'Disiplin & Soruşturma',
       baslik: '657 m.129 Disiplin Soruşturması Savunma İsteme Mektubu',
-      kisaAciklama: 'Soruşturma açılan personele en az 7 gün süre tanınarak savunma isteme bildirimi.',
+      kisaAciklama:
+        'Soruşturma açılan personele en az 7 gün süre tanınarak savunma isteme bildirimi.',
       varsayilanHitap: 'MEMUR SAYIN [PERSONEL ADI SOYADI]',
       varsayilanKonu: 'Disiplin Savunması İstemi (657 Sayılı Kanun m.129 & m.130)',
       tamMetin:
         'Hakkınızda yürütülen disiplin soruşturması kapsamında; [OLAY TARİHİ] tarihinde vuku bulan [İSNAT EDİLEN FİİL] sebebiyle 657 Sayılı Devlet Memurları Kanununun 130. maddesi uyarınca işbu yazının tebliğinden itibaren 7 (yedi) gün içinde yazılı savunmanızı vermeniz, aksi halde savunma hakkınızdan vazgeçmiş sayılacağınız hususu tebliğ olunur.',
-      rehberNotu: '7 günden az savunma süresi verilmesi halinde verilen tüm disiplin cezaları İdare Mahkemesince iptal edilir.',
+      rehberNotu:
+        '7 günden az savunma süresi verilmesi halinde verilen tüm disiplin cezaları İdare Mahkemesince iptal edilir.',
       etiket: 'Disiplin',
       formTipi: 'ust_yazi'
     }

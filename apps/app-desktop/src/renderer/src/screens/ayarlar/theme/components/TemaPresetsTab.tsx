@@ -174,9 +174,9 @@ export const TemaPresetsTab: React.FC<TemaPresetsTabProps> = ({
         <div className="p-3 bg-blue-50/40 dark:bg-blue-950/20 border border-blue-100/60 dark:border-blue-900/30 rounded-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs">
           <div className="leading-relaxed text-slate-600 dark:text-slate-400">
             <span className="font-bold text-blue-600 dark:text-blue-400">Öneri:</span> Kendi özel
-            renk paletinizi yapay zekayı (ChatGPT, Claude vb.) kullanarak saniyeler içinde tasarlamak
-            için <strong>AI Prompt Yardımcısı</strong> modülümüzü kullanabilirsiniz. Ya da harici{' '}
-            <strong>BairesDev AI Colors</strong> aracını kullanabilirsiniz.
+            renk paletinizi yapay zekayı (ChatGPT, Claude vb.) kullanarak saniyeler içinde
+            tasarlamak için <strong>AI Prompt Yardımcısı</strong> modülümüzü kullanabilirsiniz. Ya
+            da harici <strong>BairesDev AI Colors</strong> aracını kullanabilirsiniz.
           </div>
           <div className="flex gap-2 shrink-0">
             <Button

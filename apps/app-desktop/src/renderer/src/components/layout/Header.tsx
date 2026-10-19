@@ -1,24 +1,16 @@
-import React, { lazy, Suspense, useMemo } from "react";
-import { Sparkles } from "lucide-react";
-import { WindowControls } from "./header/WindowControls";
-import { NativeMenuBar } from "./header/NativeMenuBar";
-import { DirtySummaryPopover } from "./header/DirtySummaryPopover";
-import { HeaderActions } from "./header/HeaderActions";
-import { HeaderBottomRow } from "./header/HeaderBottomRow";
-import { useHeader } from "./header/useHeader";
-import { getHeaderMenus } from "./header/headerNavigation";
+import React, { lazy, Suspense, useMemo } from 'react'
+import { Sparkles } from 'lucide-react'
+import { WindowControls } from './header/WindowControls'
+import { NativeMenuBar } from './header/NativeMenuBar'
+import { HeaderActions } from './header/HeaderActions'
+import { HeaderBottomRow } from './header/HeaderBottomRow'
+import { useHeader } from './header/useHeader'
+import { getHeaderMenus } from './header/headerNavigation'
 
-const FormatUpgradeModal = lazy(() =>
-  import("../modals/FormatUpgradeModal").then((m) => ({
-    default: m.FormatUpgradeModal,
-  }))
-);
 const UpdateModal = lazy(() =>
-  import("../ui/UpdateModal").then((m) => ({ default: m.UpdateModal }))
-);
-const AboutModal = lazy(() =>
-  import("../ui/AboutModal").then((m) => ({ default: m.AboutModal }))
-);
+  import('../ui/UpdateModal').then((m) => ({ default: m.UpdateModal }))
+)
+const AboutModal = lazy(() => import('../ui/AboutModal').then((m) => ({ default: m.AboutModal })))
 
 export function Header(): React.JSX.Element {
   const {
@@ -26,31 +18,22 @@ export function Header(): React.JSX.Element {
     theme,
     setTheme,
     activeDosyaId,
-    fileName,
-    isDirty,
-    isOldFormat,
     institutionLogo,
     logoLeft,
-    showFormatUpgradeModal,
-    setShowFormatUpgradeModal,
     showAboutModal,
     setShowAboutModal,
-    upgradeFilePath,
-    setUpgradeFilePath,
     showUpdateModal,
     setShowUpdateModal,
     switchFeedback,
-    saveFeedback,
     updateStatus,
     maxVisibleMenus,
     procurementMode,
     isDt,
-    handleUpgradeAndOpen,
     handleModeChange,
     handleSaveAndSync,
     handleCloseWorkspace,
-    handleClose,
-  } = useHeader();
+    handleClose
+  } = useHeader()
 
   const menus = useMemo(
     () =>
@@ -58,48 +41,36 @@ export function Header(): React.JSX.Element {
         navigate,
         procurementMode,
         activeDosyaId,
-        isOldFormat,
         handleSaveAndSync,
         handleCloseWorkspace,
         handleClose,
-        setUpgradeFilePath,
-        setShowFormatUpgradeModal,
-        setShowAboutModal,
+        setShowAboutModal
       }),
     [
       navigate,
       procurementMode,
       activeDosyaId,
-      isOldFormat,
       handleSaveAndSync,
       handleCloseWorkspace,
       handleClose,
-      setUpgradeFilePath,
-      setShowFormatUpgradeModal,
-      setShowAboutModal,
-    ],
-  );
+      setShowAboutModal
+    ]
+  )
 
-  const visibleMenus = useMemo(() => menus.slice(0, maxVisibleMenus), [
-    menus,
-    maxVisibleMenus,
-  ]);
-  const overflowMenus = useMemo(() => menus.slice(maxVisibleMenus), [
-    menus,
-    maxVisibleMenus,
-  ]);
+  const visibleMenus = useMemo(() => menus.slice(0, maxVisibleMenus), [menus, maxVisibleMenus])
+  const overflowMenus = useMemo(() => menus.slice(maxVisibleMenus), [menus, maxVisibleMenus])
 
   return (
     <header
       className="flex flex-col bg-slate-50/95 dark:bg-slate-900/95 border-b border-slate-200/50 dark:border-slate-800/50 shrink-0 z-50 shadow-xs relative select-none"
-      style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
+      style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
     >
       {/* Üst Vurgu Çizgisi */}
       <div
         className={`h-0.5 w-full bg-linear-to-r ${
           isDt
-            ? "from-blue-500 via-sky-400 to-indigo-500"
-            : "from-indigo-600 via-purple-500 to-pink-500"
+            ? 'from-blue-500 via-sky-400 to-indigo-500'
+            : 'from-indigo-600 via-purple-500 to-pink-500'
         }`}
       />
 
@@ -123,8 +94,7 @@ export function Header(): React.JSX.Element {
           />
         </div>
 
-        {
-          /* Orta Alan: Çalışma Dosyası ve Kaydetme Durumu
+        {/* Orta Alan: Çalışma Dosyası ve Kaydetme Durumu
 
 
           <div className="flex-1 flex items-center justify-center min-w-0 px-2">
@@ -136,8 +106,7 @@ export function Header(): React.JSX.Element {
           />
         </div>
 
-        */
-        }
+        */}
 
         {/* Sağ Alan: Hızlı Araçlar ve Pencere Kontrolleri */}
         <div className="flex items-center gap-2 shrink-0">
@@ -161,17 +130,6 @@ export function Header(): React.JSX.Element {
       />
 
       {/* Tembel (Lazy) Yüklenen Modallar: Sadece açıkken render edilir */}
-      {showFormatUpgradeModal && (
-        <Suspense fallback={null}>
-          <FormatUpgradeModal
-            isOpen={showFormatUpgradeModal}
-            filePath={upgradeFilePath}
-            onClose={(): void => setShowFormatUpgradeModal(false)}
-            onUpgradeAndOpen={handleUpgradeAndOpen}
-          />
-        </Suspense>
-      )}
-
       {showUpdateModal && (
         <Suspense fallback={null}>
           <UpdateModal
@@ -185,13 +143,10 @@ export function Header(): React.JSX.Element {
 
       {showAboutModal && (
         <Suspense fallback={null}>
-          <AboutModal
-            isOpen={showAboutModal}
-            onClose={(): void => setShowAboutModal(false)}
-          />
+          <AboutModal isOpen={showAboutModal} onClose={(): void => setShowAboutModal(false)} />
         </Suspense>
       )}
     </header>
-  );
+  )
 }
-export default Header;
+export default Header

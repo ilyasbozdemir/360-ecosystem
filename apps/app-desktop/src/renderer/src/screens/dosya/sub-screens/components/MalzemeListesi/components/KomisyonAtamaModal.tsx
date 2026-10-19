@@ -83,7 +83,8 @@ export const KomisyonAtamaModal: React.FC<KomisyonAtamaModalProps> = ({
             <span>
               Bu dosyada henüz komisyon tanımlanmadığı için bir önceki dosyanız olan{' '}
               <strong>{sourceDossierInfo.dosyaNo}</strong> komisyon kadrosu varsayılan olarak
-              yüklendi. Düzenleme yapabilir veya doğrudan &quot;Kaydet&quot; butonuna basabilirsiniz.
+              yüklendi. Düzenleme yapabilir veya doğrudan &quot;Kaydet&quot; butonuna
+              basabilirsiniz.
             </span>
           </div>
         )}

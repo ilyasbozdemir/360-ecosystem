@@ -1,10 +1,5 @@
 import React from 'react'
-import {
-  Code2,
-  History,
-  Plus,
-  Sliders
-} from 'lucide-react'
+import { Code2, History, Plus, Sliders } from 'lucide-react'
 import type { Dosya2886Item } from '../../../../components/layout/temin-selector/teminSelector.types'
 import type { FormDataType, CustomField, StudyoLeftTab } from './studyoTypes'
 import { StudyoFormTab } from './StudyoFormTab'
@@ -28,9 +23,7 @@ interface StudyoLeftSidebarProps {
   newFieldLabel: string
   onSetNewFieldLabel: (val: string) => void
   newFieldTip: 'metin' | 'sayi' | 'para' | 'tarih' | 'secim' | 'cok_satirli'
-  onSetNewFieldTip: (
-    tip: 'metin' | 'sayi' | 'para' | 'tarih' | 'secim' | 'cok_satirli'
-  ) => void
+  onSetNewFieldTip: (tip: 'metin' | 'sayi' | 'para' | 'tarih' | 'secim' | 'cok_satirli') => void
   newFieldVal: string
   onSetNewFieldVal: (val: string) => void
   onAddCustomField: () => void

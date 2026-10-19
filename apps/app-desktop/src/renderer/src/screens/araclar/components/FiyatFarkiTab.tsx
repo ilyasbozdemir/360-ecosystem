@@ -18,17 +18,20 @@ export function FiyatFarkiTab(): React.JSX.Element {
   const [ffUygulamaEndeks, setFfUygulamaEndeks] = useState<number>(3420.8)
 
   useEffect(() => {
-    yiUfeService.loadFromDatabase().then(() => {
-      const latest = yiUfeService.getLatest()
-      if (latest) {
-        setUygulamaYil(latest.yil)
-        setUygulamaAy(latest.ay)
-        const tVal = yiUfeService.getIndex(2025, 1) || 2850.45
-        const uVal = latest.endeks || 3420.8
-        setFfTemelEndeks(tVal)
-        setFfUygulamaEndeks(uVal)
-      }
-    }).catch(() => {})
+    yiUfeService
+      .loadFromDatabase()
+      .then(() => {
+        const latest = yiUfeService.getLatest()
+        if (latest) {
+          setUygulamaYil(latest.yil)
+          setUygulamaAy(latest.ay)
+          const tVal = yiUfeService.getIndex(2025, 1) || 2850.45
+          const uVal = latest.endeks || 3420.8
+          setFfTemelEndeks(tVal)
+          setFfUygulamaEndeks(uVal)
+        }
+      })
+      .catch(() => {})
   }, [])
 
   const handleTemelChange = (yil: number, ay: number): void => {
@@ -56,7 +59,7 @@ export function FiyatFarkiTab(): React.JSX.Element {
   })
 
   const pnRatio = ffTemelEndeks > 0 ? ffUygulamaEndeks / ffTemelEndeks : 1
-  const percentChange = ((pnRatio - 1) * 100)
+  const percentChange = (pnRatio - 1) * 100
   const availableYears = Array.from({ length: 33 }, (_, i) => 2026 - i)
 
   return (
@@ -109,7 +112,9 @@ export function FiyatFarkiTab(): React.JSX.Element {
                   className="px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-semibold"
                 >
                   {availableYears.map((y) => (
-                    <option key={y} value={y}>{y} Yılı</option>
+                    <option key={y} value={y}>
+                      {y} Yılı
+                    </option>
                   ))}
                 </select>
                 <select
@@ -118,7 +123,9 @@ export function FiyatFarkiTab(): React.JSX.Element {
                   className="px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-semibold"
                 >
                   {AY_ISIMLERI.map((m, idx) => (
-                    <option key={idx + 1} value={idx + 1}>{m}</option>
+                    <option key={idx + 1} value={idx + 1}>
+                      {m}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -142,7 +149,9 @@ export function FiyatFarkiTab(): React.JSX.Element {
                   className="px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-semibold"
                 >
                   {availableYears.map((y) => (
-                    <option key={y} value={y}>{y} Yılı</option>
+                    <option key={y} value={y}>
+                      {y} Yılı
+                    </option>
                   ))}
                 </select>
                 <select
@@ -151,7 +160,9 @@ export function FiyatFarkiTab(): React.JSX.Element {
                   className="px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-semibold"
                 >
                   {AY_ISIMLERI.map((m, idx) => (
-                    <option key={idx + 1} value={idx + 1}>{m}</option>
+                    <option key={idx + 1} value={idx + 1}>
+                      {m}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -197,17 +208,19 @@ export function FiyatFarkiTab(): React.JSX.Element {
 
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div className="p-4 bg-indigo-50/70 dark:bg-indigo-950/40 rounded-2xl border border-indigo-200 dark:border-indigo-800">
-              <span className="text-xs text-indigo-600 dark:text-indigo-400 block font-semibold">Fiyat Farkı Tutarı (F)</span>
+              <span className="text-xs text-indigo-600 dark:text-indigo-400 block font-semibold">
+                Fiyat Farkı Tutarı (F)
+              </span>
               <span className="text-2xl font-mono font-black text-indigo-900 dark:text-indigo-100">
                 {formatTL(ffSonuc.fiyatFarkiTutariF)}
               </span>
-              <span className="text-[10px] text-indigo-500/80 block mt-1">
-                F = B × (In/Io - 1)
-              </span>
+              <span className="text-[10px] text-indigo-500/80 block mt-1">F = B × (In/Io - 1)</span>
             </div>
 
             <div className="p-4 bg-emerald-50/70 dark:bg-emerald-950/40 rounded-2xl border border-emerald-200 dark:border-emerald-800">
-              <span className="text-xs text-emerald-600 dark:text-emerald-400 block font-semibold">Toplam Ödenecek Hakediş</span>
+              <span className="text-xs text-emerald-600 dark:text-emerald-400 block font-semibold">
+                Toplam Ödenecek Hakediş
+              </span>
               <span className="text-2xl font-mono font-black text-emerald-900 dark:text-emerald-100">
                 {formatTL(ffSonuc.toplamHakedisBedeli)}
               </span>
@@ -226,7 +239,9 @@ export function FiyatFarkiTab(): React.JSX.Element {
             </div>
             <div className="flex items-center justify-between">
               <span className="text-slate-500">Endeks Değişimi:</span>
-              <span className={`font-mono font-bold ${percentChange >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+              <span
+                className={`font-mono font-bold ${percentChange >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}
+              >
                 %{percentChange >= 0 ? `+${percentChange.toFixed(2)}` : percentChange.toFixed(2)}
               </span>
             </div>

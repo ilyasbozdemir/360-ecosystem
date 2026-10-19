@@ -82,10 +82,16 @@ export function KabulAsamalariTimeline({
                   size="sm"
                   variant="outline"
                   onClick={() =>
-                    onOpenPreview(isYapim ? 'kik048-yapim-gecici-kabul-teklif' : 'kabul-edilen-teklif')
+                    onOpenPreview(
+                      isYapim ? 'kik048-yapim-gecici-kabul-teklif' : 'kabul-edilen-teklif'
+                    )
                   }
                   className="h-6 text-[10px] px-2 gap-1 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
-                  title={isYapim ? 'Geçici Kabul Teklif Belgesi (KİK048)' : 'Sipariş / Kabul Mektubunu İncele'}
+                  title={
+                    isYapim
+                      ? 'Geçici Kabul Teklif Belgesi (KİK048)'
+                      : 'Sipariş / Kabul Mektubunu İncele'
+                  }
                 >
                   {isYapim ? (
                     <>
@@ -145,7 +151,9 @@ export function KabulAsamalariTimeline({
                       variant="outline"
                       onClick={() => onOpenPreview(primarySablonKey)}
                       className="h-6 text-[10px] px-2 gap-1 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800/60 bg-blue-50/50 dark:bg-blue-950/30 hover:bg-blue-100"
-                      title={isYapim ? 'KİK049.0/Y Geçici Kabul Tutanağı' : 'Kabul Tutanağını Görüntüle'}
+                      title={
+                        isYapim ? 'KİK049.0/Y Geçici Kabul Tutanağı' : 'Kabul Tutanağını Görüntüle'
+                      }
                     >
                       <FileCheck className="w-3 h-3 text-blue-600" />
                       {isYapim ? 'Geçici Kabul (KİK049)' : 'Tutanağı Aç'}
@@ -179,10 +187,16 @@ export function KabulAsamalariTimeline({
             </div>
             <p className="text-[10px] text-slate-500 mt-0.5">
               {!firmaStats?.teslimTarihi
-                ? isYapim ? 'Kabul heyeti incelemesi beklemede.' : 'Kabul işlemleri beklemede.'
+                ? isYapim
+                  ? 'Kabul heyeti incelemesi beklemede.'
+                  : 'Kabul işlemleri beklemede.'
                 : faturaNo
-                  ? isYapim ? 'Kabul Tamamlandı (Komisyon ve Makam Onaylı)' : 'Kabul Edildi (Komisyon Onaylı)'
-                  : isYapim ? 'Heyet tarafından yerinde inceleme yapılıyor.' : 'Komisyon tarafından ürünler inceleniyor.'}
+                  ? isYapim
+                    ? 'Kabul Tamamlandı (Komisyon ve Makam Onaylı)'
+                    : 'Kabul Edildi (Komisyon Onaylı)'
+                  : isYapim
+                    ? 'Heyet tarafından yerinde inceleme yapılıyor.'
+                    : 'Komisyon tarafından ürünler inceleniyor.'}
             </p>
           </div>
         </div>

@@ -63,11 +63,7 @@ export const MalzemeEkleTabs: React.FC<MalzemeEkleTabsProps> = ({
         )}
       >
         <PlusCircle className="w-3.5 h-3.5" />
-        {isYapim
-          ? 'Tekil Poz Tanımla'
-          : isHizmet
-            ? 'Tekil Hizmet Tanımla'
-            : 'Tekil Kalem Oluştur'}
+        {isYapim ? 'Tekil Poz Tanımla' : isHizmet ? 'Tekil Hizmet Tanımla' : 'Tekil Kalem Oluştur'}
       </button>
     </div>
   )

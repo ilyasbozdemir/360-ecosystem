@@ -49,7 +49,9 @@ export const DosyaYonetimi2886Modal: React.FC<DosyaYonetimi2886ModalProps> = ({
         <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3">
           <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
             <FolderPlus className="w-4 h-4 text-indigo-500" />
-            {editingDosya ? '2886 İhale Dosyasını Düzenle' : 'Yeni 2886 İhale Dosyası Aç (Hızlı Tanım)'}
+            {editingDosya
+              ? '2886 İhale Dosyasını Düzenle'
+              : 'Yeni 2886 İhale Dosyası Aç (Hızlı Tanım)'}
           </h3>
           <button
             type="button"
@@ -171,7 +173,11 @@ export const DosyaYonetimi2886Modal: React.FC<DosyaYonetimi2886ModalProps> = ({
             <input
               type="text"
               placeholder="104 / 12"
-              value={formData.ada && formData.parsel ? `${formData.ada} / ${formData.parsel}` : formData.ada}
+              value={
+                formData.ada && formData.parsel
+                  ? `${formData.ada} / ${formData.parsel}`
+                  : formData.ada
+              }
               onChange={(e) => {
                 const parts = e.target.value.split('/')
                 setFormData({

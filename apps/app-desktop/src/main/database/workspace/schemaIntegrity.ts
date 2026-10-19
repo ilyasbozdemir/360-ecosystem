@@ -83,7 +83,9 @@ export function ensureSchemaIntegrity(db: Database.Database): void {
       | undefined
     const currentDbVer = row?.value ? parseInt(row.value, 10) || 1 : 1
     if (currentDbVer < CURRENT_SCHEMA_VERSION) {
-      console.log(`[Schema Self-Healing] Migrating from v${currentDbVer} to v${CURRENT_SCHEMA_VERSION}`)
+      console.log(
+        `[Schema Self-Healing] Migrating from v${currentDbVer} to v${CURRENT_SCHEMA_VERSION}`
+      )
       runMigrations(db, currentDbVer, schema)
       db.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('dbSchemaVersion', ?)").run(
         CURRENT_SCHEMA_VERSION.toString()
@@ -241,8 +243,12 @@ export function ensureSchemaIntegrity(db: Database.Database): void {
       db.exec(`ALTER TABLE ${tbl} ADD COLUMN dosya_id INTEGER;`)
     } catch {}
     try {
-      db.exec(`UPDATE ${tbl} SET dosya_id = temin_dosya_id WHERE dosya_id IS NULL AND temin_dosya_id IS NOT NULL;`)
-      db.exec(`UPDATE ${tbl} SET temin_dosya_id = dosya_id WHERE temin_dosya_id IS NULL AND dosya_id IS NOT NULL;`)
+      db.exec(
+        `UPDATE ${tbl} SET dosya_id = temin_dosya_id WHERE dosya_id IS NULL AND temin_dosya_id IS NOT NULL;`
+      )
+      db.exec(
+        `UPDATE ${tbl} SET temin_dosya_id = dosya_id WHERE temin_dosya_id IS NULL AND dosya_id IS NOT NULL;`
+      )
     } catch {}
     try {
       db.exec(`
@@ -292,8 +298,12 @@ export function ensureSchemaIntegrity(db: Database.Database): void {
     { name: 'birim_fiyat', def: 'REAL DEFAULT 0' }
   ]
   for (const c of kalemCols) {
-    try { db.exec(`ALTER TABLE TANIM_Kalem ADD COLUMN "${c.name}" ${c.def};`) } catch {}
-    try { db.exec(`ALTER TABLE DATA_TeminKalem ADD COLUMN "${c.name}" ${c.def};`) } catch {}
+    try {
+      db.exec(`ALTER TABLE TANIM_Kalem ADD COLUMN "${c.name}" ${c.def};`)
+    } catch {}
+    try {
+      db.exec(`ALTER TABLE DATA_TeminKalem ADD COLUMN "${c.name}" ${c.def};`)
+    } catch {}
   }
 
   const olcuCols = [
@@ -308,7 +318,9 @@ export function ensureSchemaIntegrity(db: Database.Database): void {
     { name: 'aciklama', def: 'TEXT' }
   ]
   for (const c of olcuCols) {
-    try { db.exec(`ALTER TABLE TANIM_OlcuBirimi ADD COLUMN "${c.name}" ${c.def};`) } catch {}
+    try {
+      db.exec(`ALTER TABLE TANIM_OlcuBirimi ADD COLUMN "${c.name}" ${c.def};`)
+    } catch {}
   }
 
   const personelCols = [
@@ -318,7 +330,9 @@ export function ensureSchemaIntegrity(db: Database.Database): void {
     { name: 'avatar', def: 'TEXT' }
   ]
   for (const c of personelCols) {
-    try { db.exec(`ALTER TABLE TANIM_Personel ADD COLUMN "${c.name}" ${c.def};`) } catch {}
+    try {
+      db.exec(`ALTER TABLE TANIM_Personel ADD COLUMN "${c.name}" ${c.def};`)
+    } catch {}
   }
 
   const ihtiyacCols = [
@@ -326,7 +340,9 @@ export function ensureSchemaIntegrity(db: Database.Database): void {
     { name: 'evrak_sayisi', def: 'TEXT' }
   ]
   for (const c of ihtiyacCols) {
-    try { db.exec(`ALTER TABLE DATA_IhtiyacRaporu ADD COLUMN "${c.name}" ${c.def};`) } catch {}
+    try {
+      db.exec(`ALTER TABLE DATA_IhtiyacRaporu ADD COLUMN "${c.name}" ${c.def};`)
+    } catch {}
   }
 
   const belgeCols = [
@@ -334,7 +350,9 @@ export function ensureSchemaIntegrity(db: Database.Database): void {
     { name: 'bekleme_nedeni', def: 'TEXT' }
   ]
   for (const c of belgeCols) {
-    try { db.exec(`ALTER TABLE DATA_TeminBelge ADD COLUMN "${c.name}" ${c.def};`) } catch {}
+    try {
+      db.exec(`ALTER TABLE DATA_TeminBelge ADD COLUMN "${c.name}" ${c.def};`)
+    } catch {}
   }
 
   // Schema Table & Column self-repair
@@ -361,7 +379,9 @@ export function ensureSchemaIntegrity(db: Database.Database): void {
           })
           .join(', ')
         const constraintsSql = table.constraints ? ', ' + table.constraints.join(', ') : ''
-        db.exec('CREATE TABLE IF NOT EXISTS ' + table.name + ' (' + columnsSql + constraintsSql + ');')
+        db.exec(
+          'CREATE TABLE IF NOT EXISTS ' + table.name + ' (' + columnsSql + constraintsSql + ');'
+        )
       } else {
         const existingColumns = new Set(tableInfo.map((c) => c.name))
         for (const col of table.columns as any[]) {
@@ -373,7 +393,10 @@ export function ensureSchemaIntegrity(db: Database.Database): void {
                 if (typeof d === 'string') {
                   const upper = d.trim().toUpperCase()
                   if (!['CURRENT_TIMESTAMP', 'CURRENT_DATE', 'CURRENT_TIME'].includes(upper)) {
-                    sqlDef += d.startsWith("'") || d.startsWith('"') ? ' DEFAULT ' + d : " DEFAULT '" + d.replace(/'/g, "''") + "'"
+                    sqlDef +=
+                      d.startsWith("'") || d.startsWith('"')
+                        ? ' DEFAULT ' + d
+                        : " DEFAULT '" + d.replace(/'/g, "''") + "'"
                   }
                 } else sqlDef += ' DEFAULT ' + d
               }

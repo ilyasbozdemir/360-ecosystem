@@ -29,9 +29,7 @@ export function SqlConsoleTab({
           </label>
           <button
             onClick={() =>
-              setConsoleQuery(
-                `SELECT * FROM ${selectedTable || 'DATA_TeminDosyasi'} LIMIT 20`
-              )
+              setConsoleQuery(`SELECT * FROM ${selectedTable || 'DATA_TeminDosyasi'} LIMIT 20`)
             }
             className="text-[10px] text-blue-600 dark:text-blue-400 font-bold hover:underline cursor-pointer border-0 bg-transparent"
           >
@@ -51,9 +49,7 @@ export function SqlConsoleTab({
             disabled={consoleLoading}
             className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white font-bold px-5 text-xs rounded-xl flex items-center justify-center gap-1.5 shadow-md shadow-blue-500/10 active:scale-95 transition-all shrink-0 cursor-pointer border-0"
           >
-            <RefreshCw
-              className={`w-3.5 h-3.5 ${consoleLoading ? 'animate-spin' : ''}`}
-            />
+            <RefreshCw className={`w-3.5 h-3.5 ${consoleLoading ? 'animate-spin' : ''}`} />
             Sorguyu Çalıştır
           </button>
         </div>
@@ -72,9 +68,7 @@ export function SqlConsoleTab({
             <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
             <div>
               <span className="font-bold block mb-1">SQL Hatası</span>
-              <pre className="font-mono text-[10px] whitespace-pre-wrap">
-                {consoleError}
-              </pre>
+              <pre className="font-mono text-[10px] whitespace-pre-wrap">{consoleError}</pre>
             </div>
           </div>
         )}
@@ -102,10 +96,7 @@ export function SqlConsoleTab({
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-850 font-mono">
                 {consoleResults.map((row, idx) => (
-                  <tr
-                    key={idx}
-                    className="hover:bg-slate-50/50 dark:hover:bg-slate-900/20"
-                  >
+                  <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/20">
                     {Object.keys(row).map((key) => {
                       const val = row[key]
                       return (
@@ -119,9 +110,7 @@ export function SqlConsoleTab({
                           }
                         >
                           {val === null ? (
-                            <span className="text-slate-350 dark:text-slate-600 italic">
-                              NULL
-                            </span>
+                            <span className="text-slate-350 dark:text-slate-600 italic">NULL</span>
                           ) : typeof val === 'object' ? (
                             JSON.stringify(val)
                           ) : (

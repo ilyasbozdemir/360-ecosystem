@@ -1,13 +1,5 @@
 import React from 'react'
-import {
-  FolderOpen,
-  Minus,
-  Moon,
-  Square,
-  Sun,
-  Wifi,
-  X
-} from 'lucide-react'
+import { FolderOpen, Minus, Moon, Square, Sun, Wifi, X } from 'lucide-react'
 
 interface LauncherTitleBarProps {
   theme: string

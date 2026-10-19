@@ -14,8 +14,14 @@ export async function resolvePersonnelAndCommissions(
   queryExecutor: (sql: string, params: any[]) => Promise<any[]>
 ): Promise<void> {
   // Automatic personnel resolution from IDs
-  if (!baseData.hazirlayanPersonelAdi && dosyaObj.hazirlayan_personel_id && Array.isArray(personelList)) {
-    const hp = personelList.find((p: any) => Number(p.id) === Number(dosyaObj.hazirlayan_personel_id))
+  if (
+    !baseData.hazirlayanPersonelAdi &&
+    dosyaObj.hazirlayan_personel_id &&
+    Array.isArray(personelList)
+  ) {
+    const hp = personelList.find(
+      (p: any) => Number(p.id) === Number(dosyaObj.hazirlayan_personel_id)
+    )
     if (hp) {
       baseData.hazirlayanPersonelAdi = hp.ad_soyad
       baseData.hazirlayanPersonelUnvan = hp.unvan || ''
@@ -33,9 +39,15 @@ export async function resolvePersonnelAndCommissions(
     }
   }
 
-  const talepPolicy = TemplateRegistryService.resolveRoleVisibility(targetDocTemplateId, 'talep_eden')
+  const talepPolicy = TemplateRegistryService.resolveRoleVisibility(
+    targetDocTemplateId,
+    'talep_eden'
+  )
   const onayPolicy = TemplateRegistryService.resolveRoleVisibility(targetDocTemplateId, 'onaylayan')
-  const harcamaPol = TemplateRegistryService.resolveRoleVisibility(targetDocTemplateId, 'harcama_yetkilisi')
+  const harcamaPol = TemplateRegistryService.resolveRoleVisibility(
+    targetDocTemplateId,
+    'harcama_yetkilisi'
+  )
 
   if (!baseData.hazirlayanPersonelAdi) {
     baseData.hazirlayanPersonelAdi = ctx.hazirlayanPersonelAdi || ''
@@ -159,7 +171,10 @@ export async function resolvePersonnelAndCommissions(
             gerceklestirmeRow,
             targetDocIds
           )
-          if (isGerceklestirmeVisible && (gerceklestirmeRow.ad_soyad || gerceklestirmeRow.personel_id)) {
+          if (
+            isGerceklestirmeVisible &&
+            (gerceklestirmeRow.ad_soyad || gerceklestirmeRow.personel_id)
+          ) {
             baseData.hazirlayanPersonelAdi = gerceklestirmeRow.ad_soyad || ''
             baseData.hazirlayanPersonelUnvan = gerceklestirmeRow.unvan || 'Gerçekleştirme Görevlisi'
             baseData.gerceklestirmeGorevlisiAdi = gerceklestirmeRow.ad_soyad || ''
@@ -210,7 +225,8 @@ export async function resolvePersonnelAndCommissions(
                 !combined.includes('onaylayan')
               )
             })
-            baseData.gorevlendirilenler = activeOfficers.length > 0 ? activeOfficers : formattedMaliyet
+            baseData.gorevlendirilenler =
+              activeOfficers.length > 0 ? activeOfficers : formattedMaliyet
             baseData.gorevliler = baseData.gorevlendirilenler
             baseData.dagitimListesi = baseData.gorevlendirilenler
           }
@@ -258,15 +274,17 @@ export async function resolvePersonnelAndCommissions(
   if (globalKomisyonlar && globalKomisyonlar.length > 0) {
     if (
       !hasMuhasebeRowInFile &&
-      (!baseData.mutemetAdi ||
-        baseData.mutemetAdi === '......' ||
-        !baseData.muhasebeYetkilisiAdi)
+      (!baseData.mutemetAdi || baseData.mutemetAdi === '......' || !baseData.muhasebeYetkilisiAdi)
     ) {
       const mRow = globalKomisyonlar.find((k: any) => {
         const g = (k.gorev || '').toLowerCase()
         return g.includes('muhasebe') || g.includes('mutemet')
       })
-      if (mRow && TemplateRegistryService.isMemberVisibleInDocument(mRow, targetDocIds) && mRow.ad_soyad) {
+      if (
+        mRow &&
+        TemplateRegistryService.isMemberVisibleInDocument(mRow, targetDocIds) &&
+        mRow.ad_soyad
+      ) {
         const cleanName = mRow.ad_soyad.split('(')[0].trim()
         if (!baseData.mutemetAdi || baseData.mutemetAdi === '......') {
           baseData.mutemetAdi = cleanName
@@ -289,11 +307,18 @@ export async function resolvePersonnelAndCommissions(
         baseData.baskanAdi = op.ad_soyad
         baseData.baskanUnvan = op.unvan || 'Harcama Yetkilisi'
       }
-    } else if (!hasHarcamaRowInFile && (!baseData.onaylayanPersonelAdi || !baseData.harcamaYetkilisiAdi)) {
+    } else if (
+      !hasHarcamaRowInFile &&
+      (!baseData.onaylayanPersonelAdi || !baseData.harcamaYetkilisiAdi)
+    ) {
       const hRow = globalKomisyonlar.find((k: any) =>
         (k.gorev || '').toLowerCase().includes('harcama yetkili')
       )
-      if (hRow && TemplateRegistryService.isMemberVisibleInDocument(hRow, targetDocIds) && hRow.ad_soyad) {
+      if (
+        hRow &&
+        TemplateRegistryService.isMemberVisibleInDocument(hRow, targetDocIds) &&
+        hRow.ad_soyad
+      ) {
         baseData.onaylayanPersonelAdi = baseData.onaylayanPersonelAdi || hRow.ad_soyad
         baseData.onaylayanPersonelUnvan =
           baseData.onaylayanPersonelUnvan || hRow.unvan || 'Harcama Yetkilisi'
@@ -312,14 +337,21 @@ export async function resolvePersonnelAndCommissions(
         baseData.gerceklestirmeGorevlisiAdi = hp.ad_soyad
         baseData.gerceklestirmeGorevlisiUnvan = hp.unvan || 'Gerçekleştirme Görevlisi'
       }
-    } else if (!hasGerceklestirmeRowInFile && (!baseData.hazirlayanPersonelAdi || !baseData.gerceklestirmeGorevlisiAdi)) {
+    } else if (
+      !hasGerceklestirmeRowInFile &&
+      (!baseData.hazirlayanPersonelAdi || !baseData.gerceklestirmeGorevlisiAdi)
+    ) {
       const gRow = globalKomisyonlar.find((k: any) => {
         const g = (k.gorev || '').toLowerCase()
         return (
           g.includes('gerçekleştirme') || g.includes('gerceklestirme') || g.includes('hazırlayan')
         )
       })
-      if (gRow && TemplateRegistryService.isMemberVisibleInDocument(gRow, targetDocIds) && gRow.ad_soyad) {
+      if (
+        gRow &&
+        TemplateRegistryService.isMemberVisibleInDocument(gRow, targetDocIds) &&
+        gRow.ad_soyad
+      ) {
         baseData.hazirlayanPersonelAdi = baseData.hazirlayanPersonelAdi || gRow.ad_soyad
         baseData.hazirlayanPersonelUnvan =
           baseData.hazirlayanPersonelUnvan || gRow.unvan || 'Gerçekleştirme Görevlisi'
@@ -440,16 +472,12 @@ export async function resolvePersonnelAndCommissions(
   baseData.gorevlendirilenler = Array.isArray(baseData.gorevlendirilenler)
     ? dedupeMembers(baseData.gorevlendirilenler)
     : []
-  baseData.gorevliler = Array.isArray(baseData.gorevliler)
-    ? dedupeMembers(baseData.gorevliler)
-    : []
+  baseData.gorevliler = Array.isArray(baseData.gorevliler) ? dedupeMembers(baseData.gorevliler) : []
   baseData.dagitimListesi = Array.isArray(baseData.dagitimListesi)
     ? dedupeMembers(baseData.dagitimListesi)
     : []
   baseData.muayeneKomisyonu = Array.isArray(baseData.muayeneKomisyonu)
     ? dedupeMembers(baseData.muayeneKomisyonu)
     : []
-  baseData.komisyon = Array.isArray(baseData.komisyon)
-    ? dedupeMembers(baseData.komisyon)
-    : []
+  baseData.komisyon = Array.isArray(baseData.komisyon) ? dedupeMembers(baseData.komisyon) : []
 }

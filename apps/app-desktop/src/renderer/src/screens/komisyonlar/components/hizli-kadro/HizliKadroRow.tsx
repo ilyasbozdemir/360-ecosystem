@@ -14,11 +14,7 @@ interface HizliKadroRowProps {
   onToggleDropdown: () => void
   searchTerm: string
   onSearchChange: (val: string) => void
-  onSelectGorev: (
-    rowId: string | number,
-    gorevAd: string,
-    gorevId: number | null
-  ) => void
+  onSelectGorev: (rowId: string | number, gorevAd: string, gorevId: number | null) => void
   onSelectPersonel: (rowId: string | number, pId: number | null) => void
   onToggleAsil: (rowId: string | number) => void
   onChangeBelgeSablonIds: (rowId: string | number, sablonIds: string[] | null) => void
@@ -167,7 +163,8 @@ export const HizliKadroRow: React.FC<HizliKadroRowProps> = ({
           <option value="muayene_kabul">🔬 Sadece Muayene & Kabul</option>
           <option value="olur_onay">📑 Sadece Olur / Onay</option>
           <option value="ozel">
-            🎯 Özel Şablon Seçimi {currentPreset === 'ozel' && selectedDocCount > 0 ? `(${selectedDocCount})` : ''}
+            🎯 Özel Şablon Seçimi{' '}
+            {currentPreset === 'ozel' && selectedDocCount > 0 ? `(${selectedDocCount})` : ''}
           </option>
           <option value="gizli">🚫 Hiçbir Belgede (Gizli)</option>
         </select>

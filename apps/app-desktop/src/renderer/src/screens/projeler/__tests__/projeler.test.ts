@@ -1,9 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import {
-  COLOR_PRESETS,
-  DURUM_CONFIG,
-  generateDefaultProjectCode
-} from '../constants'
+import { COLOR_PRESETS, DURUM_CONFIG, generateDefaultProjectCode } from '../constants'
 
 describe('projeler constants and helpers', () => {
   it('generateDefaultProjectCode produces valid project code', () => {

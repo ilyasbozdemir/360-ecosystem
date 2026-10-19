@@ -64,9 +64,7 @@ export function HizliKadroBelgeSecimModal({
   if (!isOpen) return null
 
   const toggleDoc = (key: string) => {
-    setSelected((prev) =>
-      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
-    )
+    setSelected((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]))
   }
 
   const handleSelectAll = () => {
@@ -97,7 +95,11 @@ export function HizliKadroBelgeSecimModal({
               Hedef Belge Seçimi — {memberName || 'Personel'}
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Görev: <span className="font-semibold text-slate-700 dark:text-slate-300">{memberGorev}</span> • Yalnızca seçili evrakların imza/komisyon bloklarında yer alır.
+              Görev:{' '}
+              <span className="font-semibold text-slate-700 dark:text-slate-300">
+                {memberGorev}
+              </span>{' '}
+              • Yalnızca seçili evrakların imza/komisyon bloklarında yer alır.
             </p>
           </div>
           <button

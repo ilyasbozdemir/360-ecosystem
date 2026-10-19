@@ -95,23 +95,7 @@ export function GoogleDriveFooterWidget(): React.JSX.Element | null {
       setAuthError(false)
 
       const allFiles: GDriveFile[] = res.files || []
-      const supportedExts = [
-        'temin',
-        'hkmp',
-        'dtal',
-        'dtm',
-        'dte',
-        'dta',
-        'tmn360',
-        'sqlite',
-        'db',
-        'zip',
-        'bak'
-      ]
-      const validBackups = allFiles.filter((f) => {
-        const lower = f.name.toLowerCase()
-        return supportedExts.some((ext) => lower.endsWith('.' + ext))
-      })
+      const validBackups = allFiles.filter((f) => f.name.toLowerCase().endsWith('.temin'))
 
       if (validBackups.length === 0) {
         setHasNewerVersion(false)
@@ -123,7 +107,7 @@ export function GoogleDriveFooterWidget(): React.JSX.Element | null {
       // Aktif dosya ana adını (base name) temizle ve ayrıştır
       const currentFileNameClean = (fileName || '').trim().toLowerCase()
       const rawBase = (fileName || '')
-        .replace(/\.(temin|dtal|hkmp|dtm|dte|dta|tmn360|sqlite|db|zip|bak)$/i, '')
+        .replace(/\.temin$/i, '')
         .replace(/_\d{4}[-_.]\d{2}[-_.]\d{2}(?:[-_.T]\d{2}[-_.]\d{2}(?:[-_.]\d{2})?)?$/i, '')
         .replace(/_surum\s*#?\d+/i, '')
         .trim()
@@ -196,11 +180,10 @@ export function GoogleDriveFooterWidget(): React.JSX.Element | null {
       const localDeviceName = devInfo?.hostname?.trim().toLowerCase()
       const localDeviceLabel = devInfo?.deviceLabel?.trim().toLowerCase()
 
-      const isSameDevice =
-        !!(
-          (localDeviceName && cloudDeviceName && localDeviceName === cloudDeviceName) ||
-          (localDeviceLabel && cloudDeviceLabel && localDeviceLabel === cloudDeviceLabel)
-        )
+      const isSameDevice = !!(
+        (localDeviceName && cloudDeviceName && localDeviceName === cloudDeviceName) ||
+        (localDeviceLabel && cloudDeviceLabel && localDeviceLabel === cloudDeviceLabel)
+      )
 
       const cloudTime = new Date(
         latestCloudFile.createdTime || latestCloudFile.modifiedTime || 0

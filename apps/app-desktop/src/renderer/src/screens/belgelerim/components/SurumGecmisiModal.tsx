@@ -23,12 +23,8 @@ export function SurumGecmisiModal({
   aktifSurumId,
   onRestore
 }: SurumGecmisiModalProps): React.JSX.Element | null {
-  const [selectedSurum1, setSelectedSurum1] = useState<number | null>(
-    surumler[0]?.id || null
-  )
-  const [selectedSurum2, setSelectedSurum2] = useState<number | null>(
-    surumler[1]?.id || null
-  )
+  const [selectedSurum1, setSelectedSurum1] = useState<number | null>(surumler[0]?.id || null)
+  const [selectedSurum2, setSelectedSurum2] = useState<number | null>(surumler[1]?.id || null)
   const [showDiff, setShowDiff] = useState(false)
 
   if (!isOpen) return null
@@ -191,19 +187,29 @@ export function SurumGecmisiModal({
                   {diffChunks.map((chunk, idx) => {
                     if (chunk.type === 'added') {
                       return (
-                        <span key={idx} className="bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 px-1 py-0.5 rounded mr-1">
+                        <span
+                          key={idx}
+                          className="bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 px-1 py-0.5 rounded mr-1"
+                        >
                           {chunk.text}
                         </span>
                       )
                     }
                     if (chunk.type === 'removed') {
                       return (
-                        <span key={idx} className="bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 line-through px-1 py-0.5 rounded mr-1">
+                        <span
+                          key={idx}
+                          className="bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 line-through px-1 py-0.5 rounded mr-1"
+                        >
                           {chunk.text}
                         </span>
                       )
                     }
-                    return <span key={idx} className="text-slate-700 dark:text-slate-300 mr-1">{chunk.text}</span>
+                    return (
+                      <span key={idx} className="text-slate-700 dark:text-slate-300 mr-1">
+                        {chunk.text}
+                      </span>
+                    )
                   })}
                 </div>
               </div>

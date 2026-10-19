@@ -453,16 +453,15 @@ export function resolveDocumentPayload(
     const resolvedTutanakTarihi = rawTutanakTarihi ? formatTurkishDate(rawTutanakTarihi) : ''
 
     // Resolve official EBYS / E-DETSİS evrakSayisi format (E-10234521-934.01-0001)
-    let detsisNo =
-      String(
-        (dosya as any)?.detsis_kodu ||
-          (kurum as any)?.detsis_kodu ||
-          (kurum as any)?.detsis_no ||
-          (kurum as any)?.dtvt_kodu ||
-          settingsMap.detsisKodu ||
-          settingsMap.detsis_kodu ||
-          ''
-      ).trim()
+    let detsisNo = String(
+      (dosya as any)?.detsis_kodu ||
+        (kurum as any)?.detsis_kodu ||
+        (kurum as any)?.detsis_no ||
+        (kurum as any)?.dtvt_kodu ||
+        settingsMap.detsisKodu ||
+        settingsMap.detsis_kodu ||
+        ''
+    ).trim()
     if (!detsisNo) detsisNo = '10234521'
 
     const rawTur = String((dosya as any)?.tur || 'mal').toLowerCase()
@@ -554,7 +553,8 @@ export function resolveDocumentPayload(
       altKurumBizim: ipcKurumBizim,
       ihtiyacYeri: ipcIhtiyacYeri,
       birimAnteti: birimAntet,
-      antetEkSatir: (dosya as any)?.antet_ek_satir || (dosya as any)?.birim_antet_ek_satir || birimAntet,
+      antetEkSatir:
+        (dosya as any)?.antet_ek_satir || (dosya as any)?.birim_antet_ek_satir || birimAntet,
       sunulacakMakam:
         (dosya as any)?.sunulacak_makam ||
         (birimListesi as any[]).find((b: any) => b.id === (dosya as any)?.birim_id)?.sunum_makami ||
@@ -565,15 +565,42 @@ export function resolveDocumentPayload(
         (birimListesi as any[]).find((b: any) => b.id === (dosya as any)?.birim_id)?.sunum_makami ||
         (birimListesi as any[]).find((b: any) => b.id === (dosya as any)?.birim_id)?.birim_adi ||
         'STRATEJİ GELİŞTİRME DAİRE BAŞKANLIĞINA',
-      eButce: (dosya as any)?.e_butce || (kurum as any)?.ebutce_kodu || settingsMap.eButceKodu || '',
-      e_butce: (dosya as any)?.e_butce || (kurum as any)?.ebutce_kodu || settingsMap.eButceKodu || '',
-      say2000i: (dosya as any)?.say2000i || (kurum as any)?.say2000i_kodu || settingsMap.say2000iKodu || '',
-      fonksiyonelKod: (dosya as any)?.fonksiyonel_kod || (kurum as any)?.fonksiyonel_kod || settingsMap.fonksiyonelKod || '',
-      fonksiyonel_kod: (dosya as any)?.fonksiyonel_kod || (kurum as any)?.fonksiyonel_kod || settingsMap.fonksiyonelKod || '',
-      muhasebeBirimi: (dosya as any)?.muhasebe_birimi || (kurum as any)?.muhasebe_birim_adi || settingsMap.muhasebeBirimAdi || '',
-      muhasebe_birimi: (dosya as any)?.muhasebe_birimi || (kurum as any)?.muhasebe_birim_adi || settingsMap.muhasebeBirimAdi || '',
-      finansmanKodu: (dosya as any)?.finansman_kodu || (kurum as any)?.finansman_kodu || settingsMap.finansmanKodu || '5',
-      finansman_kodu: (dosya as any)?.finansman_kodu || (kurum as any)?.finansman_kodu || settingsMap.finansmanKodu || '5',
+      eButce:
+        (dosya as any)?.e_butce || (kurum as any)?.ebutce_kodu || settingsMap.eButceKodu || '',
+      e_butce:
+        (dosya as any)?.e_butce || (kurum as any)?.ebutce_kodu || settingsMap.eButceKodu || '',
+      say2000i:
+        (dosya as any)?.say2000i || (kurum as any)?.say2000i_kodu || settingsMap.say2000iKodu || '',
+      fonksiyonelKod:
+        (dosya as any)?.fonksiyonel_kod ||
+        (kurum as any)?.fonksiyonel_kod ||
+        settingsMap.fonksiyonelKod ||
+        '',
+      fonksiyonel_kod:
+        (dosya as any)?.fonksiyonel_kod ||
+        (kurum as any)?.fonksiyonel_kod ||
+        settingsMap.fonksiyonelKod ||
+        '',
+      muhasebeBirimi:
+        (dosya as any)?.muhasebe_birimi ||
+        (kurum as any)?.muhasebe_birim_adi ||
+        settingsMap.muhasebeBirimAdi ||
+        '',
+      muhasebe_birimi:
+        (dosya as any)?.muhasebe_birimi ||
+        (kurum as any)?.muhasebe_birim_adi ||
+        settingsMap.muhasebeBirimAdi ||
+        '',
+      finansmanKodu:
+        (dosya as any)?.finansman_kodu ||
+        (kurum as any)?.finansman_kodu ||
+        settingsMap.finansmanKodu ||
+        '5',
+      finansman_kodu:
+        (dosya as any)?.finansman_kodu ||
+        (kurum as any)?.finansman_kodu ||
+        settingsMap.finansmanKodu ||
+        '5',
       ekonomikKod: (dosya as any)?.ekonomik_kod || '',
       ekonomik_kod: (dosya as any)?.ekonomik_kod || '',
       ekapNo: (dosya as any)?.ekap_no || '',
@@ -591,7 +618,8 @@ export function resolveDocumentPayload(
       onaylayanPersonelUnvan: onaylayanPersonel?.unvan || '',
       harcamaYetkilisiAdi:
         onaylayanPersonel?.ad_soyad ||
-        ((birimListesi as any[]).find((b: any) => b.id === (dosya as any)?.birim_id)?.harcama_yetkilisi_id
+        ((birimListesi as any[]).find((b: any) => b.id === (dosya as any)?.birim_id)
+          ?.harcama_yetkilisi_id
           ? (personelListesi as any[]).find(
               (p: any) =>
                 p.id ===
@@ -619,8 +647,10 @@ export function resolveDocumentPayload(
       ustKurumAdi: (kurum as any)?.ust_kurum_adi || '',
       detsisKodu:
         (kurum as any)?.detsis_kodu || (kurum as any)?.dtvt_kodu || settingsMap.detsisKodu || '',
-      eButceKodu: (dosya as any)?.e_butce || (kurum as any)?.ebutce_kodu || settingsMap.eButceKodu || '',
-      say2000iKodu: (dosya as any)?.say2000i || (kurum as any)?.say2000i_kodu || settingsMap.say2000iKodu || '',
+      eButceKodu:
+        (dosya as any)?.e_butce || (kurum as any)?.ebutce_kodu || settingsMap.eButceKodu || '',
+      say2000iKodu:
+        (dosya as any)?.say2000i || (kurum as any)?.say2000i_kodu || settingsMap.say2000iKodu || '',
       muhasebeBirimKodu:
         (kurum as any)?.muhasebe_birim_kodu ||
         (dosya as any)?.muhasebe_kodu ||
@@ -641,12 +671,16 @@ export function resolveDocumentPayload(
       kurumAdres: (kurum as any)?.adres || settingsMap.address || '',
       kurumWeb: (kurum as any)?.web_sitesi || (kurum as any)?.web || settingsMap.website || '',
       kurumKep: (kurum as any)?.kep_adresi || (kurum as any)?.kep || settingsMap.kep || '',
-      kurumIci:
-        ['arastirma-mektubu', 'fiyat-arastirma-mektubu', 'teklif-isteme-mektubu', 'birim-fiyat-teklif-mektubu'].includes(documentId)
-          ? false
-          : settingsMap.defaultKurumIci !== undefined
-            ? settingsMap.defaultKurumIci !== 'false'
-            : true,
+      kurumIci: [
+        'arastirma-mektubu',
+        'fiyat-arastirma-mektubu',
+        'teklif-isteme-mektubu',
+        'birim-fiyat-teklif-mektubu'
+      ].includes(documentId)
+        ? false
+        : settingsMap.defaultKurumIci !== undefined
+          ? settingsMap.defaultKurumIci !== 'false'
+          : true,
       limitType: (kurum as any)?.limit_tipi || settingsMap.limitType || 'diger',
       odenekTertibi: (dosya as any)?.odenek_tertibi || '',
       butceTertibi: (dosya as any)?.odenek_tertibi || '',
@@ -739,7 +773,8 @@ export function resolveDocumentPayload(
       })(),
       fiyatKomisyonu: (() => {
         const eligible = komisyonlar.filter(
-          (k: any) => resolveCommissionCategory(k) === 'maliyet' && isMemberVisibleInDocument(k, documentId)
+          (k: any) =>
+            resolveCommissionCategory(k) === 'maliyet' && isMemberVisibleInDocument(k, documentId)
         )
         const mapped = eligible.map((k: any) => ({
           adSoyad: k.resolved_ad_soyad || k.ad_soyad || '',
@@ -757,10 +792,12 @@ export function resolveDocumentPayload(
       })(),
       gorevlendirilenler: (() => {
         const eligible = komisyonlar.filter(
-          (k: any) => resolveCommissionCategory(k) === 'maliyet' && isMemberVisibleInDocument(k, documentId)
+          (k: any) =>
+            resolveCommissionCategory(k) === 'maliyet' && isMemberVisibleInDocument(k, documentId)
         )
         const activeOfficers = eligible.filter((k: any) => {
-          const combined = `${k.resolved_ad_soyad || k.ad_soyad || ''} ${k.resolved_unvan || k.unvan || ''} ${k.gorev || ''}`.toLowerCase()
+          const combined =
+            `${k.resolved_ad_soyad || k.ad_soyad || ''} ${k.resolved_unvan || k.unvan || ''} ${k.gorev || ''}`.toLowerCase()
           return (
             !combined.includes('harcama yetkili') &&
             !combined.includes('gerçekleştirme') &&
@@ -789,10 +826,12 @@ export function resolveDocumentPayload(
       })(),
       gorevliler: (() => {
         const eligible = komisyonlar.filter(
-          (k: any) => resolveCommissionCategory(k) === 'maliyet' && isMemberVisibleInDocument(k, documentId)
+          (k: any) =>
+            resolveCommissionCategory(k) === 'maliyet' && isMemberVisibleInDocument(k, documentId)
         )
         const activeOfficers = eligible.filter((k: any) => {
-          const combined = `${k.resolved_ad_soyad || k.ad_soyad || ''} ${k.resolved_unvan || k.unvan || ''} ${k.gorev || ''}`.toLowerCase()
+          const combined =
+            `${k.resolved_ad_soyad || k.ad_soyad || ''} ${k.resolved_unvan || k.unvan || ''} ${k.gorev || ''}`.toLowerCase()
           return (
             !combined.includes('harcama yetkili') &&
             !combined.includes('gerçekleştirme') &&
@@ -821,10 +860,12 @@ export function resolveDocumentPayload(
       })(),
       dagitimListesi: (() => {
         const eligible = komisyonlar.filter(
-          (k: any) => resolveCommissionCategory(k) === 'maliyet' && isMemberVisibleInDocument(k, documentId)
+          (k: any) =>
+            resolveCommissionCategory(k) === 'maliyet' && isMemberVisibleInDocument(k, documentId)
         )
         const activeOfficers = eligible.filter((k: any) => {
-          const combined = `${k.resolved_ad_soyad || k.ad_soyad || ''} ${k.resolved_unvan || k.unvan || ''} ${k.gorev || ''}`.toLowerCase()
+          const combined =
+            `${k.resolved_ad_soyad || k.ad_soyad || ''} ${k.resolved_unvan || k.unvan || ''} ${k.gorev || ''}`.toLowerCase()
           return (
             !combined.includes('harcama yetkili') &&
             !combined.includes('gerçekleştirme') &&
@@ -853,7 +894,8 @@ export function resolveDocumentPayload(
       })(),
       muayeneKomisyonu: (() => {
         const eligible = komisyonlar.filter(
-          (k: any) => resolveCommissionCategory(k) === 'muayene' && isMemberVisibleInDocument(k, documentId)
+          (k: any) =>
+            resolveCommissionCategory(k) === 'muayene' && isMemberVisibleInDocument(k, documentId)
         )
         const mapped = eligible.map((k: any) => ({
           adSoyad: k.resolved_ad_soyad || k.ad_soyad || '',

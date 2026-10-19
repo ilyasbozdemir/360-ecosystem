@@ -75,7 +75,7 @@ export function YeniDosyaSecimModal({
   return createPortal(
     <div
       className="fixed inset-0 z-[99999] overflow-y-auto p-4 sm:p-6 bg-slate-900/60 backdrop-blur-xs flex min-h-full items-center justify-center animate-in fade-in duration-200"
-      style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+      style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
       onClick={onClose}
     >
       <div
@@ -192,7 +192,8 @@ export function YeniDosyaSecimModal({
                     </span>
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2">
-                    Kamu taşınmazlarının kiraya verilmesi, ecrimisil ve irtifak hakkı ihale şartnameleri.
+                    Kamu taşınmazlarının kiraya verilmesi, ecrimisil ve irtifak hakkı ihale
+                    şartnameleri.
                   </p>
                 </div>
               </button>
@@ -250,7 +251,8 @@ export function YeniDosyaSecimModal({
                     </span>
                   </div>
                   <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                    İhale veya sözleşmeye bağlı işlerde ara/kesin hakediş raporu, metraj ve kesinti takibi.
+                    İhale veya sözleşmeye bağlı işlerde ara/kesin hakediş raporu, metraj ve kesinti
+                    takibi.
                   </p>
                 </div>
               </div>
@@ -281,8 +283,7 @@ export function YeniDosyaSecimModal({
                     Mevcut Dosyadan Kopyala
                   </div>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2">
-                    Kayıtlı eski dosyalardan kalemleri ve kurum bilgilerini
-                    klonlayarak başlatır.
+                    Kayıtlı eski dosyalardan kalemleri ve kurum bilgilerini klonlayarak başlatır.
                   </p>
                 </div>
               </button>
@@ -300,8 +301,7 @@ export function YeniDosyaSecimModal({
                     Excel / .DTE İçe Aktar
                   </div>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2">
-                    Excel tablosundan veya dış veri dosyasından toplu dosya ve
-                    malzeme aktarımı.
+                    Excel tablosundan veya dış veri dosyasından toplu dosya ve malzeme aktarımı.
                   </p>
                 </div>
               </button>
@@ -329,6 +329,6 @@ export function YeniDosyaSecimModal({
         onSelect={handleExecuteClone}
       />
     </div>,
-    document.body,
-  );
+    document.body
+  )
 }

@@ -89,7 +89,10 @@ export default function RaporlarScreen(): React.JSX.Element {
   useEffect(() => {
     if (typeof window !== 'undefined' && window.electron?.ipcRenderer) {
       window.electron.ipcRenderer
-        .invoke('db:query', 'SELECT DISTINCT butce_yili FROM DATA_TeminDosyasi WHERE butce_yili IS NOT NULL ORDER BY butce_yili DESC')
+        .invoke(
+          'db:query',
+          'SELECT DISTINCT butce_yili FROM DATA_TeminDosyasi WHERE butce_yili IS NOT NULL ORDER BY butce_yili DESC'
+        )
         .then((res: any) => {
           if (res.success && Array.isArray(res.data) && res.data.length > 0) {
             const list = res.data.map((r: any) => String(r.butce_yili))
@@ -157,14 +160,18 @@ export default function RaporlarScreen(): React.JSX.Element {
                     : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60'
                 }`}
               >
-                <span className={`mt-0.5 ${seciliTip === tip.id ? 'text-blue-600' : 'text-slate-400'}`}>
+                <span
+                  className={`mt-0.5 ${seciliTip === tip.id ? 'text-blue-600' : 'text-slate-400'}`}
+                >
                   {tip.icon}
                 </span>
                 <div>
                   <div className="text-xs font-bold leading-tight">{tip.label}</div>
                   <div className="text-[10px] text-slate-400 mt-0.5 leading-tight">{tip.desc}</div>
                 </div>
-                {seciliTip === tip.id && <ChevronRight className="w-4 h-4 ml-auto mt-0.5 text-blue-600 shrink-0" />}
+                {seciliTip === tip.id && (
+                  <ChevronRight className="w-4 h-4 ml-auto mt-0.5 text-blue-600 shrink-0" />
+                )}
               </button>
             ))}
           </div>
@@ -184,7 +191,11 @@ export default function RaporlarScreen(): React.JSX.Element {
                 onChange={(e) => setSeciliYil(e.target.value)}
                 className="w-full text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 font-bold"
               >
-                {dinamikYillar.map((y) => <option key={y} value={y}>{y} Yılı</option>)}
+                {dinamikYillar.map((y) => (
+                  <option key={y} value={y}>
+                    {y} Yılı
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -197,7 +208,9 @@ export default function RaporlarScreen(): React.JSX.Element {
                   type="button"
                   onClick={() => setTarihEsasi('temin')}
                   className={`py-1 text-[11px] font-bold rounded-lg transition-all ${
-                    tarihEsasi === 'temin' ? 'bg-white dark:bg-slate-900 text-blue-600 shadow-xs' : 'text-slate-500'
+                    tarihEsasi === 'temin'
+                      ? 'bg-white dark:bg-slate-900 text-blue-600 shadow-xs'
+                      : 'text-slate-500'
                   }`}
                 >
                   Onay Tarihi
@@ -206,7 +219,9 @@ export default function RaporlarScreen(): React.JSX.Element {
                   type="button"
                   onClick={() => setTarihEsasi('acilis')}
                   className={`py-1 text-[11px] font-bold rounded-lg transition-all ${
-                    tarihEsasi === 'acilis' ? 'bg-white dark:bg-slate-900 text-blue-600 shadow-xs' : 'text-slate-500'
+                    tarihEsasi === 'acilis'
+                      ? 'bg-white dark:bg-slate-900 text-blue-600 shadow-xs'
+                      : 'text-slate-500'
                   }`}
                 >
                   Açılış Tarihi
@@ -216,7 +231,9 @@ export default function RaporlarScreen(): React.JSX.Element {
 
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-[10px] text-slate-500 font-semibold mb-0.5">Başlangıç</label>
+                <label className="block text-[10px] text-slate-500 font-semibold mb-0.5">
+                  Başlangıç
+                </label>
                 <input
                   type="date"
                   value={tarihBaslangic}
@@ -225,7 +242,9 @@ export default function RaporlarScreen(): React.JSX.Element {
                 />
               </div>
               <div>
-                <label className="block text-[10px] text-slate-500 font-semibold mb-0.5">Bitiş</label>
+                <label className="block text-[10px] text-slate-500 font-semibold mb-0.5">
+                  Bitiş
+                </label>
                 <input
                   type="date"
                   value={tarihBitis}
@@ -245,7 +264,11 @@ export default function RaporlarScreen(): React.JSX.Element {
                 className="w-full text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 font-medium"
               >
                 <option value="tumu">Tüm Harcama Birimleri</option>
-                {birimlerList.map((b) => <option key={b.id} value={b.ad}>{b.ad}</option>)}
+                {birimlerList.map((b) => (
+                  <option key={b.id} value={b.ad}>
+                    {b.ad}
+                  </option>
+                ))}
               </select>
             </div>
           </div>

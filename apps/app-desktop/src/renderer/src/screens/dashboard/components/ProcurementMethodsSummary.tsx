@@ -7,9 +7,7 @@ import type { DashboardStats } from '../dashboard.hooks'
 
 interface ProcurementMethodsSummaryProps {
   procurementMode: 'dogrudan_temin' | 'ihale' | 'devlet_ihale_2886' | 'all'
-  switchProcurementMode: (
-    mode: 'dogrudan_temin' | 'ihale' | 'devlet_ihale_2886' | 'all'
-  ) => void
+  switchProcurementMode: (mode: 'dogrudan_temin' | 'ihale' | 'devlet_ihale_2886' | 'all') => void
   stats: DashboardStats
   isLoading: boolean
   formatCurrency: (value: number) => string
@@ -38,16 +36,20 @@ export const ProcurementMethodsSummary: React.FC<ProcurementMethodsSummaryProps>
   // Doğrudan Temin toplam dosya sayısı
   const totalDtCount =
     (stats.malDosyaSayisi || 0) +
-    (stats.hizmetDosyaSayisi || 0) +
-    (stats.yapimDosyaSayisi || 0) +
-    (stats.danismanlikDosyaSayisi || 0) ||
+      (stats.hizmetDosyaSayisi || 0) +
+      (stats.yapimDosyaSayisi || 0) +
+      (stats.danismanlikDosyaSayisi || 0) ||
     stats.dogrudanTeminSayisi ||
     0
 
-  const malPct = totalDtCount > 0 ? Math.round(((stats.malDosyaSayisi || 0) / totalDtCount) * 100) : 0
-  const hizmetPct = totalDtCount > 0 ? Math.round(((stats.hizmetDosyaSayisi || 0) / totalDtCount) * 100) : 0
-  const yapimPct = totalDtCount > 0 ? Math.round(((stats.yapimDosyaSayisi || 0) / totalDtCount) * 100) : 0
-  const danismanlikPct = totalDtCount > 0 ? Math.round(((stats.danismanlikDosyaSayisi || 0) / totalDtCount) * 100) : 0
+  const malPct =
+    totalDtCount > 0 ? Math.round(((stats.malDosyaSayisi || 0) / totalDtCount) * 100) : 0
+  const hizmetPct =
+    totalDtCount > 0 ? Math.round(((stats.hizmetDosyaSayisi || 0) / totalDtCount) * 100) : 0
+  const yapimPct =
+    totalDtCount > 0 ? Math.round(((stats.yapimDosyaSayisi || 0) / totalDtCount) * 100) : 0
+  const danismanlikPct =
+    totalDtCount > 0 ? Math.round(((stats.danismanlikDosyaSayisi || 0) / totalDtCount) * 100) : 0
 
   const handleDtCardClick = (tur: string): void => {
     setSelectedDtTur(tur)
@@ -77,14 +79,17 @@ export const ProcurementMethodsSummary: React.FC<ProcurementMethodsSummaryProps>
                 </span>
               </div>
               <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
-                4734 Sayılı KİK m.22 kapsamındaki mal, hizmet, yapım ve istisnai alımların anlık özeti
+                4734 Sayılı KİK m.22 kapsamındaki mal, hizmet, yapım ve istisnai alımların anlık
+                özeti
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <div className="hidden md:flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/60 px-2.5 py-1 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
               <Info className="w-3 h-3 text-slate-400" />
-              <span>Karta tıklayarak ilgili türdeki doğrudan temin dosyalarını filtreleyebilirsiniz</span>
+              <span>
+                Karta tıklayarak ilgili türdeki doğrudan temin dosyalarını filtreleyebilirsiniz
+              </span>
             </div>
             <Link to="/dosyalar">
               <button

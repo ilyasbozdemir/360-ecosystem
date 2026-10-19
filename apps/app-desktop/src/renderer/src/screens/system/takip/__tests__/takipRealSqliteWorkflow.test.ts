@@ -64,7 +64,9 @@ describe('Gerçek SQLite ile Doğrudan Temin & Kanban İş Akışı Entegrasyon 
     expect(Number(result.lastInsertRowid)).toBe(1)
 
     const row = db
-      .prepare('SELECT id, temin_no, konu, durum_asama_id, status FROM DATA_TeminDosyasi WHERE id = 1')
+      .prepare(
+        'SELECT id, temin_no, konu, durum_asama_id, status FROM DATA_TeminDosyasi WHERE id = 1'
+      )
       .get() as {
       id: number
       temin_no: string
@@ -81,10 +83,12 @@ describe('Gerçek SQLite ile Doğrudan Temin & Kanban İş Akışı Entegrasyon 
 
   it('2. Kanban Sürükle-Bırak: Dosya aşaması 1 -> 2 -> 4 (Tamamlandı) olarak güncellenir', () => {
     // Önce dosya oluştur
-    db.prepare(`
+    db.prepare(
+      `
       INSERT INTO DATA_TeminDosyasi (id, temin_no, konu, durum_asama_id, status)
       VALUES (10, '2026/10', 'Büro Mobilyası Alımı', 1, 'devam_ediyor')
-    `).run()
+    `
+    ).run()
 
     // 1 -> 2 (Teklif Toplanıyor)
     const updateStmt = db.prepare(`
@@ -113,10 +117,12 @@ describe('Gerçek SQLite ile Doğrudan Temin & Kanban İş Akışı Entegrasyon 
 
   it('3. Uygulama Yeniden Açılma (Persistence): Veritabanından taze okunduğunda son aşama ve durum korunur', () => {
     // Dosyayı oluşturup 3. Aşamaya (Onayda) taşıyoruz
-    db.prepare(`
+    db.prepare(
+      `
       INSERT INTO DATA_TeminDosyasi (id, temin_no, konu, durum_asama_id, status)
       VALUES (25, '2026/25', 'Park Bakım Hizmeti', 3, 'devam_ediyor')
-    `).run()
+    `
+    ).run()
 
     // Uygulama kapandı / tekrar açıldı simülasyonu:
     // Takip ekranı açılışında çağrılan SELECT sorgusu:
@@ -143,19 +149,23 @@ describe('Gerçek SQLite ile Doğrudan Temin & Kanban İş Akışı Entegrasyon 
   })
 
   it('4. Hata ve Rollback: Güncelleme sırasında transaction başarısız olursa önceki aşama bozulmaz', () => {
-    db.prepare(`
+    db.prepare(
+      `
       INSERT INTO DATA_TeminDosyasi (id, temin_no, konu, durum_asama_id, status)
       VALUES (30, '2026/30', 'Kırtasiye Alımı', 1, 'devam_ediyor')
-    `).run()
+    `
+    ).run()
 
     // Transaction başlatıp hata simülasyonu yapıyoruz
     db.exec('BEGIN TRANSACTION;')
     try {
-      db.prepare(`
+      db.prepare(
+        `
         UPDATE DATA_TeminDosyasi
         SET durum_asama_id = 4, status = 'tamamlandi'
         WHERE id = 30
-      `).run()
+      `
+      ).run()
 
       // Hata tetikle (örnek: geçersiz SQL / constraint hatası)
       throw new Error('IPC Bağlantı veya Disk Hatası')

@@ -80,7 +80,7 @@ export function resolveFirmsAndItems(
   const activeTab = useGlobalDocumentPreviewStore.getState().getActiveTab()
   const explicitFirm =
     (activeTab?.selectedFirma as any) ||
-    ((activeTab?.initialData as any)?.selectedFirma) ||
+    (activeTab?.initialData as any)?.selectedFirma ||
     (propInvitedFirms && propInvitedFirms.length === 1 ? propInvitedFirms[0] : null)
 
   if (explicitFirm) {

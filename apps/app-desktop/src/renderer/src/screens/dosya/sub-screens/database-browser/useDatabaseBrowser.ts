@@ -72,7 +72,7 @@ export function useDatabaseBrowser() {
         setTables(list)
         setSelectedTable((prev) => prev || (list.length > 0 ? list[0].name : ''))
       } else {
-        setDbError(res.error || 'Açık bir çalışma veritabanı (.temin / .dtm) bulunamadı.')
+        setDbError(res.error || 'Açık bir çalışma veritabanı (.temin) bulunamadı.')
       }
     } catch (e) {
       console.error('Failed to load sqlite tables:', e)

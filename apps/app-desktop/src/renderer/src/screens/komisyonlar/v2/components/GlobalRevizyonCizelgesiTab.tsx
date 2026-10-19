@@ -108,9 +108,7 @@ export const GlobalRevizyonCizelgesiTab: React.FC<GlobalRevizyonCizelgesiTabProp
                         className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[11px] font-semibold border bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800"
                       >
                         <span className="font-bold">{m.ad_soyad}</span>
-                        {m.gorev && (
-                          <span className="text-[10px] text-slate-400">({m.gorev})</span>
-                        )}
+                        {m.gorev && <span className="text-[10px] text-slate-400">({m.gorev})</span>}
                       </span>
                     ))}
                   </div>

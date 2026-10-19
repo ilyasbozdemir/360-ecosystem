@@ -1,20 +1,11 @@
 import React, { useState, useMemo } from 'react'
-import {
-  Calculator,
-  Search,
-  X,
-  Copy,
-  Check,
-  RotateCcw
-} from 'lucide-react'
+import { Calculator, Search, X, Copy, Check, RotateCcw } from 'lucide-react'
 import { copyToClipboard } from '../../../utils/copyToClipboard'
 import { parseDec } from './decimalUtils'
 import { TOOLS } from './toolsData'
 import { HesapAraclariViewProps } from './types'
 
-export function HesapAraclariView({
-  onClose
-}: HesapAraclariViewProps): React.JSX.Element {
+export function HesapAraclariView({ onClose }: HesapAraclariViewProps): React.JSX.Element {
   const [selectedToolId, setSelectedToolId] = useState<string>('temel')
   const [precision, setPrecision] = useState<string>('2')
   const [searchQuery, setSearchQuery] = useState<string>('')
@@ -29,7 +20,9 @@ export function HesapAraclariView({
     if (!searchQuery.trim()) return TOOLS
     const q = searchQuery.toLocaleLowerCase('tr-TR')
     return TOOLS.filter(
-      (t) => t.name.toLocaleLowerCase('tr-TR').includes(q) || t.hint.toLocaleLowerCase('tr-TR').includes(q)
+      (t) =>
+        t.name.toLocaleLowerCase('tr-TR').includes(q) ||
+        t.hint.toLocaleLowerCase('tr-TR').includes(q)
     )
   }, [searchQuery])
 
@@ -90,7 +83,8 @@ export function HesapAraclariView({
               </span>
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Kamu ihale, KDV, indirim, kâr marjı, tarih farkı ve %100 hassas finansal hesaplama araçları.
+              Kamu ihale, KDV, indirim, kâr marjı, tarih farkı ve %100 hassas finansal hesaplama
+              araçları.
             </p>
           </div>
         </div>
@@ -282,7 +276,9 @@ export function HesapAraclariView({
                             </span>
                             <span
                               className={`text-sm font-extrabold text-right break-all ${
-                                val === null ? 'text-slate-400 text-xs font-normal' : 'text-slate-900 dark:text-slate-100'
+                                val === null
+                                  ? 'text-slate-400 text-xs font-normal'
+                                  : 'text-slate-900 dark:text-slate-100'
                               }`}
                             >
                               {val === null ? 'hesaplanamaz' : val}

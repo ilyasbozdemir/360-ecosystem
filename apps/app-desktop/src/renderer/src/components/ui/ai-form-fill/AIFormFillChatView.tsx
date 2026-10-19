@@ -80,11 +80,7 @@ export function AIFormFillChatView({
 
         {chatPendingApply && (
           <div className="mx-2">
-            <PreviewPanel
-              values={chatPendingApply}
-              context={context}
-              onApply={onApplyAndClose}
-            />
+            <PreviewPanel values={chatPendingApply} context={context} onApply={onApplyAndClose} />
           </div>
         )}
 

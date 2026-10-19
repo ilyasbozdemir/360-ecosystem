@@ -1,13 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import {
-  Link2,
-  Unlink,
-  Search,
-  FolderKanban,
-  Check,
-  Calendar,
-  Info
-} from 'lucide-react'
+import { Link2, Unlink, Search, FolderKanban, Check, Calendar, Info } from 'lucide-react'
 import { Modal } from '../../../components/ui/Modal'
 import {
   DosyaOption,
@@ -102,7 +94,9 @@ export function DosyaBaglamaModal({
   }
 
   const handleUnlink = async () => {
-    if (!confirm('İhtiyaç raporunun alım dosyası bağlantısını kaldırmak istediğinize emin misiniz?')) {
+    if (
+      !confirm('İhtiyaç raporunun alım dosyası bağlantısını kaldırmak istediğinize emin misiniz?')
+    ) {
       return
     }
 
@@ -159,7 +153,9 @@ export function DosyaBaglamaModal({
         <div className="bg-blue-50/60 dark:bg-blue-950/20 p-3 rounded-xl border border-blue-200/70 dark:border-blue-900/50 flex items-start gap-2.5 text-xs text-blue-800 dark:text-blue-300">
           <Info size={16} className="text-blue-600 shrink-0 mt-0.5" />
           <p className="leading-relaxed">
-            Bu işlem raporu ilgili alım dosyasına bağlar. İsteğe bağlı olarak kalemler bağımsız birer kayıt olarak dosyanın İhtiyaç Listesi&apos;ne kopyalanır; rapordaki orijinal kayıt asla bozulmaz.
+            Bu işlem raporu ilgili alım dosyasına bağlar. İsteğe bağlı olarak kalemler bağımsız
+            birer kayıt olarak dosyanın İhtiyaç Listesi&apos;ne kopyalanır; rapordaki orijinal kayıt
+            asla bozulmaz.
           </p>
         </div>
 
@@ -181,7 +177,9 @@ export function DosyaBaglamaModal({
             <div className="p-8 text-center text-xs text-slate-450">Dosyalar yükleniyor...</div>
           ) : filteredDosyalar.length === 0 ? (
             <div className="p-8 text-center text-xs text-slate-450">
-              {search ? 'Aramaya uygun alım dosyası bulunamadı.' : 'Kayıtlı alım dosyası bulunamadı.'}
+              {search
+                ? 'Aramaya uygun alım dosyası bulunamadı.'
+                : 'Kayıtlı alım dosyası bulunamadı.'}
             </div>
           ) : (
             filteredDosyalar.map((d) => {
@@ -258,7 +256,8 @@ export function DosyaBaglamaModal({
             />
             <div className="text-xs">
               <span className="font-bold text-slate-800 dark:text-slate-200 block">
-                Raporun ihtiyaç kalemlerini dosyanın İhtiyaç Listesi&apos;ne (DATA_TeminKalem) kopyala
+                Raporun ihtiyaç kalemlerini dosyanın İhtiyaç Listesi&apos;ne (DATA_TeminKalem)
+                kopyala
               </span>
               <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5">
                 Raporun kalemleri alım dosyasının ihtiyaç tablosuna bağımsız olarak aktarılır.
@@ -281,7 +280,8 @@ export function DosyaBaglamaModal({
                   className="text-blue-600 focus:ring-blue-500 cursor-pointer"
                 />
                 <span className="text-slate-700 dark:text-slate-200 font-medium">
-                  <strong>Mükerrerliği Önle</strong> (Dosyada halihazırda var olan kalemler atlanır — Önerilen)
+                  <strong>Mükerrerliği Önle</strong> (Dosyada halihazırda var olan kalemler atlanır
+                  — Önerilen)
                 </span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer select-none">
@@ -294,7 +294,8 @@ export function DosyaBaglamaModal({
                   className="text-blue-600 focus:ring-blue-500 cursor-pointer"
                 />
                 <span className="text-slate-700 dark:text-slate-200 font-medium">
-                  <strong>Dosyayı Baştan Yaz</strong> (Dosyadaki mevcut kalemleri sil ve rapor kalemlerini aktar)
+                  <strong>Dosyayı Baştan Yaz</strong> (Dosyadaki mevcut kalemleri sil ve rapor
+                  kalemlerini aktar)
                 </span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer select-none">
@@ -307,7 +308,8 @@ export function DosyaBaglamaModal({
                   className="text-blue-600 focus:ring-blue-500 cursor-pointer"
                 />
                 <span className="text-slate-700 dark:text-slate-200 font-medium">
-                  <strong>Tümünü Ekle</strong> (Mevcut kalemlerin sırasından devam ederek hepsini ekle)
+                  <strong>Tümünü Ekle</strong> (Mevcut kalemlerin sırasından devam ederek hepsini
+                  ekle)
                 </span>
               </label>
             </div>

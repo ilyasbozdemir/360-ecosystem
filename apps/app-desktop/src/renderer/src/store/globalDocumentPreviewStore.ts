@@ -11,6 +11,7 @@ export interface DocumentPreviewTab {
   invitedFirms?: unknown[]
   selectedFirma?: Record<string, unknown> | null
   initialData?: Record<string, unknown> | null
+  stage?: number | string | null
 }
 
 export interface GlobalDocumentPreviewState {
@@ -34,6 +35,7 @@ export interface GlobalDocumentPreviewState {
     invitedFirms?: unknown[]
     selectedFirma?: Record<string, unknown> | null
     initialData?: Record<string, unknown> | null
+    stage?: number | string | null
     startAsBalloon?: boolean
     onClose?: () => void
   }) => void
@@ -85,13 +87,17 @@ export const useGlobalDocumentPreviewStore = create<GlobalDocumentPreviewState>(
 
     // Uygulama sekmesine dahil et (yeni tab olarak aç veya mevcut sekmeye odaklan)
     if (!params.startAsBalloon) {
-      const titleParam = params.documentTitle ? `&title=${encodeURIComponent(params.documentTitle)}` : ''
+      const titleParam = params.documentTitle
+        ? `&title=${encodeURIComponent(params.documentTitle)}`
+        : ''
       const idParam = params.dosyaId ? `&id=${params.dosyaId}` : ''
       const docParam = `doc=${encodeURIComponent(params.documentId)}`
       const targetPath = `${APP_ROUTES.BELGE_ONIZLEME}?${docParam}${idParam}${titleParam}`
 
       const currentActiveTabPath = useTabStore.getState().activeTabPath
-      const isAlreadyOnBelgeOnizleme = currentActiveTabPath.split('?')[0].startsWith(APP_ROUTES.BELGE_ONIZLEME)
+      const isAlreadyOnBelgeOnizleme = currentActiveTabPath
+        .split('?')[0]
+        .startsWith(APP_ROUTES.BELGE_ONIZLEME)
 
       if (!isAlreadyOnBelgeOnizleme) {
         // Belge önizleme henüz aktif değilse workspace tabı olarak aç
@@ -113,6 +119,9 @@ export const useGlobalDocumentPreviewStore = create<GlobalDocumentPreviewState>(
 
     if (existingIndex >= 0) {
       // Sekme zaten açık, sadece o sekmeye odaklan
+      if (params.stage !== undefined && tabs[existingIndex].stage !== params.stage) {
+        tabs[existingIndex].stage = params.stage
+      }
       set({
         isOpen: true,
         isBalloon: params.startAsBalloon ?? false,
@@ -130,7 +139,8 @@ export const useGlobalDocumentPreviewStore = create<GlobalDocumentPreviewState>(
       documentTitle: params.documentTitle || null,
       invitedFirms: params.invitedFirms || [],
       selectedFirma: params.selectedFirma || null,
-      initialData: params.initialData || null
+      initialData: params.initialData || null,
+      stage: params.stage ?? null
     }
 
     set({

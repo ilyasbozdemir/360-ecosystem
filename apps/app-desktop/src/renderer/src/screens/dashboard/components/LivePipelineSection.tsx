@@ -1,6 +1,15 @@
 import React from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { ArrowRight, FileText, KeyRound, Landmark, Layers, Plus, Search, Sparkles } from 'lucide-react'
+import {
+  ArrowRight,
+  FileText,
+  KeyRound,
+  Landmark,
+  Layers,
+  Plus,
+  Search,
+  Sparkles
+} from 'lucide-react'
 import { formatDosyaNo } from '../../../utils/formatDosyaNo'
 import { cn } from '../../../utils/cn'
 
@@ -85,7 +94,8 @@ export const LivePipelineSection: React.FC<LivePipelineSectionProps> = ({
             Henüz Kayıtlı Dosya Bulunmuyor
           </h4>
           <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto mt-1 mb-4">
-            Yeni bir doğrudan temin veya 2886 ihale dosyası başlatarak süreçlerinizi anında devreye alın.
+            Yeni bir doğrudan temin veya 2886 ihale dosyası başlatarak süreçlerinizi anında devreye
+            alın.
           </p>
           <div className="flex items-center justify-center gap-3">
             <Link to="/dosyalar/yeni">
@@ -172,13 +182,18 @@ export const LivePipelineSection: React.FC<LivePipelineSectionProps> = ({
                   </h4>
                   <div className="text-[11px] text-slate-500 dark:text-slate-400 flex flex-wrap items-center gap-3 font-medium">
                     <span>
-                      Birim: {dosya.harcama_birimi || harcamaBirimAdi || (is2886 ? 'Emlak ve İstimlak Md.' : 'Genel Birim')}
+                      Birim:{' '}
+                      {dosya.harcama_birimi ||
+                        harcamaBirimAdi ||
+                        (is2886 ? 'Emlak ve İstimlak Md.' : 'Genel Birim')}
                     </span>
                     <span>•</span>
                     <span>
                       Tarih:{' '}
                       {dosya.ihaleTarihi ||
-                        (dosya.dosya_acilis_tarihi ? dosya.dosya_acilis_tarihi.substring(0, 10) : 'Bugün')}
+                        (dosya.dosya_acilis_tarihi
+                          ? dosya.dosya_acilis_tarihi.substring(0, 10)
+                          : 'Bugün')}
                     </span>
                   </div>
                 </div>

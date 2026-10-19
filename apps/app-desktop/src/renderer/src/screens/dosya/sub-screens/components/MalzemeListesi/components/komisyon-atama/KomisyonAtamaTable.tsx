@@ -1,12 +1,5 @@
 import React, { useState } from 'react'
-import {
-  Eye,
-  EyeOff,
-  HelpCircle,
-  Plus,
-  Settings,
-  Trash2
-} from 'lucide-react'
+import { Eye, EyeOff, HelpCircle, Plus, Settings, Trash2 } from 'lucide-react'
 import { PersonelCombobox } from '../PersonelCombobox'
 import { KomisyonRowDetail } from './KomisyonRowDetail'
 import type { KomisyonRow, PersonelItem } from './types'

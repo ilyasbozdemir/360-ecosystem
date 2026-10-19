@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   AlertTriangle,
   ArrowLeft,
@@ -13,436 +13,412 @@ import {
   Search,
   Sparkles,
   Trash2,
-  X,
-} from "lucide-react";
+  X
+} from 'lucide-react'
 import {
   IhtiyacRaporuDurum,
   IhtiyacRaporuKalem,
   ihtiyacRaporuService,
-  KalemTipi,
-} from "../../../services/ihtiyacRaporuService";
-import { dbClient } from "../../../services/db/dbClient";
-import { formatCurrency } from "../../../utils/formatters";
-import { cn } from "../../../utils/cn";
-import { BirimOption, CatalogKalemOption, PersonelOption } from "../types";
+  KalemTipi
+} from '../../../services/ihtiyacRaporuService'
+import { dbClient } from '../../../services/db/dbClient'
+import { formatCurrency } from '../../../utils/formatters'
+import { cn } from '../../../utils/cn'
+import { BirimOption, CatalogKalemOption, PersonelOption } from '../types'
 
 interface EditorViewProps {
-  editId: number | null;
-  initialTeminDosyaId?: number | null;
-  onBack: () => void;
-  onSuccess: (savedId: number) => void;
+  editId: number | null
+  initialTeminDosyaId?: number | null
+  onBack: () => void
+  onSuccess: (savedId: number) => void
 }
 
 const BIRIM_OPTIONS = [
-  "Adet",
-  "Kg",
-  "Gram",
-  "Litre",
-  "Metre",
-  "Metrekare",
-  "Metreküp",
-  "Paket",
-  "Koli",
-  "Takım",
-  "Rulo",
-  "Saat",
-  "Gün",
-  "Ay",
-  "Yıl",
-  "Kişi",
-  "Sefer",
-  "Ton",
-];
+  'Adet',
+  'Kg',
+  'Gram',
+  'Litre',
+  'Metre',
+  'Metrekare',
+  'Metreküp',
+  'Paket',
+  'Koli',
+  'Takım',
+  'Rulo',
+  'Saat',
+  'Gün',
+  'Ay',
+  'Yıl',
+  'Kişi',
+  'Sefer',
+  'Ton'
+]
 
-const KALEM_TIPLERI: KalemTipi[] = ["Mal", "Hizmet", "Yapım", "Danışmanlık"];
+const KALEM_TIPLERI: KalemTipi[] = ['Mal', 'Hizmet', 'Yapım', 'Danışmanlık']
 
 export function IhtiyacRaporuEditorView({
   editId,
   initialTeminDosyaId,
   onBack,
-  onSuccess,
+  onSuccess
 }: EditorViewProps): React.JSX.Element {
-  const [loading, setLoading] = useState(Boolean(editId));
-  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(Boolean(editId))
+  const [saving, setSaving] = useState(false)
 
   // Dossier association
-  const [teminDosyaId, setTeminDosyaId] = useState<number | null>(
-    initialTeminDosyaId ?? null,
-  );
-  const [linkedDosya, setLinkedDosya] = useState<
-    {
-      id: number;
-      dosya_no: string;
-      konu: string;
-      tur?: string;
-    } | null
-  >(null);
+  const [teminDosyaId, setTeminDosyaId] = useState<number | null>(initialTeminDosyaId ?? null)
+  const [linkedDosya, setLinkedDosya] = useState<{
+    id: number
+    dosya_no: string
+    konu: string
+    tur?: string
+  } | null>(null)
 
   // Fetch linked dosya details when teminDosyaId changes
   useEffect(() => {
-    if (!teminDosyaId) return;
-    let isCurrent = true;
+    if (!teminDosyaId) return
+    let isCurrent = true
     dbClient
       .queryFirst<{ id: number; dosya_no: string; konu: string; tur: string }>(
         `SELECT id, COALESCE(temin_no, dosya_no, 'Dosya #' || id) as dosya_no, konu, tur FROM DATA_TeminDosyasi WHERE id = ?`,
-        [teminDosyaId],
+        [teminDosyaId]
       )
       .then((d) => {
-        if (isCurrent) setLinkedDosya(d);
+        if (isCurrent) setLinkedDosya(d)
       })
       .catch(() => {
-        if (isCurrent) setLinkedDosya(null);
-      });
+        if (isCurrent) setLinkedDosya(null)
+      })
     return () => {
-      isCurrent = false;
-    };
-  }, [teminDosyaId]);
+      isCurrent = false
+    }
+  }, [teminDosyaId])
 
   // Form Fields
-  const [raporNo, setRaporNo] = useState("");
-  const [evrakSayisi, setEvrakSayisi] = useState("");
-  const [baslik, setBaslik] = useState("");
-  const [gerekce, setGerekce] = useState("");
-  const [birimId, setBirimId] = useState<number | null>(null);
-  const [birimAdi, setBirimAdi] = useState("");
-  const [personelId, setPersonelId] = useState<number | null>(null);
-  const [personelAdi, setPersonelAdi] = useState("");
-  const [personelUnvan, setPersonelUnvan] = useState("");
-  const [durum, setDurum] = useState<IhtiyacRaporuDurum>("taslak");
-  const [tarih, setTarih] = useState(() =>
-    new Date().toISOString().split("T")[0]
-  );
-  const [notlar, setNotlar] = useState("");
-  const [kalemler, setKalemler] = useState<IhtiyacRaporuKalem[]>([]);
+  const [raporNo, setRaporNo] = useState('')
+  const [evrakSayisi, setEvrakSayisi] = useState('')
+  const [baslik, setBaslik] = useState('')
+  const [gerekce, setGerekce] = useState('')
+  const [birimId, setBirimId] = useState<number | null>(null)
+  const [birimAdi, setBirimAdi] = useState('')
+  const [personelId, setPersonelId] = useState<number | null>(null)
+  const [personelAdi, setPersonelAdi] = useState('')
+  const [personelUnvan, setPersonelUnvan] = useState('')
+  const [durum, setDurum] = useState<IhtiyacRaporuDurum>('taslak')
+  const [tarih, setTarih] = useState(() => new Date().toISOString().split('T')[0])
+  const [notlar, setNotlar] = useState('')
+  const [kalemler, setKalemler] = useState<IhtiyacRaporuKalem[]>([])
 
   // Rapor No Checker & Otomatik Numara Üretim Durumu (Doğrudan Temin Mantığı)
-  const [isCheckingNo, setIsCheckingNo] = useState(false);
-  const [duplicateRapor, setDuplicateRapor] = useState<
-    { id: number; rapor_no: string; baslik: string } | null
-  >(null);
-  const [nextSuggestedNo, setNextSuggestedNo] = useState("");
+  const [isCheckingNo, setIsCheckingNo] = useState(false)
+  const [duplicateRapor, setDuplicateRapor] = useState<{
+    id: number
+    rapor_no: string
+    baslik: string
+  } | null>(null)
+  const [nextSuggestedNo, setNextSuggestedNo] = useState('')
 
   const targetYear = useMemo(() => {
     if (tarih) {
-      const parsed = new Date(tarih).getFullYear();
-      if (!isNaN(parsed)) return parsed;
+      const parsed = new Date(tarih).getFullYear()
+      if (!isNaN(parsed)) return parsed
     }
-    return new Date().getFullYear();
-  }, [tarih]);
+    return new Date().getFullYear()
+  }, [tarih])
 
   const isYearMismatch = useMemo(() => {
-    if (!raporNo.trim()) return false;
-    const match = raporNo.match(/(?:IR-)?(\d{4})[/-]/i);
+    if (!raporNo.trim()) return false
+    const match = raporNo.match(/(?:IR-)?(\d{4})[/-]/i)
     if (match) {
-      const yearInNo = parseInt(match[1], 10);
-      return yearInNo !== targetYear;
+      const yearInNo = parseInt(match[1], 10)
+      return yearInNo !== targetYear
     }
-    return false;
-  }, [raporNo, targetYear]);
+    return false
+  }, [raporNo, targetYear])
 
   const isAvailableRaporNo = useMemo(() => {
-    return !isCheckingNo && !duplicateRapor && !isYearMismatch &&
-      Boolean(raporNo.trim());
-  }, [isCheckingNo, duplicateRapor, isYearMismatch, raporNo]);
+    return !isCheckingNo && !duplicateRapor && !isYearMismatch && Boolean(raporNo.trim())
+  }, [isCheckingNo, duplicateRapor, isYearMismatch, raporNo])
 
   // Canlı Mükerrer Rapor Numarası Kontrolü (Doğrudan Temin ile Birebir Aynı)
   useEffect(() => {
-    const trimmed = raporNo.trim();
+    const trimmed = raporNo.trim()
     if (!trimmed) {
-      setDuplicateRapor(null);
-      setIsCheckingNo(false);
-      return;
+      setDuplicateRapor(null)
+      setIsCheckingNo(false)
+      return
     }
 
-    let isCurrent = true;
-    setIsCheckingNo(true);
+    let isCurrent = true
+    setIsCheckingNo(true)
 
     const timer = setTimeout(async () => {
       try {
         const sql = editId
           ? `SELECT id, rapor_no, baslik FROM DATA_IhtiyacRaporu WHERE LOWER(rapor_no) = LOWER(?) AND id != ? LIMIT 1`
-          : `SELECT id, rapor_no, baslik FROM DATA_IhtiyacRaporu WHERE LOWER(rapor_no) = LOWER(?) LIMIT 1`;
-        const params = editId ? [trimmed, editId] : [trimmed];
-        const found = await dbClient.queryFirst<
-          { id: number; rapor_no: string; baslik: string }
-        >(sql, params);
+          : `SELECT id, rapor_no, baslik FROM DATA_IhtiyacRaporu WHERE LOWER(rapor_no) = LOWER(?) LIMIT 1`
+        const params = editId ? [trimmed, editId] : [trimmed]
+        const found = await dbClient.queryFirst<{ id: number; rapor_no: string; baslik: string }>(
+          sql,
+          params
+        )
 
         if (isCurrent) {
-          setDuplicateRapor(found || null);
-          setIsCheckingNo(false);
+          setDuplicateRapor(found || null)
+          setIsCheckingNo(false)
         }
       } catch {
-        if (isCurrent) setIsCheckingNo(false);
+        if (isCurrent) setIsCheckingNo(false)
       }
-    }, 250);
+    }, 250)
 
     return () => {
-      isCurrent = false;
-      clearTimeout(timer);
-    };
-  }, [raporNo, editId]);
+      isCurrent = false
+      clearTimeout(timer)
+    }
+  }, [raporNo, editId])
 
-  const fetchNextSuggestedNo = useCallback(
-    async (year: number): Promise<string> => {
-      try {
-        const nextNo = await ihtiyacRaporuService.getNextRaporNo(year);
-        setNextSuggestedNo(nextNo);
-        return nextNo;
-      } catch {
-        const fallback = `IR-${year}/001`;
-        setNextSuggestedNo(fallback);
-        return fallback;
-      }
-    },
-    [],
-  );
+  const fetchNextSuggestedNo = useCallback(async (year: number): Promise<string> => {
+    try {
+      const nextNo = await ihtiyacRaporuService.getNextRaporNo(year)
+      setNextSuggestedNo(nextNo)
+      return nextNo
+    } catch {
+      const fallback = `IR-${year}/001`
+      setNextSuggestedNo(fallback)
+      return fallback
+    }
+  }, [])
 
   useEffect(() => {
-    fetchNextSuggestedNo(targetYear);
-  }, [targetYear, fetchNextSuggestedNo]);
+    fetchNextSuggestedNo(targetYear)
+  }, [targetYear, fetchNextSuggestedNo])
 
   // Doğrudan temindeki gibi: Rapor Tarihi değiştiğinde yılına göre sıradaki numarayı otomatik ata
-  const handleTarihChange = async (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ): Promise<void> => {
-    const newDate = e.target.value;
-    const oldYear = targetYear;
-    setTarih(newDate);
+  const handleTarihChange = async (e: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+    const newDate = e.target.value
+    const oldYear = targetYear
+    setTarih(newDate)
 
-    const newYear = newDate ? new Date(newDate).getFullYear() : null;
+    const newYear = newDate ? new Date(newDate).getFullYear() : null
     if (newYear && newYear !== oldYear) {
       try {
-        const nextNo = await fetchNextSuggestedNo(newYear);
-        const oldPrefix = `IR-${oldYear}/`;
-        const isAutoPattern = !raporNo || raporNo.startsWith(oldPrefix) ||
-          raporNo.startsWith(`${oldYear}/`);
+        const nextNo = await fetchNextSuggestedNo(newYear)
+        const oldPrefix = `IR-${oldYear}/`
+        const isAutoPattern =
+          !raporNo || raporNo.startsWith(oldPrefix) || raporNo.startsWith(`${oldYear}/`)
 
         if (isAutoPattern || !editId) {
-          setRaporNo(nextNo);
+          setRaporNo(nextNo)
         }
       } catch {
-        const fallback = `IR-${newYear}/001`;
-        setNextSuggestedNo(fallback);
-        if (!editId) setRaporNo(fallback);
+        const fallback = `IR-${newYear}/001`
+        setNextSuggestedNo(fallback)
+        if (!editId) setRaporNo(fallback)
       }
     }
-  };
+  }
 
   // Sıradaki No butonuna tıklandığında boş numarayı ata
   const handleAssignNextNo = async (): Promise<void> => {
     try {
-      setIsCheckingNo(true);
-      const nextNo = await fetchNextSuggestedNo(targetYear);
-      setRaporNo(nextNo);
+      setIsCheckingNo(true)
+      const nextNo = await fetchNextSuggestedNo(targetYear)
+      setRaporNo(nextNo)
     } finally {
-      setIsCheckingNo(false);
+      setIsCheckingNo(false)
     }
-  };
+  }
 
   // Rapor No alanından çıkıldığında format tamamlama (Doğrudan temin standardı)
   const handleRaporNoBlur = (): void => {
-    let val = raporNo.trim();
-    if (!val) return;
+    let val = raporNo.trim()
+    if (!val) return
 
     // Sadece sayı girildiyse (örn: "5" veya "12") -> IR-YYYY/005 formatına getir
     if (/^\d+$/.test(val)) {
-      val = `IR-${targetYear}/${val.padStart(3, "0")}`;
+      val = `IR-${targetYear}/${val.padStart(3, '0')}`
     } else {
       // "2026/1" veya "2026/001" girildiyse -> IR-2026/001 formatına getir
-      const matchSlash = val.match(/^(\d{4})[/-](\d+)$/);
+      const matchSlash = val.match(/^(\d{4})[/-](\d+)$/)
       if (matchSlash) {
-        val = `IR-${matchSlash[1]}/${matchSlash[2].padStart(3, "0")}`;
+        val = `IR-${matchSlash[1]}/${matchSlash[2].padStart(3, '0')}`
       }
     }
-    setRaporNo(val);
-  };
+    setRaporNo(val)
+  }
 
   // Lookups
-  const [birimler, setBirimler] = useState<BirimOption[]>([]);
-  const [personeller, setPersoneller] = useState<PersonelOption[]>([]);
-  const [catalogKalemler, setCatalogKalemler] = useState<CatalogKalemOption[]>(
-    [],
-  );
-  const [showCatalogModal, setShowCatalogModal] = useState(false);
-  const [catalogSearch, setCatalogSearch] = useState("");
+  const [birimler, setBirimler] = useState<BirimOption[]>([])
+  const [personeller, setPersoneller] = useState<PersonelOption[]>([])
+  const [catalogKalemler, setCatalogKalemler] = useState<CatalogKalemOption[]>([])
+  const [showCatalogModal, setShowCatalogModal] = useState(false)
+  const [catalogSearch, setCatalogSearch] = useState('')
 
   // Load Lookups on mount
   useEffect(() => {
     dbClient
-      .query<BirimOption>(
-        "SELECT id, birim_adi FROM TANIM_Birim ORDER BY birim_adi ASC",
-      )
+      .query<BirimOption>('SELECT id, birim_adi FROM TANIM_Birim ORDER BY birim_adi ASC')
       .then((res) => setBirimler(res))
-      .catch(() => {});
+      .catch(() => {})
 
     dbClient
       .query<PersonelOption>(
-        "SELECT id, ad_soyad, unvan FROM TANIM_Personel WHERE aktif_mi = 1 ORDER BY ad_soyad ASC",
+        'SELECT id, ad_soyad, unvan FROM TANIM_Personel WHERE aktif_mi = 1 ORDER BY ad_soyad ASC'
       )
       .then((res) => setPersoneller(res))
-      .catch(() => {});
+      .catch(() => {})
 
     dbClient
       .query<CatalogKalemOption>(
-        "SELECT id, kalem_adi, tipi, birim, kdv_orani, COALESCE(ozelligi, notlar, '') AS aciklama, poz_no, tasinir_kodu FROM TANIM_Kalem ORDER BY kalem_adi ASC LIMIT 200",
+        "SELECT id, kalem_adi, tipi, birim, kdv_orani, COALESCE(ozelligi, notlar, '') AS aciklama, poz_no, tasinir_kodu FROM TANIM_Kalem ORDER BY kalem_adi ASC LIMIT 200"
       )
       .then((res) => setCatalogKalemler(res))
-      .catch(() => {});
-  }, []);
+      .catch(() => {})
+  }, [])
 
   // Load Existing or Prepare New
   useEffect(() => {
     if (editId) {
       Promise.all([
         ihtiyacRaporuService.getRaporById(editId),
-        ihtiyacRaporuService.getRaporKalemleri(editId),
+        ihtiyacRaporuService.getRaporKalemleri(editId)
       ])
         .then(([rep, items]) => {
-          if (!rep) return;
-          setRaporNo(rep.rapor_no);
-          setEvrakSayisi(rep.evrak_sayisi || "");
-          setBaslik(rep.baslik);
-          setGerekce(rep.gerekce || "");
-          setBirimId(rep.birim_id || null);
-          setBirimAdi(rep.birim_adi || "");
-          setPersonelId(rep.talep_eden_personel_id || null);
-          setPersonelAdi(rep.talep_eden_personel || "");
-          setPersonelUnvan(rep.talep_eden_unvan || "");
-          setDurum(rep.durum || "taslak");
-          setTeminDosyaId(rep.temin_dosya_id || null);
-          setTarih(
-            rep.tarih
-              ? rep.tarih.substring(0, 10)
-              : new Date().toISOString().split("T")[0],
-          );
-          setNotlar(rep.notlar || "");
-          setKalemler(items || []);
+          if (!rep) return
+          setRaporNo(rep.rapor_no)
+          setEvrakSayisi(rep.evrak_sayisi || '')
+          setBaslik(rep.baslik)
+          setGerekce(rep.gerekce || '')
+          setBirimId(rep.birim_id || null)
+          setBirimAdi(rep.birim_adi || '')
+          setPersonelId(rep.talep_eden_personel_id || null)
+          setPersonelAdi(rep.talep_eden_personel || '')
+          setPersonelUnvan(rep.talep_eden_unvan || '')
+          setDurum(rep.durum || 'taslak')
+          setTeminDosyaId(rep.temin_dosya_id || null)
+          setTarih(rep.tarih ? rep.tarih.substring(0, 10) : new Date().toISOString().split('T')[0])
+          setNotlar(rep.notlar || '')
+          setKalemler(items || [])
         })
         .catch((err) => {
-          console.error("Rapor yüklenirken hata:", err);
+          console.error('Rapor yüklenirken hata:', err)
         })
         .finally(() => {
-          setLoading(false);
-        });
+          setLoading(false)
+        })
     } else {
-      const currentYear = new Date().getFullYear();
+      const currentYear = new Date().getFullYear()
       ihtiyacRaporuService
         .getNextRaporNo(currentYear)
         .then((no) => {
-          setRaporNo(no);
-          setNextSuggestedNo(no);
+          setRaporNo(no)
+          setNextSuggestedNo(no)
         })
         .catch(() => {
-          setRaporNo(`IR-${currentYear}/001`);
-          setNextSuggestedNo(`IR-${currentYear}/001`);
-        });
+          setRaporNo(`IR-${currentYear}/001`)
+          setNextSuggestedNo(`IR-${currentYear}/001`)
+        })
     }
-  }, [editId]);
+  }, [editId])
 
   // Kalem İşlemleri
   const handleAddKalem = (): void => {
     const newItem: IhtiyacRaporuKalem = {
       sira_no: kalemler.length + 1,
-      kalem_adi: "",
-      tipi: "Mal",
-      birim: "Adet",
+      kalem_adi: '',
+      tipi: 'Mal',
+      birim: 'Adet',
       miktar: 1,
       kdv_orani: 20,
       tahmini_birim_fiyat: 0,
-      aciklama: "",
-    };
-    setKalemler([...kalemler, newItem]);
-  };
+      aciklama: ''
+    }
+    setKalemler([...kalemler, newItem])
+  }
 
-  const handleUpdateKalem = (
-    index: number,
-    patch: Partial<IhtiyacRaporuKalem>,
-  ): void => {
+  const handleUpdateKalem = (index: number, patch: Partial<IhtiyacRaporuKalem>): void => {
     setKalemler((prev) => {
-      const copy = [...prev];
-      copy[index] = { ...copy[index], ...patch };
-      return copy;
-    });
-  };
+      const copy = [...prev]
+      copy[index] = { ...copy[index], ...patch }
+      return copy
+    })
+  }
 
   const handleRemoveKalem = (index: number): void => {
     setKalemler((prev) => {
-      const filtered = prev.filter((_, i) => i !== index);
-      return filtered.map((k, idx) => ({ ...k, sira_no: idx + 1 }));
-    });
-  };
+      const filtered = prev.filter((_, i) => i !== index)
+      return filtered.map((k, idx) => ({ ...k, sira_no: idx + 1 }))
+    })
+  }
 
   const handleAddFromCatalog = (cat: CatalogKalemOption): void => {
     const newItem: IhtiyacRaporuKalem = {
       sira_no: kalemler.length + 1,
       kalem_adi: cat.kalem_adi,
-      tipi: (cat.tipi as KalemTipi) || "Mal",
-      birim: cat.birim || "Adet",
+      tipi: (cat.tipi as KalemTipi) || 'Mal',
+      birim: cat.birim || 'Adet',
       miktar: 1,
       kdv_orani: cat.kdv_orani ?? 20,
       tasinir_kodu: cat.tasinir_kodu || null,
       poz_no: cat.poz_no || null,
-      aciklama: cat.aciklama || "",
-      tahmini_birim_fiyat: 0,
-    };
-    setKalemler([...kalemler, newItem]);
-    setShowCatalogModal(false);
-  };
+      aciklama: cat.aciklama || '',
+      tahmini_birim_fiyat: 0
+    }
+    setKalemler([...kalemler, newItem])
+    setShowCatalogModal(false)
+  }
 
   // Birim ve Personel Değişimi
   const handleBirimChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    const selectedId = Number(e.target.value) || null;
-    setBirimId(selectedId);
-    const found = birimler.find((b) => b.id === selectedId);
-    setBirimAdi(found ? found.birim_adi : "");
-  };
+    const selectedId = Number(e.target.value) || null
+    setBirimId(selectedId)
+    const found = birimler.find((b) => b.id === selectedId)
+    setBirimAdi(found ? found.birim_adi : '')
+  }
 
-  const handlePersonelChange = (
-    e: React.ChangeEvent<HTMLSelectElement>,
-  ): void => {
-    const selectedId = Number(e.target.value) || null;
-    setPersonelId(selectedId);
-    const found = personeller.find((p) => p.id === selectedId);
-    setPersonelAdi(found ? found.ad_soyad : "");
-    setPersonelUnvan(found ? (found.unvan || "") : "");
-  };
+  const handlePersonelChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+    const selectedId = Number(e.target.value) || null
+    setPersonelId(selectedId)
+    const found = personeller.find((p) => p.id === selectedId)
+    setPersonelAdi(found ? found.ad_soyad : '')
+    setPersonelUnvan(found ? found.unvan || '' : '')
+  }
 
   // Totals
   const subTotal = kalemler.reduce(
-    (sum, k) =>
-      sum + (Number(k.miktar) || 0) * (Number(k.tahmini_birim_fiyat) || 0),
-    0,
-  );
+    (sum, k) => sum + (Number(k.miktar) || 0) * (Number(k.tahmini_birim_fiyat) || 0),
+    0
+  )
   const totalKdv = kalemler.reduce((sum, k) => {
-    const lineTotal = (Number(k.miktar) || 0) *
-      (Number(k.tahmini_birim_fiyat) || 0);
-    return sum + (lineTotal * (Number(k.kdv_orani) || 0)) / 100;
-  }, 0);
-  const grandTotal = subTotal + totalKdv;
+    const lineTotal = (Number(k.miktar) || 0) * (Number(k.tahmini_birim_fiyat) || 0)
+    return sum + (lineTotal * (Number(k.kdv_orani) || 0)) / 100
+  }, 0)
+  const grandTotal = subTotal + totalKdv
 
   // Save / Submit
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
-    e.preventDefault();
+    e.preventDefault()
 
     if (!baslik.trim()) {
-      alert("Lütfen ihtiyaç konusunu / başlığını giriniz.");
-      return;
+      alert('Lütfen ihtiyaç konusunu / başlığını giriniz.')
+      return
     }
 
     if (!raporNo.trim()) {
-      alert("Lütfen geçerli bir rapor numarası giriniz.");
-      return;
+      alert('Lütfen geçerli bir rapor numarası giriniz.')
+      return
     }
 
     if (duplicateRapor) {
       alert(
-        `"${raporNo}" numaralı rapor numarası zaten "${duplicateRapor.baslik}" raporunda kullanımda! Lütfen sıradaki veya benzersiz bir numara belirleyiniz.`,
-      );
-      return;
+        `"${raporNo}" numaralı rapor numarası zaten "${duplicateRapor.baslik}" raporunda kullanımda! Lütfen sıradaki veya benzersiz bir numara belirleyiniz.`
+      )
+      return
     }
 
     try {
-      setSaving(true);
+      setSaving(true)
 
       const payload = {
         rapor_no: raporNo.trim(),
@@ -458,48 +434,46 @@ export function IhtiyacRaporuEditorView({
         temin_dosya_id: teminDosyaId,
         tarih,
         tahmini_butce: grandTotal,
-        notlar: notlar.trim() || null,
-      };
-
-      let savedId: number;
-
-      if (editId) {
-        await ihtiyacRaporuService.updateRapor(editId, payload, kalemler);
-        savedId = editId;
-      } else {
-        savedId = await ihtiyacRaporuService.createRapor(payload, kalemler);
+        notlar: notlar.trim() || null
       }
 
-      onSuccess(savedId);
+      let savedId: number
+
+      if (editId) {
+        await ihtiyacRaporuService.updateRapor(editId, payload, kalemler)
+        savedId = editId
+      } else {
+        savedId = await ihtiyacRaporuService.createRapor(payload, kalemler)
+      }
+
+      onSuccess(savedId)
     } catch (err: unknown) {
-      console.error("İhtiyaç raporu kaydedilemedi:", err);
-      const message = err instanceof Error ? err.message : String(err);
-      alert("Hata: " + message);
+      console.error('İhtiyaç raporu kaydedilemedi:', err)
+      const message = err instanceof Error ? err.message : String(err)
+      alert('Hata: ' + message)
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   const filteredCatalog = catalogKalemler.filter((c) => {
-    if (!catalogSearch.trim()) return true;
-    const q = catalogSearch.toLowerCase();
+    if (!catalogSearch.trim()) return true
+    const q = catalogSearch.toLowerCase()
     return (
       c.kalem_adi.toLowerCase().includes(q) ||
       (c.aciklama && c.aciklama.toLowerCase().includes(q)) ||
       (c.tasinir_kodu && c.tasinir_kodu.toLowerCase().includes(q)) ||
       (c.poz_no && c.poz_no.toLowerCase().includes(q))
-    );
-  });
+    )
+  })
 
   if (loading) {
     return (
       <div className="p-20 text-center text-slate-500">
         <div className="w-10 h-10 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-        <p className="text-sm font-medium">
-          İhtiyaç raporu bilgileri yükleniyor...
-        </p>
+        <p className="text-sm font-medium">İhtiyaç raporu bilgileri yükleniyor...</p>
       </div>
-    );
+    )
   }
 
   return (
@@ -517,16 +491,14 @@ export function IhtiyacRaporuEditorView({
           </button>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-400">
-                İhtiyaç Raporları
-              </span>
+              <span className="text-xs font-bold text-slate-400">İhtiyaç Raporları</span>
               <span className="text-slate-300 dark:text-slate-600">/</span>
               <span className="text-xs font-bold text-blue-600 dark:text-blue-400">
-                {editId ? "Rapor Düzenleme" : "Yeni Rapor Hazırlama"}
+                {editId ? 'Rapor Düzenleme' : 'Yeni Rapor Hazırlama'}
               </span>
             </div>
             <h1 className="text-2xl font-black text-slate-850 dark:text-slate-100 tracking-tight mt-0.5">
-              {editId ? `${raporNo || "Rapor"} Düzenle` : "Yeni İhtiyaç Raporu"}
+              {editId ? `${raporNo || 'Rapor'} Düzenle` : 'Yeni İhtiyaç Raporu'}
             </h1>
           </div>
         </div>
@@ -548,11 +520,7 @@ export function IhtiyacRaporuEditorView({
             className="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-500/25 flex items-center gap-2 cursor-pointer"
           >
             <Save size={15} />
-            {saving
-              ? "Kaydediliyor..."
-              : editId
-              ? "Değişiklikleri Kaydet"
-              : "Raporu Kaydet"}
+            {saving ? 'Kaydediliyor...' : editId ? 'Değişiklikleri Kaydet' : 'Raporu Kaydet'}
           </button>
         </div>
       </div>
@@ -560,51 +528,49 @@ export function IhtiyacRaporuEditorView({
       {/* Main Form Body */}
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Alım Dosyası İlişkisi Kartı */}
-        {linkedDosya
-          ? (
-            <div className="bg-blue-50/80 dark:bg-blue-950/30 border border-blue-200/90 dark:border-blue-800/60 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-                  <FolderOpen size={18} />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-blue-200/70 dark:bg-blue-850 text-blue-800 dark:text-blue-300">
-                      Bağlı Alım Dosyası
-                    </span>
-                    <span className="text-xs font-mono font-bold text-blue-900 dark:text-blue-200">
-                      #{linkedDosya.dosya_no}
-                    </span>
-                    {linkedDosya.tur && (
-                      <span className="text-[10px] font-semibold text-blue-700 dark:text-blue-300">
-                        ({linkedDosya.tur})
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5">
-                    {linkedDosya.konu}
-                  </p>
-                </div>
+        {linkedDosya ? (
+          <div className="bg-blue-50/80 dark:bg-blue-950/30 border border-blue-200/90 dark:border-blue-800/60 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                <FolderOpen size={18} />
               </div>
-              <button
-                type="button"
-                onClick={() => setTeminDosyaId(null)}
-                className="px-3 py-1.5 text-xs font-bold text-rose-600 hover:text-rose-700 bg-white hover:bg-rose-50 dark:bg-slate-900 dark:hover:bg-rose-950/30 border border-rose-200 dark:border-rose-900/40 rounded-xl transition-all cursor-pointer self-start sm:self-center shadow-xs"
-              >
-                Dosya Bağlantısını Kaldır (Bağımsız Yap)
-              </button>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-blue-200/70 dark:bg-blue-850 text-blue-800 dark:text-blue-300">
+                    Bağlı Alım Dosyası
+                  </span>
+                  <span className="text-xs font-mono font-bold text-blue-900 dark:text-blue-200">
+                    #{linkedDosya.dosya_no}
+                  </span>
+                  {linkedDosya.tur && (
+                    <span className="text-[10px] font-semibold text-blue-700 dark:text-blue-300">
+                      ({linkedDosya.tur})
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5">
+                  {linkedDosya.konu}
+                </p>
+              </div>
             </div>
-          )
-          : (
-            <div className="bg-slate-50 dark:bg-slate-900/50 border border-dashed border-slate-250 dark:border-slate-800 rounded-2xl p-3.5 flex items-center gap-2.5 text-xs text-slate-500 dark:text-slate-400">
-              <Sparkles size={16} className="text-amber-500 shrink-0" />
-              <span>
-                Bu rapor bağımsız bir taslak olarak hazırlanıyor. İhtiyaç
-                kalemlerini şimdi belirleyebilir, istediğiniz zaman doğrudan
-                temin veya ihale dosyasına bağlayabilirsiniz.
-              </span>
-            </div>
-          )}
+            <button
+              type="button"
+              onClick={() => setTeminDosyaId(null)}
+              className="px-3 py-1.5 text-xs font-bold text-rose-600 hover:text-rose-700 bg-white hover:bg-rose-50 dark:bg-slate-900 dark:hover:bg-rose-950/30 border border-rose-200 dark:border-rose-900/40 rounded-xl transition-all cursor-pointer self-start sm:self-center shadow-xs"
+            >
+              Dosya Bağlantısını Kaldır (Bağımsız Yap)
+            </button>
+          </div>
+        ) : (
+          <div className="bg-slate-50 dark:bg-slate-900/50 border border-dashed border-slate-250 dark:border-slate-800 rounded-2xl p-3.5 flex items-center gap-2.5 text-xs text-slate-500 dark:text-slate-400">
+            <Sparkles size={16} className="text-amber-500 shrink-0" />
+            <span>
+              Bu rapor bağımsız bir taslak olarak hazırlanıyor. İhtiyaç kalemlerini şimdi
+              belirleyebilir, istediğiniz zaman doğrudan temin veya ihale dosyasına
+              bağlayabilirsiniz.
+            </span>
+          </div>
+        )}
 
         {/* 1. Bölüm: Temel Bilgiler */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 shadow-xs space-y-4">
@@ -833,7 +799,10 @@ export function IhtiyacRaporuEditorView({
               </select>
               {personelUnvan && (
                 <p className="text-[10.5px] text-slate-500 mt-1">
-                  Unvan: <span className="font-medium text-slate-700 dark:text-slate-300">{personelUnvan}</span>
+                  Unvan:{' '}
+                  <span className="font-medium text-slate-700 dark:text-slate-300">
+                    {personelUnvan}
+                  </span>
                 </p>
               )}
             </div>
@@ -910,227 +879,218 @@ export function IhtiyacRaporuEditorView({
             </div>
           </div>
 
-          {kalemler.length === 0
-            ? (
-              <div className="p-10 text-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl space-y-3">
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                  Henüz ihtiyaç kalemi eklenmedi. Raporunuza ait malzeme veya
-                  hizmetleri ekleyin.
-                </p>
-                <div className="flex items-center justify-center gap-2">
-                  <button
-                    type="button"
-                    onClick={handleAddKalem}
-                    className="px-4 py-2 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-xl text-xs font-bold cursor-pointer"
-                  >
-                    + Yeni Kalem Ekle
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowCatalogModal(true)}
-                    className="px-4 py-2 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 rounded-xl text-xs font-bold cursor-pointer"
-                  >
-                    ⚡ Havuzdan Seç
-                  </button>
-                </div>
+          {kalemler.length === 0 ? (
+            <div className="p-10 text-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl space-y-3">
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                Henüz ihtiyaç kalemi eklenmedi. Raporunuza ait malzeme veya hizmetleri ekleyin.
+              </p>
+              <div className="flex items-center justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleAddKalem}
+                  className="px-4 py-2 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-xl text-xs font-bold cursor-pointer"
+                >
+                  + Yeni Kalem Ekle
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowCatalogModal(true)}
+                  className="px-4 py-2 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 rounded-xl text-xs font-bold cursor-pointer"
+                >
+                  ⚡ Havuzdan Seç
+                </button>
               </div>
-            )
-            : (
-              <div className="border border-slate-200/80 dark:border-slate-800 rounded-2xl overflow-hidden shadow-2xs">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs border-collapse">
-                    <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 font-bold uppercase text-[10px] border-b border-slate-200 dark:border-slate-800">
-                      <tr>
-                        <th className="py-2.5 px-3 w-10 text-center">#</th>
-                        <th className="py-2.5 px-3 min-w-50">Kalem Adı *</th>
-                        <th className="py-2.5 px-3 w-28">Tipi</th>
-                        <th className="py-2.5 px-3 w-24">Birim</th>
-                        <th className="py-2.5 px-3 w-24 text-right">Miktar</th>
-                        <th className="py-2.5 px-3 w-20 text-center">KDV %</th>
-                        <th className="py-2.5 px-3 w-32 text-right">
-                          Tahmini Fiyat
-                        </th>
-                        <th className="py-2.5 px-3 w-32 text-right">
-                          Tutar (KDV&apos;li)
-                        </th>
-                        <th className="py-2.5 px-3 min-w-37.5">
-                          Açıklama / Özellik
-                        </th>
-                        <th className="py-2.5 px-3 w-10 text-center">Sil</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
-                      {kalemler.map((k, idx) => {
-                        const lineNet = (Number(k.miktar) || 0) *
-                          (Number(k.tahmini_birim_fiyat) || 0);
-                        const lineKdv = (lineNet * (Number(k.kdv_orani) || 0)) /
-                          100;
-                        const lineTotal = lineNet + lineKdv;
+            </div>
+          ) : (
+            <div className="border border-slate-200/80 dark:border-slate-800 rounded-2xl overflow-hidden shadow-2xs">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 font-bold uppercase text-[10px] border-b border-slate-200 dark:border-slate-800">
+                    <tr>
+                      <th className="py-2.5 px-3 w-10 text-center">#</th>
+                      <th className="py-2.5 px-3 min-w-50">Kalem Adı *</th>
+                      <th className="py-2.5 px-3 w-28">Tipi</th>
+                      <th className="py-2.5 px-3 w-24">Birim</th>
+                      <th className="py-2.5 px-3 w-24 text-right">Miktar</th>
+                      <th className="py-2.5 px-3 w-20 text-center">KDV %</th>
+                      <th className="py-2.5 px-3 w-32 text-right">Tahmini Fiyat</th>
+                      <th className="py-2.5 px-3 w-32 text-right">Tutar (KDV&apos;li)</th>
+                      <th className="py-2.5 px-3 min-w-37.5">Açıklama / Özellik</th>
+                      <th className="py-2.5 px-3 w-10 text-center">Sil</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                    {kalemler.map((k, idx) => {
+                      const lineNet = (Number(k.miktar) || 0) * (Number(k.tahmini_birim_fiyat) || 0)
+                      const lineKdv = (lineNet * (Number(k.kdv_orani) || 0)) / 100
+                      const lineTotal = lineNet + lineKdv
 
-                        return (
-                          <tr
-                            key={idx}
-                            className="hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition-colors"
-                          >
-                            <td className="py-2 px-3 text-center font-mono font-bold text-slate-400">
-                              {idx + 1}
-                            </td>
-                            <td className="py-2 px-3">
-                              <input
-                                type="text"
-                                required
-                                value={k.kalem_adi}
-                                onChange={(e) =>
-                                  handleUpdateKalem(idx, {
-                                    kalem_adi: e.target.value,
-                                  })}
-                                placeholder="Kalem / Malzeme Adı..."
-                                className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-800 dark:text-slate-100 focus:outline-hidden focus:border-blue-500"
-                              />
-                            </td>
-                            <td className="py-2 px-3">
-                              <select
-                                value={k.tipi || "Mal"}
-                                onChange={(e) =>
-                                  handleUpdateKalem(idx, {
-                                    tipi: e.target.value as KalemTipi,
-                                  })}
-                                className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 focus:outline-hidden"
-                              >
-                                {KALEM_TIPLERI.map((t) => (
-                                  <option key={t} value={t}>
-                                    {t}
-                                  </option>
-                                ))}
-                              </select>
-                            </td>
-                            <td className="py-2 px-3">
-                              <select
-                                value={k.birim || "Adet"}
-                                onChange={(e) =>
-                                  handleUpdateKalem(idx, {
-                                    birim: e.target.value,
-                                  })}
-                                className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 focus:outline-hidden"
-                              >
-                                {BIRIM_OPTIONS.map((b) => (
-                                  <option key={b} value={b}>
-                                    {b}
-                                  </option>
-                                ))}
-                              </select>
-                            </td>
-                            <td className="py-2 px-3 text-right">
-                              <input
-                                type="number"
-                                min="0.001"
-                                step="any"
-                                required
-                                value={k.miktar || ""}
-                                onChange={(e) =>
-                                  handleUpdateKalem(idx, {
-                                    miktar: parseFloat(e.target.value) || 0,
-                                  })}
-                                className="w-20 px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-right font-mono font-bold text-slate-800 dark:text-slate-100 focus:outline-hidden"
-                              />
-                            </td>
-                            <td className="py-2 px-3 text-center">
-                              <select
-                                value={k.kdv_orani ?? 20}
-                                onChange={(e) =>
-                                  handleUpdateKalem(idx, {
-                                    kdv_orani: Number(e.target.value),
-                                  })}
-                                className="px-1.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-center font-mono focus:outline-hidden"
-                              >
-                                <option value={0}>%0</option>
-                                <option value={1}>%1</option>
-                                <option value={10}>%10</option>
-                                <option value={20}>%20</option>
-                              </select>
-                            </td>
-                            <td className="py-2 px-3 text-right">
-                              <input
-                                type="number"
-                                min="0"
-                                step="any"
-                                value={k.tahmini_birim_fiyat || ""}
-                                onChange={(e) =>
-                                  handleUpdateKalem(idx, {
-                                    tahmini_birim_fiyat:
-                                      parseFloat(e.target.value) || 0,
-                                  })}
-                                placeholder="0.00"
-                                className="w-28 px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-right font-mono text-slate-800 dark:text-slate-100 focus:outline-hidden"
-                              />
-                            </td>
-                            <td className="py-2 px-3 text-right font-mono font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">
-                              {formatCurrency(lineTotal)}
-                            </td>
-                            <td className="py-2 px-3">
-                              <input
-                                type="text"
-                                value={k.aciklama || ""}
-                                onChange={(e) =>
-                                  handleUpdateKalem(idx, {
-                                    aciklama: e.target.value,
-                                  })}
-                                placeholder="Teknik detay, poz veya taşınır..."
-                                className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-600 dark:text-slate-300 focus:outline-hidden"
-                              />
-                            </td>
-                            <td className="py-2 px-3 text-center">
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveKalem(idx)}
-                                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer"
-                                title="Kalemi Sil"
-                              >
-                                <Trash2 size={14} />
-                              </button>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                      return (
+                        <tr
+                          key={idx}
+                          className="hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition-colors"
+                        >
+                          <td className="py-2 px-3 text-center font-mono font-bold text-slate-400">
+                            {idx + 1}
+                          </td>
+                          <td className="py-2 px-3">
+                            <input
+                              type="text"
+                              required
+                              value={k.kalem_adi}
+                              onChange={(e) =>
+                                handleUpdateKalem(idx, {
+                                  kalem_adi: e.target.value
+                                })
+                              }
+                              placeholder="Kalem / Malzeme Adı..."
+                              className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-800 dark:text-slate-100 focus:outline-hidden focus:border-blue-500"
+                            />
+                          </td>
+                          <td className="py-2 px-3">
+                            <select
+                              value={k.tipi || 'Mal'}
+                              onChange={(e) =>
+                                handleUpdateKalem(idx, {
+                                  tipi: e.target.value as KalemTipi
+                                })
+                              }
+                              className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 focus:outline-hidden"
+                            >
+                              {KALEM_TIPLERI.map((t) => (
+                                <option key={t} value={t}>
+                                  {t}
+                                </option>
+                              ))}
+                            </select>
+                          </td>
+                          <td className="py-2 px-3">
+                            <select
+                              value={k.birim || 'Adet'}
+                              onChange={(e) =>
+                                handleUpdateKalem(idx, {
+                                  birim: e.target.value
+                                })
+                              }
+                              className="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 focus:outline-hidden"
+                            >
+                              {BIRIM_OPTIONS.map((b) => (
+                                <option key={b} value={b}>
+                                  {b}
+                                </option>
+                              ))}
+                            </select>
+                          </td>
+                          <td className="py-2 px-3 text-right">
+                            <input
+                              type="number"
+                              min="0.001"
+                              step="any"
+                              required
+                              value={k.miktar || ''}
+                              onChange={(e) =>
+                                handleUpdateKalem(idx, {
+                                  miktar: parseFloat(e.target.value) || 0
+                                })
+                              }
+                              className="w-20 px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-right font-mono font-bold text-slate-800 dark:text-slate-100 focus:outline-hidden"
+                            />
+                          </td>
+                          <td className="py-2 px-3 text-center">
+                            <select
+                              value={k.kdv_orani ?? 20}
+                              onChange={(e) =>
+                                handleUpdateKalem(idx, {
+                                  kdv_orani: Number(e.target.value)
+                                })
+                              }
+                              className="px-1.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-center font-mono focus:outline-hidden"
+                            >
+                              <option value={0}>%0</option>
+                              <option value={1}>%1</option>
+                              <option value={10}>%10</option>
+                              <option value={20}>%20</option>
+                            </select>
+                          </td>
+                          <td className="py-2 px-3 text-right">
+                            <input
+                              type="number"
+                              min="0"
+                              step="any"
+                              value={k.tahmini_birim_fiyat || ''}
+                              onChange={(e) =>
+                                handleUpdateKalem(idx, {
+                                  tahmini_birim_fiyat: parseFloat(e.target.value) || 0
+                                })
+                              }
+                              placeholder="0.00"
+                              className="w-28 px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-right font-mono text-slate-800 dark:text-slate-100 focus:outline-hidden"
+                            />
+                          </td>
+                          <td className="py-2 px-3 text-right font-mono font-bold text-blue-600 dark:text-blue-400 whitespace-nowrap">
+                            {formatCurrency(lineTotal)}
+                          </td>
+                          <td className="py-2 px-3">
+                            <input
+                              type="text"
+                              value={k.aciklama || ''}
+                              onChange={(e) =>
+                                handleUpdateKalem(idx, {
+                                  aciklama: e.target.value
+                                })
+                              }
+                              placeholder="Teknik detay, poz veya taşınır..."
+                              className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-600 dark:text-slate-300 focus:outline-hidden"
+                            />
+                          </td>
+                          <td className="py-2 px-3 text-center">
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveKalem(idx)}
+                              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer"
+                              title="Kalemi Sil"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
 
-                {/* Table Footer Totals */}
-                <div className="bg-slate-50 dark:bg-slate-800/80 p-4 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-end sm:items-center justify-between gap-3 text-xs">
-                  <span className="text-slate-500 font-medium">
-                    Toplam {kalemler.length} ihtiyaç kalemi listelendi.
-                  </span>
+              {/* Table Footer Totals */}
+              <div className="bg-slate-50 dark:bg-slate-800/80 p-4 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-end sm:items-center justify-between gap-3 text-xs">
+                <span className="text-slate-500 font-medium">
+                  Toplam {kalemler.length} ihtiyaç kalemi listelendi.
+                </span>
 
-                  <div className="flex items-center gap-6 font-mono">
-                    <div className="text-right">
-                      <span className="text-[10.5px] text-slate-400 block uppercase">
-                        Ara Toplam
-                      </span>
-                      <span className="font-bold text-slate-700 dark:text-slate-200">
-                        {formatCurrency(subTotal)}
-                      </span>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-[10.5px] text-slate-400 block uppercase">
-                        Toplam KDV
-                      </span>
-                      <span className="font-bold text-slate-700 dark:text-slate-200">
-                        {formatCurrency(totalKdv)}
-                      </span>
-                    </div>
-                    <div className="text-right pl-3 border-l border-slate-200 dark:border-slate-700">
-                      <span className="text-[10.5px] text-blue-500 block uppercase font-bold">
-                        Tahmini Genel Toplam
-                      </span>
-                      <span className="text-base font-extrabold text-blue-600 dark:text-blue-400">
-                        {formatCurrency(grandTotal)}
-                      </span>
-                    </div>
+                <div className="flex items-center gap-6 font-mono">
+                  <div className="text-right">
+                    <span className="text-[10.5px] text-slate-400 block uppercase">Ara Toplam</span>
+                    <span className="font-bold text-slate-700 dark:text-slate-200">
+                      {formatCurrency(subTotal)}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10.5px] text-slate-400 block uppercase">Toplam KDV</span>
+                    <span className="font-bold text-slate-700 dark:text-slate-200">
+                      {formatCurrency(totalKdv)}
+                    </span>
+                  </div>
+                  <div className="text-right pl-3 border-l border-slate-200 dark:border-slate-700">
+                    <span className="text-[10.5px] text-blue-500 block uppercase font-bold">
+                      Tahmini Genel Toplam
+                    </span>
+                    <span className="text-base font-extrabold text-blue-600 dark:text-blue-400">
+                      {formatCurrency(grandTotal)}
+                    </span>
                   </div>
                 </div>
               </div>
-            )}
+            </div>
+          )}
         </div>
 
         {/* 4. Bölüm: Ek Notlar */}
@@ -1164,10 +1124,10 @@ export function IhtiyacRaporuEditorView({
           >
             <Save size={16} />
             {saving
-              ? "Kaydediliyor..."
+              ? 'Kaydediliyor...'
               : editId
-              ? "Değişiklikleri Kaydet"
-              : "Raporu Kaydet ve Tamamla"}
+                ? 'Değişiklikleri Kaydet'
+                : 'Raporu Kaydet ve Tamamla'}
           </button>
         </div>
       </form>
@@ -1208,47 +1168,43 @@ export function IhtiyacRaporuEditorView({
             </div>
 
             <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/80 border border-slate-100 dark:border-slate-800 rounded-2xl">
-              {filteredCatalog.length === 0
-                ? (
-                  <div className="p-8 text-center text-xs text-slate-400">
-                    Kayıt bulunamadı veya arama sonucu boş.
-                  </div>
-                )
-                : (
-                  filteredCatalog.map((cat) => (
-                    <div
-                      key={cat.id}
-                      onClick={() => handleAddFromCatalog(cat)}
-                      className="p-3 hover:bg-purple-50/50 dark:hover:bg-purple-950/20 flex items-center justify-between gap-3 cursor-pointer transition-colors"
-                    >
-                      <div>
-                        <div className="text-xs font-bold text-slate-800 dark:text-slate-100">
-                          {cat.kalem_adi}
-                        </div>
-                        <div className="text-[11px] text-slate-400 flex items-center gap-2 mt-0.5">
-                          <span className="px-1.5 py-0.2 rounded-md bg-slate-100 dark:bg-slate-800 font-medium">
-                            {cat.tipi}
-                          </span>
-                          <span>Birim: {cat.birim}</span>
-                          {cat.tasinir_kodu && (
-                            <span>Taşınır: {cat.tasinir_kodu}</span>
-                          )}
-                          {cat.poz_no && <span>Poz: {cat.poz_no}</span>}
-                        </div>
+              {filteredCatalog.length === 0 ? (
+                <div className="p-8 text-center text-xs text-slate-400">
+                  Kayıt bulunamadı veya arama sonucu boş.
+                </div>
+              ) : (
+                filteredCatalog.map((cat) => (
+                  <div
+                    key={cat.id}
+                    onClick={() => handleAddFromCatalog(cat)}
+                    className="p-3 hover:bg-purple-50/50 dark:hover:bg-purple-950/20 flex items-center justify-between gap-3 cursor-pointer transition-colors"
+                  >
+                    <div>
+                      <div className="text-xs font-bold text-slate-800 dark:text-slate-100">
+                        {cat.kalem_adi}
                       </div>
-                      <button
-                        type="button"
-                        className="px-2.5 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-[11px] font-bold"
-                      >
-                        Ekle +
-                      </button>
+                      <div className="text-[11px] text-slate-400 flex items-center gap-2 mt-0.5">
+                        <span className="px-1.5 py-0.2 rounded-md bg-slate-100 dark:bg-slate-800 font-medium">
+                          {cat.tipi}
+                        </span>
+                        <span>Birim: {cat.birim}</span>
+                        {cat.tasinir_kodu && <span>Taşınır: {cat.tasinir_kodu}</span>}
+                        {cat.poz_no && <span>Poz: {cat.poz_no}</span>}
+                      </div>
                     </div>
-                  ))
-                )}
+                    <button
+                      type="button"
+                      className="px-2.5 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-[11px] font-bold"
+                    >
+                      Ekle +
+                    </button>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
       )}
     </div>
-  );
+  )
 }

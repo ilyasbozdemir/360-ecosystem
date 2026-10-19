@@ -81,10 +81,12 @@ describe('Workspace Security & Path Traversal Protections', () => {
       workspaceManager.create(workspaceFile, 'Test Kurum')
 
       await expect(workspaceManager.openAttachment('')).rejects.toThrow('Geçersiz ek dosya yolu.')
-      await expect(workspaceManager.openAttachment('   ')).rejects.toThrow('Geçersiz ek dosya yolu.')
-      await expect(
-        workspaceManager.openAttachment(null as unknown as string)
-      ).rejects.toThrow('Geçersiz ek dosya yolu.')
+      await expect(workspaceManager.openAttachment('   ')).rejects.toThrow(
+        'Geçersiz ek dosya yolu.'
+      )
+      await expect(workspaceManager.openAttachment(null as unknown as string)).rejects.toThrow(
+        'Geçersiz ek dosya yolu.'
+      )
     })
 
     it('blocks directory traversal attempts attempting to access files outside tempDir', async () => {
@@ -157,7 +159,9 @@ describe('Workspace Security & Path Traversal Protections', () => {
 
       // 1. Verify that the written archive physically contains the traversal entry
       const writtenZip = new AdmZip(maliciousZipPath)
-      const zipSlipEntry = writtenZip.getEntries().find((e) => e.entryName === '../../malicious_file.txt')
+      const zipSlipEntry = writtenZip
+        .getEntries()
+        .find((e) => e.entryName === '../../malicious_file.txt')
       expect(zipSlipEntry).toBeDefined()
       expect(zipSlipEntry!.entryName).toContain('../')
 

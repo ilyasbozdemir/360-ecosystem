@@ -278,7 +278,9 @@ export function usePiyasaFiyatDocuments(
             [activeDosyaId]
           )
           if (komsRes.success && komsRes.data && komsRes.data.length > 0) {
-            komisyonListesi = komsRes.data.filter((tk: any) => resolveCommissionCategory(tk) === 'maliyet')
+            komisyonListesi = komsRes.data.filter(
+              (tk: any) => resolveCommissionCategory(tk) === 'maliyet'
+            )
           }
         } catch (e) {
           console.error('Komisyon çekme hatası:', e)

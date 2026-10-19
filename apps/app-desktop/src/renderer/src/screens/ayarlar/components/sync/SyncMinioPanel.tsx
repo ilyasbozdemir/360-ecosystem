@@ -154,9 +154,7 @@ export function SyncMinioPanel(): React.JSX.Element {
               disabled={syncStatus === 'loading'}
               className="text-xs py-1.5 px-4 rounded-lg bg-rose-600 hover:bg-rose-700 text-white gap-1.5"
             >
-              {syncStatus === 'loading' ? (
-                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-              ) : null}
+              {syncStatus === 'loading' ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : null}
               Sına & Bağlan
             </Button>
           </div>

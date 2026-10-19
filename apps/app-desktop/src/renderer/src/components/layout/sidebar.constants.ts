@@ -63,14 +63,17 @@ export function getSidebarMenuGroups(
   activeDosyaId?: string | number | null,
   isInstalledParam?: (id: string) => boolean
 ): MenuGroup[] {
-  const isInstalled = isInstalledParam || ((id: string) => useModuleStore.getState().isInstalled(id))
+  const isInstalled =
+    isInstalledParam || ((id: string) => useModuleStore.getState().isInstalled(id))
   const isBelgelerimActive = true
   const isDtOzelBelgelerActive = true
   const isDtActive = true
   const isPersonelIzinActive = isInstalled('modul-personel-izin') || isInstalled('personel')
   const isKikLimitActive = true
   const isEbysActive =
-    isInstalled('ebys-resmi-yazisma-studyosu') || isInstalled('modul-ebys-sablon') || isInstalled('ebys')
+    isInstalled('ebys-resmi-yazisma-studyosu') ||
+    isInstalled('modul-ebys-sablon') ||
+    isInstalled('ebys')
   const isTasinirActive =
     isInstalled('tasinir-ambar') || isInstalled('modul-tasinir-tif') || isInstalled('tasinir')
 
@@ -193,7 +196,11 @@ export function getSidebarMenuGroups(
                 path: APP_ROUTES.MALZEMELER,
                 icon: PackageSearch
               },
-              { name: 'Taşınmaz / Taşınır Kodları', path: APP_ROUTES.TASINIR_KOD, icon: FolderTree },
+              {
+                name: 'Taşınmaz / Taşınır Kodları',
+                path: APP_ROUTES.TASINIR_KOD,
+                icon: FolderTree
+              },
               { name: 'Ölçü Birimleri', path: APP_ROUTES.OLCU_BIRIMLERI, icon: Ruler }
             ]
           }

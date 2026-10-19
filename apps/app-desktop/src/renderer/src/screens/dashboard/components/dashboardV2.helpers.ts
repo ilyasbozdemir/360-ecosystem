@@ -167,9 +167,7 @@ export function buildTeminPillars(
       badge: `${stats.ihaleDosyaSayisi} Kayıtlı Dosya`,
       description:
         'İhtiyaç lüzumundan piyasa araştırmasına, teklif mektubu dağıtımından onay belgesine kadar tüm doğrudan temin adımlarını kanuna uygun yürütür.',
-      statsText: `${
-        stats.aktifDosyaSayisi || stats.ihaleDosyaSayisi
-      } Aktif Süreç Devam Ediyor`
+      statsText: `${stats.aktifDosyaSayisi || stats.ihaleDosyaSayisi} Aktif Süreç Devam Ediyor`
     },
     {
       key: 'N' as const,

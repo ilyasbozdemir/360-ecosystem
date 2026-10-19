@@ -71,8 +71,9 @@ export const MuhasebeKanitlayiciBelgeler: React.FC = () => {
               </li>
               <li>
                 <strong>Karar Damga Vergisi:</strong> İdare ile yüklenici arasında yazılı bir
-                sözleşme imzalanması durumunda, sözleşme bedeli üzerinden <strong>Binde 5,69</strong>{' '}
-                oranında Damga Vergisi kesilerek ilgili vergi dairesine yatırılır.
+                sözleşme imzalanması durumunda, sözleşme bedeli üzerinden{' '}
+                <strong>Binde 5,69</strong> oranında Damga Vergisi kesilerek ilgili vergi dairesine
+                yatırılır.
               </li>
             </ul>
           </div>

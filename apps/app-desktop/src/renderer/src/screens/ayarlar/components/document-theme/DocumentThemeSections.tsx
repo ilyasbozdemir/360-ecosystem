@@ -206,9 +206,7 @@ export function DocumentThemeSections(props: SectionsProps): React.JSX.Element {
               </span>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div>
-                  <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Üst (Top)
-                  </span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400">Üst (Top)</span>
                   <input
                     type="number"
                     step="0.1"
@@ -284,9 +282,7 @@ export function DocumentThemeSections(props: SectionsProps): React.JSX.Element {
                 </div>
 
                 <div>
-                  <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Sol (Left)
-                  </span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400">Sol (Left)</span>
                   <input
                     type="number"
                     step="0.1"

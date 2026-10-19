@@ -26,9 +26,7 @@ export function StudyoFormTab({
 
         <div className="grid grid-cols-2 gap-2.5 text-xs">
           <div>
-            <label className="block text-[11px] font-semibold text-slate-500 mb-1">
-              Kayıt No
-            </label>
+            <label className="block text-[11px] font-semibold text-slate-500 mb-1">Kayıt No</label>
             <input
               type="text"
               value={formData.ihaleKayitNo}
@@ -131,9 +129,7 @@ export function StudyoFormTab({
 
         <div className="grid grid-cols-3 gap-2 text-xs">
           <div>
-            <label className="block text-[11px] font-semibold text-slate-500 mb-1">
-              İl / İlçe
-            </label>
+            <label className="block text-[11px] font-semibold text-slate-500 mb-1">İl / İlçe</label>
             <input
               type="text"
               value={`${formData.il} / ${formData.ilce}`}

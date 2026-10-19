@@ -28,8 +28,8 @@ export const KurumsalSablonTab: React.FC<KurumsalSablonTabProps> = ({
           Bu bölümde tanımlanan personel kadroları, kurumunuzun doğrudan temin ve ihale süreçleri
           için <strong>genel şablon havuzudur</strong>. Yeni bir temin dosyası açıldığında veya bir
           dosyada <em>&quot;Kurumsal Şablonu Aktar&quot;</em> işlemi yapıldığında bu kadro
-          varsayılan olarak dosyaya kopyalanır. Bir dosyada yapılan özel değişiklikler buradaki şablon
-          kadrosunu asla bozmaz.
+          varsayılan olarak dosyaya kopyalanır. Bir dosyada yapılan özel değişiklikler buradaki
+          şablon kadrosunu asla bozmaz.
         </p>
       </div>
 
@@ -80,7 +80,9 @@ export const KurumsalSablonTab: React.FC<KurumsalSablonTabProps> = ({
                     className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 text-xs"
                   >
                     <div>
-                      <span className="font-bold text-slate-800 dark:text-slate-100">{m.ad_soyad}</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-100">
+                        {m.ad_soyad}
+                      </span>
                       {m.unvan && <span className="text-slate-400 ml-1.5">({m.unvan})</span>}
                     </div>
                     <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950 px-2 py-0.5 rounded-md border border-blue-200 dark:border-blue-900">
@@ -138,7 +140,9 @@ export const KurumsalSablonTab: React.FC<KurumsalSablonTabProps> = ({
                     className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 text-xs"
                   >
                     <div>
-                      <span className="font-bold text-slate-800 dark:text-slate-100">{m.ad_soyad}</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-100">
+                        {m.ad_soyad}
+                      </span>
                       {m.unvan && <span className="text-slate-400 ml-1.5">({m.unvan})</span>}
                     </div>
                     <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-900">

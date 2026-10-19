@@ -74,7 +74,11 @@ export const MuhammenBedelHesaplamaSection: React.FC<MuhammenBedelHesaplamaSecti
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-semibold text-slate-500">
               Birim m² Rayici{' '}
-              {islemTuru === 'kiralama' ? '(Aylık/Yıllık)' : islemTuru === 'irtifak' ? '(Yıllık)' : ''}
+              {islemTuru === 'kiralama'
+                ? '(Aylık/Yıllık)'
+                : islemTuru === 'irtifak'
+                  ? '(Yıllık)'
+                  : ''}
             </span>
             <Percent className="w-3.5 h-3.5 text-slate-400" />
           </div>
@@ -89,7 +93,9 @@ export const MuhammenBedelHesaplamaSection: React.FC<MuhammenBedelHesaplamaSecti
             />
           </div>
           <span className="text-[10px] text-slate-400 block mt-1">
-            {emsalOrtalama > 0 ? `Emsal Ort: ₺${formatMoney(emsalOrtalama)}` : 'Komisyon birim rayici'}
+            {emsalOrtalama > 0
+              ? `Emsal Ort: ₺${formatMoney(emsalOrtalama)}`
+              : 'Komisyon birim rayici'}
           </span>
         </div>
 

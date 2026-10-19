@@ -5,8 +5,7 @@ import { Input } from '../Input'
 import { SecretInput } from './SecretInput'
 import type { GoogleDriveState } from './useGoogleDrive'
 
-const labelCls =
-  'text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider'
+const labelCls = 'text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider'
 
 /** 1. Yöntem: Google Cloud API (Client ID & Secret + Refresh Token) */
 export function ApiAuthPanel({ gd }: { gd: GoogleDriveState }): React.JSX.Element {

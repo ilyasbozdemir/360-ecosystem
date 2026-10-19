@@ -50,7 +50,8 @@ export function EkapKalemImportModal({
       setImportResult(result)
     } catch (err: unknown) {
       console.error('EKAP ODS/Excel dosyası işlenemedi:', err)
-      const msg = err instanceof Error ? err.message : 'Dosya okunurken beklenmeyen bir hata oluştu.'
+      const msg =
+        err instanceof Error ? err.message : 'Dosya okunurken beklenmeyen bir hata oluştu.'
       setError(msg)
       setImportResult(null)
     }
@@ -148,7 +149,8 @@ export function EkapKalemImportModal({
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Resmî EKAP birim fiyatlı yapım işleri ve malzeme cetvellerini otomatik eşleştirip doğrular.
+                Resmî EKAP birim fiyatlı yapım işleri ve malzeme cetvellerini otomatik eşleştirip
+                doğrular.
               </p>
             </div>
           </div>
@@ -158,7 +160,8 @@ export function EkapKalemImportModal({
               EKAP Sürüm: {templateMeta.version}
             </span>
             <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
-              {templateMeta.stats.okasSayisi.toLocaleString('tr-TR')} OKAS • {templateMeta.stats.birimSayisi} Birim
+              {templateMeta.stats.okasSayisi.toLocaleString('tr-TR')} OKAS •{' '}
+              {templateMeta.stats.birimSayisi} Birim
             </span>
           </div>
         </div>
@@ -204,7 +207,9 @@ export function EkapKalemImportModal({
               EKAP Yapım İhalesi veya Birim Fiyatlı Cetvel Dosyasını Seçin
             </h4>
             <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 max-w-md mx-auto">
-              Bilgisayarınızdaki <strong>.ods</strong>, <strong>.xlsx</strong> veya <strong>.xls</strong> dosyasını buraya sürükleyip bırakabilir ya da dosya seçebilirsiniz.
+              Bilgisayarınızdaki <strong>.ods</strong>, <strong>.xlsx</strong> veya{' '}
+              <strong>.xls</strong> dosyasını buraya sürükleyip bırakabilir ya da dosya
+              seçebilirsiniz.
             </p>
             <div className="inline-flex items-center gap-2 mt-4 px-3 py-1 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 shadow-xs">
               <FileSpreadsheet size={14} className="text-emerald-500" />
@@ -219,7 +224,10 @@ export function EkapKalemImportModal({
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
                   İşlenen Dosya
                 </span>
-                <p className="text-xs font-bold text-slate-800 dark:text-slate-100 mt-1 truncate" title={importResult.fileName}>
+                <p
+                  className="text-xs font-bold text-slate-800 dark:text-slate-100 mt-1 truncate"
+                  title={importResult.fileName}
+                >
                   {importResult.fileName}
                 </p>
               </div>
@@ -367,9 +375,7 @@ export function EkapKalemImportModal({
                       <td className="py-2 px-3 text-right font-mono text-slate-800 dark:text-slate-200">
                         {item.miktar}
                       </td>
-                      <td className="py-2 px-3 text-slate-600 dark:text-slate-400">
-                        {item.birim}
-                      </td>
+                      <td className="py-2 px-3 text-slate-600 dark:text-slate-400">{item.birim}</td>
                       <td className="py-2 px-3 text-right font-mono text-slate-800 dark:text-slate-200">
                         {formatCurrency(item.birimFiyat)}
                       </td>

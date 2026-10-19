@@ -53,7 +53,9 @@ export const EbysHeader: React.FC<EbysHeaderProps> = ({
             </span>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Aktif Şablon: <span className="text-blue-600 dark:text-blue-400 font-medium">{templateName}</span> • A4 Resmî Belge Standardı &amp; e-Yazışma (EYP 2.0)
+            Aktif Şablon:{' '}
+            <span className="text-blue-600 dark:text-blue-400 font-medium">{templateName}</span> •
+            A4 Resmî Belge Standardı &amp; e-Yazışma (EYP 2.0)
           </p>
         </div>
       </div>

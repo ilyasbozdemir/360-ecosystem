@@ -104,7 +104,11 @@ export const KonuVeAciklamaFields: React.FC<YeniDosyaTabProps> = (props) => {
               title="İşin adına göre yapay zeka ile profesyonel açıklama metni oluştur"
               className="text-[10px] text-blue-600 hover:text-blue-700 font-bold flex items-center gap-1 cursor-pointer bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded disabled:opacity-50"
             >
-              {isDescLoading ? <Loader2 size={11} className="animate-spin" /> : <Sparkles size={11} />}
+              {isDescLoading ? (
+                <Loader2 size={11} className="animate-spin" />
+              ) : (
+                <Sparkles size={11} />
+              )}
               {isDescLoading ? 'Üretiliyor...' : 'AI ile Üret'}
             </button>
             <button

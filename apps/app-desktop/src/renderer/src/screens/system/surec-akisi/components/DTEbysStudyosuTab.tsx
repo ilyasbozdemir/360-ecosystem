@@ -95,7 +95,8 @@ export function DTEbysStudyosuTab({
               </span>
             </div>
             <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
-              Evraklar resmî yazışma formatında doğrudan temin dosyasında arşivlenmek ve yazdırılmak üzere hazırlanır; dış EBYS/KEP servisine gönderilme yapılmaz.
+              Evraklar resmî yazışma formatında doğrudan temin dosyasında arşivlenmek ve yazdırılmak
+              üzere hazırlanır; dış EBYS/KEP servisine gönderilme yapılmaz.
             </p>
           </div>
         </div>

@@ -10,8 +10,7 @@ export function exportCsv(
   headers: (string | number)[],
   rows: (string | number)[][]
 ): void {
-  const csvContent =
-    '\uFEFF' + [headers.join(';'), ...rows.map((r) => r.join(';'))].join('\n')
+  const csvContent = '\uFEFF' + [headers.join(';'), ...rows.map((r) => r.join(';'))].join('\n')
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')

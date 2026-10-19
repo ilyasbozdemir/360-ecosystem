@@ -131,17 +131,11 @@ export function HesapCetveliGrid({
   }
 
   const handleRemoveKalem = (id: string) => {
-    setKalemler(
-      kalemler
-        .filter((k) => k.id !== id)
-        .map((k, idx) => ({ ...k, siraNo: idx + 1 }))
-    )
+    setKalemler(kalemler.filter((k) => k.id !== id).map((k, idx) => ({ ...k, siraNo: idx + 1 })))
   }
 
   const handleKalemChange = (id: string, field: keyof CetvelKalem, val: any) => {
-    setKalemler(
-      kalemler.map((k) => (k.id === id ? { ...k, [field]: val } : k))
-    )
+    setKalemler(kalemler.map((k) => (k.id === id ? { ...k, [field]: val } : k)))
   }
 
   const handleFirmaTeklifChange = (firmaId: string, kalemId: string, val: number) => {
@@ -190,7 +184,8 @@ export function HesapCetveliGrid({
               </span>
             </h3>
             <p className="text-xs text-slate-400">
-              Yaklaşık maliyet hesap cetveli, piyasa fiyat araştırması ve teklif karşılaştırma gridi.
+              Yaklaşık maliyet hesap cetveli, piyasa fiyat araştırması ve teklif karşılaştırma
+              gridi.
             </p>
           </div>
         </div>
@@ -317,11 +312,7 @@ export function HesapCetveliGrid({
                             step="0.01"
                             value={k.birimFiyat}
                             onChange={(e) =>
-                              handleKalemChange(
-                                k.id,
-                                'birimFiyat',
-                                parseFloat(e.target.value) || 0
-                              )
+                              handleKalemChange(k.id, 'birimFiyat', parseFloat(e.target.value) || 0)
                             }
                             className="w-full text-right bg-slate-900 border border-slate-800 focus:border-emerald-500 rounded px-2 py-1 text-xs text-emerald-400 focus:outline-none font-semibold"
                           />

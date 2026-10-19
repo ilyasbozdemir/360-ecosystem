@@ -1,13 +1,6 @@
 import React from 'react'
 import { Link } from '@tanstack/react-router'
-import {
-  FolderTree,
-  HardHat,
-  PackageSearch,
-  Plus,
-  Tag,
-  Trash2
-} from 'lucide-react'
+import { FolderTree, HardHat, PackageSearch, Plus, Tag, Trash2 } from 'lucide-react'
 import { APP_ROUTES } from '../../../constants/routeConstants'
 import { Button } from '../../../components/ui/Button'
 import { ExcelActions } from '../../../components/ui/ExcelActions'
@@ -97,9 +90,7 @@ export function MalzemelerHeader({
               className="gap-2 border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-950/40 flex items-center px-4 py-2 text-sm justify-center"
             >
               <Trash2 className="w-4 h-4 shrink-0 text-red-650" />
-              <span className="whitespace-nowrap font-bold">
-                Seçilenleri Sil ({selectedCount})
-              </span>
+              <span className="whitespace-nowrap font-bold">Seçilenleri Sil ({selectedCount})</span>
             </Button>
           )}
           <ExcelActions

@@ -52,7 +52,8 @@ export function CiktiWizardStepper({
           const Icon = step.icon
           const isActive = currentStep === step.id
           const isPassed = currentStep > step.id
-          const isClickable = wizardMode && (isPassed || isActive || (selectedCount > 0 && step.id <= 5))
+          const isClickable =
+            wizardMode && (isPassed || isActive || (selectedCount > 0 && step.id <= 5))
 
           return (
             <React.Fragment key={step.id}>
@@ -67,8 +68,8 @@ export function CiktiWizardStepper({
                   isActive
                     ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25 ring-2 ring-blue-400/40'
                     : isPassed
-                    ? 'bg-slate-800/80 text-blue-400 hover:bg-slate-800 hover:text-blue-300'
-                    : 'bg-slate-800/40 text-slate-400 hover:bg-slate-800/60 disabled:opacity-40 disabled:cursor-not-allowed'
+                      ? 'bg-slate-800/80 text-blue-400 hover:bg-slate-800 hover:text-blue-300'
+                      : 'bg-slate-800/40 text-slate-400 hover:bg-slate-800/60 disabled:opacity-40 disabled:cursor-not-allowed'
                 }`}
                 title={step.title}
               >

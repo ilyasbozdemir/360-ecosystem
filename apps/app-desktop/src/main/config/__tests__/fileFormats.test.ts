@@ -8,12 +8,11 @@ import {
   defaultFormat,
   allFormatsFilter,
   perFormatFilters,
-  LEGACY_EXTENSIONS,
   stripProjectExtension,
   PRIMARY_EXTENSION
 } from '../fileFormats'
 
-describe('File Formats Configuration & Validation (Standardized .temin)', () => {
+describe('File Formats Configuration & Validation (Strict .temin Standard)', () => {
   let tempDir: string
 
   beforeEach(() => {
@@ -40,22 +39,13 @@ describe('File Formats Configuration & Validation (Standardized .temin)', () => 
     expect(perFormatFilters[0].extensions).toEqual(['temin'])
   })
 
-  it('should maintain legacy extension definitions for migration detection', () => {
-    expect(LEGACY_EXTENSIONS).toContain('hkmp')
-    expect(LEGACY_EXTENSIONS).toContain('dtal')
-    expect(LEGACY_EXTENSIONS).toContain('dtm')
-    expect(LEGACY_EXTENSIONS).toContain('dte')
-    expect(LEGACY_EXTENSIONS).toContain('dta')
-    expect(LEGACY_EXTENSIONS).toContain('tmn360')
-    expect(LEGACY_EXTENSIONS).toContain('sqlite')
-    expect(LEGACY_EXTENSIONS).toContain('db')
-  })
-
-  it('should strip project extensions accurately', () => {
+  it('should strip only .temin project extension accurately', () => {
     expect(stripProjectExtension('Belediye_Projesi.temin')).toBe('Belediye_Projesi')
-    expect(stripProjectExtension('Eski_Proje.hkmp')).toBe('Eski_Proje')
-    expect(stripProjectExtension('Veri.dtal')).toBe('Veri')
-    expect(stripProjectExtension('Arsiv.tmn360')).toBe('Arsiv')
+    expect(stripProjectExtension('Belediye_Projesi.TEMIN')).toBe('Belediye_Projesi')
+    // Legacy extensions are no longer treated as project extensions
+    expect(stripProjectExtension('Eski_Proje.hkmp')).toBe('Eski_Proje.hkmp')
+    expect(stripProjectExtension('Veri.dtal')).toBe('Veri.dtal')
+    expect(stripProjectExtension('Arsiv.tmn360')).toBe('Arsiv.tmn360')
     expect(stripProjectExtension('')).toBe('')
   })
 
@@ -68,12 +58,23 @@ describe('File Formats Configuration & Validation (Standardized .temin)', () => 
     expect(isSupportedFile('-flag-arg')).toBe(false)
   })
 
-  it('should return true for active and legacy supported file extensions', () => {
+  it('should return true ONLY for .temin project files', () => {
     expect(isSupportedFile('C:\\Projects\\test.temin')).toBe(true)
-    expect(isSupportedFile('/user/docs/file.hkmp')).toBe(true)
-    expect(isSupportedFile('archive.tmn360')).toBe(true)
-    expect(isSupportedFile('data.dtal')).toBe(true)
-    expect(isSupportedFile('data.sqlite')).toBe(true)
+    expect(isSupportedFile('/user/docs/file.TEMIN')).toBe(true)
+    expect(isSupportedFile('"project.temin"')).toBe(true)
+    expect(isSupportedFile('  "C:\\Data\\kurum.temin"  ')).toBe(true)
+  })
+
+  it('should reject legacy extensions as project files', () => {
+    expect(isSupportedFile('/user/docs/file.hkmp')).toBe(false)
+    expect(isSupportedFile('archive.tmn360')).toBe(false)
+    expect(isSupportedFile('data.dtal')).toBe(false)
+    expect(isSupportedFile('data.sqlite')).toBe(false)
+    expect(isSupportedFile('data.db')).toBe(false)
+    expect(isSupportedFile('project.dtm')).toBe(false)
+    expect(isSupportedFile('project.dte')).toBe(false)
+    expect(isSupportedFile('project.dta')).toBe(false)
+    expect(isSupportedFile('  "project.dtal"  ')).toBe(false)
   })
 
   it('should return false for unsupported file extensions', () => {
@@ -82,26 +83,15 @@ describe('File Formats Configuration & Validation (Standardized .temin)', () => 
     expect(isSupportedFile('executable.exe')).toBe(false)
   })
 
-  it('should correctly strip surrounding quotes in file path', () => {
-    expect(isSupportedFile('"project.temin"')).toBe(true)
-    expect(isSupportedFile('  "project.dtal"  ')).toBe(true)
-  })
-
-  it('should identify a SQLite database file by magic bytes regardless of extension', () => {
+  it('should NOT automatically accept arbitrary non-.temin files by raw SQLite or ZIP magic bytes', () => {
     const customFilePath = path.join(tempDir, 'mydata.customext')
-    // SQLite header magic string: 'SQLite format 3\0'
-    const header = Buffer.from('SQLite format 3\0', 'binary')
-    fs.writeFileSync(customFilePath, header)
+    const sqliteHeader = Buffer.from('SQLite format 3\0', 'binary')
+    fs.writeFileSync(customFilePath, sqliteHeader)
+    expect(isSupportedFile(customFilePath)).toBe(false)
 
-    expect(isSupportedFile(customFilePath)).toBe(true)
-  })
-
-  it('should identify a ZIP/TEMIN archive file by PK magic bytes regardless of extension', () => {
     const zipFilePath = path.join(tempDir, 'data.unknown')
-    // PK header: 0x50, 0x4B
-    const header = Buffer.from([0x50, 0x4b, 0x03, 0x04, 0x00, 0x00])
-    fs.writeFileSync(zipFilePath, header)
-
-    expect(isSupportedFile(zipFilePath)).toBe(true)
+    const zipHeader = Buffer.from([0x50, 0x4b, 0x03, 0x04, 0x00, 0x00])
+    fs.writeFileSync(zipFilePath, zipHeader)
+    expect(isSupportedFile(zipFilePath)).toBe(false)
   })
 })

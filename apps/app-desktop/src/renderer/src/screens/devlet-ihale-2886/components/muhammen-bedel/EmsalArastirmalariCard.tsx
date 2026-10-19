@@ -54,7 +54,8 @@ export const EmsalArastirmalariCard: React.FC<EmsalArastirmalariCardProps> = ({
           <FileSearch className="w-7 h-7 mb-2 opacity-50" />
           <p className="text-xs font-medium">Henüz emsal rayiç araştırması eklenmedi.</p>
           <p className="text-[11px] text-slate-400 mt-0.5">
-            Bölgedeki emsal satış, kira ve bilirkişi araştırmalarını girmek için butonu kullanabilirsiniz.
+            Bölgedeki emsal satış, kira ve bilirkişi araştırmalarını girmek için butonu
+            kullanabilirsiniz.
           </p>
         </div>
       ) : (

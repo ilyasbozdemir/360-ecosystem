@@ -147,9 +147,7 @@ export const HarcamaMerkeziSimulator: React.FC<HarcamaMerkeziSimulatorProps> = (
             <Info className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
             <span>
               Kurumunuz için geçerli tekil 22/d KİK limiti:
-              <strong className="text-white ml-1 font-mono">
-                {formatCurrency(activeLimit)}
-              </strong>
+              <strong className="text-white ml-1 font-mono">{formatCurrency(activeLimit)}</strong>
             </span>
           </div>
         </div>
@@ -179,8 +177,8 @@ export const HarcamaMerkeziSimulator: React.FC<HarcamaMerkeziSimulatorProps> = (
                 </h4>
                 <p className="text-xs text-emerald-200/80 leading-relaxed">
                   İlan ve teminat alma zorunluluğu yoktur. İhale komisyonu kurulması zorunlu
-                  değildir; harcama yetkilisince görevlendirilecek personel piyasa fiyat
-                  araştırması yaparak onay belgesi düzenleyebilir.
+                  değildir; harcama yetkilisince görevlendirilecek personel piyasa fiyat araştırması
+                  yaparak onay belgesi düzenleyebilir.
                 </p>
               </div>
             ) : simulatedBudget <= activeLimit * 2 ? (
@@ -288,9 +286,9 @@ export const HarcamaMerkeziSimulator: React.FC<HarcamaMerkeziSimulatorProps> = (
             <ShieldAlert className="w-4 h-4" /> KİK Madde 62/ı: %10 Bütçe Sınırı Kuralı
           </h4>
           <p className="text-[11px] text-slate-300 leading-relaxed">
-            İdarelerin 21/f (pazarlık) ve 22/d (doğrudan temin) ile yapacakları harcamaların toplamı, o
-            yılki toplam mal/hizmet bütçelerinin <strong>%10&apos;unu aşamaz</strong>. Aşılması
-            durumunda önceden Kamu İhale Kurulu&apos;ndan (KİK) izin alınması zorunludur.
+            İdarelerin 21/f (pazarlık) ve 22/d (doğrudan temin) ile yapacakları harcamaların
+            toplamı, o yılki toplam mal/hizmet bütçelerinin <strong>%10&apos;unu aşamaz</strong>.
+            Aşılması durumunda önceden Kamu İhale Kurulu&apos;ndan (KİK) izin alınması zorunludur.
           </p>
         </div>
       </div>

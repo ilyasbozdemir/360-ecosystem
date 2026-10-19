@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { DocumentPreviewModalV3Props } from './types'
 import { useDocumentPreviewData } from './hooks/useDocumentPreviewData'
 import { DocumentPreviewHeader } from './components/DocumentPreviewHeader'
@@ -6,6 +6,13 @@ import { DocumentPreviewTabBar } from './components/DocumentPreviewTabBar'
 import { DocumentPreviewSidebar } from './components/DocumentPreviewSidebar'
 import { DocumentPreviewCanvas } from './components/DocumentPreviewCanvas'
 import { FloatingDocumentBubble } from './components/FloatingDocumentBubble'
+import { useSettingsStore } from '../../../../store/settingsStore'
+import {
+  getStageById,
+  getStageForTemplate,
+  getAdjacentStageTemplate,
+  IHTIYAC_RAPORU_STAGE
+} from './stages'
 
 export function DocumentPreviewModalV3({
   isOpen,
@@ -20,7 +27,9 @@ export function DocumentPreviewModalV3({
   activeTabId,
   onSwitchTab,
   onCloseTab,
-  onAddTab
+  onAddTab,
+  currentStage: propCurrentStage,
+  stage: propStage
 }: DocumentPreviewModalV3Props): React.JSX.Element | null {
   const [isBalloon, setIsBalloon] = useState(false)
   const currentDocKey =
@@ -93,6 +102,26 @@ export function DocumentPreviewModalV3({
     setPrevIsOpen(isOpen)
   }
 
+  const rawStage = propCurrentStage ?? propStage
+  const { disableDocumentGuidance } = useSettingsStore()
+
+  const stageInfo = useMemo(() => {
+    if (source?.kind === 'ihtiyacRaporu') return IHTIYAC_RAPORU_STAGE
+    if (rawStage !== undefined && rawStage !== null) {
+      const found = getStageById(rawStage)
+      if (found) return found
+    }
+    return getStageForTemplate(selectedDocId, activeTemplateConf?.category, source?.kind)
+  }, [source?.kind, rawStage, selectedDocId, activeTemplateConf?.category])
+
+  const nextTemplate = useMemo(() => {
+    return getAdjacentStageTemplate(selectedDocId, stageInfo.id, templateOptions, 'next')
+  }, [selectedDocId, stageInfo.id, templateOptions])
+
+  const prevTemplate = useMemo(() => {
+    return getAdjacentStageTemplate(selectedDocId, stageInfo.id, templateOptions, 'prev')
+  }, [selectedDocId, stageInfo.id, templateOptions])
+
   const handleClose = React.useCallback(() => {
     setIsBalloon(false)
     onClose()
@@ -141,6 +170,9 @@ export function DocumentPreviewModalV3({
           isFullScreen={isFullScreen}
           setIsFullScreen={setIsFullScreen}
           onClose={handleClose}
+          stageInfo={stageInfo}
+          disableDocumentGuidance={disableDocumentGuidance}
+          sourceKind={source?.kind}
         />
       )}
 
@@ -174,6 +206,10 @@ export function DocumentPreviewModalV3({
         dosyaId={propDosyaId}
         docKey={selectedDocId}
         orientation={orientation}
+        stageInfo={stageInfo}
+        disableDocumentGuidance={disableDocumentGuidance}
+        nextTemplate={nextTemplate}
+        onSelectTemplate={setSelectedDocId}
       />
 
       {/* Main Area: Sidebar + Canvas */}
@@ -197,6 +233,11 @@ export function DocumentPreviewModalV3({
           setLocalShowLogoLeft={setLocalShowLogoLeft}
           localShowLogoRight={localShowLogoRight}
           setLocalShowLogoRight={setLocalShowLogoRight}
+          stageInfo={stageInfo}
+          disableDocumentGuidance={disableDocumentGuidance}
+          sourceKind={source?.kind}
+          nextTemplate={nextTemplate}
+          prevTemplate={prevTemplate}
         />
 
         <DocumentPreviewCanvas

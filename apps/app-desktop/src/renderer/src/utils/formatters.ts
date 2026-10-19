@@ -43,9 +43,7 @@ export function formatCurrency(
   }
 
   const num =
-    typeof val === 'number'
-      ? val
-      : parseFloat(String(val).replace(/\./g, '').replace(',', '.'))
+    typeof val === 'number' ? val : parseFloat(String(val).replace(/\./g, '').replace(',', '.'))
 
   if (isNaN(num)) {
     return fallback

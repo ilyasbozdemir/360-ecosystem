@@ -8,7 +8,12 @@ export function registerTemplateIpcHandlers(): void {
       const { canceled, filePath } = await dialog.showSaveDialog({
         title: 'Şablonu Dışa Aktar',
         defaultPath: 'Yeni_Sablon.temin.template',
-        filters: [{ name: 'TEMİN Şablon Dosyası (*.temin.template, *.template)', extensions: ['temin.template', 'template', 'dtal.template'] }]
+        filters: [
+          {
+            name: 'TEMİN Şablon Dosyası (*.temin.template, *.template)',
+            extensions: ['temin.template', 'template']
+          }
+        ]
       })
       if (canceled || !filePath) return { success: false, error: 'İptal edildi' }
       fs.writeFileSync(filePath, payloadStr, 'utf-8')
@@ -22,7 +27,12 @@ export function registerTemplateIpcHandlers(): void {
     try {
       const { canceled, filePaths } = await dialog.showOpenDialog({
         title: 'Şablonu İçe Aktar',
-        filters: [{ name: 'TEMİN Şablon Dosyası (*.temin.template, *.template)', extensions: ['temin.template', 'template', 'dtal.template'] }],
+        filters: [
+          {
+            name: 'TEMİN Şablon Dosyası (*.temin.template, *.template)',
+            extensions: ['temin.template', 'template']
+          }
+        ],
         properties: ['openFile']
       })
       if (canceled || !filePaths || filePaths.length === 0)

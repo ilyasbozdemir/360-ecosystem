@@ -90,7 +90,9 @@ export const EbysTipTapEditorTab: React.FC<EbysTipTapEditorTabProps> = ({
   const handleLoadFromActiveTemplate = (): void => {
     if (currentTemplateHtml) {
       setCurrentHtml(currentTemplateHtml)
-      setCurrentTitle(selectedTemplate ? `${selectedTemplate.name} (Düzenleme)` : 'Şablon Düzenleme')
+      setCurrentTitle(
+        selectedTemplate ? `${selectedTemplate.name} (Düzenleme)` : 'Şablon Düzenleme'
+      )
       showToast('Aktif şablon TipTap editörüne aktarıldı.')
     }
   }
@@ -228,7 +230,9 @@ export const EbysTipTapEditorTab: React.FC<EbysTipTapEditorTabProps> = ({
                     key={p.key}
                     type="button"
                     onClick={() => {
-                      setCurrentHtml(`${currentHtml} <span class="ebys-ph font-mono text-blue-600 bg-blue-50 px-1 rounded">{{${p.key}}}</span> `)
+                      setCurrentHtml(
+                        `${currentHtml} <span class="ebys-ph font-mono text-blue-600 bg-blue-50 px-1 rounded">{{${p.key}}}</span> `
+                      )
                       setShowVariableDropdown(false)
                       showToast(`{{${p.key}}} değişkeni eklendi.`)
                     }}

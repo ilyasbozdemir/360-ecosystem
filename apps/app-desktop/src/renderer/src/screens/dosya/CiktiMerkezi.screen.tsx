@@ -62,7 +62,7 @@ export function CiktiMerkeziScreen(): React.JSX.Element {
   const [viewMode, setViewMode] = useState<BelgeViewMode>(() => {
     try {
       const saved = localStorage.getItem('cikti_view_mode')
-      return (saved === 'kanban' || saved === 'list') ? saved : 'list'
+      return saved === 'kanban' || saved === 'list' ? saved : 'list'
     } catch {
       return 'list'
     }

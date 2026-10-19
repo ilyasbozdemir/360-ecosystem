@@ -1,12 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { Link } from '@tanstack/react-router'
-import {
-  Building2,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  LogOut
-} from 'lucide-react'
+import { Building2, ChevronDown, ChevronLeft, ChevronRight, LogOut } from 'lucide-react'
 import { cn } from '../../utils/cn'
 import { useSettingsStore } from '../../store/settingsStore'
 import { useWorkspaceStore } from '../../store/workspaceStore'
@@ -28,23 +22,17 @@ export function Sidebar(): React.JSX.Element {
       'İdare & Makam Yönetimi'
     ])
   )
-  const {
-    institutionName,
-    institutionLogo,
-    adminName,
-    adminTitle,
-    adminUsername,
-    loadSettings
-  } = useSettingsStore(
-    useShallow((s) => ({
-      institutionName: s.institutionName,
-      institutionLogo: s.institutionLogo,
-      adminName: s.adminName,
-      adminTitle: s.adminTitle,
-      adminUsername: s.adminUsername,
-      loadSettings: s.loadSettings
-    }))
-  )
+  const { institutionName, institutionLogo, adminName, adminTitle, adminUsername, loadSettings } =
+    useSettingsStore(
+      useShallow((s) => ({
+        institutionName: s.institutionName,
+        institutionLogo: s.institutionLogo,
+        adminName: s.adminName,
+        adminTitle: s.adminTitle,
+        adminUsername: s.adminUsername,
+        loadSettings: s.loadSettings
+      }))
+    )
   const { fileName, activeDosyaId } = useWorkspaceStore(
     useShallow((s) => ({
       fileName: s.fileName,
@@ -90,7 +78,6 @@ export function Sidebar(): React.JSX.Element {
     loadSettings()
   }, [loadSettings])
 
-
   const toggleExpanded = (path: string) => {
     setExpandedItems((prev) => {
       const next = new Set(prev)
@@ -103,10 +90,8 @@ export function Sidebar(): React.JSX.Element {
   const installedIds = useModuleStore((s) => s.installedIds)
 
   const finalMenuGroups: MenuGroup[] = useMemo(() => {
-    return getSidebarMenuGroups(
-      procurementMode,
-      activeDosyaId,
-      (id: string) => installedIds.includes(id)
+    return getSidebarMenuGroups(procurementMode, activeDosyaId, (id: string) =>
+      installedIds.includes(id)
     )
   }, [procurementMode, activeDosyaId, installedIds])
 

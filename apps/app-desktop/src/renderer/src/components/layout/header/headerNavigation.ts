@@ -11,12 +11,9 @@ export interface HeaderNavigationOptions {
   navigate: NavigateFn
   procurementMode: 'dogrudan_temin' | 'ihale' | 'devlet_ihale_2886'
   activeDosyaId: number | null
-  isOldFormat: boolean
   handleSaveAndSync: () => Promise<void>
   handleCloseWorkspace: () => Promise<void>
   handleClose: () => void
-  setUpgradeFilePath: (path: string) => void
-  setShowFormatUpgradeModal: (show: boolean) => void
   setShowAboutModal: (show: boolean) => void
 }
 
@@ -25,12 +22,9 @@ export function getHeaderMenus(opts: HeaderNavigationOptions): HeaderMenu[] {
     navigate,
     procurementMode,
     activeDosyaId,
-    isOldFormat,
     handleSaveAndSync,
     handleCloseWorkspace,
     handleClose,
-    setUpgradeFilePath,
-    setShowFormatUpgradeModal,
     setShowAboutModal
   } = opts
 
@@ -38,7 +32,10 @@ export function getHeaderMenus(opts: HeaderNavigationOptions): HeaderMenu[] {
     {
       name: 'Dosya',
       items: [
-        { label: 'Gösterge Paneli', onClick: (): Promise<void> => navigate({ to: APP_ROUTES.DASHBOARD }) },
+        {
+          label: 'Gösterge Paneli',
+          onClick: (): Promise<void> => navigate({ to: APP_ROUTES.DASHBOARD })
+        },
         {
           label: '📑 EBYS Resmî Yazı Şablonları',
           onClick: (): Promise<void> => navigate({ to: APP_ROUTES.EBYS })
@@ -70,30 +67,10 @@ export function getHeaderMenus(opts: HeaderNavigationOptions): HeaderMenu[] {
             }
           }
         },
-        ...(isOldFormat
-          ? [
-              {
-                label: '⚡ Güncel Formata Dönüştür & Kaydet (.temin)',
-                onClick: async (): Promise<void> => {
-                  try {
-                    const res = await useWorkspaceStore.getState().upgradeToTemin()
-                    if (res?.success && res.newPath) {
-                      alert(
-                        `Dosyanız başarıyla yeni nesil TEMİN 360 formatına (.temin) dönüştürüldü ve kaydedildi:\n\n${res.newPath}`
-                      )
-                      window.location.reload()
-                    } else {
-                      alert(`Format dönüştürülemedi!\nHata: ${res?.error || 'Bilinmeyen hata'}`)
-                    }
-                  } catch (e: unknown) {
-                    const errorMsg = e instanceof Error ? e.message : String(e)
-                    alert(`Hata: ${errorMsg}`)
-                  }
-                }
-              }
-            ]
-          : []),
-        { label: 'Kullanıcı Profili', onClick: (): Promise<void> => navigate({ to: APP_ROUTES.PROFIL }) },
+        {
+          label: 'Kullanıcı Profili',
+          onClick: (): Promise<void> => navigate({ to: APP_ROUTES.PROFIL })
+        },
         { divider: true },
         {
           label: 'Farklı Çalışma Dosyası Aç (*.temin)...',
@@ -104,8 +81,7 @@ export function getHeaderMenus(opts: HeaderNavigationOptions): HeaderMenu[] {
                 const filePath = res.filePath as string
                 const ext = (filePath.split('.').pop() || '').toLowerCase()
                 if (ext !== 'temin') {
-                  setUpgradeFilePath(filePath)
-                  setShowFormatUpgradeModal(true)
+                  alert('Yalnızca .temin uzantılı Temin 360 proje dosyaları desteklenmektedir.')
                 } else {
                   let result = await useWorkspaceStore.getState().openWorkspace(filePath, false)
                   if (result.requiresMigration) {
@@ -145,18 +121,27 @@ function getYonetimVeYardimMenu(
   return {
     name: 'Yönetim & Yardım',
     items: [
-      { label: 'Genel Ayarlar', onClick: (): Promise<void> => navigate({ to: APP_ROUTES.AYARLAR }) },
+      {
+        label: 'Genel Ayarlar',
+        onClick: (): Promise<void> => navigate({ to: APP_ROUTES.AYARLAR })
+      },
       {
         label: 'Mevzuat ve Parametreler',
         onClick: (): Promise<void> =>
-          navigate({ to: APP_ROUTES.MEVZUAT, search: { tab: 'kutuphane' } as Record<string, string> })
+          navigate({
+            to: APP_ROUTES.MEVZUAT,
+            search: { tab: 'kutuphane' } as Record<string, string>
+          })
       },
       {
         label: '📈 TÜİK Yİ-ÜFE Endeksleri & Değerleme',
         onClick: (): Promise<void> =>
           navigate({ to: APP_ROUTES.MEVZUAT, search: { tab: 'yi-ufe' } as Record<string, string> })
       },
-      { label: 'Şablon Yönetimi', onClick: (): Promise<void> => navigate({ to: APP_ROUTES.SABLONLAR }) },
+      {
+        label: 'Şablon Yönetimi',
+        onClick: (): Promise<void> => navigate({ to: APP_ROUTES.SABLONLAR })
+      },
       {
         label: '🎨 Form Builder v2 (Sürükle & Bırak)',
         onClick: (): Promise<void> => navigate({ to: APP_ROUTES.FORM_BUILDER })
@@ -173,7 +158,10 @@ function getYonetimVeYardimMenu(
         label: '📑 EBYS Resmî Yazı Şablonları',
         onClick: (): Promise<void> => navigate({ to: APP_ROUTES.EBYS })
       },
-      { label: 'Toplu İçe Aktarma', onClick: (): Promise<void> => navigate({ to: APP_ROUTES.IMPORT }) },
+      {
+        label: 'Toplu İçe Aktarma',
+        onClick: (): Promise<void> => navigate({ to: APP_ROUTES.IMPORT })
+      },
       { label: 'Raporlar', onClick: (): Promise<void> => navigate({ to: APP_ROUTES.RAPORLAR }) },
       {
         label: '🧮 İhale & Maliye Hesaplama Araçları',
@@ -192,7 +180,10 @@ function getYonetimVeYardimMenu(
       {
         label: 'Test Verisi Tohumla (Dev Seed)',
         onClick: (): Promise<void> =>
-          navigate({ to: APP_ROUTES.AYARLAR, search: { tab: 'developer' } as Record<string, string> })
+          navigate({
+            to: APP_ROUTES.AYARLAR,
+            search: { tab: 'developer' } as Record<string, string>
+          })
       },
       { divider: true },
       {

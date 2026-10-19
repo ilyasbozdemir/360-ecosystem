@@ -61,7 +61,8 @@ export const HizliDosyaEkleHeader: React.FC<HizliDosyaEkleHeaderProps> = ({
             Hızlı Doğrudan Temin Dosyası Ekle / Güncelle
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Yeni doğrudan temin dosyaları tanımlayın veya mevcut kayıtları yükleyip toplu düzenleyin.
+            Yeni doğrudan temin dosyaları tanımlayın veya mevcut kayıtları yükleyip toplu
+            düzenleyin.
           </p>
         </div>
 

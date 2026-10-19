@@ -1,12 +1,5 @@
 import React from 'react'
-import {
-  ArrowLeft,
-  Loader2,
-  PackageSearch,
-  PlusCircle,
-  Save,
-  Zap
-} from 'lucide-react'
+import { ArrowLeft, Loader2, PackageSearch, PlusCircle, Save, Zap } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import { cn } from '../../../utils/cn'
 

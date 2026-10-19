@@ -1,5 +1,14 @@
 import React from 'react'
-import { Printer, Download, Building2, Tag, Calendar, FileText, CheckCircle2, Clock } from 'lucide-react'
+import {
+  Printer,
+  Download,
+  Building2,
+  Tag,
+  Calendar,
+  FileText,
+  CheckCircle2,
+  Clock
+} from 'lucide-react'
 import { useRaporlarData } from '../raporlar.hooks'
 import { exportCsv } from '../../../utils/csvExport'
 
@@ -131,7 +140,10 @@ export const KayitFormuView: React.FC<KayitFormuViewProps> = ({ ay, yil }) => {
                     )}
                   </td>
                   <td className="px-3.5 py-3 max-w-[240px]">
-                    <div className="font-semibold text-slate-800 dark:text-slate-200 truncate" title={row.is_adi}>
+                    <div
+                      className="font-semibold text-slate-800 dark:text-slate-200 truncate"
+                      title={row.is_adi}
+                    >
                       {row.is_adi}
                     </div>
                   </td>
@@ -142,12 +154,17 @@ export const KayitFormuView: React.FC<KayitFormuViewProps> = ({ ay, yil }) => {
                     <div className="text-[10px] text-slate-400 font-medium">4734 Md. 22/d</div>
                   </td>
                   <td className="px-3.5 py-3 max-w-[200px]">
-                    <div className="font-medium text-slate-700 dark:text-slate-200 flex items-center gap-1 truncate" title={row.kazanan_firma}>
+                    <div
+                      className="font-medium text-slate-700 dark:text-slate-200 flex items-center gap-1 truncate"
+                      title={row.kazanan_firma}
+                    >
                       <Building2 size={12} className="text-slate-400 shrink-0" />
                       <span className="truncate">{row.kazanan_firma}</span>
                     </div>
                     {row.kazanan_vkn && (
-                      <div className="text-[10px] text-slate-400 font-mono">VKN: {row.kazanan_vkn}</div>
+                      <div className="text-[10px] text-slate-400 font-mono">
+                        VKN: {row.kazanan_vkn}
+                      </div>
                     )}
                   </td>
                   <td className="px-3.5 py-3 text-right font-mono font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
@@ -166,7 +183,10 @@ export const KayitFormuView: React.FC<KayitFormuViewProps> = ({ ay, yil }) => {
             </tbody>
             <tfoot>
               <tr className="border-t-2 border-slate-300 dark:border-slate-600 bg-slate-100/70 dark:bg-slate-800/80 font-bold">
-                <td colSpan={6} className="px-3.5 py-3 text-right text-slate-700 dark:text-slate-200 text-xs">
+                <td
+                  colSpan={6}
+                  className="px-3.5 py-3 text-right text-slate-700 dark:text-slate-200 text-xs"
+                >
                   GENEL TOPLAM ({rows.length} Alım Dosyası):
                 </td>
                 <td className="px-3.5 py-3 text-right text-emerald-700 dark:text-emerald-400 font-mono text-sm">

@@ -45,7 +45,10 @@ export const MalzemeHarcamaView: React.FC<MalzemeHarcamaViewProps> = ({
       if (typeof window === 'undefined' || !window.electron?.ipcRenderer) return
       setLoading(true)
       try {
-        const dateCol = tarihEsasi === 'acilis' ? 'COALESCE(d.dosya_acilis_tarihi, d.tarih)' : 'COALESCE(d.temin_tarihi, d.tarih)'
+        const dateCol =
+          tarihEsasi === 'acilis'
+            ? 'COALESCE(d.dosya_acilis_tarihi, d.tarih)'
+            : 'COALESCE(d.temin_tarihi, d.tarih)'
         const res = await window.electron.ipcRenderer.invoke(
           'db:query',
           `SELECT 
@@ -117,17 +120,28 @@ export const MalzemeHarcamaView: React.FC<MalzemeHarcamaViewProps> = ({
     fetchKalemler()
   }, [yil, tarihBaslangic, tarihBitis, tarihEsasi, seciliBirim, alimTuru])
 
-  const filteredItems = items.filter((it) =>
-    it.kalem_adi.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    it.dosya_no.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (it.kazanan_firma && it.kazanan_firma.toLowerCase().includes(searchTerm.toLowerCase()))
+  const filteredItems = items.filter(
+    (it) =>
+      it.kalem_adi.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      it.dosya_no.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (it.kazanan_firma && it.kazanan_firma.toLowerCase().includes(searchTerm.toLowerCase()))
   )
 
   const genelToplam = filteredItems.reduce((acc, it) => acc + it.toplam_tutar, 0)
 
   const handleExportCSV = (): void => {
     if (filteredItems.length === 0) return
-    const headers = ['Sıra', 'Kalem / Malzeme Adı', 'Miktar', 'Ölçü Birimi', 'Birim Fiyat', 'Toplam Tutar', 'Dosya No', 'Alım Tarihi', 'Yüklenici Firma']
+    const headers = [
+      'Sıra',
+      'Kalem / Malzeme Adı',
+      'Miktar',
+      'Ölçü Birimi',
+      'Birim Fiyat',
+      'Toplam Tutar',
+      'Dosya No',
+      'Alım Tarihi',
+      'Yüklenici Firma'
+    ]
     const rows = filteredItems.map((it, idx) => [
       idx + 1,
       `"${it.kalem_adi.replace(/"/g, '""')}"`,
@@ -205,26 +219,48 @@ export const MalzemeHarcamaView: React.FC<MalzemeHarcamaViewProps> = ({
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {filteredItems.map((row, i) => (
-                <tr key={row.id} className="hover:bg-blue-50/40 dark:hover:bg-blue-900/10 transition-colors">
+                <tr
+                  key={row.id}
+                  className="hover:bg-blue-50/40 dark:hover:bg-blue-900/10 transition-colors"
+                >
                   <td className="px-3.5 py-2.5 text-slate-400 font-mono font-bold">{i + 1}</td>
-                  <td className="px-3.5 py-2.5 font-semibold text-slate-800 dark:text-slate-200 max-w-[240px] truncate" title={row.kalem_adi}>
+                  <td
+                    className="px-3.5 py-2.5 font-semibold text-slate-800 dark:text-slate-200 max-w-[240px] truncate"
+                    title={row.kalem_adi}
+                  >
                     {row.kalem_adi}
                   </td>
-                  <td className="px-3.5 py-2.5 text-center font-mono font-bold text-slate-700 dark:text-slate-200">{row.miktar}</td>
+                  <td className="px-3.5 py-2.5 text-center font-mono font-bold text-slate-700 dark:text-slate-200">
+                    {row.miktar}
+                  </td>
                   <td className="px-3.5 py-2.5 text-center text-slate-500">{row.birim}</td>
-                  <td className="px-3.5 py-2.5 text-right font-mono text-slate-700 dark:text-slate-200">{fmt(row.birim_fiyat)}</td>
-                  <td className="px-3.5 py-2.5 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">{fmt(row.toplam_tutar)}</td>
-                  <td className="px-3.5 py-2.5 font-mono text-slate-600 dark:text-slate-400">{row.dosya_no}</td>
-                  <td className="px-3.5 py-2.5 text-slate-600 dark:text-slate-300 max-w-[160px] truncate" title={row.kazanan_firma}>
+                  <td className="px-3.5 py-2.5 text-right font-mono text-slate-700 dark:text-slate-200">
+                    {fmt(row.birim_fiyat)}
+                  </td>
+                  <td className="px-3.5 py-2.5 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                    {fmt(row.toplam_tutar)}
+                  </td>
+                  <td className="px-3.5 py-2.5 font-mono text-slate-600 dark:text-slate-400">
+                    {row.dosya_no}
+                  </td>
+                  <td
+                    className="px-3.5 py-2.5 text-slate-600 dark:text-slate-300 max-w-[160px] truncate"
+                    title={row.kazanan_firma}
+                  >
                     {row.kazanan_firma}
                   </td>
-                  <td className="px-3.5 py-2.5 font-mono text-slate-500 whitespace-nowrap">{row.tarih || '-'}</td>
+                  <td className="px-3.5 py-2.5 font-mono text-slate-500 whitespace-nowrap">
+                    {row.tarih || '-'}
+                  </td>
                 </tr>
               ))}
             </tbody>
             <tfoot>
               <tr className="border-t-2 border-slate-300 dark:border-slate-600 bg-slate-100/80 dark:bg-slate-800/80 font-bold">
-                <td colSpan={5} className="px-3.5 py-3 text-right text-slate-700 dark:text-slate-200">
+                <td
+                  colSpan={5}
+                  className="px-3.5 py-3 text-right text-slate-700 dark:text-slate-200"
+                >
                   TOPLAM ({filteredItems.length} Kalem):
                 </td>
                 <td className="px-3.5 py-3 text-right text-emerald-700 dark:text-emerald-400 font-mono text-sm">

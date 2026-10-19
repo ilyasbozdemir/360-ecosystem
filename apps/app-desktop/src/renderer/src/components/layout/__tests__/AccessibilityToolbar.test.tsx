@@ -28,8 +28,12 @@ describe('Issue #13: AccessibilityToolbar (WCAG & Dinamik Yazı Boyutu)', () => 
     expect(output).toBeTruthy()
 
     // Küçült butonu ve sıfırla butonu %100'de devre dışı olmalı
-    const minusBtn = screen.getByRole('button', { name: 'Yazı boyutunu küçült' }) as HTMLButtonElement
-    const resetBtn = screen.getByRole('button', { name: 'Yazı boyutunu varsayılana döndür' }) as HTMLButtonElement
+    const minusBtn = screen.getByRole('button', {
+      name: 'Yazı boyutunu küçült'
+    }) as HTMLButtonElement
+    const resetBtn = screen.getByRole('button', {
+      name: 'Yazı boyutunu varsayılana döndür'
+    }) as HTMLButtonElement
     const plusBtn = screen.getByRole('button', { name: 'Yazı boyutunu büyüt' }) as HTMLButtonElement
 
     expect(minusBtn.disabled).toBe(true)
@@ -52,8 +56,12 @@ describe('Issue #13: AccessibilityToolbar (WCAG & Dinamik Yazı Boyutu)', () => 
     expect(document.documentElement.dataset.fontScale).toBe('110')
     expect(localStorage.getItem(STORAGE_KEY)).toBe('110')
 
-    const minusBtn = screen.getByRole('button', { name: 'Yazı boyutunu küçült' }) as HTMLButtonElement
-    const resetBtn = screen.getByRole('button', { name: 'Yazı boyutunu varsayılana döndür' }) as HTMLButtonElement
+    const minusBtn = screen.getByRole('button', {
+      name: 'Yazı boyutunu küçült'
+    }) as HTMLButtonElement
+    const resetBtn = screen.getByRole('button', {
+      name: 'Yazı boyutunu varsayılana döndür'
+    }) as HTMLButtonElement
     expect(minusBtn.disabled).toBe(false)
     expect(resetBtn.disabled).toBe(false)
   })
@@ -78,7 +86,9 @@ describe('Issue #13: AccessibilityToolbar (WCAG & Dinamik Yazı Boyutu)', () => 
     render(<AccessibilityToolbar />)
 
     expect(screen.getByText('110%')).toBeTruthy()
-    const minusBtn = screen.getByRole('button', { name: 'Yazı boyutunu küçült' }) as HTMLButtonElement
+    const minusBtn = screen.getByRole('button', {
+      name: 'Yazı boyutunu küçült'
+    }) as HTMLButtonElement
     fireEvent.click(minusBtn)
 
     expect(screen.getByText('100%')).toBeTruthy()
@@ -91,7 +101,9 @@ describe('Issue #13: AccessibilityToolbar (WCAG & Dinamik Yazı Boyutu)', () => 
     render(<AccessibilityToolbar />)
 
     expect(screen.getByText('140%')).toBeTruthy()
-    const resetBtn = screen.getByRole('button', { name: 'Yazı boyutunu varsayılana döndür' }) as HTMLButtonElement
+    const resetBtn = screen.getByRole('button', {
+      name: 'Yazı boyutunu varsayılana döndür'
+    }) as HTMLButtonElement
     fireEvent.click(resetBtn)
 
     expect(screen.getByText('100%')).toBeTruthy()

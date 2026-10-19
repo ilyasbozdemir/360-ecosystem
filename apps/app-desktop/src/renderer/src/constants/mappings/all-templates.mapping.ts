@@ -1132,9 +1132,21 @@ export const KlasorSirtligi75cmMapping: ProcessMapping = {
 export const Kik048YapimGeciciKabulTeklifMapping: ProcessMapping = {
   isinAdi: { tablo: 'DATA_TeminDosyasi', sutun: 'konu', aciklama: 'İşin Adı' },
   dosyaKonusu: { tablo: 'DATA_TeminDosyasi', sutun: 'konu', aciklama: 'Dosya Konusu' },
-  sozlesmeTarihi: { tablo: 'DATA_TeminDosyasi', sutun: 'sozlesme_tarihi', aciklama: 'Sözleşme Tarihi' },
-  sozlesmeBedeli: { tablo: 'DATA_TeminDosyasi', sutun: 'sozlesme_bedeli', aciklama: 'Sözleşme Bedeli' },
-  sozlesmeyeGoreBitisTarihi: { tablo: 'DATA_TeminDosyasi', sutun: 'teslim_tarihi', aciklama: 'Sözleşmeye Göre Bitiş Tarihi' }
+  sozlesmeTarihi: {
+    tablo: 'DATA_TeminDosyasi',
+    sutun: 'sozlesme_tarihi',
+    aciklama: 'Sözleşme Tarihi'
+  },
+  sozlesmeBedeli: {
+    tablo: 'DATA_TeminDosyasi',
+    sutun: 'sozlesme_bedeli',
+    aciklama: 'Sözleşme Bedeli'
+  },
+  sozlesmeyeGoreBitisTarihi: {
+    tablo: 'DATA_TeminDosyasi',
+    sutun: 'teslim_tarihi',
+    aciklama: 'Sözleşmeye Göre Bitiş Tarihi'
+  }
 }
 
 // ===========================================================
@@ -1144,8 +1156,16 @@ export const Kik049YapimGeciciKabulTutanagiMapping: ProcessMapping = {
   isinAdi: { tablo: 'DATA_TeminDosyasi', sutun: 'konu', aciklama: 'İşin Adı' },
   dosyaKonusu: { tablo: 'DATA_TeminDosyasi', sutun: 'konu', aciklama: 'Dosya Konusu' },
   kurumAdi: { tablo: 'TANIM_Kurum', sutun: 'kurum_adi', aciklama: 'Kurum Adı' },
-  sozlesmeTarihi: { tablo: 'DATA_TeminDosyasi', sutun: 'sozlesme_tarihi', aciklama: 'Sözleşme Tarihi' },
-  sozlesmeBedeli: { tablo: 'DATA_TeminDosyasi', sutun: 'sozlesme_bedeli', aciklama: 'Sözleşme Bedeli' }
+  sozlesmeTarihi: {
+    tablo: 'DATA_TeminDosyasi',
+    sutun: 'sozlesme_tarihi',
+    aciklama: 'Sözleşme Tarihi'
+  },
+  sozlesmeBedeli: {
+    tablo: 'DATA_TeminDosyasi',
+    sutun: 'sozlesme_bedeli',
+    aciklama: 'Sözleşme Bedeli'
+  }
 }
 
 // ===========================================================
@@ -1154,8 +1174,16 @@ export const Kik049YapimGeciciKabulTutanagiMapping: ProcessMapping = {
 export const Kik050YapimKesinKabulTeklifMapping: ProcessMapping = {
   isinAdi: { tablo: 'DATA_TeminDosyasi', sutun: 'konu', aciklama: 'İşin Adı' },
   dosyaKonusu: { tablo: 'DATA_TeminDosyasi', sutun: 'konu', aciklama: 'Dosya Konusu' },
-  sozlesmeTarihi: { tablo: 'DATA_TeminDosyasi', sutun: 'sozlesme_tarihi', aciklama: 'Sözleşme Tarihi' },
-  sozlesmeBedeli: { tablo: 'DATA_TeminDosyasi', sutun: 'sozlesme_bedeli', aciklama: 'Sözleşme Bedeli' }
+  sozlesmeTarihi: {
+    tablo: 'DATA_TeminDosyasi',
+    sutun: 'sozlesme_tarihi',
+    aciklama: 'Sözleşme Tarihi'
+  },
+  sozlesmeBedeli: {
+    tablo: 'DATA_TeminDosyasi',
+    sutun: 'sozlesme_bedeli',
+    aciklama: 'Sözleşme Bedeli'
+  }
 }
 
 // ===========================================================
@@ -1165,6 +1193,14 @@ export const Kik051YapimKesinKabulTutanagiMapping: ProcessMapping = {
   isinAdi: { tablo: 'DATA_TeminDosyasi', sutun: 'konu', aciklama: 'İşin Adı' },
   dosyaKonusu: { tablo: 'DATA_TeminDosyasi', sutun: 'konu', aciklama: 'Dosya Konusu' },
   kurumAdi: { tablo: 'TANIM_Kurum', sutun: 'kurum_adi', aciklama: 'Kurum Adı' },
-  sozlesmeTarihi: { tablo: 'DATA_TeminDosyasi', sutun: 'sozlesme_tarihi', aciklama: 'Sözleşme Tarihi' },
-  sozlesmeBedeli: { tablo: 'DATA_TeminDosyasi', sutun: 'sozlesme_bedeli', aciklama: 'Sözleşme Bedeli' }
+  sozlesmeTarihi: {
+    tablo: 'DATA_TeminDosyasi',
+    sutun: 'sozlesme_tarihi',
+    aciklama: 'Sözleşme Tarihi'
+  },
+  sozlesmeBedeli: {
+    tablo: 'DATA_TeminDosyasi',
+    sutun: 'sozlesme_bedeli',
+    aciklama: 'Sözleşme Bedeli'
+  }
 }

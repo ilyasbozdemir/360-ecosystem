@@ -23,12 +23,8 @@ export default function PlaygroundScreen(): React.JSX.Element {
 
       <div className="flex-1 overflow-y-auto p-6">
         <div className="max-w-6xl mx-auto space-y-6">
-          {activeTool === 'sayi_yazi' && (
-            <SayiYaziTool onCopy={handleCopy} copiedKey={copiedKey} />
-          )}
-          {activeTool === 'yi_ufe' && (
-            <YiUfeTool onCopy={handleCopy} copiedKey={copiedKey} />
-          )}
+          {activeTool === 'sayi_yazi' && <SayiYaziTool onCopy={handleCopy} copiedKey={copiedKey} />}
+          {activeTool === 'yi_ufe' && <YiUfeTool onCopy={handleCopy} copiedKey={copiedKey} />}
           {activeTool === 'kdv_tevkifat' && <KdvTevkifatTool />}
           {activeTool === 'damga_vergisi' && <DamgaVergisiTool />}
           {activeTool === 'gecikme_cezasi' && <GecikmeCezasiTool />}

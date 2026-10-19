@@ -1,11 +1,5 @@
 import React from 'react'
-import {
-  CheckSquare,
-  LayoutGrid,
-  LayoutList,
-  Plus,
-  RotateCw
-} from 'lucide-react'
+import { CheckSquare, LayoutGrid, LayoutList, Plus, RotateCw } from 'lucide-react'
 
 interface NotlarHeaderProps {
   pendingCount: number

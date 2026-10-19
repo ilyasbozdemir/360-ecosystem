@@ -77,9 +77,7 @@ export function registerUpdaterIpcHandlers(): void {
     console.log(`Yeni sürüm bulundu! Sürüm: ${info.version}`)
 
     const currentV =
-      devUpdateVersionOverride ||
-      (autoUpdater.currentVersion as any)?.version ||
-      app.getVersion()
+      devUpdateVersionOverride || (autoUpdater.currentVersion as any)?.version || app.getVersion()
 
     const eligibility = isUpdateEligible(currentV, info.version, policy)
 

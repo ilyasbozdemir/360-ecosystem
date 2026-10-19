@@ -77,9 +77,7 @@ export async function resolveAntetAndBirim(
     ctx.altKurumBizim ||
     'İdaremizde'
   baseData.ihtiyacYeri =
-    rawIhtiyac === '[]' || rawIhtiyac === '[""]'
-      ? (ctx.altKurumBulunma || 'İdaremizde')
-      : rawIhtiyac
+    rawIhtiyac === '[]' || rawIhtiyac === '[""]' ? ctx.altKurumBulunma || 'İdaremizde' : rawIhtiyac
 
   // Resolve official EBYS / E-DETSİS evrakSayisi if missing, slash-separated or invalid format
   if (
@@ -146,7 +144,11 @@ export async function resolveAntetAndBirim(
         baseData.antetSatirlari.push(matchedBirimName)
       }
     } else {
-      baseData.antetSatirlari = ['T.C.', baseData.kurumAdi || 'BELEDİYE BAŞKANLIĞI', matchedBirimName]
+      baseData.antetSatirlari = [
+        'T.C.',
+        baseData.kurumAdi || 'BELEDİYE BAŞKANLIĞI',
+        matchedBirimName
+      ]
     }
   }
 }

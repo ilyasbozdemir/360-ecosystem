@@ -45,8 +45,8 @@ export function CiktiWizardReviewStep({
             Ön Kontrol & Evrak Uyarıları
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Seçili belgelerin muhatap, tarih, dağıtım ve rota alanları taranmıştır.
-            Buradaki uyarılar bilgilendirme amaçlıdır; çıktıyı engellemez.
+            Seçili belgelerin muhatap, tarih, dağıtım ve rota alanları taranmıştır. Buradaki
+            uyarılar bilgilendirme amaçlıdır; çıktıyı engellemez.
           </p>
         </div>
 
@@ -57,11 +57,10 @@ export function CiktiWizardReviewStep({
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-emerald-300">
-                Tüm Evrak Kontrolleri Başarılı
-              </h4>
+              <h4 className="text-sm font-bold text-emerald-300">Tüm Evrak Kontrolleri Başarılı</h4>
               <p className="text-xs text-emerald-400/80">
-                Seçili {selectedSablons.length} belgede herhangi bir eksiklik veya çakışma tespit edilmedi. Doğrudan çıktı alabilirsiniz.
+                Seçili {selectedSablons.length} belgede herhangi bir eksiklik veya çakışma tespit
+                edilmedi. Doğrudan çıktı alabilirsiniz.
               </p>
             </div>
           </div>
@@ -75,7 +74,8 @@ export function CiktiWizardReviewStep({
                 {totalWarnings} Adet Bilgilendirme / İkaz Tespit Edildi
               </h4>
               <p className="text-xs text-amber-400/80">
-                Bu ikazlar yazdırma işlemini engellemez. Dilerseniz önceki adımlardan eksik bilgileri tamamlayabilir veya doğrudan devam edebilirsiniz.
+                Bu ikazlar yazdırma işlemini engellemez. Dilerseniz önceki adımlardan eksik
+                bilgileri tamamlayabilir veya doğrudan devam edebilirsiniz.
               </p>
             </div>
           </div>
@@ -101,9 +101,7 @@ export function CiktiWizardReviewStep({
                     )}
                     <span className="text-xs font-bold text-slate-200">{sablon.ad}</span>
                   </div>
-                  <span className="text-[10px] text-slate-400 font-mono">
-                    {sablon.dosya_adi}
-                  </span>
+                  <span className="text-[10px] text-slate-400 font-mono">{sablon.dosya_adi}</span>
                 </div>
 
                 {warnings.length === 0 ? (

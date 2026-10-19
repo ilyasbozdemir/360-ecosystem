@@ -9,8 +9,14 @@ export interface DiffChunk {
  */
 export function computeTextDiff(oldText: string, newText: string): DiffChunk[] {
   // HTML etiketlerini okunabilir metne dönüştür
-  const cleanOld = oldText.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
-  const cleanNew = newText.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+  const cleanOld = oldText
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+  const cleanNew = newText
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
 
   const oldWords = cleanOld.split(' ')
   const newWords = cleanNew.split(' ')

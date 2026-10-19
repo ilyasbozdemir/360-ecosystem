@@ -51,10 +51,7 @@ export function KabulTutanakKalemlerTable({
               <th className="py-2 px-2 w-24 text-right" title="Kalem Birim Fiyatı (₺)">
                 Birim Fiyatı (₺)
               </th>
-              <th
-                className="py-2 px-2 w-28 text-right"
-                title="Bu Tutanağa Ait Kabul Tutarı (₺)"
-              >
+              <th className="py-2 px-2 w-28 text-right" title="Bu Tutanağa Ait Kabul Tutarı (₺)">
                 Kabul Tutarı (₺)
               </th>
               <th

@@ -279,7 +279,8 @@ export const useTabStore = create<TabState>((set, get) => ({
         // Varsa tüm mükerrer BELGE_ONIZLEME sekmelerini temizleyip tek sekmeyi koru
         const firstBelgeTab = tabs[existingDocIndex]
         const updatedTabs = tabs.filter(
-          (t, idx) => idx === existingDocIndex || !t.path.split('?')[0].startsWith(APP_ROUTES.BELGE_ONIZLEME)
+          (t, idx) =>
+            idx === existingDocIndex || !t.path.split('?')[0].startsWith(APP_ROUTES.BELGE_ONIZLEME)
         )
         const label = getTabLabel(path)
         const newHistory = firstBelgeTab.history.slice(0, firstBelgeTab.currentIndex + 1)
@@ -354,7 +355,9 @@ export const useTabStore = create<TabState>((set, get) => ({
     if (belgeTabs.length > 1) {
       const activeOrFirst = belgeTabs.find((t) => t.path === path) || belgeTabs[0]
       const cleanedTabs = tabs.filter(
-        (t) => !t.path.split('?')[0].startsWith(APP_ROUTES.BELGE_ONIZLEME) || t.path === activeOrFirst.path
+        (t) =>
+          !t.path.split('?')[0].startsWith(APP_ROUTES.BELGE_ONIZLEME) ||
+          t.path === activeOrFirst.path
       )
       set({ tabs: cleanedTabs, activeTabPath: path })
       return

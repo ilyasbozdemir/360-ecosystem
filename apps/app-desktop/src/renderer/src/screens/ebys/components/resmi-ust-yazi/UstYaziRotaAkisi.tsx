@@ -58,7 +58,8 @@ export function UstYaziRotaAkisi(props: RotaProps): React.JSX.Element {
                 Dosyaya Kayıt &amp; Onaylı Arşiv
               </div>
               <div className="text-[11px] text-slate-500 mt-0.5">
-                Belge doğrudan temin dosyası içinde arşivlenir, paraflar ve imzalar tamamlanarak dosya çıktısı alınır (Harici EBYS gönderimi yapılmaz).
+                Belge doğrudan temin dosyası içinde arşivlenir, paraflar ve imzalar tamamlanarak
+                dosya çıktısı alınır (Harici EBYS gönderimi yapılmaz).
               </div>
             </div>
           </div>
@@ -96,9 +97,7 @@ export function UstYaziRotaAkisi(props: RotaProps): React.JSX.Element {
               <div className="sm:col-span-3">
                 <select
                   value={step.t}
-                  onChange={(e) =>
-                    handleUpdateRotaStep(idx, 't', e.target.value as RotaAdimi['t'])
-                  }
+                  onChange={(e) => handleUpdateRotaStep(idx, 't', e.target.value as RotaAdimi['t'])}
                   className="w-full p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
                 >
                   {TURLER.map((tur) => (

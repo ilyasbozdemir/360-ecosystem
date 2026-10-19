@@ -1,39 +1,18 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { QueryClient } from '@tanstack/react-query'
 import { useWorkspaceStore } from '../../../store/workspaceStore'
 import { useSettingsStore } from '../../../store/settingsStore'
 import { useTabStore } from '../../../store/tabStore'
 import { APP_ROUTES } from '../../../constants/routeConstants'
 
-export interface WorkspaceLifecycleState {
-  showFormatUpgradeModal: boolean
-  setShowFormatUpgradeModal: (show: boolean) => void
-  upgradeFilePath: string | null
-  handleUpgradeAndOpen: (filePath: string) => Promise<void>
-}
-
 export function useWorkspaceLifecycle(
   isAnyWindowMode: boolean,
   navigate: (options: { to: string }) => void,
   queryClient: QueryClient
-): WorkspaceLifecycleState {
+): void {
   const { activeFilePath, openWorkspace, loadActiveMeta } = useWorkspaceStore()
   const { loadSettings } = useSettingsStore()
   const { addTab, clearTabs } = useTabStore()
-
-  const [showFormatUpgradeModal, setShowFormatUpgradeModal] = useState(false)
-  const [upgradeFilePath, setUpgradeFilePath] = useState<string | null>(null)
-
-  const handleUpgradeAndOpen = async (filePath: string): Promise<void> => {
-    const result = await useWorkspaceStore.getState().convertAndOpenWorkspace(filePath)
-    if (result.success) {
-      queryClient.clear()
-      clearTabs()
-      navigate({ to: APP_ROUTES.DASHBOARD })
-    } else {
-      throw new Error(result.error || 'Dönüştürme başarısız oldu.')
-    }
-  }
 
   // Listen for db change invalidations from main process
   useEffect(() => {
@@ -161,8 +140,7 @@ export function useWorkspaceLifecycle(
         }
 
         if (!filePath.toLowerCase().endsWith('.temin')) {
-          setUpgradeFilePath(filePath)
-          setShowFormatUpgradeModal(true)
+          alert('Yalnızca .temin uzantılı Temin 360 proje dosyaları desteklenmektedir.')
           return
         }
 
@@ -236,11 +214,4 @@ export function useWorkspaceLifecycle(
       if (removeNavListener) removeNavListener()
     }
   }, [isAnyWindowMode, activeFilePath, clearTabs, navigate, openWorkspace, queryClient])
-
-  return {
-    showFormatUpgradeModal,
-    setShowFormatUpgradeModal,
-    upgradeFilePath,
-    handleUpgradeAndOpen
-  }
 }

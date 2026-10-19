@@ -188,9 +188,7 @@ export function YiUfeEndeksTab(): React.JSX.Element {
         aylikDegisim={aylikDegisim}
         yillikDegisim={yillikDegisim}
         formatNumber={formatNumber}
-        onOpenAddForMonth={() =>
-          openAddForMonth(2026, latest.ay < 12 ? latest.ay + 1 : 12)
-        }
+        onOpenAddForMonth={() => openAddForMonth(2026, latest.ay < 12 ? latest.ay + 1 : 12)}
         onOpenHakedisOrg={openHakedisOrg}
       />
 

@@ -20,10 +20,19 @@ export function getIhaleMenus(navigate: NavigateFn, activeDosyaId: number | null
           label: '📋 İhtiyaç Raporları Havuzu (Genel)',
           onClick: () => navigate({ to: APP_ROUTES.IHTIYAC_RAPORLARI })
         },
-        { label: 'İhale Hakediş & Harcama Raporları', onClick: () => navigate({ to: APP_ROUTES.HAKEDIS }) },
+        {
+          label: 'İhale Hakediş & Harcama Raporları',
+          onClick: () => navigate({ to: APP_ROUTES.HAKEDIS })
+        },
         { divider: true },
-        { label: 'Şablon & Kategori Yönetimi', onClick: () => navigate({ to: APP_ROUTES.DEGISKENLER }) },
-        { label: 'Taslak & Belge Havuzu', onClick: () => navigate({ to: APP_ROUTES.TASLAK_YONETIM }) }
+        {
+          label: 'Şablon & Kategori Yönetimi',
+          onClick: () => navigate({ to: APP_ROUTES.DEGISKENLER })
+        },
+        {
+          label: 'Taslak & Belge Havuzu',
+          onClick: () => navigate({ to: APP_ROUTES.TASLAK_YONETIM })
+        }
       ]
     },
     ...(activeDosyaId
@@ -64,7 +73,10 @@ export function getIhaleMenus(navigate: NavigateFn, activeDosyaId: number | null
           {
             name: 'İhale İşlemleri',
             items: [
-              { label: 'İhale Dosya Durumu & Takip', onClick: () => navigate({ to: APP_ROUTES.TAKIP }) },
+              {
+                label: 'İhale Dosya Durumu & Takip',
+                onClick: () => navigate({ to: APP_ROUTES.TAKIP })
+              },
               {
                 label: '📋 Bu Dosyaya Bağlı İhtiyaç Raporları',
                 onClick: () =>
@@ -77,7 +89,10 @@ export function getIhaleMenus(navigate: NavigateFn, activeDosyaId: number | null
                 label: 'İhale Belge Çıktı Merkezi',
                 onClick: () => navigate({ to: APP_ROUTES.CIKTI_MERKEZI_DASHBOARD })
               },
-              { label: 'Hakediş & Ödeme Takibi', onClick: () => navigate({ to: APP_ROUTES.HAKEDIS }) }
+              {
+                label: 'Hakediş & Ödeme Takibi',
+                onClick: () => navigate({ to: APP_ROUTES.HAKEDIS })
+              }
             ]
           }
         ]

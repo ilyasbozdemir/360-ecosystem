@@ -165,7 +165,7 @@ export class MinIOSyncService {
         const xmlText = await res.text()
         const keyMatches = Array.from(xmlText.matchAll(/<Key>(.*?)<\/Key>/g)).map((m) => m[1])
         const validFiles: MinIOWorkspaceItem[] = keyMatches
-          .filter((k) => k.endsWith('.temin') || k.endsWith('.dtal') || k.endsWith('.hkmp'))
+          .filter((k) => k.endsWith('.temin'))
           .map((k) => ({
             key: k,
             fileName: k

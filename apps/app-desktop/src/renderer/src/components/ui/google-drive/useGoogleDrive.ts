@@ -97,7 +97,10 @@ export function useGoogleDrive(isOpen: boolean, onClose: () => void) {
       'info'
     )
     try {
-      const res = await ipc('workspace:start-gdrive-oauth', { clientId: cId, clientSecret: cSecret })
+      const res = await ipc('workspace:start-gdrive-oauth', {
+        clientId: cId,
+        clientSecret: cSecret
+      })
       if (!res.success) {
         return notify(res.error || 'Google ile oturum açma işlemi tamamlanamadı.', 'error')
       }
@@ -174,7 +177,10 @@ export function useGoogleDrive(isOpen: boolean, onClose: () => void) {
       })
       if (cRefresh || cToken) {
         setIsSavedToken(true)
-        notify('✅ Google Cloud API bilgileri ve Yetki Anahtarı kaydedildi! Kalıcı mod aktif.', 'success')
+        notify(
+          '✅ Google Cloud API bilgileri ve Yetki Anahtarı kaydedildi! Kalıcı mod aktif.',
+          'success'
+        )
         fetchDriveFiles(cToken || undefined)
       } else {
         notify(
@@ -294,13 +300,34 @@ export function useGoogleDrive(isOpen: boolean, onClose: () => void) {
   }
 
   return {
-    authTab, setAuthTab, token, setToken, refreshToken, setRefreshToken,
-    clientId, setClientId, clientSecret, setClientSecret,
-    isSavedToken, isConnected, files, statusMsg,
-    isLoadingList, isUploading, isAuthenticating, downloadingId, deletingId,
-    fetchDriveFiles, handleStartGoogleOAuth, handleOpenGoogleAuth, handleImportClientJson,
-    handleSaveApiSettings, handleSaveManualToken, handleUploadCurrentFile,
-    handleDownloadFile, handleDeleteFile
+    authTab,
+    setAuthTab,
+    token,
+    setToken,
+    refreshToken,
+    setRefreshToken,
+    clientId,
+    setClientId,
+    clientSecret,
+    setClientSecret,
+    isSavedToken,
+    isConnected,
+    files,
+    statusMsg,
+    isLoadingList,
+    isUploading,
+    isAuthenticating,
+    downloadingId,
+    deletingId,
+    fetchDriveFiles,
+    handleStartGoogleOAuth,
+    handleOpenGoogleAuth,
+    handleImportClientJson,
+    handleSaveApiSettings,
+    handleSaveManualToken,
+    handleUploadCurrentFile,
+    handleDownloadFile,
+    handleDeleteFile
   }
 }
 

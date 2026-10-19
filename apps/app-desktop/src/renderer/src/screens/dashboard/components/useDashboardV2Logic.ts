@@ -3,11 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { useSettingsStore } from '../../../store/settingsStore'
 import { useWorkspaceStore } from '../../../store/workspaceStore'
-import {
-  useAnnouncements,
-  useDashboardStats,
-  useSmartAlerts
-} from '../dashboard.hooks'
+import { useAnnouncements, useDashboardStats, useSmartAlerts } from '../dashboard.hooks'
 import { useDosyalarHooks } from '../../dosyalar/dosyalar.hooks'
 import { useAyarlarHooks } from '../../ayarlar/ayarlar.hooks'
 import { logActivity } from '../../../utils/logger'
@@ -107,8 +103,8 @@ export function useDashboardV2Logic() {
   const isMailConfigured = !!settings.smtp_host
   const isAiConfigured = Boolean(
     settings.ai_gemini_api_key?.trim() ||
-      settings.ai_openai_api_key?.trim() ||
-      settings.ai_anthropic_api_key?.trim()
+    settings.ai_openai_api_key?.trim() ||
+    settings.ai_anthropic_api_key?.trim()
   )
 
   const [showAIModal, setShowAIModal] = useState(false)

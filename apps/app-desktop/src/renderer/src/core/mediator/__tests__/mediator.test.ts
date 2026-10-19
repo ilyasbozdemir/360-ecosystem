@@ -24,9 +24,10 @@ class TestCalculateTotalCommand extends BaseCommand<number> {
   }
 }
 
-class TestCalculateTotalCommandHandler
-  implements IRequestHandler<TestCalculateTotalCommand, number>
-{
+class TestCalculateTotalCommandHandler implements IRequestHandler<
+  TestCalculateTotalCommand,
+  number
+> {
   async handle(command: TestCalculateTotalCommand): Promise<number> {
     return command.a + command.b
   }

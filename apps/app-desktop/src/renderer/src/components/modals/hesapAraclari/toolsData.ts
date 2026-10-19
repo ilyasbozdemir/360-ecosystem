@@ -43,12 +43,30 @@ export const TOOLS: ToolGroup[] = [
             t: 'Düzden Hesaplama (1. Sayı Baz Alınır)',
             s: `${formatNum(a, prec)} sayısı temeliyle`,
             r: [
-              [`${formatNum(a, prec)} sayısına göre ${formatNum(b, prec)} yüzde kaç?`, ratio ? formatPct(ratio, prec) : null],
-              [`${formatNum(a, prec)} sayısına göre ${formatNum(b, prec)} yüzde kaç ${diff && diff.isNeg() ? 'az' : 'fazla'}?`, diff ? formatPct(diff.abs(), prec) : null],
-              [`${formatNum(a, prec)} sayısının %${formatNum(b, prec)} değeri`, formatNum(pc, prec)],
-              [`${formatNum(a, prec)} sayısına %${formatNum(b, prec)} eklersen`, formatNum(up, prec)],
-              [`${formatNum(a, prec)} sayısından %${formatNum(b, prec)} çıkarırsan`, formatNum(dn, prec)],
-              [`Yüzde %${formatNum(b, prec)} değeri ${formatNum(a, prec)} olan asıl sayı`, inv ? formatNum(inv, prec) : null]
+              [
+                `${formatNum(a, prec)} sayısına göre ${formatNum(b, prec)} yüzde kaç?`,
+                ratio ? formatPct(ratio, prec) : null
+              ],
+              [
+                `${formatNum(a, prec)} sayısına göre ${formatNum(b, prec)} yüzde kaç ${diff && diff.isNeg() ? 'az' : 'fazla'}?`,
+                diff ? formatPct(diff.abs(), prec) : null
+              ],
+              [
+                `${formatNum(a, prec)} sayısının %${formatNum(b, prec)} değeri`,
+                formatNum(pc, prec)
+              ],
+              [
+                `${formatNum(a, prec)} sayısına %${formatNum(b, prec)} eklersen`,
+                formatNum(up, prec)
+              ],
+              [
+                `${formatNum(a, prec)} sayısından %${formatNum(b, prec)} çıkarırsan`,
+                formatNum(dn, prec)
+              ],
+              [
+                `Yüzde %${formatNum(b, prec)} değeri ${formatNum(a, prec)} olan asıl sayı`,
+                inv ? formatNum(inv, prec) : null
+              ]
             ]
           }
         ]
@@ -89,9 +107,18 @@ export const TOOLS: ToolGroup[] = [
             t: 'Geriye Doğru Matrah Tespiti',
             s: `Elimizdeki net tutar ${formatNum(n, prec)}`,
             r: [
-              [`${formatNum(n, prec)} tutarı bütünün %${formatNum(r, prec)} kadarıysa asıl bütün`, r.isZero() ? null : formatNum(n.times(100).div(r), prec)],
-              [`${formatNum(n, prec)} tutarı %${formatNum(r, prec)} eklenmiş hali ise net matrah`, a.gt(0) ? formatNum(n.times(100).div(a), prec) : null],
-              [`${formatNum(n, prec)} tutarı %${formatNum(r, prec)} indirilmiş hali ise net matrah`, b.gt(0) ? formatNum(n.times(100).div(b), prec) : null]
+              [
+                `${formatNum(n, prec)} tutarı bütünün %${formatNum(r, prec)} kadarıysa asıl bütün`,
+                r.isZero() ? null : formatNum(n.times(100).div(r), prec)
+              ],
+              [
+                `${formatNum(n, prec)} tutarı %${formatNum(r, prec)} eklenmiş hali ise net matrah`,
+                a.gt(0) ? formatNum(n.times(100).div(a), prec) : null
+              ],
+              [
+                `${formatNum(n, prec)} tutarı %${formatNum(r, prec)} indirilmiş hali ise net matrah`,
+                b.gt(0) ? formatNum(n.times(100).div(b), prec) : null
+              ]
             ]
           }
         ]
@@ -120,9 +147,18 @@ export const TOOLS: ToolGroup[] = [
           t: 'Geri Dönüş Oranları',
           s: `%${formatNum(r, prec)} değişim sonrası`,
           r: [
-            [`%${formatNum(r, prec)} arttıktan sonra eski değere dönmek için gereken azalış`, formatPct(retUp, prec)],
-            [`%${formatNum(r, prec)} azaldıktan sonra eski değere dönmek için gereken artış`, retDn ? formatPct(retDn, prec) : null],
-            [`Önce %${formatNum(r, prec)} artıp sonra %${formatNum(r, prec)} azalırsa net değişim`, formatPct(netChange, prec)]
+            [
+              `%${formatNum(r, prec)} arttıktan sonra eski değere dönmek için gereken azalış`,
+              formatPct(retUp, prec)
+            ],
+            [
+              `%${formatNum(r, prec)} azaldıktan sonra eski değere dönmek için gereken artış`,
+              retDn ? formatPct(retDn, prec) : null
+            ],
+            [
+              `Önce %${formatNum(r, prec)} artıp sonra %${formatNum(r, prec)} azalırsa net değişim`,
+              formatPct(netChange, prec)
+            ]
           ] as [string, string | null][]
         }
       ]
@@ -197,7 +233,9 @@ export const TOOLS: ToolGroup[] = [
       const b = v.b as Decimal
       const combinedPct = a.times(b).div(100)
 
-      const r: [string, string | null][] = [['Bileşik Net Yüzde Oranı', formatPct(combinedPct, prec)]]
+      const r: [string, string | null][] = [
+        ['Bileşik Net Yüzde Oranı', formatPct(combinedPct, prec)]
+      ]
 
       if (isOk(v.n)) {
         const n = v.n as Decimal
@@ -209,7 +247,9 @@ export const TOOLS: ToolGroup[] = [
         )
       }
 
-      return { g: [{ t: 'Bileşik Yüzde Sonucu', s: `%${formatNum(a, prec)} ve %${formatNum(b, prec)}`, r }] }
+      return {
+        g: [{ t: 'Bileşik Yüzde Sonucu', s: `%${formatNum(a, prec)} ve %${formatNum(b, prec)}`, r }]
+      }
     }
   },
   {
@@ -245,7 +285,9 @@ export const TOOLS: ToolGroup[] = [
         ]
       )
 
-      return { g: [{ t: 'Paylaştırma Sonuçları', s: `${formatNum(t, prec)} toplam tutar üzerinden`, r }] }
+      return {
+        g: [{ t: 'Paylaştırma Sonuçları', s: `${formatNum(t, prec)} toplam tutar üzerinden`, r }]
+      }
     }
   },
   {
@@ -297,17 +339,26 @@ export const TOOLS: ToolGroup[] = [
         const e = v.e as Decimal
         const y = v.y as Decimal
         const rate = y.minus(e).div(e).times(100)
-        r.push(['Hesaplanan Zam Oranı', formatPct(rate, prec)], ['Fark Tutarı', formatNum(y.minus(e), prec)])
+        r.push(
+          ['Hesaplanan Zam Oranı', formatPct(rate, prec)],
+          ['Fark Tutarı', formatNum(y.minus(e), prec)]
+        )
       }
       if (isOk(v.e, v.r)) {
         const e = v.e as Decimal
         const rate = v.r as Decimal
-        r.push([`%${formatNum(rate, prec)} Zam Uygulanmış Yeni Tutar`, formatNum(e.times(H.plus(rate)).div(100), prec)])
+        r.push([
+          `%${formatNum(rate, prec)} Zam Uygulanmış Yeni Tutar`,
+          formatNum(e.times(H.plus(rate)).div(100), prec)
+        ])
       }
       if (isOk(v.y, v.r) && H.plus(v.r as Decimal).gt(0)) {
         const y = v.y as Decimal
         const rate = v.r as Decimal
-        r.push([`%${formatNum(rate, prec)} Zamlı Hali ${formatNum(y, prec)} ise Eski Tutar`, formatNum(y.times(100).div(H.plus(rate)), prec)])
+        r.push([
+          `%${formatNum(rate, prec)} Zamlı Hali ${formatNum(y, prec)} ise Eski Tutar`,
+          formatNum(y.times(100).div(H.plus(rate)), prec)
+        ])
       }
       return r.length ? { g: [{ t: 'Zam ve Artış Analizi', s: 'Girilen alanlara göre', r }] } : null
     }
@@ -350,9 +401,7 @@ export const TOOLS: ToolGroup[] = [
     grp: 'Mevzuat & İhale',
     name: 'Damga Vergisi & KİK Payı',
     hint: 'Sözleşme (%0,948), Karar (%0,569) Damga Vergisi ve KİK Payı (%0,05) hesabı.',
-    in: [
-      { k: 't', l: 'İhale / Sözleşme Bedeli (KDV Hariç ₺)', ph: '1000000' }
-    ],
+    in: [{ k: 't', l: 'İhale / Sözleşme Bedeli (KDV Hariç ₺)', ph: '1000000' }],
     calc: (v, prec) => {
       if (!isOk(v.t)) return null
       const t = v.t as Decimal
@@ -385,9 +434,7 @@ export const TOOLS: ToolGroup[] = [
     grp: 'Mevzuat & İhale',
     name: 'Geçici & Kesin Teminat Miktarları',
     hint: 'Kamu ihalelerinde asgari %3 geçici ve %6 kesin teminat mektubu tutarlarını hesaplayın.',
-    in: [
-      { k: 't', l: 'Teklif Bedeli / Sözleşme Bedeli (₺)', ph: '500000' }
-    ],
+    in: [{ k: 't', l: 'Teklif Bedeli / Sözleşme Bedeli (₺)', ph: '500000' }],
     calc: (v, prec) => {
       if (!isOk(v.t)) return null
       const t = v.t as Decimal
@@ -415,7 +462,11 @@ export const TOOLS: ToolGroup[] = [
     name: 'EKAP 22/d Doğrudan Temin Limit Kontrolü',
     hint: '22/d* (Büyükşehir 1.021.827 TL) ve 22/d** (Diğer 340.391 TL) limit ve tavan takibi.',
     in: [
-      { k: 'm', l: 'İdare Türü', sel: ['Büyükşehir İdaresi (22/d*) - 1.021.827 TL', 'Diğer İdareler (22/d**) - 340.391 TL'] },
+      {
+        k: 'm',
+        l: 'İdare Türü',
+        sel: ['Büyükşehir İdaresi (22/d*) - 1.021.827 TL', 'Diğer İdareler (22/d**) - 340.391 TL']
+      },
       { k: 't', l: 'Alım Bedeli (KDV Hariç ₺)', ph: '250000' }
     ],
     calc: (v, prec) => {
@@ -440,7 +491,9 @@ export const TOOLS: ToolGroup[] = [
               ],
               [
                 'Mevzuat Uygunluk Durumu',
-                kalan.gte(0) ? '✅ 22/d Doğrudan Temin Usulüne Uygun' : '❌ YASAL LİMİT AŞILMIŞTIR! İhale usulü gereklidir.'
+                kalan.gte(0)
+                  ? '✅ 22/d Doğrudan Temin Usulüne Uygun'
+                  : '❌ YASAL LİMİT AŞILMIŞTIR! İhale usulü gereklidir.'
               ]
             ]
           }
@@ -456,7 +509,11 @@ export const TOOLS: ToolGroup[] = [
     in: [
       { k: 't', l: 'Net Matrah (KDV Hariç ₺)', ph: '100000' },
       { k: 'r', l: 'KDV Oranı (%)', ph: '20', chips: [10, 20] },
-      { k: 'or', l: 'Tevkifat Oranı', sel: ['2/10', '3/10', '4/10', '5/10', '7/10', '9/10', '10/10 (Tam Tevkifat)'] }
+      {
+        k: 'or',
+        l: 'Tevkifat Oranı',
+        sel: ['2/10', '3/10', '4/10', '5/10', '7/10', '9/10', '10/10 (Tam Tevkifat)']
+      }
     ],
     calc: (v, prec) => {
       if (!isOk(v.t, v.r)) return null
@@ -479,7 +536,10 @@ export const TOOLS: ToolGroup[] = [
             s: `${formatNum(t, prec)} ₺ matrah / %${formatNum(r, prec)} KDV / ${v.or} Tevkifat`,
             r: [
               ['Hesaplanan Toplam KDV', formatNum(kdv, prec) + ' ₺'],
-              [`Alıcı Tarafından Tevkif Edilecek KDV (${v.or})`, formatNum(tevkifatKdv, prec) + ' ₺'],
+              [
+                `Alıcı Tarafından Tevkif Edilecek KDV (${v.or})`,
+                formatNum(tevkifatKdv, prec) + ' ₺'
+              ],
               ['Satıcıya Ödenecek KDV', formatNum(beyanKdv, prec) + ' ₺'],
               ['Satıcıya Ödenecek Toplam Tutar', formatNum(saticiyaOdenecek, prec) + ' ₺']
             ]
@@ -549,7 +609,10 @@ export const TOOLS: ToolGroup[] = [
               ['Geçici Teminat (%3)', formatNum(gecici2886, prec) + ' ₺'],
               ['Kesin Teminat (%6)', formatNum(kesin2886, prec) + ' ₺'],
               ['İhale Karar Damga Vergisi (‰ 5,69)', formatNum(kararDamga, prec) + ' ₺'],
-              [`${formatNum(ay, '0')} Aylık Tahmini Ecrimisil Fuzuli Şagil Zammı (%2,5/ay)`, formatNum(ecrimisilZam, prec) + ' ₺']
+              [
+                `${formatNum(ay, '0')} Aylık Tahmini Ecrimisil Fuzuli Şagil Zammı (%2,5/ay)`,
+                formatNum(ecrimisilZam, prec) + ' ₺'
+              ]
             ]
           }
         ]
@@ -563,25 +626,49 @@ export const TOOLS: ToolGroup[] = [
     hint: 'Rakamı mevzuat standart yazısına veya okunuşu tekrar rakama dönüştürün.',
     in: [
       { k: 'n', l: 'Rakam ile Tutar (örn. 282.112,00 veya 1500000)', ph: '282.112,00', text: true },
-      { k: 'txt', l: 'veya Metin ile Tutar (örn. İKİYÜZSEKSENİKİBİN YÜZONİKİ TL)', ph: 'İKİYÜZSEKSENİKİBİN YÜZONİKİ TL', text: true }
+      {
+        k: 'txt',
+        l: 'veya Metin ile Tutar (örn. İKİYÜZSEKSENİKİBİN YÜZONİKİ TL)',
+        ph: 'İKİYÜZSEKSENİKİBİN YÜZONİKİ TL',
+        text: true
+      }
     ],
     calc: (v) => {
       const res: [string, string | null][] = []
       if (v.n && typeof v.n === 'string' && v.n.trim()) {
-        const words = amountToWordsTL(v.n.trim(), { paraBirimi: 'TL', altBirim: 'KURUŞ', harfTipi: 'buyuk' })
+        const words = amountToWordsTL(v.n.trim(), {
+          paraBirimi: 'TL',
+          altBirim: 'KURUŞ',
+          harfTipi: 'buyuk'
+        })
         res.push(['BÜYÜK HARF (Resmi Evrak Standart)', words])
-        const wordsBaslik = amountToWordsTL(v.n.trim(), { paraBirimi: 'TL', altBirim: 'KURUŞ', harfTipi: 'baslik' })
+        const wordsBaslik = amountToWordsTL(v.n.trim(), {
+          paraBirimi: 'TL',
+          altBirim: 'KURUŞ',
+          harfTipi: 'baslik'
+        })
         res.push(['Baş Harfler Büyük', wordsBaslik])
-        const wordsKucuk = amountToWordsTL(v.n.trim(), { paraBirimi: 'TL', altBirim: 'KURUŞ', harfTipi: 'kucuk' })
+        const wordsKucuk = amountToWordsTL(v.n.trim(), {
+          paraBirimi: 'TL',
+          altBirim: 'KURUŞ',
+          harfTipi: 'kucuk'
+        })
         res.push(['Küçük Harfler', wordsKucuk])
       }
       if (v.txt && typeof v.txt === 'string' && v.txt.trim()) {
         const parsed = yaziyiSayiyaCevir(v.txt.trim())
         if (parsed !== null) {
-          res.push(['Ayrıştırılan Rakam Tutarı', formatTL(parsed)], ['Düz Sayısal Değer', String(parsed)])
+          res.push(
+            ['Ayrıştırılan Rakam Tutarı', formatTL(parsed)],
+            ['Düz Sayısal Değer', String(parsed)]
+          )
         }
       }
-      return res.length ? { g: [{ t: 'Sayı ↔ Yazı Dönüştürme Sonuçları', s: '4734 & Muhasebat Standartı', r: res }] } : null
+      return res.length
+        ? {
+            g: [{ t: 'Sayı ↔ Yazı Dönüştürme Sonuçları', s: '4734 & Muhasebat Standartı', r: res }]
+          }
+        : null
     }
   },
   {
@@ -704,7 +791,9 @@ export const TOOLS: ToolGroup[] = [
         res.push(['Net Kâr (Maliyet Düşüldükten Sonra)', formatNum(net.minus(c), prec) + ' ₺'])
       }
 
-      return { g: [{ t: 'Komisyon ve Hakediş Analizi', s: `${formatNum(s, prec)} ₺ brüt satış`, r: res }] }
+      return {
+        g: [{ t: 'Komisyon ve Hakediş Analizi', s: `${formatNum(s, prec)} ₺ brüt satış`, r: res }]
+      }
     }
   },
   {
@@ -735,10 +824,16 @@ export const TOOLS: ToolGroup[] = [
         const c = v.c as Decimal
         const h = v.h as Decimal
         const targetSelling = c.times(H.plus(h)).div(100)
-        r.push([`%${formatNum(h, prec)} Maliyet Kârı ile Satış Fiyatı`, formatNum(targetSelling, prec) + ' ₺'])
+        r.push([
+          `%${formatNum(h, prec)} Maliyet Kârı ile Satış Fiyatı`,
+          formatNum(targetSelling, prec) + ' ₺'
+        ])
         if (h.lt(100)) {
           const targetMarginSelling = c.times(100).div(H.minus(h))
-          r.push([`%${formatNum(h, prec)} Satış Marjı ile Satış Fiyatı`, formatNum(targetMarginSelling, prec) + ' ₺'])
+          r.push([
+            `%${formatNum(h, prec)} Satış Marjı ile Satış Fiyatı`,
+            formatNum(targetMarginSelling, prec) + ' ₺'
+          ])
         }
       }
       return r.length ? { g: [{ t: 'Kâr & Marj Analizi', s: 'Girilen değerlere göre', r }] } : null
@@ -797,9 +892,7 @@ export const TOOLS: ToolGroup[] = [
       const n = v.n as Decimal
       const i = r.div(100)
 
-      const taksit = i.isZero()
-        ? t.div(n)
-        : t.times(i).div(D(1).minus(D(1).plus(i).pow(n.neg())))
+      const taksit = i.isZero() ? t.div(n) : t.times(i).div(D(1).minus(D(1).plus(i).pow(n.neg())))
       const totalRepay = taksit.times(n)
       const totalInterest = totalRepay.minus(t)
 
@@ -921,7 +1014,9 @@ export const TOOLS: ToolGroup[] = [
         res.push(['Kur Değişim Oranı', formatPct(kurChange, prec)])
       }
 
-      return { g: [{ t: 'Döviz Dönüşüm Detayı', s: `Döviz Kuru: ${formatNum(k, prec)} ₺`, r: res }] }
+      return {
+        g: [{ t: 'Döviz Dönüşüm Detayı', s: `Döviz Kuru: ${formatNum(k, prec)} ₺`, r: res }]
+      }
     }
   },
   {
@@ -951,7 +1046,10 @@ export const TOOLS: ToolGroup[] = [
         const items = v.w
           .split(',')
           .map((s) => {
-            const parts = s.trim().split(/[x*×]/).map((x) => parseDec(x))
+            const parts = s
+              .trim()
+              .split(/[x*×]/)
+              .map((x) => parseDec(x))
             return parts[0] ? [parts[0], parts[1] || D(1)] : null
           })
           .filter((x): x is [Decimal, Decimal] => x !== null)
@@ -967,7 +1065,9 @@ export const TOOLS: ToolGroup[] = [
         }
       }
 
-      return res.length ? { g: [{ t: 'Not ve Ortalama Analizi', s: 'Girilen bilgilere göre', r: res }] } : null
+      return res.length
+        ? { g: [{ t: 'Not ve Ortalama Analizi', s: 'Girilen bilgilere göre', r: res }] }
+        : null
     }
   },
   {
@@ -1006,7 +1106,10 @@ export const TOOLS: ToolGroup[] = [
             s: `${v.d1} — ${v.d2}`,
             r: [
               ['Toplam Gün Farkı', formatNum(D(gun), '0') + ' Gün'],
-              ['Hafta ve Gün', `${formatNum(D(Math.floor(gun / 7)), '0')} Hafta ${formatNum(D(gun % 7), '0')} Gün`],
+              [
+                'Hafta ve Gün',
+                `${formatNum(D(Math.floor(gun / 7)), '0')} Hafta ${formatNum(D(gun % 7), '0')} Gün`
+              ],
               ['Takvim Farkı (Yıl / Ay / Gün)', `${y} Yıl ${m} Ay ${d} Gün`],
               ['1 Yıl (365 Gün) İçindeki Oranı', formatPct(yz, prec)]
             ]
@@ -1035,7 +1138,10 @@ export const TOOLS: ToolGroup[] = [
 
       if (A && B && A[0] === B[0]) {
         const converted = val.times(D(A[1])).div(D(B[1]))
-        res.push([`${formatNum(val, prec)} ${v.a} kaç ${v.b}?`, `${formatNum(converted, prec)} ${v.b}`])
+        res.push([
+          `${formatNum(val, prec)} ${v.a} kaç ${v.b}?`,
+          `${formatNum(converted, prec)} ${v.b}`
+        ])
       }
 
       res.push(
@@ -1049,7 +1155,9 @@ export const TOOLS: ToolGroup[] = [
         res.push([`%${n} Sadeleşmiş Kesir Karşılığı`, `${n / g} / ${100 / g}`])
       }
 
-      return { g: [{ t: 'Birim Dönüşüm Sonuçları', s: `${formatNum(val, prec)} değeri için`, r: res }] }
+      return {
+        g: [{ t: 'Birim Dönüşüm Sonuçları', s: `${formatNum(val, prec)} değeri için`, r: res }]
+      }
     }
   }
 ]

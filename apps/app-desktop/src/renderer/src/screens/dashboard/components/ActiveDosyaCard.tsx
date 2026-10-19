@@ -27,7 +27,9 @@ export const ActiveDosyaCard: React.FC<ActiveDosyaCardProps> = ({
   onClose
 }) => {
   const navigate = useNavigate()
-  const is2886 = Boolean(activeDosya?.ihaleKayitNo || activeDosya?.islemTuru || activeDosya?.tasinmaz)
+  const is2886 = Boolean(
+    activeDosya?.ihaleKayitNo || activeDosya?.islemTuru || activeDosya?.tasinmaz
+  )
   const asama = getAsamaDetails((activeDosya as any)?.durum_asama_id || 1)
 
   // 2886 İşlem Türü Başlığı
@@ -108,7 +110,9 @@ export const ActiveDosyaCard: React.FC<ActiveDosyaCardProps> = ({
                 <span>•</span>
                 <span>
                   📅 İhale Tarihi:{' '}
-                  <strong>{activeDosya.ihaleTarihi || 'Belirlenmedi'} {activeDosya.ihaleSaati || ''}</strong>
+                  <strong>
+                    {activeDosya.ihaleTarihi || 'Belirlenmedi'} {activeDosya.ihaleSaati || ''}
+                  </strong>
                 </span>
                 <span>•</span>
                 <span className="text-emerald-300 font-bold font-mono">
@@ -121,42 +125,57 @@ export const ActiveDosyaCard: React.FC<ActiveDosyaCardProps> = ({
             <div className="flex flex-wrap items-center gap-2 pt-1">
               <button
                 type="button"
-                onClick={() => navigate({ to: APP_ROUTES.DEVLET_IHALE_2886, search: { tab: 'studyo' } as any })}
+                onClick={() =>
+                  navigate({ to: APP_ROUTES.DEVLET_IHALE_2886, search: { tab: 'studyo' } as any })
+                }
                 className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-indigo-100 hover:text-white text-[11px] font-semibold border border-white/10 transition-colors cursor-pointer"
               >
                 1. Belge & Şablon Stüdyosu
               </button>
               <button
                 type="button"
-                onClick={() => navigate({ to: APP_ROUTES.DEVLET_IHALE_2886, search: { tab: 'takdir' } as any })}
+                onClick={() =>
+                  navigate({ to: APP_ROUTES.DEVLET_IHALE_2886, search: { tab: 'takdir' } as any })
+                }
                 className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-indigo-100 hover:text-white text-[11px] font-semibold border border-white/10 transition-colors cursor-pointer"
               >
                 2. Kıymet Takdiri
               </button>
               <button
                 type="button"
-                onClick={() => navigate({ to: APP_ROUTES.DEVLET_IHALE_2886, search: { tab: 'usul' } as any })}
+                onClick={() =>
+                  navigate({ to: APP_ROUTES.DEVLET_IHALE_2886, search: { tab: 'usul' } as any })
+                }
                 className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-indigo-100 hover:text-white text-[11px] font-semibold border border-white/10 transition-colors cursor-pointer"
               >
                 3. Encümen Usulü
               </button>
               <button
                 type="button"
-                onClick={() => navigate({ to: APP_ROUTES.DEVLET_IHALE_2886, search: { tab: 'evraklar' } as any })}
+                onClick={() =>
+                  navigate({ to: APP_ROUTES.DEVLET_IHALE_2886, search: { tab: 'evraklar' } as any })
+                }
                 className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-indigo-100 hover:text-white text-[11px] font-semibold border border-white/10 transition-colors cursor-pointer"
               >
                 4. Süreç Evrakları
               </button>
               <button
                 type="button"
-                onClick={() => navigate({ to: APP_ROUTES.DEVLET_IHALE_2886, search: { tab: 'ihale_gunu' } as any })}
+                onClick={() =>
+                  navigate({
+                    to: APP_ROUTES.DEVLET_IHALE_2886,
+                    search: { tab: 'ihale_gunu' } as any
+                  })
+                }
                 className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-indigo-100 hover:text-white text-[11px] font-semibold border border-white/10 transition-colors cursor-pointer"
               >
                 5. Açık Artırma & Teklifler
               </button>
               <button
                 type="button"
-                onClick={() => navigate({ to: APP_ROUTES.DEVLET_IHALE_2886, search: { tab: 'tahsilat' } as any })}
+                onClick={() =>
+                  navigate({ to: APP_ROUTES.DEVLET_IHALE_2886, search: { tab: 'tahsilat' } as any })
+                }
                 className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-indigo-100 hover:text-white text-[11px] font-semibold border border-white/10 transition-colors cursor-pointer"
               >
                 6. Kira & Tahsilat

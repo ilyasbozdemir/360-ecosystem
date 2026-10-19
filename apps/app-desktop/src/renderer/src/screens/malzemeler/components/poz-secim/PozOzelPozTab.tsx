@@ -51,8 +51,8 @@ export const PozOzelPozTab: React.FC<PozOzelPozTabProps> = ({
         <Sparkles className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" size={18} />
         <div className="text-xs text-amber-900 dark:text-amber-200 leading-relaxed">
           <strong>Özel & Resmî Poz Tanımlama:</strong> Bakanlık kitaplarında yer almayan veya
-          idarenizce özel analiz gerektiren yapım işleri için poz numarası, fiyat araştırma
-          dönemi (yıl/dönem/ay) ve teknik tarif belirleyebilirsiniz.
+          idarenizce özel analiz gerektiren yapım işleri için poz numarası, fiyat araştırma dönemi
+          (yıl/dönem/ay) ve teknik tarif belirleyebilirsiniz.
         </div>
       </div>
 
@@ -127,9 +127,7 @@ export const PozOzelPozTab: React.FC<PozOzelPozTabProps> = ({
           <input
             type="number"
             value={ozelPozYili}
-            onChange={(e) =>
-              setOzelPozYili(Number(e.target.value) || new Date().getFullYear())
-            }
+            onChange={(e) => setOzelPozYili(Number(e.target.value) || new Date().getFullYear())}
             className="w-full px-3.5 py-2.5 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-mono font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-500"
           />
         </div>

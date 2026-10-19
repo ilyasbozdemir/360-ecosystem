@@ -1,12 +1,5 @@
 import React from 'react'
-import {
-  Upload,
-  Download,
-  RefreshCw,
-  Save,
-  Wifi,
-  WifiOff
-} from 'lucide-react'
+import { Upload, Download, RefreshCw, Save, Wifi, WifiOff } from 'lucide-react'
 import { Button } from '../../../../components/ui/Button'
 import { Input } from '../../../../components/ui/Input'
 import { useSyncStore } from '../../../../store/syncStore'
@@ -101,9 +94,7 @@ export function SyncServerPanel(): React.JSX.Element {
             disabled={syncStatus === 'loading'}
             className="text-[10px] font-bold py-1.5 px-3 rounded-lg bg-white/80 dark:bg-slate-955/80 hover:bg-white dark:hover:bg-slate-950 text-slate-805 dark:text-slate-100 shadow-sm border border-black/5"
           >
-            {syncStatus === 'loading' ? (
-              <RefreshCw className="w-3 h-3 animate-spin mr-1" />
-            ) : null}
+            {syncStatus === 'loading' ? <RefreshCw className="w-3 h-3 animate-spin mr-1" /> : null}
             {syncStatus === 'loading' ? 'Bağlantı Sınanıyor...' : 'Sına & Kaydet'}
           </Button>
         )}
@@ -216,9 +207,7 @@ export function SyncServerPanel(): React.JSX.Element {
               disabled={syncStatus === 'loading'}
               className="text-xs py-1.5 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white gap-1.5"
             >
-              {syncStatus === 'loading' ? (
-                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-              ) : null}
+              {syncStatus === 'loading' ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : null}
               Sına & Bağlan
             </Button>
           </div>

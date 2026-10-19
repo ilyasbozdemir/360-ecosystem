@@ -34,8 +34,7 @@ export const KurumEvrakAntetPreview: React.FC<KurumEvrakAntetPreviewProps> = ({
               Resmi Evrak Anteti & Canlı Başlık Görünümü
             </h3>
             <p className="text-[11px] text-slate-400">
-              Resmi yazışma, onay belgesi ve doğrudan temin çıktılarında görünecek üst antet
-              düzeni.
+              Resmi yazışma, onay belgesi ve doğrudan temin çıktılarında görünecek üst antet düzeni.
             </p>
           </div>
         </div>

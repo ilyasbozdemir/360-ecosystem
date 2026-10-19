@@ -46,7 +46,12 @@ export function getRoleDefaults(gorevName: string): {
   ) {
     return { belgedeGoster: true, belgeKapsami: 'olur_onay' }
   }
-  if (g.includes('fiyat') || g.includes('piyasa') || g.includes('yaklaşık') || g.includes('yaklasik')) {
+  if (
+    g.includes('fiyat') ||
+    g.includes('piyasa') ||
+    g.includes('yaklaşık') ||
+    g.includes('yaklasik')
+  ) {
     return { belgedeGoster: true, belgeKapsami: 'piyasa_arastirma' }
   }
   if (g.includes('muayene') || g.includes('kabul')) {
@@ -54,4 +59,3 @@ export function getRoleDefaults(gorevName: string): {
   }
   return { belgedeGoster: true, belgeKapsami: 'tumu' }
 }
-

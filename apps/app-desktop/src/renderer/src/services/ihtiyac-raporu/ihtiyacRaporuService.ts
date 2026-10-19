@@ -21,6 +21,8 @@ export const ihtiyacRaporuService = {
   // Link Manager (Dosyaya Bağlama, Kalem Aktarımı, Bağlantı Çözme)
   linkToDosya: ihtiyacRaporuLinkManager.linkToDosya.bind(ihtiyacRaporuLinkManager),
   unlinkFromDosya: ihtiyacRaporuLinkManager.unlinkFromDosya.bind(ihtiyacRaporuLinkManager),
-  getDosyalarForSelect: ihtiyacRaporuLinkManager.getDosyalarForSelect.bind(ihtiyacRaporuLinkManager),
-  getLinkedRaporForDosya: ihtiyacRaporuLinkManager.getLinkedRaporForDosya.bind(ihtiyacRaporuLinkManager)
+  getDosyalarForSelect:
+    ihtiyacRaporuLinkManager.getDosyalarForSelect.bind(ihtiyacRaporuLinkManager),
+  getLinkedRaporForDosya:
+    ihtiyacRaporuLinkManager.getLinkedRaporForDosya.bind(ihtiyacRaporuLinkManager)
 }

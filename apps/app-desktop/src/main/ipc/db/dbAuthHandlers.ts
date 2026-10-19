@@ -6,12 +6,7 @@ import { getSetting } from '../../utils/settingsHelper'
 // Recovery code cache in memory (valid for 15 minutes)
 let activeRecovery: { code: string; expiresAt: number; email: string } | null = null
 
-export function savePasswordToHistory(
-  db: any,
-  user: string,
-  pass: string,
-  hostname: string
-): void {
+export function savePasswordToHistory(db: any, user: string, pass: string, hostname: string): void {
   if (!pass) return
   try {
     const row = db.prepare("SELECT value FROM settings WHERE key = 'passwordHistory'").get() as
@@ -168,9 +163,9 @@ export function registerDbAuthHandlers(): void {
 
       // Update additionalUsers list with PC mapping
       let usersList: any[] = []
-      const usersRow = db.prepare("SELECT value FROM settings WHERE key = 'additionalUsers'").get() as
-        | { value: string }
-        | undefined
+      const usersRow = db
+        .prepare("SELECT value FROM settings WHERE key = 'additionalUsers'")
+        .get() as { value: string } | undefined
       if (usersRow?.value) {
         try {
           usersList = JSON.parse(usersRow.value)

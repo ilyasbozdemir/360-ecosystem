@@ -1,4 +1,4 @@
-import { ImzaciSatiri, IslakImzaBelgeBilgileri, SurecAsamasi } from './types';
+import { ImzaciSatiri, IslakImzaBelgeBilgileri, SurecAsamasi } from './types'
 
 export const INITIAL_BELGE_BILGILERI: IslakImzaBelgeBilgileri = {
   belgeTuru: 'Piyasa Fiyat Araştırma Tutanağı',
@@ -10,8 +10,8 @@ export const INITIAL_BELGE_BILGILERI: IslakImzaBelgeBilgileri = {
   aciliyet: 'Normal',
   ekSayisi: 3,
   icerikGovde:
-    'Yukarıda adı geçen doğrudan temin işlemine ilişkin yapılan piyasa fiyat araştırması neticesinde en avantajlı teklif veren firma belirlenmiş olup, komisyon üyelerince tanzim edilen işbu tutanak ıslak imza için onaya sunulmuştur.',
-};
+    'Yukarıda adı geçen doğrudan temin işlemine ilişkin yapılan piyasa fiyat araştırması neticesinde en avantajlı teklif veren firma belirlenmiş olup, komisyon üyelerince tanzim edilen işbu tutanak ıslak imza için onaya sunulmuştur.'
+}
 
 export const INITIAL_IMZACILAR: ImzaciSatiri[] = [
   {
@@ -22,7 +22,7 @@ export const INITIAL_IMZACILAR: ImzaciSatiri[] = [
     imzaTipi: 'Hazırlayan',
     parafVar: true,
     imzaKutusuVar: true,
-    tarihVar: true,
+    tarihVar: true
   },
   {
     id: 'imz-2',
@@ -32,7 +32,7 @@ export const INITIAL_IMZACILAR: ImzaciSatiri[] = [
     imzaTipi: 'Kontrol',
     parafVar: true,
     imzaKutusuVar: true,
-    tarihVar: true,
+    tarihVar: true
   },
   {
     id: 'imz-3',
@@ -42,9 +42,9 @@ export const INITIAL_IMZACILAR: ImzaciSatiri[] = [
     imzaTipi: 'Onay',
     parafVar: false,
     imzaKutusuVar: true,
-    tarihVar: true,
-  },
-];
+    tarihVar: true
+  }
+]
 
 export const INITIAL_SUREC_ASAMALARI: SurecAsamasi[] = [
   {
@@ -52,29 +52,29 @@ export const INITIAL_SUREC_ASAMALARI: SurecAsamasi[] = [
     etiket: 'Taslak Hazırlandı',
     tarih: '2026-10-14 09:30',
     not: 'Belge taslağı oluşturuldu ve imzacı rotası tanımlandı.',
-    tamamlandi: true,
+    tamamlandi: true
   },
   {
     durum: 'CiktiAlindi',
     etiket: 'Çıktı Alındı',
     tarih: '2026-10-14 10:15',
     not: 'Lazer yazıcıdan A4 formatında 2 nüsha çıktı alındı.',
-    tamamlandi: true,
+    tamamlandi: true
   },
   {
     durum: 'Imzada',
     etiket: 'İmzada (Fiziki Dolaşım)',
     tarih: '2026-10-14 11:00',
     not: 'Evrak Harcama Yetkilisi makamına imza dosyasıyla iletildi.',
-    tamamlandi: false,
+    tamamlandi: false
   },
   {
     durum: 'ImzaliTeslimAlindi',
     etiket: 'İmzalı Teslim Alındı',
     not: 'Islak imzalı evrak teslim alınıp taranarak sisteme yüklenecek.',
-    tamamlandi: false,
-  },
-];
+    tamamlandi: false
+  }
+]
 
 export const BELGE_TURU_SECENEKLERI = [
   'Piyasa Fiyat Araştırma Tutanağı',
@@ -83,5 +83,5 @@ export const BELGE_TURU_SECENEKLERI = [
   'Muayene ve Kabul Komisyon Tutanağı',
   'Sözleşme / Sipariş Mektubu',
   'Taşınır İstek Belgesi',
-  'Harcama Talimatı',
-];
+  'Harcama Talimatı'
+]

@@ -136,9 +136,7 @@ export function UstYaziFormPanel(props: FormProps): React.JSX.Element {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-[11px] font-medium text-slate-500">
-                      Sol Logo
-                    </label>
+                    <label className="text-[11px] font-medium text-slate-500">Sol Logo</label>
                     {solLogo && (
                       <span className="text-[9px] font-semibold text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded">
                         Yüklü
@@ -164,9 +162,7 @@ export function UstYaziFormPanel(props: FormProps): React.JSX.Element {
                 </div>
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-[11px] font-medium text-slate-500">
-                      Sağ Logo
-                    </label>
+                    <label className="text-[11px] font-medium text-slate-500">Sağ Logo</label>
                     {sagLogo && (
                       <span className="text-[9px] font-semibold text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded">
                         Yüklü
@@ -209,7 +205,9 @@ export function UstYaziFormPanel(props: FormProps): React.JSX.Element {
             <div className="p-3 pt-0 space-y-2.5 border-t border-slate-200 dark:border-slate-800/60 mt-1">
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block text-[11px] font-medium text-slate-500 mb-1">DETSİS</label>
+                  <label className="block text-[11px] font-medium text-slate-500 mb-1">
+                    DETSİS
+                  </label>
                   <input
                     type="text"
                     value={detsis}
@@ -227,7 +225,9 @@ export function UstYaziFormPanel(props: FormProps): React.JSX.Element {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-medium text-slate-500 mb-1">Evrak No</label>
+                  <label className="block text-[11px] font-medium text-slate-500 mb-1">
+                    Evrak No
+                  </label>
                   <input
                     type="text"
                     value={sayisi}

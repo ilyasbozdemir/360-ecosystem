@@ -42,7 +42,6 @@ export interface PersonelWithRoles extends Partial<Personel> {
 }
 
 const ensureUnvanGecmisiTable = async (): Promise<void> => {
-
   await window.electron.ipcRenderer.invoke(
     'db:run',
     `CREATE TABLE IF NOT EXISTS TANIM_PersonelUnvanGecmisi (
