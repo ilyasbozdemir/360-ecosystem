@@ -52,6 +52,10 @@ export const workspaceManager = {
   },
   saveAs: (targetFilePath: string) => {
     if (!activeWorkspace) return { success: false, error: 'Açık bir çalışma alanı yok.' }
+    if (debouncedSaveTimer) {
+      clearTimeout(debouncedSaveTimer)
+      debouncedSaveTimer = null
+    }
     return activeWorkspace.saveAs(targetFilePath)
   },
   recordMutation: (tableName?: string, action?: string, count: number = 1) => {
@@ -182,6 +186,8 @@ process.on('exit', () => {
   if (activeWorkspace) {
     try {
       activeWorkspace.closeWorkspace()
-    } catch {}
+    } catch {
+      /* ignore exit cleanup error */
+    }
   }
 })

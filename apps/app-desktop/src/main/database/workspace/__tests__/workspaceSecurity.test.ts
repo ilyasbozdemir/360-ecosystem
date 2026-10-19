@@ -20,7 +20,7 @@ vi.mock('better-sqlite3', () => {
       }
       prepare(): Record<string, unknown> {
         return {
-          run: vi.fn(),
+          run: vi.fn().mockReturnValue({ lastInsertRowid: 1, changes: 1 }),
           all: vi.fn().mockReturnValue([]),
           get: vi.fn().mockReturnValue({ cnt: 0 })
         }
@@ -299,6 +299,89 @@ describe('Workspace Security & Path Traversal Protections', () => {
         expect(fs.readFileSync(targetFile, 'utf-8')).toBe('critical-existing-data')
       } finally {
         renameSpy.mockRestore()
+      }
+    })
+  })
+
+  describe('Farklı Kaydet (saveAs) Güvenlik ve Bütünlük Denetimleri', () => {
+    it('temiz (değiştirilmemiş) bir dosyada saveAs çağrıldığında yeni hedef dosya fiziksel olarak diske yazılır', () => {
+      const initialPath = path.join(testDir, 'orijinal.temin')
+      const targetPath = path.join(testDir, 'farkli_kayit.temin')
+
+      const ws = new DtmWorkspace()
+      ws.createWorkspace(initialPath, 'Test Kurum')
+      expect(ws.isDirtyState()).toBe(false)
+      expect(fs.existsSync(initialPath)).toBe(true)
+      expect(fs.existsSync(initialPath + '.lock')).toBe(true)
+
+      // saveAs çağrısı - temiz dosya
+      const res = ws.saveAs(targetPath)
+      expect(res.success).toBe(true)
+      expect(res.newPath).toBe(targetPath)
+
+      // Yeni dosya diskte fiziksel olarak oluşmuş ve geçerli bir zip olmalı
+      expect(fs.existsSync(targetPath)).toBe(true)
+      expect(fs.statSync(targetPath).size).toBeGreaterThan(0)
+
+      const zip = new AdmZip(targetPath)
+      expect(zip.getEntries().some((e) => e.entryName === 'meta.json')).toBe(true)
+      expect(zip.getEntries().some((e) => e.entryName.endsWith('.sqlite'))).toBe(true)
+
+      // Aktif dosya yolu yeni yol olmalı
+      expect(ws.getCurrentFilePath()).toBe(targetPath)
+
+      // Eski kilit dosyası temizlenmiş, yeni kilit dosyası var olmalı
+      expect(fs.existsSync(initialPath + '.lock')).toBe(false)
+      expect(fs.existsSync(targetPath + '.lock')).toBe(true)
+
+      ws.closeWorkspace()
+      expect(fs.existsSync(targetPath + '.lock')).toBe(false)
+    })
+
+    it('hedef dosya uzantısı verilmediğinde otomatik olarak .temin ekler', () => {
+      const initialPath = path.join(testDir, 'doc1.temin')
+      const targetPathWithoutExt = path.join(testDir, 'doc2_without_ext')
+      const expectedTargetPath = `${targetPathWithoutExt}.temin`
+
+      const ws = new DtmWorkspace()
+      ws.createWorkspace(initialPath, 'Kurum')
+
+      const res = ws.saveAs(targetPathWithoutExt)
+      expect(res.success).toBe(true)
+      expect(res.newPath).toBe(expectedTargetPath)
+      expect(fs.existsSync(expectedTargetPath)).toBe(true)
+      expect(ws.getCurrentFilePath()).toBe(expectedTargetPath)
+
+      ws.closeWorkspace()
+    })
+
+    it('kaydetme sırasında hata oluşursa aktif dosya yolu eski konumunda kalır ve yeni kilit temizlenir', () => {
+      const initialPath = path.join(testDir, 'doc_rollback.temin')
+      const targetPath = path.join(testDir, 'fail_target.temin')
+
+      const ws = new DtmWorkspace()
+      ws.createWorkspace(initialPath, 'Kurum')
+
+      // writeWorkspaceArchive çağrısını hata fırlatacak şekilde mockla
+      const saveSpy = vi
+        .spyOn(ws as unknown as Record<string, (...args: unknown[]) => unknown>, 'writeWorkspaceArchive')
+        .mockImplementation(() => {
+          throw new Error('Disk full simulation')
+        })
+
+      try {
+        const res = ws.saveAs(targetPath)
+        expect(res.success).toBe(false)
+        expect(res.error).toMatch(/Disk full simulation/)
+
+        // Aktif yol eski yola rollback edilmiş olmalı
+        expect(ws.getCurrentFilePath()).toBe(initialPath)
+
+        // Yeni oluşturulan kilit temizlenmiş olmalı
+        expect(fs.existsSync(targetPath + '.lock')).toBe(false)
+      } finally {
+        saveSpy.mockRestore()
+        ws.closeWorkspace()
       }
     })
   })

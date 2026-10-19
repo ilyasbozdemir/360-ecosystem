@@ -9,13 +9,7 @@
 
 const RESTRICTED_TABLES = ['SETTINGS', 'TANIM_AYAR']
 
-export type TokenType =
-  | 'KEYWORD'
-  | 'IDENTIFIER'
-  | 'STRING'
-  | 'NUMBER'
-  | 'PUNCTUATION'
-  | 'OPERATOR'
+export type TokenType = 'KEYWORD' | 'IDENTIFIER' | 'STRING' | 'NUMBER' | 'PUNCTUATION' | 'OPERATOR'
 
 export interface SqlToken {
   type: TokenType
@@ -81,7 +75,10 @@ const SQL_KEYWORDS = new Set([
   'END',
   'HAVING',
   'DISTINCT',
-  'RETURNING'
+  'RETURNING',
+  'TEMP',
+  'TEMPORARY',
+  'IF'
 ])
 
 export function tokenizeSql(sql: string): SqlToken[] {
@@ -267,17 +264,9 @@ function isTableReference(tokens: SqlToken[], idx: number): boolean {
         return true
       }
       if (
-        [
-          'SELECT',
-          'SET',
-          'WHERE',
-          'ORDER',
-          'GROUP',
-          'HAVING',
-          'LIMIT',
-          'VALUES',
-          'ON'
-        ].includes(st.value)
+        ['SELECT', 'SET', 'WHERE', 'ORDER', 'GROUP', 'HAVING', 'LIMIT', 'VALUES', 'ON'].includes(
+          st.value
+        )
       ) {
         return false
       }
@@ -303,22 +292,23 @@ export function validateSqlQuery(sql: string, _params?: unknown[]): void {
     if (t.type === 'KEYWORD') {
       const nextToken = tokens[idx + 1]
       const nextVal = nextToken?.value?.toUpperCase()
+      const isNextIdOrKeyword = nextToken?.type === 'KEYWORD' || nextToken?.type === 'IDENTIFIER'
 
       if (
         t.value === 'DROP' &&
-        nextToken?.type === 'KEYWORD' &&
+        isNextIdOrKeyword &&
         ['TABLE', 'VIEW', 'DATABASE', 'INDEX', 'TRIGGER'].includes(nextVal)
       ) {
         throw new Error(
           '[sqlGuard] Destructive DDL operations (DROP/TRUNCATE/ALTER/ATTACH/DETACH) are prohibited via IPC.'
         )
       }
-      if (t.value === 'TRUNCATE' && nextToken?.type === 'KEYWORD' && nextVal === 'TABLE') {
+      if (t.value === 'TRUNCATE' && isNextIdOrKeyword && nextVal === 'TABLE') {
         throw new Error(
           '[sqlGuard] Destructive DDL operations (DROP/TRUNCATE/ALTER/ATTACH/DETACH) are prohibited via IPC.'
         )
       }
-      if (t.value === 'ALTER' && nextToken?.type === 'KEYWORD' && nextVal === 'TABLE') {
+      if (t.value === 'ALTER' && isNextIdOrKeyword && nextVal === 'TABLE') {
         throw new Error(
           '[sqlGuard] Destructive DDL operations (DROP/TRUNCATE/ALTER/ATTACH/DETACH) are prohibited via IPC.'
         )
@@ -331,28 +321,40 @@ export function validateSqlQuery(sql: string, _params?: unknown[]): void {
           '[sqlGuard] Destructive DDL operations (DROP/TRUNCATE/ALTER/ATTACH/DETACH) are prohibited via IPC.'
         )
       }
-      if (
-        t.value === 'DETACH' &&
-        (nextVal === 'DATABASE' || nextToken?.type === 'IDENTIFIER')
-      ) {
+      if (t.value === 'DETACH' && (nextVal === 'DATABASE' || nextToken?.type === 'IDENTIFIER')) {
         throw new Error(
           '[sqlGuard] Destructive DDL operations (DROP/TRUNCATE/ALTER/ATTACH/DETACH) are prohibited via IPC.'
         )
       }
-      // Reject CREATE TRIGGER / CREATE VIRTUAL TABLE schema tampering
-      if (
-        t.value === 'CREATE' &&
-        (nextToken?.type === 'KEYWORD' || nextToken?.type === 'IDENTIFIER') &&
-        ['TRIGGER', 'VIRTUAL'].includes(nextVal)
-      ) {
-        throw new Error(
-          '[sqlGuard] Schema tampering operations (CREATE TRIGGER/VIRTUAL TABLE) are prohibited via IPC.'
-        )
+
+      // Reject CREATE TRIGGER / CREATE VIRTUAL TABLE schema tampering (including TEMP and TEMPORARY variations)
+      if (t.value === 'CREATE') {
+        let lookIdx = idx + 1
+        const firstVal = tokens[lookIdx]?.value?.toUpperCase()
+        if (firstVal === 'TEMP' || firstVal === 'TEMPORARY') {
+          lookIdx++
+        }
+        const targetVal = tokens[lookIdx]?.value?.toUpperCase()
+        if (targetVal === 'TRIGGER' || targetVal === 'VIRTUAL') {
+          throw new Error(
+            '[sqlGuard] Schema tampering operations (CREATE TRIGGER/VIRTUAL TABLE) are prohibited via IPC.'
+          )
+        }
       }
 
       // PRAGMA security checks: restrict to safe read-only inspection PRAGMAs
       if (t.value === 'PRAGMA') {
-        const pragmaToken = tokens[idx + 1]
+        let pIdx = idx + 1
+        if (!tokens[pIdx]) {
+          throw new Error('[sqlGuard] Invalid PRAGMA syntax.')
+        }
+
+        // Support optional schema qualification: PRAGMA main.table_info or PRAGMA "main"."writable_schema"
+        if (tokens[pIdx + 1]?.value === '.' && tokens[pIdx + 2]) {
+          pIdx += 2
+        }
+
+        const pragmaToken = tokens[pIdx]
         const pragmaName = pragmaToken?.value?.toUpperCase()
 
         if (!pragmaToken || !pragmaName) {
@@ -387,6 +389,7 @@ export function validateSqlQuery(sql: string, _params?: unknown[]): void {
           'FOREIGN_KEY_LIST',
           'INDEX_LIST',
           'INDEX_INFO',
+          'INDEX_XINFO',
           'DATABASE_LIST',
           'USER_VERSION',
           'SCHEMA_VERSION',
@@ -400,6 +403,24 @@ export function validateSqlQuery(sql: string, _params?: unknown[]): void {
           throw new Error(
             `[sqlGuard] Execution of unapproved PRAGMA '${pragmaName}' is prohibited via IPC.`
           )
+        }
+
+        // For pragmas that take NO arguments when reading (e.g. user_version, schema_version, data_version, database_list, collation_list),
+        // passing an argument via parentheses (e.g. PRAGMA user_version(5)) acts as an assignment in SQLite!
+        const NO_ARG_SAFE_PRAGMAS = new Set([
+          'USER_VERSION',
+          'SCHEMA_VERSION',
+          'DATA_VERSION',
+          'DATABASE_LIST',
+          'COLLATION_LIST'
+        ])
+        if (NO_ARG_SAFE_PRAGMAS.has(pragmaName)) {
+          const nextTok = tokens[pIdx + 1]
+          if (nextTok?.value === '(') {
+            throw new Error(
+              `[sqlGuard] Modifying database configuration via PRAGMA assignment ('PRAGMA ${pragmaName}(...)') is prohibited via IPC.`
+            )
+          }
         }
       }
     }
@@ -481,7 +502,10 @@ export function extractTableAndAction(sql: string): {
         action = 'insert'
         let targetIdx = idx + 2
         if (tokens[targetIdx]?.type === 'IDENTIFIER') {
-          if (tokens[targetIdx + 1]?.value === '.' && tokens[targetIdx + 2]?.type === 'IDENTIFIER') {
+          if (
+            tokens[targetIdx + 1]?.value === '.' &&
+            tokens[targetIdx + 2]?.type === 'IDENTIFIER'
+          ) {
             targetIdx += 2
           }
           tableName = tokens[targetIdx].value
@@ -491,7 +515,10 @@ export function extractTableAndAction(sql: string): {
         action = 'update'
         let targetIdx = idx + 1
         if (tokens[targetIdx]?.type === 'IDENTIFIER') {
-          if (tokens[targetIdx + 1]?.value === '.' && tokens[targetIdx + 2]?.type === 'IDENTIFIER') {
+          if (
+            tokens[targetIdx + 1]?.value === '.' &&
+            tokens[targetIdx + 2]?.type === 'IDENTIFIER'
+          ) {
             targetIdx += 2
           }
           tableName = tokens[targetIdx].value
@@ -501,7 +528,10 @@ export function extractTableAndAction(sql: string): {
         action = 'delete'
         let targetIdx = idx + 2
         if (tokens[targetIdx]?.type === 'IDENTIFIER') {
-          if (tokens[targetIdx + 1]?.value === '.' && tokens[targetIdx + 2]?.type === 'IDENTIFIER') {
+          if (
+            tokens[targetIdx + 1]?.value === '.' &&
+            tokens[targetIdx + 2]?.type === 'IDENTIFIER'
+          ) {
             targetIdx += 2
           }
           tableName = tokens[targetIdx].value

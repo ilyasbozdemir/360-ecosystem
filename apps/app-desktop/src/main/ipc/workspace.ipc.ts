@@ -73,11 +73,15 @@ export function registerWorkspaceIpcHandlers(closeAllSecondaryWindows: () => voi
         dest = filePath
       }
 
-      workspaceManager.saveAs(dest)
-      return { success: true, newFilePath: dest }
-    } catch (error: any) {
+      const saveRes = workspaceManager.saveAs(dest)
+      if (!saveRes.success) {
+        return { success: false, error: saveRes.error || 'Farklı kaydetme işlemi başarısız oldu.' }
+      }
+      return { success: true, newFilePath: saveRes.newPath || dest }
+    } catch (error: unknown) {
       console.error('Save as error:', error)
-      return { success: false, error: error.message }
+      const message = error instanceof Error ? error.message : String(error)
+      return { success: false, error: message }
     }
   })
 

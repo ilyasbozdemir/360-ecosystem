@@ -11,7 +11,9 @@ describe('SQL Guard Security Suite (sqlGuard.ts)', () => {
 
     it('string içinde geçen noktalı virgüllere izin verir (false positive oluşturmaz)', () => {
       expect(() => {
-        validateSqlQuery("INSERT INTO DATA_TeminDosyasi (konu) VALUES ('Dosya No: 1; İhale Bilgisi')")
+        validateSqlQuery(
+          "INSERT INTO DATA_TeminDosyasi (konu) VALUES ('Dosya No: 1; İhale Bilgisi')"
+        )
       }).not.toThrow()
     })
   })
@@ -75,30 +77,41 @@ describe('SQL Guard Security Suite (sqlGuard.ts)', () => {
 
     it('CTE (WITH ... DELETE) ile yazılan ve WHERE içermeyen sorguları engeller', () => {
       expect(() => {
-        validateSqlQuery('WITH cte AS (SELECT id FROM DATA_TeminDosyasi) DELETE FROM DATA_TeminDosyasi')
+        validateSqlQuery(
+          'WITH cte AS (SELECT id FROM DATA_TeminDosyasi) DELETE FROM DATA_TeminDosyasi'
+        )
       }).toThrow(/Unparameterized mass DELETE without WHERE clause/)
     })
 
     it('CTE (WITH ... UPDATE) ile yazılan ve WHERE içeren sorgulara izin verir', () => {
       expect(() => {
-        validateSqlQuery('WITH cte AS (SELECT 1 as x) UPDATE DATA_TeminDosyasi SET konu = ? WHERE id = 1', ['test'])
+        validateSqlQuery(
+          'WITH cte AS (SELECT 1 as x) UPDATE DATA_TeminDosyasi SET konu = ? WHERE id = 1',
+          ['test']
+        )
       }).not.toThrow()
     })
 
     it('CTE içinde WHERE bulunsa dahi ana UPDATE/DELETE ifadesinde WHERE yoksa kitle güncellemeyi/silmeyi engeller', () => {
       // Saldırı vektörü: CTE içinde WHERE id = 1 var fakat ana UPDATE T ifadesinde WHERE yok!
       expect(() => {
-        validateSqlQuery("WITH cte AS ( SELECT id FROM DATA_TeminDosyasi WHERE id = 1 ) UPDATE DATA_TeminDosyasi SET durum = 'X'")
+        validateSqlQuery(
+          "WITH cte AS ( SELECT id FROM DATA_TeminDosyasi WHERE id = 1 ) UPDATE DATA_TeminDosyasi SET durum = 'X'"
+        )
       }).toThrow(/Unparameterized mass UPDATE without WHERE clause/)
 
       // Saldırı vektörü: CTE içinde WHERE id = 1 var fakat ana DELETE ifadesinde WHERE yok!
       expect(() => {
-        validateSqlQuery("WITH cte AS ( SELECT id FROM DATA_TeminDosyasi WHERE id = 1 ) DELETE FROM DATA_TeminDosyasi")
+        validateSqlQuery(
+          'WITH cte AS ( SELECT id FROM DATA_TeminDosyasi WHERE id = 1 ) DELETE FROM DATA_TeminDosyasi'
+        )
       }).toThrow(/Unparameterized mass DELETE without WHERE clause/)
 
       // Alt sorgu içinde WHERE var fakat ana UPDATE ifadesinde WHERE yok!
       expect(() => {
-        validateSqlQuery("UPDATE DATA_TeminDosyasi SET konu = (SELECT baslik FROM sablonlar WHERE id = 1)")
+        validateSqlQuery(
+          'UPDATE DATA_TeminDosyasi SET konu = (SELECT baslik FROM sablonlar WHERE id = 1)'
+        )
       }).toThrow(/Unparameterized mass UPDATE without WHERE clause/)
 
       // Hem CTE içinde hem de ana UPDATE ifadesinde WHERE varsa izin verir
@@ -135,7 +148,9 @@ describe('SQL Guard Security Suite (sqlGuard.ts)', () => {
 
     it('string literalleri içinde geçen yorum sembolleri ve noktalı virgülleri bozmaz', () => {
       expect(() => {
-        validateSqlQuery("SELECT * FROM DATA_TeminDosyasi WHERE konu = 'test /* not a comment */ data'")
+        validateSqlQuery(
+          "SELECT * FROM DATA_TeminDosyasi WHERE konu = 'test /* not a comment */ data'"
+        )
       }).not.toThrow()
 
       expect(() => {
@@ -307,6 +322,116 @@ describe('SQL Guard Security Suite (sqlGuard.ts)', () => {
       expect(() => {
         validateSqlQuery('CREATE VIRTUAL TABLE v_table USING fts5(data)')
       }).toThrow(/Schema tampering operations/)
+    })
+
+    it('CREATE TEMP TRIGGER ve CREATE TEMPORARY TRIGGER varyasyonlarını engeller', () => {
+      expect(() => {
+        validateSqlQuery(
+          'CREATE TEMP TRIGGER trg_temp AFTER INSERT ON DATA_TeminDosyasi BEGIN UPDATE DATA_TeminDosyasi SET durum = 1; END;'
+        )
+      }).toThrow(/Schema tampering operations/)
+
+      expect(() => {
+        validateSqlQuery(
+          'CREATE TEMPORARY TRIGGER trg_temp2 AFTER INSERT ON DATA_TeminDosyasi BEGIN UPDATE DATA_TeminDosyasi SET durum = 1; END;'
+        )
+      }).toThrow(/Schema tampering operations/)
+
+      expect(() => {
+        validateSqlQuery(
+          'CREATE TEMP TRIGGER IF NOT EXISTS trg_temp3 AFTER UPDATE ON DATA_TeminDosyasi BEGIN SELECT 1; END;'
+        )
+      }).toThrow(/Schema tampering operations/)
+    })
+
+    it('CREATE TEMP VIRTUAL TABLE ve CREATE TEMPORARY VIRTUAL TABLE varyasyonlarını engeller', () => {
+      expect(() => {
+        validateSqlQuery('CREATE TEMP VIRTUAL TABLE temp_v USING fts5(data)')
+      }).toThrow(/Schema tampering operations/)
+
+      expect(() => {
+        validateSqlQuery('CREATE TEMPORARY VIRTUAL TABLE temp_v2 USING fts5(data)')
+      }).toThrow(/Schema tampering operations/)
+    })
+
+    it('PRAGMA şema niteleyicisi (schema-qualified) ile güvenli sorgulara izin verir, zararlıları engeller', () => {
+      // İzin verilen şema niteleyicili PRAGMA
+      expect(() => {
+        validateSqlQuery('PRAGMA main.table_info("DATA_TeminDosyasi")')
+      }).not.toThrow()
+
+      expect(() => {
+        validateSqlQuery('PRAGMA "main"."table_info"(\'DATA_TeminDosyasi\')')
+      }).not.toThrow()
+
+      // Engellenen şema niteleyicili writable_schema
+      expect(() => {
+        validateSqlQuery('PRAGMA main.writable_schema = ON')
+      }).toThrow(/PRAGMA writable_schema is prohibited/)
+
+      expect(() => {
+        validateSqlQuery('PRAGMA "main"."writable_schema" = 1')
+      }).toThrow(/PRAGMA writable_schema is prohibited/)
+
+      expect(() => {
+        validateSqlQuery('PRAGMA main.writable_schema(1)')
+      }).toThrow(/PRAGMA writable_schema is prohibited/)
+    })
+
+    it('parantez içi atama / fonksiyon sözdizimi ile ayar değiştiren PRAGMA komutlarını engeller', () => {
+      expect(() => {
+        validateSqlQuery('PRAGMA writable_schema(1)')
+      }).toThrow(/PRAGMA writable_schema is prohibited/)
+
+      expect(() => {
+        validateSqlQuery('PRAGMA user_version(5)')
+      }).toThrow(/Modifying database configuration via PRAGMA assignment/)
+
+      expect(() => {
+        validateSqlQuery('PRAGMA schema_version(10)')
+      }).toThrow(/Modifying database configuration via PRAGMA assignment/)
+
+      expect(() => {
+        validateSqlQuery('PRAGMA user_version = 5')
+      }).toThrow(/Modifying database configuration via PRAGMA assignment/)
+    })
+
+    it('çift tırnaklı DDL komutlarını ("TABLE") engeller', () => {
+      expect(() => {
+        validateSqlQuery('DROP "TABLE" DATA_TeminDosyasi')
+      }).toThrow(/Destructive DDL operations/)
+
+      expect(() => {
+        validateSqlQuery('ALTER "TABLE" DATA_TeminDosyasi ADD COLUMN test TEXT')
+      }).toThrow(/Destructive DDL operations/)
+    })
+  })
+
+  describe('7. Subqueries and Comma Joins on Restricted Tables', () => {
+    it('alt sorgu (subquery) içinde settings tablosuna erişimi engeller', () => {
+      expect(() => {
+        validateSqlQuery('SELECT (SELECT value FROM settings WHERE key = "admin")')
+      }).toThrow(/Direct raw SQL query on settings\/TANIM_Ayar/)
+
+      expect(() => {
+        validateSqlQuery('SELECT * FROM (SELECT * FROM settings)')
+      }).toThrow(/Direct raw SQL query on settings\/TANIM_Ayar/)
+    })
+
+    it('virgüllü kartezyen join (comma join) ile settings tablosuna erişimi engeller', () => {
+      expect(() => {
+        validateSqlQuery('SELECT * FROM DATA_TeminDosyasi, settings')
+      }).toThrow(/Direct raw SQL query on settings\/TANIM_Ayar/)
+
+      expect(() => {
+        validateSqlQuery('SELECT * FROM settings, DATA_TeminDosyasi')
+      }).toThrow(/Direct raw SQL query on settings\/TANIM_Ayar/)
+    })
+
+    it('CTE içinde settings tablosunu kaynak alan sorguları engeller', () => {
+      expect(() => {
+        validateSqlQuery('WITH s AS (SELECT * FROM settings) SELECT * FROM s')
+      }).toThrow(/Direct raw SQL query on settings\/TANIM_Ayar/)
     })
   })
 })

@@ -2,7 +2,7 @@ import { _electron as electron, ElectronApplication, Page } from '@playwright/te
 import path from 'path'
 import os from 'os'
 import fs from 'fs'
-import { spawn, ChildProcess, execSync } from 'child_process'
+import { execSync } from 'child_process'
 
 export interface TestAppInstance {
   electronApp: ElectronApplication
@@ -155,6 +155,18 @@ export async function mockOpenFileDialog(
     dialog.showOpenDialog = async () => ({
       canceled: false,
       filePaths: [filePath]
+    })
+  }, targetFilePath)
+}
+
+export async function mockSaveFileDialog(
+  electronApp: ElectronApplication,
+  targetFilePath: string
+): Promise<void> {
+  await electronApp.evaluate(async ({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({
+      canceled: false,
+      filePath
     })
   }, targetFilePath)
 }

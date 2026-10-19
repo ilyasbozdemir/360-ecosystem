@@ -126,9 +126,7 @@ export function atomicReplaceWorkspaceFile(
       const primaryErr =
         lastError || (fallbackErr instanceof Error ? fallbackErr : new Error(String(fallbackErr)))
       const backupInfo =
-        backupCreated && fs.existsSync(backupPath)
-          ? ` Güvenlik yedeği korundu: ${backupPath}.`
-          : ''
+        backupCreated && fs.existsSync(backupPath) ? ` Güvenlik yedeği korundu: ${backupPath}.` : ''
       const err = new Error(
         `Dosya atomik olarak değiştirilemedi: ${primaryErr.message}.${backupInfo}`
       )
@@ -171,12 +169,7 @@ export class DtmWorkspace {
     )
   }
 
-  public openWorkspace(filePath: string, allowMigration: boolean = false): WorkspaceMeta {
-    filePath = filePath.replace(/^"+|"+$/g, '').trim()
-    if (!fs.existsSync(filePath)) {
-      throw new Error(`Dosya bulunamadı: ${filePath}`)
-    }
-
+  private acquireFileLock(filePath: string): void {
     const lockPath = filePath + '.lock'
     if (fs.existsSync(lockPath)) {
       try {
@@ -191,7 +184,11 @@ export class DtmWorkspace {
             isRunning = false
           }
           if (!isRunning) {
-            fs.unlinkSync(lockPath)
+            try {
+              fs.unlinkSync(lockPath)
+            } catch {
+              /* ignore lock unlink error */
+            }
           } else {
             throw new Error(
               'LOCKED|Bu dosya şu anda başka bir pencerede veya programda açık durumda. Çakışmayı önlemek için önce diğer taraftan kapatmalısınız.'
@@ -208,6 +205,26 @@ export class DtmWorkspace {
     } catch (err: any) {
       throw new Error(`Kilit dosyası oluşturulamadı: ${err.message}`)
     }
+  }
+
+  private releaseFileLock(filePath: string): void {
+    const lockPath = filePath + '.lock'
+    if (fs.existsSync(lockPath)) {
+      try {
+        fs.unlinkSync(lockPath)
+      } catch {
+        /* ignore lock unlink error */
+      }
+    }
+  }
+
+  public openWorkspace(filePath: string, allowMigration: boolean = false): WorkspaceMeta {
+    filePath = filePath.replace(/^"+|"+$/g, '').trim()
+    if (!fs.existsSync(filePath)) {
+      throw new Error(`Dosya bulunamadı: ${filePath}`)
+    }
+
+    this.acquireFileLock(filePath)
 
     try {
       this.currentFilePath = filePath
@@ -215,7 +232,7 @@ export class DtmWorkspace {
 
       const zipBuffer = fs.readFileSync(filePath)
       if (zipBuffer.length === 0) {
-        if (fs.existsSync(lockPath)) fs.unlinkSync(lockPath)
+        this.releaseFileLock(filePath)
         return this.createWorkspace(filePath, 'Yeni Kurum')
       }
 
@@ -349,11 +366,7 @@ export class DtmWorkspace {
       this.notifyDirtyChange(false)
       return meta
     } catch (openErr: any) {
-      if (fs.existsSync(lockPath)) {
-        try {
-          fs.unlinkSync(lockPath)
-        } catch {}
-      }
+      this.releaseFileLock(filePath)
       if (this.db) {
         try {
           this.db.close()
@@ -376,10 +389,8 @@ export class DtmWorkspace {
       const base = ext ? filePath.substring(0, filePath.length - (ext.length + 1)) : filePath
       filePath = `${base}.${defaultFormat.ext}`
     }
-    const lockPath = filePath + '.lock'
-    try {
-      fs.writeFileSync(lockPath, process.pid.toString(), { encoding: 'utf-8' })
-    } catch {}
+    filePath = path.resolve(filePath)
+    this.acquireFileLock(filePath)
 
     try {
       this.currentFilePath = filePath
@@ -408,7 +419,9 @@ export class DtmWorkspace {
           }
         })
         seedTx(tasinirKodlariSeed)
-      } catch {}
+      } catch {
+        /* ignore seed error */
+      }
 
       const meta: WorkspaceMeta = {
         dtal_version: '1.0',
@@ -435,28 +448,28 @@ export class DtmWorkspace {
       this.resetDirty()
       return meta
     } catch (createErr) {
-      if (fs.existsSync(lockPath))
-        try {
-          fs.unlinkSync(lockPath)
-        } catch {}
+      this.releaseFileLock(filePath)
       this.currentFilePath = null
       throw createErr
     }
   }
 
-  public saveWorkspace(force: boolean = false): void {
-    if (!this.currentFilePath || !this.db) throw new Error('Hiçbir veri dosyası açık değil.')
-    if (!force && !this.isDirtyState()) return
+  private writeWorkspaceArchive(targetPath: string, isUserSave: boolean = false): void {
+    if (!this.db || !this.tempDir) {
+      throw new Error('Hiçbir veri dosyası veya geçici dizin açık değil.')
+    }
 
     try {
       this.db.pragma('wal_checkpoint(TRUNCATE)')
-    } catch {}
+    } catch {
+      /* ignore checkpoint error */
+    }
+
     const metaPath = path.join(this.tempDir, 'meta.json')
     if (fs.existsSync(metaPath)) {
       const meta = JSON.parse(fs.readFileSync(metaPath, 'utf-8')) as WorkspaceMeta
-      // ONLY update updated_at and increment data_revision if user has actually mutated data.
-      // Maintenance saves (migrations, settings updates, background checks) do not count as user edits.
-      if (this.userMutationCount > 0 || this.isDirtyState() || !meta.updated_at) {
+      // ONLY update updated_at and increment data_revision if user has actually mutated data or is explicit user save
+      if (this.userMutationCount > 0 || this.isDirtyState() || isUserSave || !meta.updated_at) {
         meta.updated_at = new Date().toISOString()
         if (this.userMutationCount > 0 || this.isDirtyState()) {
           meta.data_revision = (meta.data_revision || 1) + 1
@@ -475,16 +488,21 @@ export class DtmWorkspace {
       this.meta = meta
     }
 
+    const targetDir = path.dirname(targetPath)
+    if (!fs.existsSync(targetDir)) {
+      throw new Error(`Hedef dizin bulunamadı: ${targetDir}`)
+    }
+
     const zip = new AdmZip()
     zip.addLocalFolder(this.tempDir)
 
     // Atomik ve güvenli kaydetme: Önce aynı dizinde geçici bir dosyaya yaz,
     // arşivi bütünlük kontrolünden geçir, ardından atomik değiştirme yap.
-    const targetDir = path.dirname(this.currentFilePath)
     const tempFile = path.join(
       targetDir,
-      `.${path.basename(this.currentFilePath)}.tmp.${Date.now()}`
+      `.${path.basename(targetPath)}.tmp.${Date.now()}.${Math.random().toString(36).slice(2, 6)}`
     )
+
     try {
       zip.writeZip(tempFile)
       if (!fs.existsSync(tempFile) || fs.statSync(tempFile).size === 0) {
@@ -507,28 +525,112 @@ export class DtmWorkspace {
         throw new Error(`Oluşturulan geçici arşiv doğrulanamadı: ${valErr.message}`)
       }
 
-      atomicReplaceWorkspaceFile(tempFile, this.currentFilePath)
+      atomicReplaceWorkspaceFile(tempFile, targetPath)
+
+      // Post-replacement verification: verify destination file actually exists, is non-empty, and is valid zip
+      if (!fs.existsSync(targetPath) || fs.statSync(targetPath).size === 0) {
+        throw new Error('Hedef arşiv dosyası oluşturulamadı veya boş.')
+      }
+      const verifiedZip = new AdmZip(targetPath)
+      const verifiedEntries = verifiedZip.getEntries()
+      if (
+        !verifiedEntries.some((e) => e.entryName === 'meta.json') ||
+        !verifiedEntries.some((e) => e.entryName.endsWith('.sqlite'))
+      ) {
+        throw new Error('Oluşturulan hedef arşiv dosyasında zorunlu dosyalar bulunamadı.')
+      }
     } catch (saveErr) {
       if (fs.existsSync(tempFile)) {
         try {
           fs.unlinkSync(tempFile)
-        } catch {}
+        } catch {
+          /* ignore temp cleanup error */
+        }
       }
       throw saveErr
     }
+  }
 
+  public saveWorkspace(force: boolean = false): void {
+    if (!this.currentFilePath || !this.db) throw new Error('Hiçbir veri dosyası açık değil.')
+    if (!force && !this.isDirtyState()) return
+
+    this.writeWorkspaceArchive(this.currentFilePath, force)
     this.initialHash = this.calculateCurrentHash()
     this.resetDirty()
   }
 
   public saveAs(targetFilePath: string): { success: boolean; newPath?: string; error?: string } {
-    if (!this.currentFilePath || !this.db)
+    if (!this.currentFilePath || !this.db) {
       return { success: false, error: 'Açık bir çalışma alanı yok.' }
-    const newPath = targetFilePath.toLowerCase().endsWith('.temin')
-      ? targetFilePath
-      : `${targetFilePath}.temin`
+    }
+    if (!targetFilePath || typeof targetFilePath !== 'string' || !targetFilePath.trim()) {
+      return { success: false, error: 'Geçersiz hedef dosya yolu.' }
+    }
+
+    targetFilePath = targetFilePath.replace(/^"+|"+$/g, '').trim()
+    const ext = path.extname(targetFilePath).toLowerCase().replace(/^\./, '')
+    let newPath = targetFilePath
+    if (!ext || !allExtensions.includes(ext)) {
+      const base = ext
+        ? targetFilePath.substring(0, targetFilePath.length - (ext.length + 1))
+        : targetFilePath
+      newPath = `${base}.${defaultFormat.ext}`
+    }
+    newPath = path.resolve(newPath)
+
+    const oldPath = this.currentFilePath
+    const isSameFile = path.resolve(oldPath).toLowerCase() === newPath.toLowerCase()
+
+    if (isSameFile) {
+      try {
+        this.saveWorkspace(true)
+        return { success: true, newPath }
+      } catch (err: any) {
+        return { success: false, error: err.message }
+      }
+    }
+
+    const targetDir = path.dirname(newPath)
+    if (!fs.existsSync(targetDir)) {
+      return { success: false, error: `Hedef dizin bulunamadı: ${targetDir}` }
+    }
+
+    // 1. Hedef dosya kilidini edin (çakışma kontrolü dahil)
+    let newLockAcquired = false
+    try {
+      this.acquireFileLock(newPath)
+      newLockAcquired = true
+    } catch (lockErr: any) {
+      return {
+        success: false,
+        error: `Yeni hedef dosya kilitlenemedi: ${lockErr.message}`
+      }
+    }
+
+    // 2. Yeni dosyaya arşiv yaz ve doğrula (force: true - temiz dosyada dahi yazılır)
+    // NOT: currentFilePath değeri ancak yazma ve doğrulama TAMAMEN başarılı olduğunda güncellenir!
+    try {
+      this.writeWorkspaceArchive(newPath, true)
+    } catch (saveErr: any) {
+      // Yazma veya doğrulama başarısız olursa: Yeni kilidi temizle, eski yol ve kilit KORUNUR
+      if (newLockAcquired) {
+        this.releaseFileLock(newPath)
+      }
+      return {
+        success: false,
+        error: `Farklı kaydetme işlemi başarısız oldu: ${saveErr.message}`
+      }
+    }
+
+    // 3. Yazma ve doğrulama başarılı!
+    // Eski dosya kilidini serbest bırak
+    this.releaseFileLock(oldPath)
+    // Aktif çalışma alanı yolunu yeni konuma güncelle
     this.currentFilePath = newPath
-    this.saveWorkspace()
+    this.initialHash = this.calculateCurrentHash()
+    this.resetDirty()
+
     return { success: true, newPath }
   }
 
@@ -538,11 +640,7 @@ export class DtmWorkspace {
       this.db = null
     }
     if (this.currentFilePath) {
-      const lockPath = this.currentFilePath + '.lock'
-      if (fs.existsSync(lockPath))
-        try {
-          fs.unlinkSync(lockPath)
-        } catch {}
+      this.releaseFileLock(this.currentFilePath)
     }
     this.currentFilePath = null
     this.meta = null
