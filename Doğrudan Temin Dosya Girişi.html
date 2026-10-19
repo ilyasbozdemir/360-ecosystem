@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="tr"><head><meta charset="utf-8"><title>Doğrudan Temin Dosya Girişi & Şablonlar</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f1f4f9;--card:#fff;--tx:#172033;--mu:#6b7589;--br:#e2e7f0;--ac:#2563eb;--ac2:#eaf1ff;--sh:0 1px 2px #1b2a4a14,0 6px 18px #1b2a4a0d}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1319;--card:#181e27;--tx:#e8ecf3;--mu:#8e99ad;--br:#2a3341;--ac:#6b9cff;--ac2:#1c2a47;--sh:none}}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+
+/* --- Layout: Sidebar + Main Content --- */
+.app-wrap{display:flex;min-height:100vh}
+.sidebar{width:270px;min-width:270px;background:var(--card);border-right:1px solid var(--br);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;z-index:100;box-shadow:var(--sh)}
+.sidebar-head{padding:14px 14px 10px;border-bottom:1px solid var(--br)}
+.sidebar-head h1{font-size:16px;font-weight:700;margin:0 0 10px;display:flex;align-items:center;gap:8px}h1::before{content:"\1F4C1"}
+.sidebar-file-box{display:flex;flex-direction:column;gap:6px}
+.sidebar-file-box select{width:100%;font-size:13px;font-weight:500}
+.sidebar-file-actions{display:flex;gap:4px}
+.sidebar-file-actions button{flex:1;font-size:12px;padding:6px 4px}
+nav{display:flex;flex-direction:column;gap:3px;padding:10px 10px 6px}
+nav button{border-radius:8px;border:1px solid transparent;background:transparent;color:var(--mu);padding:7px 11px;text-align:left;display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s}
+nav button:hover{background:var(--ac2);color:var(--ac)}
+nav button.on{background:var(--ac);color:#fff;box-shadow:0 2px 8px #2563eb44}
+nav button .cnt{font-size:11px;padding:2px 7px;border-radius:999px;background:var(--ac2);color:var(--ac);font-weight:600}
+nav button.on .cnt{background:rgba(255,255,255,0.25);color:#fff}
+
+/* Sidebar Templates Explorer */
+.sidebar-tpl-wrap{border-top:1px solid var(--br);padding:8px 10px;display:flex;flex-direction:column;gap:4px;flex:1;overflow-y:auto}
+.sidebar-sec-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mu);display:flex;justify-content:space-between;align-items:center;padding:4px 6px;margin-bottom:2px}
+.sidebar-tpl-tree{display:flex;flex-direction:column;gap:4px}
+.tpl-group{margin-bottom:4px}
+.tpl-group-title{font-size:11.5px;font-weight:600;color:var(--tx);padding:5px 6px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;border-radius:6px;user-select:none}
+.tpl-group-title:hover{background:var(--ac2);color:var(--ac)}
+.tpl-group-title .cnt{font-size:10px;padding:1px 5px;border-radius:999px;background:var(--br);color:var(--mu)}
+.tpl-items{display:flex;flex-direction:column;gap:1px;padding-left:8px;margin-top:2px}
+.tpl-item{font-size:11.5px;color:var(--mu);padding:4px 8px;border-radius:6px;text-align:left;border:none;background:transparent;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;width:100%;transition:all .12s}
+.tpl-item:hover{background:var(--ac2);color:var(--ac)}
+.tpl-item.active{background:var(--ac);color:#fff;font-weight:600}
+
+.sidebar-foot{padding:10px 14px;border-top:1px solid var(--br);background:var(--card);font-size:11px;display:flex;flex-direction:column;gap:6px}
+.main-wrap{flex:1;display:flex;flex-direction:column;min-width:0}
+
+/* Top bar */
+.top-bar{position:sticky;top:0;background:var(--card);border-bottom:1px solid var(--br);padding:10px 18px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;z-index:90;box-shadow:var(--sh)}
+.menu-toggle{display:none;font-size:16px;padding:6px 10px;cursor:pointer}
+.top-title{font-weight:600;font-size:13.5px;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px}
+.sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:95;backdrop-filter:blur(2px)}
+
+/* Standard buttons & inputs */
+button,select,input,textarea{font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--br);border-radius:8px;padding:8px 10px;transition:border-color .15s,box-shadow .15s}
+button{cursor:pointer;font-weight:500}button:hover{border-color:var(--ac);background:var(--ac2)}
+button.p{background:var(--ac);color:#fff;border-color:var(--ac);box-shadow:0 1px 3px #2563eb55}button.p:hover{background:var(--ac);filter:brightness(1.1)}
+button.s{padding:4px 9px;font-size:12px;border-radius:6px}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--ac);box-shadow:0 0 0 3px var(--ac2)}
+
+/* Main area & cards */
+main{padding:16px 20px 40px;max-width:1300px;width:100%;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--br);border-radius:14px;box-shadow:var(--sh);padding:16px;margin-bottom:14px}
+.card h2{font-size:15px;font-weight:650;margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid var(--br)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mu);font-weight:500}label input,label select,label textarea{color:var(--tx);font-size:14px;width:100%}
+.w{grid-column:1/-1}.sc{overflow-x:auto;border:1px solid var(--br);border-radius:8px;margin-top:6px}
+table{border-collapse:collapse;width:100%;min-width:620px}th,td{border:1px solid var(--br);padding:6px 8px}
+th{background:var(--ac2);color:var(--ac);font-size:12px;font-weight:600;text-align:left}
+td input{width:100%;border:1px solid transparent;background:transparent;padding:4px 6px;border-radius:4px}
+td input:focus{background:var(--card);box-shadow:inset 0 0 0 2px var(--ac)}td.n{width:36px;text-align:center;color:var(--mu)}
+.card tr:nth-child(even) td{background:color-mix(in srgb,var(--ac2) 35%,transparent)}
+#ixl tr:hover td{background:var(--ac2)}
+.bar{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;align-items:center}
+dialog{background:var(--card);color:var(--tx);border:1px solid var(--br);border-radius:14px;box-shadow:0 12px 40px #0004;width:min(660px,94vw);padding:18px}
+dialog textarea{width:100%;height:220px}
+.hide{display:none}.mu{color:var(--mu);font-size:12px}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600}
+
+/* A4 Print layout */
+.a4{width:210mm;max-width:100%;margin:0 auto 12px;padding:14mm;background:#fff;color:#111;box-shadow:0 2px 12px #0003;font-size:12px;border-radius:4px}
+.a4 table{min-width:0;width:100%}.a4 th,.a4 td{border:1px solid #999;padding:3px 5px;color:#111;background:#fff;vertical-align:top}.a4 th{background:#eef1f6;font-size:11px}
+.rk th{width:18%}.rk td{width:32%}.a4 tr{break-inside:avoid}
+.a4 h3{font-size:13px;background:#e9edf5;padding:4px 6px;margin:14px 0 6px;border-left:4px solid #1d5fd1;color:#111;break-after:avoid}.a4 h4{margin:10px 0 4px;font-size:12px;color:#111}
+.rh{text-align:center;border-bottom:2px solid #111;padding-bottom:8px;margin-bottom:6px}.rh b{font-size:17px;display:block}.rh span{font-size:12px}.a4 .mu{color:#666}
+
+/* Responsive & Mobile Drawer */
+@media (max-width:768px){
+.menu-toggle{display:inline-flex}
+.top-title{display:none}
+.sidebar{position:fixed;left:0;top:0;bottom:0;transform:translateX(-100%);transition:transform .2s ease}
+.sidebar.open{transform:translateX(0)}
+.sb-overlay.open{display:block}
+main{padding:10px 8px 40px}.card{border-radius:12px;padding:12px}.grid{grid-template-columns:1fr}
+#ixl th:nth-child(n+4):nth-child(-n+6),#ixl td:nth-child(n+4):nth-child(-n+6){display:none}
+.a4{padding:5mm;width:100%;box-shadow:none;font-size:11px}.a4 table:not(.rk){display:block;overflow-x:auto}
+.rk,.rk tbody,.rk tr,.rk th,.rk td{display:block;width:100%!important}.rk th{border-bottom:0}.rk tr{margin-bottom:4px}
+}
+
+@media print{
+@page{size:A4;margin:12mm}
+.sidebar,.top-bar,.menu-toggle,.sb-overlay,.bar,dialog{display:none!important}
+.app-wrap,.main-wrap,main{display:block!important;padding:0!important;margin:0!important;max-width:none!important}
+body{background:#fff}
+.a4{width:auto!important;padding:0!important;box-shadow:none!important;margin:0!important}
+}
+</style></head>
+<body>
+
+<div class="app-wrap">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sb">
+    <div class="sidebar-head">
+      <h1>Dosya Girişi</h1>
+      <div class="sidebar-file-box">
+        <select id="sel" title="Aktif Dosya"></select>
+        <div class="sidebar-file-actions">
+          <button onclick="newF()">+ Yeni Dosya</button>
+          <button onclick="delF()">Sil</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Ana Navigasyon Sekmeleri -->
+    <nav id="nav"></nav>
+
+    <!-- Yan Menü Şablon Gezgini (Templates Explorer) -->
+    <div class="sidebar-tpl-wrap" id="sbTplWrap">
+      <div class="sidebar-sec-title">
+        <span>📜 Şablonlar</span>
+        <span class="badge" id="sbTplBadge" style="background:var(--ac2);color:var(--ac)">0</span>
+      </div>
+      <div id="sbTplTree" class="sidebar-tpl-tree"></div>
+    </div>
+
+    <div class="sidebar-foot">
+      <button onclick="addMock()" class="s" style="width:100%">+ Örnek Veri Ekle</button>
+      <span id="st" class="mu" style="text-align:center;display:block"></span>
+    </div>
+  </aside>
+
+  <!-- MOBILE OVERLAY BACKDROP -->
+  <div class="sb-overlay" id="sbOverlay" onclick="toggleSidebar()"></div>
+
+  <!-- MAIN AREA -->
+  <div class="main-wrap">
+    <header class="top-bar">
+      <button class="menu-toggle" onclick="toggleSidebar()" title="Menüyü Aç/Kapat">☰ Menü</button>
+      <span class="top-title" id="curTitle">Dosya</span>
+      <span style="flex:1"></span>
+      <button onclick="openTeminModal()" class="p" style="background:#059669;border-color:#059669;color:#fff" title="Temin 360 uygulamasına hızlı aktarım">⚡ Temin 360'a Aktar</button>
+      <button onclick="openIO()">Aktar / Yapıştır</button>
+      <button onclick="exJSON()">JSON</button>
+      <button onclick="exCSV()">Excel (CSV)</button>
+      <button onclick="copyAll()">Kopyala</button>
+      <button onclick="print()">Yazdır</button>
+    </header>
+
+    <main id="main"></main>
+  </div>
+</div>
+
+<dialog id="dlg"><h3 style="margin-top:0">Toplu aktarım</h3>
+<p class="mu">
+  JSON yapıştırın (Doğrudan Temin veya <b>KamuSistem SQLite/Viewer</b> dışa aktarımı) ya da form alanlarını <b>Alan adı ⇥ Değer</b> satırları olarak Excel'den yapıştırın. Malzemeler otomatik olarak malzeme listesine eklenir.
+</p>
+<textarea id="io" placeholder="JSON veya Excel verisi yapıştırın..."></textarea>
+<div class="bar" style="justify-content:space-between">
+  <div style="display:flex;gap:6px">
+    <button class="p" onclick="doImport()">İçe aktar</button>
+    <input type="file" id="fl" accept=".json,.txt,.csv" onchange="readFile(this)">
+  </div>
+  <button onclick="dlg.close()">Kapat</button>
+</div></dialog>
+
+<dialog id="dlgTemin" style="width:min(720px,94vw)">
+  <h3 style="margin-top:0;display:flex;align-items:center;gap:8px">⚡ Temin 360'a Hızlı Aktarım</h3>
+  <p class="mu" style="margin-bottom:12px">
+    Buradaki dosya ve malzeme kayıtlarını <b>Temin 360</b> masaüstü uygulamasına hızlıca eklemek için aşağıdaki seçeneklerden birini kullanabilirsiniz:
+  </p>
+
+  <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+    <div style="background:var(--card);border:1px solid var(--br);border-radius:10px;padding:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:8px">
+        <b>1. Temin 360 "Hızlı Dosya Ekle" Formatı (Önerilen)</b>
+        <div style="display:flex;gap:6px">
+          <button class="p s" onclick="copyTeminRows(false)">Bu Dosyayı Kopyala</button>
+          <button class="s" onclick="copyTeminRows(true)">Tüm Dosyaları Kopyala</button>
+        </div>
+      </div>
+      <p class="mu" style="margin:0;font-size:11.5px;line-height:1.4">
+        Panoya kopyaladıktan sonra <b>Temin 360</b> uygulamasında <b>Sistem Araçları &gt; Hızlı Dosya Ekle</b> ekranını açın, <b>"Panodan Yapıştır"</b> butonuna ve ardından <b>"Tümünü Kaydet"</b> butonuna basarak dosyaları tek tıkla veritabanına ekleyin.
+      </p>
+    </div>
+
+    <div style="background:var(--card);border:1px solid var(--br);border-radius:10px;padding:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:8px">
+        <b>2. Malzeme / İhtiyaç Kalemleri (Hızlı Grid)</b>
+        <button class="p s" onclick="copyTeminMaterials()">Kalemleri Kopyala</button>
+      </div>
+      <p class="mu" style="margin:0;font-size:11.5px;line-height:1.4">
+        Aktif dosyanın malzeme kalemlerini kopyalar. Temin 360'ta ilgili dosyanın <b>Malzeme Listesi (Hızlı Grid)</b> tablosuna veya Excel'e doğrudan yapıştırabilirsiniz.
+      </p>
+    </div>
+
+    <div style="background:var(--card);border:1px solid var(--br);border-radius:10px;padding:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:8px">
+        <b>3. SQLite SQL Komutları (Veritabanı Tarayıcısı)</b>
+        <button class="s" onclick="genTeminSql()">SQL Üret &amp; Kopyala</button>
+      </div>
+      <p class="mu" style="margin:0;font-size:11.5px;line-height:1.4">
+        Temin 360 <b>Veritabanı Tarayıcısı &gt; SQL Konsolu</b> ekranında doğrudan çalıştırabileceğiniz <code>INSERT INTO DATA_TeminDosyasi</code> SQL kodunu üretir.
+      </p>
+    </div>
+  </div>
+
+  <div id="teminPreviewBox" class="hide">
+    <label style="font-weight:600;margin-bottom:4px;display:block;font-size:12px">Panoya Kopyalanan Çıktı:</label>
+    <textarea id="teminOutput" readonly style="width:100%;height:130px;font-family:monospace;font-size:12px;background:var(--bg)"></textarea>
+  </div>
+
+  <div class="bar" style="justify-content:flex-end;margin-top:10px">
+    <button onclick="dlgTemin.close()">Kapat</button>
+  </div>
+</dialog>
+
+<script>
+const Y=[];for(let y=2028;y>=2017;y--)Y.push(String(y));
+const F=[
+["Dosya No","text"],["Dosya Açılış Tarihi","date"],["Bütçe Yılı","sel",Y],["Bütçe","sel",["Genel Bütçe","Döner Sermaye","Diğer"]],
+["Doğrudan Temin Numarası","text"],["İhale Tarihi","date"],["İhale Aşaması","text"],
+["İşin Adı / Tanımı","text","w"],["Açıklama","area","w"],
+["İhalesi Yapılacak Birim","text"],["Sunulacak Makam","text"],["İhtiyaç Yeri","text"],["Talep Tarih/Sayısı","text"],
+["Kurumsal Kod","text"],["Fonksiyonel Kod","text"],["Finansal Kod","text"],
+["İhale Tipi","sel",["Doğrudan Temin"]],["Alım Türü","sel",["Mal Alımı","Hizmet Alımı","Yapım İşi","Danışmanlık"]],
+["Madde","sel",["22/d*","22/a","22/b","22/c","22/d**","22/e","22/f","3/e"]],
+["Teklif ve Sözleşme Türü","sel",["Birim Fiyat","Götürü Bedel"]],
+["Alt yüklenici olacak mı","sel",["Hayır","Evet"]],["Kısmi teklif verilecek mi","sel",["Hayır","Evet"]],
+["Fiyat Farkı Dayanağı","sel",["Fiyat Farkı Ödenmeyecek","31.08.2013 Tarih ve 2013/5216 Sayılı Mal Alımı BKK","31.08.2013 Tarih ve 2013/5215 Sayılı Hizmet Alımı BKK"]],
+["Yatırım Proje Numarası","text"],["Avans Verilecek mi","sel",["Hayır","Evet"]],
+["Yaklaşık Maliyet","sel",["Burada Hesaplanacak","Önceden hesaplandı","Hesaplanmayacak"]],
+["KDV","sel",["Hariç","Dahil"]],["Hesaplama Esası","sel",["Ortalama fiyat esasına göre","En düşük fiyat esasına göre"]],
+["Hesaplamada","sel",["Sadece araştırma fiyatları dikkate alınacak","Komisyon takdiri kullanılacak","Son alım fiyatlarını da kullan"]],
+["Tıbbi Cihaz Alımı mı","sel",["Hayır","Evet"]],["İrtibat Yetkilisi","text"],
+["Son Teklif Verme Tarih/Saati","datetime-local"],["Tahmini Bitiş Tarihi","date"]];
+
+/* --- Güncellenmiş Tablo Tanımları (Malzemeye Birim Fiyat, Komisyonlara Unvan) --- */
+const T={
+mat:["Malzemeler",["Sıra*","Malzeme Kodu","Malzeme Adı","Özelliği","Birimi","KDV Oranı","Miktar","Birim Fiyat (TL)"]],
+win:["Kazanan Firmalar",["Firma"]],
+con:["Kazanan Firma(ların) Sözleşmeleri",["Firma Ünvanı","Sözleşme"]],
+yak:["Yaklaşık Maliyet Tespit Komisyonu",["Sıra*","Komisyondaki Görevi","Adı Soyadı","Unvanı"]],
+muay:["Muayene Kabul ve Tespit Komisyonu",["Sıra*","Komisyondaki Görevi","Adı Soyadı","Unvanı"]]};
+
+const KM=["Sıra*","Malzeme Adı","Özelliği","Birimi","Miktarı","Toplam Teslim Alınan Miktar","Kabul Miktarı"];
+const KH=["Kabul Tarihi","Firma","Sayı","Teslim Alan","Teslim Yeri","Fatura Tarihi","Fatura No"];
+const TABS=[["idx","🗂 Dosyalar"],["f","📝 Dosya Bilgileri"],["mat","📦 Malzemeler"],["win","🏢 Firma / Sözleşme"],["kab","✅ Kabul Tutanakları"],["kom","👥 Komisyonlar"],["sab","📄 Şablonlar"],["rapor","📋 Rapor (A4)"],["ayar","Ayarlar ⚙"]];
+let db,tab="idx",kabI=0,currentTplKey="";
+
+const DEF0=()=>({f:{"İhalesi Yapılacak Birim":"Fen İşleri Müdürlüğü","İhale Tipi":"Doğrudan Temin"},yak:[],muay:[]});
+const cl=x=>JSON.parse(JSON.stringify(x));
+const blank=()=>{
+  const d=(typeof db!=='undefined'&&db&&db.defs)||DEF0();
+  const f=cl(d.f);
+  f['Dosya Açılış Tarihi']=new Date().toISOString().slice(0,10);
+  return {f:f,mat:[],win:[],con:[],yak:cl(d.yak),muay:cl(d.muay),kab:[],sablon:{}};
+};
+
+try{db=JSON.parse(localStorage.getItem("dtdb"))}catch(e){}
+if(!db||!db.files)db={files:mock(),cur:0};
+if(!db.defs)db.defs=DEF0();
+if(!db.kurum)db.kurum={};
+
+// Eski kayıtlar için geriye uyumluluk: sablon objesi garanti olsun
+db.files.forEach(f=>{ if(!f.sablon) f.sablon={}; });
+
+const cur=()=>db.files[db.cur];
+function save(){try{localStorage.setItem("dtdb",JSON.stringify(db));st.textContent="Kaydedildi "+new Date().toLocaleTimeString("tr")+" · "+Math.round((localStorage.getItem("dtdb")||"").length/1024)+" KB / ~5000 KB"}catch(e){st.textContent="Tarayıcıya kaydedilemedi - JSON indirin"}}
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function toggleSidebar(){
+  const sb = document.getElementById("sb");
+  const ov = document.getElementById("sbOverlay");
+  sb.classList.toggle("open");
+  ov.classList.toggle("open");
+}
+function closeSidebarMobile(){
+  const sb = document.getElementById("sb");
+  const ov = document.getElementById("sbOverlay");
+  if(sb) sb.classList.remove("open");
+  if(ov) ov.classList.remove("open");
+}
+
+function head(){
+  sel.innerHTML=db.files.map((f,i)=>`<option value="${i}" ${i==db.cur?"selected":""}>${esc(f.f["Dosya No"]||"Dosya "+(i+1))} — ${esc((f.f["İşin Adı / Tanımı"]||"").slice(0,24))}</option>`).join("");
+  const f=cur();
+  const getCount=(t)=>{
+    if(t==='idx') return db.files.length;
+    if(t==='mat') return f.mat ? f.mat.length : 0;
+    if(t==='win') return f.win ? f.win.length : 0;
+    if(t==='kab') return f.kab ? f.kab.length : 0;
+    if(t==='kom') return (f.yak ? f.yak.length : 0) + (f.muay ? f.muay.length : 0);
+    return null;
+  };
+  nav.innerHTML=TABS.map(t=>{
+    const c=getCount(t[0]);
+    const cntHtml = c !== null ? `<span class="cnt">${c}</span>` : '';
+    return `<button class="${t[0]==tab?"on":""}" onclick="tab='${t[0]}';closeSidebarMobile();draw()"><span>${t[1]}</span>${cntHtml}</button>`;
+  }).join("");
+  const curTitleEl = document.getElementById("curTitle");
+  if(curTitleEl && f){
+    curTitleEl.textContent = (f.f["Dosya No"]||"Dosya") + " · " + (f.f["İşin Adı / Tanımı"]||"Belirtilmemiş");
+  }
+}
+
+sel.onchange=()=>{db.cur=+sel.value;kabI=0;draw()};
+function newF(){db.files.push(blank());db.cur=db.files.length-1;tab="f";save();draw()}
+function delF(){if(!confirm("Bu dosya silinsin mi?"))return;db.files.splice(db.cur,1);if(!db.files.length)db.files.push(blank());db.cur=0;save();draw()}
+
+function tbl(rows,cols,title,key){ // rows: array ref
+ const body=rows.map((r,i)=>`<tr>${cols.map((c,j)=>c.endsWith("*")?`<td class="n">${i+1}</td>`:`<td><input data-r="${i}" data-c="${j}" value="${esc(r[j])}"></td>`).join("")}<td class="n"><button class="s" data-del="${i}">×</button></td></tr>`).join("");
+ return `<div class="card" data-k="${key}"><h2>${title}</h2><div class="sc"><table><tr>${cols.map(c=>`<th>${c.replace("*","")}</th>`).join("")}<th></th></tr>${body}</table></div>
+ <div class="bar"><button class="s" data-add>+ Satır</button><button class="s" data-paste>Excel'den yapıştır</button><span class="mu">Excel'den satırları kopyalayıp aktarın; sütunlar sırayla eşleşir.</span></div>
+ <textarea class="hide" rows="5" style="width:100%;margin-top:6px" placeholder="Excel'den kopyaladığınız hücreleri buraya yapıştırın, sonra dışarı tıklayın"></textarea></div>`}
+
+function bind(root,getRows,colsOf){root.querySelectorAll(".card[data-k]").forEach(card=>{
+ const k=card.dataset.k,rows=getRows(k),cols=colsOf(k);
+ card.addEventListener("input",e=>{const d=e.target.dataset;if(d.r!=null){rows[d.r][d.c]=e.target.value;save()}});
+ card.addEventListener("click",e=>{const d=e.target.dataset;
+  if(d.del!=null){rows.splice(d.del,1);save();draw()}
+  if(d.add!=null){rows.push(cols.map(()=>""));save();draw()}
+  if(d.paste!=null){const t=card.querySelector("textarea");t.classList.toggle("hide");t.focus()}});
+ const ta=card.querySelector("textarea");ta.onchange=()=>{const idx=cols.map((c,i)=>c.endsWith("*")?-1:i).filter(i=>i>=0);
+  let ls=ta.value.split(/\r?\n/).filter(l=>l.trim());
+  if(ls.length&&ls[0].split(/\t|;/)[0].trim().toLowerCase()==cols[idx[0]].toLowerCase())ls.shift();
+  ls.forEach(l=>{const p=l.split(/\t|;/);const r=cols.map(()=>"");idx.forEach((ci,n)=>r[ci]=(p[n]??"").trim());rows.push(r)});
+  save();draw()}})}
+
+function draw(){head();const f=cur();let h="";
+ if(tab=="idx")h=idxHTML();
+ else if(tab=="rapor")h=raporHTML(f);
+ else if(tab=="sab")h=sabHTML();
+ else if(tab=="f"){h=`<div class="card"><div class="grid">`+F.map(([n,t,o])=>{const v=esc(f.f[n]);const w=o=="w"?"w":"";
+  if(t=="sel"){const ops=o.map(x=>`<option ${f.f[n]==x?"selected":""}>${esc(x)}</option>`).join("");return `<label>${n}<select data-f="${esc(n)}"><option value=""></option>${ops}</select></label>`}
+  if(t=="area")return `<label class="w">${n}<textarea rows="3" data-f="${esc(n)}">${v}</textarea></label>`;
+  return `<label class="${w}">${n}<input type="${t}" data-f="${esc(n)}" value="${v}"></label>`}).join("")+`</div></div>`}
+ else if(tab=="ayar")h=ayarHTML();
+ else if(tab=="mat"){
+   const totalMiktar = f.mat.reduce((acc, r) => acc + (parseFloat(r[6]) || 0), 0);
+   const totalTutar = f.mat.reduce((acc, r) => acc + ((parseFloat(r[6]) || 0) * (parseFloat(r[7]) || 0)), 0);
+   h=`<div class="card" style="margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <div><h2 style="margin:0;border:none;padding:0">📦 İhtiyaç Malzeme Listesi</h2><span class="mu">İhale/alım kapsamında talep edilen malzeme ve hizmet kalemleri</span></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <span class="badge" style="background:var(--ac2);color:var(--ac)">Toplam: ${f.mat.length} Kalem</span>
+            <span class="badge" style="background:var(--ac2);color:var(--ac)">Miktar: ${totalMiktar}</span>
+            <span class="badge" style="background:var(--ac2);color:var(--ac)">Tahmini Tutar: ${totalTutar.toLocaleString("tr-TR", {minimumFractionDigits:2, maximumFractionDigits:2})} TL</span>
+          </div>
+        </div>
+      </div>` + tbl(f.mat,T.mat[1],T.mat[0],"mat");
+ }
+ else if(tab=="win")h=tbl(f.win,T.win[1],T.win[0],"win")+tbl(f.con,T.con[1],T.con[0],"con");
+ else if(tab=="kom")h=tbl(f.yak,T.yak[1],T.yak[0],"yak")+tbl(f.muay,T.muay[1],T.muay[0],"muay");
+ else{ if(kabI>=f.kab.length)kabI=Math.max(0,f.kab.length-1);
+  h=`<div class="bar" style="margin:0 0 8px"><select id="ks">${f.kab.map((k,i)=>`<option value="${i}" ${i==kabI?"selected":""}>${esc(k.h["Kabul Tarihi"]||"Tutanak "+(i+1))}</option>`).join("")}</select><button onclick="addK()">+ Tutanak</button><button onclick="delK()">Sil</button></div>`;
+  const k=f.kab[kabI];if(k){h+=`<div class="card"><h2>Tutanak Detayı</h2><div class="grid">`+KH.map(n=>`<label>${n}<input data-kh="${n}" ${n.includes("Tarihi")?'type="date"':""} value="${esc(k.h[n])}"></label>`).join("")+`</div></div>`+tbl(k.m,KM,"Malzeme Listesi","km")}
+  else h+=`<p class="mu">Henüz tutanak yok.</p>`}
+ main.innerHTML=h;
+ main.querySelectorAll("[data-f]").forEach(el=>el.oninput=()=>{f.f[el.dataset.f]=el.value;save()});
+ main.querySelectorAll("[data-kh]").forEach(el=>el.oninput=()=>{f.kab[kabI].h[el.dataset.kh]=el.value;save()});
+ main.querySelectorAll("[data-d]").forEach(el=>el.oninput=()=>{db.defs.f[el.dataset.d]=el.value;save()});
+ const ks=document.getElementById("ks");if(ks)ks.onchange=()=>{kabI=+ks.value;draw()};
+ bind(main,k=>k=="km"?f.kab[kabI].m:k.startsWith("d_")?db.defs[k.slice(2)]:f[k],k=>k=="km"?KM:T[k.replace("d_","")][1]);
+ updateSidebarTpl();
+}
+
+function ayarHTML(){const d=db.defs;const skip=['Dosya No','Doğrudan Temin Numarası'];
+const fl=F.filter(x=>!skip.includes(x[0])&&x[1]!=='date'&&x[1]!=='datetime-local').map(([n,t,o])=>{const v=esc(d.f[n]);const e=esc(n);
+if(t==='sel')return `<label>${n}<select data-d='${e}'><option value=''></option>${o.map(x=>`<option ${d.f[n]==x?'selected':''}>${esc(x)}</option>`).join('')}</select></label>`;
+if(t==='area')return `<label class='w'>${n}<textarea rows='3' data-d='${e}'>${v}</textarea></label>`;
+return `<label class='${o==='w'?'w':''}'>${n}<input data-d='${e}' value='${v}'></label>`}).join('');
+return `<div class='card'><h2>Varsayılan değerler</h2><p class='mu'>Buradakiler yeni açılan her dosyaya otomatik gelir. Dosya açılış tarihi bugün olarak gelir.</p><div class='grid'>${fl}</div><div class='bar'><button class='p' onclick='applyDefs()'>Açık dosyanın boş alanlarına uygula</button><button onclick='curToDefs()'>Açık dosyadan varsayılan al</button></div></div>`+tbl(d.yak,T.yak[1],'Varsayılan: '+T.yak[0],'d_yak')+tbl(d.muay,T.muay[1],'Varsayılan: '+T.muay[0],'d_muay')}
+function applyDefs(){const f=cur(),d=db.defs;Object.entries(d.f).forEach(([k,v])=>{if(v&&!f.f[k])f.f[k]=v});if(!f.yak.length)f.yak=cl(d.yak);if(!f.muay.length)f.muay=cl(d.muay);save();st.textContent='Varsayılanlar açık dosyaya uygulandı'}
+function curToDefs(){const f=cur(),d=db.defs;d.f={};F.forEach(([n,t])=>{if(f.f[n]&&!['Dosya No','Doğrudan Temin Numarası'].includes(n)&&t!=='date'&&t!=='datetime-local')d.f[n]=f.f[n]});d.yak=cl(f.yak);d.muay=cl(f.muay);save();draw()}
+
+let q='';
+function fmt(v){v=v||'';if(/^[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(v)){const p=v.slice(0,10).split('-');v=p[2]+'.'+p[1]+'.'+p[0]+v.slice(10).replace('T',' ')}return v?esc(v):'—'}
+function go(i,t){db.cur=i;kabI=0;tab=t;draw()}
+function ixTable(){const s=q.toLowerCase();
+const rows=db.files.map((f,i)=>({f:f,i:i})).filter(o=>!s||(JSON.stringify(o.f.f)+JSON.stringify(o.f.win)+JSON.stringify(o.f.mat)).toLowerCase().includes(s));
+return `<table style='min-width:760px'><tr><th>Dosya No</th><th>D.T. No</th><th>Dosya Adı</th><th>Malzeme</th><th>İhale Türü</th><th>İhale Şekli</th><th>İhale Tarihi</th><th>İhale Aşaması</th><th>İşlem</th></tr>`+rows.map(o=>{const x=o.f.f;return `<tr><td>${fmt(x['Dosya No'])}</td><td>${fmt(x['Doğrudan Temin Numarası'])}</td><td>${fmt(x['İşin Adı / Tanımı'])}</td><td><span class="badge" style="background:var(--ac2);color:var(--ac)">${(o.f.mat||[]).length} Kalem</span></td><td>${fmt(x['Alım Türü'])}</td><td>${fmt(x['İhale Tipi'])}</td><td>${fmt(x['İhale Tarihi'])}</td><td>${fmt(x['İhale Aşaması'])}</td><td style='white-space:nowrap'><button class='s' onclick='go(${o.i},"f")'>Aç</button> <button class='s' onclick='go(${o.i},"mat")'>Malzeme</button> <button class='s' onclick='go(${o.i},"rapor")'>Rapor</button></td></tr>`}).join('')+`</table>`+(rows.length?'':`<p class='mu'>Kayıt bulunamadı.</p>`)}
+function ixList(){document.getElementById('ixl').innerHTML=ixTable()}
+function idxHTML(){return `<div class='card'><h2>Dosyalar (${db.files.length})</h2><div class='bar' style='margin:0 0 8px'><input placeholder='Ara: dosya no, iş adı, firma, malzeme...' value='${esc(q)}' oninput='q=this.value;ixList()' style='flex:1;min-width:200px'><button class='p' onclick='newF();tab="f";draw()'>+ Yeni dosya</button><button onclick='addMock()'>Örnek veri ekle</button></div><div class='sc' id='ixl'>${ixTable()}</div></div>`}
+
+function raporHTML(f){const g=(n,s)=>fmt((s||f.f)[n]);
+const kv=(arr,s)=>`<table class='rk'>`+arr.map(a=>a.length==1?`<tr><th>${a[0]}</th><td colspan='3'>${g(a[0],s)}</td></tr>`:`<tr><th>${a[0]}</th><td>${g(a[0],s)}</td><th>${a[1]}</th><td>${g(a[1],s)}</td></tr>`).join('')+`</table>`;
+const tb=(c,r)=>r.length?`<table><tr>${c.map(x=>`<th>${x.replace('*','')}</th>`).join('')}</tr>${r.map((x,i)=>`<tr>${c.map((cc,j)=>`<td>${cc.endsWith('*')?i+1:esc(x[j])}</td>`).join('')}</tr>`).join('')}</table>`:`<p class='mu'>Kayıt yok.</p>`;
+const S=(t,b)=>`<h3>${t}</h3>${b}`;
+let h=`<div class='bar' style='margin:0 0 8px;justify-content:center'><button class='p' onclick='print()'>Yazdır / PDF (A4)</button></div><div class='a4'><div class='rh'><b>DOĞRUDAN TEMİN DOSYA RAPORU</b><span>${g('İşin Adı / Tanımı')}</span></div>`;
+h+=S('1. Genel Bilgiler',kv([['Dosya No','Doğrudan Temin Numarası'],['Dosya Açılış Tarihi','Bütçe Yılı'],['Bütçe','İhale Tarihi'],['İhale Aşaması','İhalesi Yapılacak Birim'],['İşin Adı / Tanımı'],['Açıklama']]));
+h+=S('2. Makam ve Kodlar',kv([['Sunulacak Makam','İhtiyaç Yeri'],['Talep Tarih/Sayısı','Yatırım Proje Numarası'],['Kurumsal Kod','Fonksiyonel Kod'],['Finansal Kod','İrtibat Yetkilisi']]));
+h+=S('3. İhale Bilgileri',kv([['İhale Tipi','Alım Türü'],['Madde','Teklif ve Sözleşme Türü'],['Alt yüklenici olacak mı','Kısmi teklif verilecek mi'],['Avans Verilecek mi','Tıbbi Cihaz Alımı mı'],['Fiyat Farkı Dayanağı']]));
+h+=S('4. Yaklaşık Maliyet ve Süre',kv([['Yaklaşık Maliyet','KDV'],['Hesaplama Esası','Son Teklif Verme Tarih/Saati'],['Hesaplamada'],['Tahmini Bitiş Tarihi']]));
+h+=S('5. Malzeme Listesi ('+f.mat.length+' Kalem)',tb(T.mat[1],f.mat));
+h+=S('6. Kazanan Firmalar ve Sözleşmeler',tb(T.win[1],f.win)+'<div style="height:6px"></div>'+tb(T.con[1],f.con));
+h+=S('7. Kabul Tutanakları',f.kab.length?f.kab.map((k,i)=>`<h4>Tutanak ${i+1}</h4>`+kv([['Kabul Tarihi','Sayı'],['Firma','Teslim Alan'],['Teslim Yeri','Fatura Tarihi'],['Fatura No']],k.h)+'<div style="height:4px"></div>'+tb(KM,k.m)).join(''):`<p class='mu'>Kayıt yok.</p>`);
+h+=S('8. Yaklaşık Maliyet Tespit Komisyonu',tb(T.yak[1],f.yak));
+h+=S('9. Muayene Kabul ve Tespit Komisyonu',tb(T.muay[1],f.muay));
+return h+`<p class='mu' style='text-align:right;margin-top:14px'>Rapor tarihi: ${fmt(new Date().toISOString().slice(0,10))}</p></div>`}
+
+/* ---- Mock veri ---- */
+function mock(){const mk=(n,tn,ad,ac,tip,asama,tar,firma,mat,yak,muay,sab)=>{const f=blank();
+Object.assign(f.f,{'Dosya No':n,'Doğrudan Temin Numarası':tn,'Dosya Açılış Tarihi':tar,'Bütçe Yılı':'2026','Bütçe':'Genel Bütçe','İşin Adı / Tanımı':ad,'Açıklama':ac,'İhalesi Yapılacak Birim':'Fen İşleri Müdürlüğü','Sunulacak Makam':'Belediye Başkanlığı','İhtiyaç Yeri':'Hizmet Binası','Talep Tarih/Sayısı':'12.10.2026 / 1458','Kurumsal Kod':'41.01.00.00','Fonksiyonel Kod':'06.1','Finansal Kod':'1','Alım Türü':tip,'Madde':'22/d*','Teklif ve Sözleşme Türü':'Birim Fiyat','Yaklaşık Maliyet':'Burada Hesaplanacak','KDV':'Hariç','Hesaplama Esası':'Ortalama fiyat esasına göre','Hesaplamada':'Sadece araştırma fiyatları dikkate alınacak','İrtibat Yetkilisi':'Ahmet Yılmaz','İhale Tarihi':tar,'İhale Aşaması':asama,'Son Teklif Verme Tarih/Saati':tar+'T14:00','Tahmini Bitiş Tarihi':'2026-12-31'});
+f.mat=mat.map(m=>['',...m]);f.win=[[firma]];f.con=[[firma,'Sözleşme No: '+tn]];
+f.yak=yak.map(m=>['',...m]);
+f.muay=muay.map(m=>['',...m]);
+f.sablon=sab||{};
+f.kab=[{h:{'Kabul Tarihi':tar,'Firma':firma,'Sayı':'KB-'+tn,'Teslim Alan':'Ayşe Çelik','Teslim Yeri':'Ana Depo','Fatura Tarihi':tar,'Fatura No':'A-'+tn.replace(/\D/g,'')},m:mat.map(m=>['',m[1],m[2],m[3],m[5],m[5],m[5]])}];return f};
+return [
+mk('2026/101','DT-2026/0101','Çatı Onarımı Malzeme Alımı','Hizmet binası çatı onarımı için yapı malzemeleri.','Mal Alımı','Sözleşme','2026-10-05','ABC Yapı Malzemeleri San. ve Tic. A.Ş.',
+[['YM-001','Kiremit (Marsilya)','Kırmızı, 1. sınıf','Adet','20','2500','18.50'],['YM-002','Su Yalıtım Membranı','4 mm, APP katkılı','m²','20','300','140.00'],['YM-003','Çivi','80 mm galvaniz','Kg','20','50','65.00']],
+[['Komisyon Başkanı','Ahmet Yılmaz','Makine Mühendisi'],['Üye','Mehmet Karaca','İnşaat Teknikeri'],['Üye','Selin Tunç','Mimar']],
+[['Komisyon Başkanı','Aylin Kaya','Şube Müdürü'],['Üye','Burak Demir','Taşınır Kayıt Yetkilisi'],['Üye','Zeynep Arslan','Ambar Memuru']],
+{'evrakSayisi':'E-2026/101-04','baskanAdi':'Mustafa Aydın','baskanUnvan':'Harcama Yetkilisi','hazirlayanPersonelAdi':'Ahmet Yılmaz','hazirlayanPersonelUnvan':'Satınalma Görevlisi','onaylayanPersonelAdi':'Serdar Demir','onaylayanPersonelUnvan':'Fen İşleri Müdürü'}),
+
+mk('2026/102','DT-2026/0102','Kırtasiye Alımı','Birimler için yıllık kırtasiye ihtiyacı.','Mal Alımı','Kabul','2026-10-12','Güven Kırtasiye Ltd. Şti.',
+[['KR-001','A4 Fotokopi Kağıdı','80 gr, 500 yaprak','Koli','20','20','850.00'],['KR-002','Jel Kalem','Mavi, 0.7 mm','Adet','20','200','16.50'],['KR-003','Telli Dosya','Mavi plastik mekanizmalı','Paket','20','15','125.00']],
+[['Komisyon Başkanı','Ali Koç','Satınalma Şefi'],['Üye','Fatma Demir','V.H.K.İ.'],['Üye','Canan Yurt','Memur']],
+[['Komisyon Başkanı','Kemal Şahin','Destek Hizmetleri Müdürü'],['Üye','Ayşe Çelik','Taşınır Kontrol Yetkilisi'],['Üye','Murat Can','Ambar Şefi']],
+{'evrakSayisi':'E-2026/102-12','baskanAdi':'Mustafa Aydın','baskanUnvan':'Harcama Yetkilisi','hazirlayanPersonelAdi':'Ayşe Çelik','hazirlayanPersonelUnvan':'V.H.K.İ.','onaylayanPersonelAdi':'Kemal Şahin','onaylayanPersonelUnvan':'Destek Hizmetleri Müdürü'}),
+
+mk('2026/103','DT-2026/0103','Park Bahçe Bakım Hizmeti','Yeşil alanların bakım ve düzenlenmesi.','Hizmet Alımı','Teklif Toplama','2026-10-16','Yeşil Peyzaj Hizmetleri A.Ş.',
+[['PB-001','Çim Biçme Hizmeti','Haftalık periyodik','Ay','20','3','12500.00'],['PB-002','Budama Hizmeti','Ağaç başına','Adet','20','120','175.00']],
+[['Komisyon Başkanı','Mehmet Karaca','Park Bahçeler Şefi'],['Üye','Derya Uzun','Ziraat Mühendisi'],['Üye','Emre Koç','Peyzaj Teknikeri']],
+[['Komisyon Başkanı','Serdar Demir','Fen İşleri Müdürü'],['Üye','Gülşen Kurt','Ziraat Teknikeri'],['Üye','Cem Tan','Tekniker']],
+{'evrakSayisi':'E-2026/103-08','baskanAdi':'Mustafa Aydın','baskanUnvan':'Harcama Yetkilisi','hazirlayanPersonelAdi':'Mehmet Karaca','hazirlayanPersonelUnvan':'Park Bahçeler Şefi','onaylayanPersonelAdi':'Serdar Demir','onaylayanPersonelUnvan':'Fen İşleri Müdürü'})
+]}
+
+function addMock(){const a=mock();db.files.push(...a);db.cur=db.files.length-a.length;save();draw()}
+
+/* ---- Mustache / Handlebars-lite ---- */
+function mparse(t){const re=/\{\{\{\s*([^}]+?)\s*\}\}\}|\{\{\s*([#^\/!>&]?)\s*([^}]*?)\s*\}\}/g;const root={c:[]},st=[root];let m,l=0;const P=x=>st[st.length-1].c.push(x);
+while((m=re.exec(t))){if(m.index>l)P(t.slice(l,m.index));l=re.lastIndex;
+if(m[1]!==undefined){P({v:m[1],r:1});continue}
+const k=m[2],n=m[3];if(k==='!'||k==='>')continue;
+if(k==='#'||k==='^'){const nd={k:k,n:n,c:[]};P(nd);st.push(nd)}
+else if(k==='/'){if(st.length>1)st.pop()}
+else if(k===''&&/^else/.test(n)){if(st.length>1){const top=st[st.length-1],nd=top.o||top;nd.br=nd.br||[{cd:nd.n.replace(/^if\s+/,''),c:nd.c}];const b={cd:/^else\s+if\s+/.test(n)?n.replace(/^else\s+if\s+/,''):null,c:[],o:nd};nd.br.push(b);st[st.length-1]=b}}
+else P({v:n,r:k==='&'})}
+if(l<t.length)P(t.slice(l));return root.c}
+function look(fr,n){if(n==='.')return fr[fr.length-1].d;
+if(n[0]==='@'){for(let i=fr.length-1;i>=0;i--)if(fr[i].i!==undefined)return n==='@index_1'?fr[i].i+1:fr[i].i;return}
+const p=n.split('.');for(let i=fr.length-1;i>=0;i--){let d=fr[i].d;if(d&&typeof d==='object'&&p[0] in d){for(const k of p){if(d==null)break;d=d[k]}return d}}}
+const ok=v=>Array.isArray(v)?v.length>0:!!v;
+function mrend(ns,fr){let o='';for(const x of ns){
+if(typeof x==='string'){o+=x;continue}
+if(x.v!==undefined){let v=look(fr,x.v);if(v==null||typeof v==='object')v='';o+=x.r?v:esc(v);continue}
+let n=x.n;
+if(x.k==='^'){if(!ok(look(fr,n)))o+=mrend(x.c,fr);continue}
+if(/^if\s/.test(n)){if(x.br){const b=x.br.find(b=>b.cd===null||ok(look(fr,b.cd)));if(b)o+=mrend(b.c,fr)}else if(ok(look(fr,n.slice(3).trim())))o+=mrend(x.c,fr);continue}
+if(/^each\s/.test(n))n=n.slice(5).trim();
+const v=look(fr,n);
+if(Array.isArray(v))v.forEach((it,i)=>{o+=mrend(x.c,fr.concat({d:it,i:i}))});
+else if(ok(v))o+=mrend(x.c,typeof v==='object'?fr.concat({d:v}):fr)}
+return o}
+
+/* ---- Şablon depolama (IndexedDB) ---- */
+let TPL={};
+const idb=()=>new Promise((res,rej)=>{const r=indexedDB.open('dtpl',1);r.onupgradeneeded=()=>r.result.createObjectStore('t');r.onsuccess=()=>res(r.result);r.onerror=()=>rej()});
+async function idbAll(){const d=await idb();return new Promise(res=>{const o={};const c=d.transaction('t').objectStore('t').openCursor();c.onsuccess=()=>{const x=c.result;if(x){o[x.key]=x.value;x.continue()}else res(o)};c.onerror=()=>res({})})}
+async function idbPut(k,v){const d=await idb();return new Promise(res=>{const t=d.transaction('t','readwrite');t.objectStore('t').put(v,k);t.oncomplete=res;t.onerror=res})}
+async function sabClear(){if(!confirm('Yüklü şablonlar silinsin mi?'))return;try{const d=await idb();await new Promise(r=>{const t=d.transaction('t','readwrite');t.objectStore('t').clear();t.oncomplete=r})}catch(e){}sabInit();updateSidebarTpl()}
+async function sabLoad(files){const m={};
+for(const fl of files){const p=(fl.webkitRelativePath||fl.name).split('/');const n=p[p.length-1];if(n==='master.mustache')continue;
+const isJ=/\.json$/i.test(n);if(!isJ&&!/\.(mustache|html)$/i.test(n))continue;
+const key=p.length>2?p.slice(-3,-1).join('/'):n.replace(/(\.mustache\.json|\.json|\.mustache|\.html)$/i,'');
+m[key]=m[key]||{};const tx=await fl.text();if(isJ)m[key].json=tx;else m[key].html=tx}
+let c=0;try{for(const k in m)if(m[k].html){await idbPut(k,m[k]);c++}}catch(e){alert('Tarayıcı şablonları saklayamadı')}
+sabInit();
+updateSidebarTpl();
+document.getElementById('sbst').textContent=c+' şablon yüklendi'}
+
+/* ---- Yan Menüde Şablon Ağacını Listeleme ---- */
+function updateSidebarTpl(){
+  const wrap = document.getElementById("sbTplTree");
+  const badge = document.getElementById("sbTplBadge");
+  if(!wrap) return;
+  const keys = Object.keys(TPL).sort();
+  if(badge) badge.textContent = keys.length;
+  if(!keys.length){
+    wrap.innerHTML = `<p class="mu" style="padding:6px;font-size:11px;line-height:1.4">Şablon klasörü henüz seçilmedi.<br><a href="javascript:void(0)" onclick="tab='sab';closeSidebarMobile();draw()" style="color:var(--ac);text-decoration:underline">Şablonlar sekmesine git</a></p>`;
+    return;
+  }
+  const g = {};
+  keys.forEach(k => {
+    const p = k.split('/');
+    const c = p.length > 1 ? p[0] : 'Genel';
+    (g[c] = g[c] || []).push(k);
+  });
+  const pr = x => x.replace(/^[0-9]+-/, '').replace(/-/g, ' ');
+  wrap.innerHTML = Object.entries(g).map(([c, arr]) => {
+    const items = arr.map(k => {
+      const name = pr(k.split('/').pop());
+      const isActive = (tab === 'sab' && currentTplKey === k) ? 'active' : '';
+      return `<button class="tpl-item ${isActive}" onclick="openTpl('${esc(k)}')">📄 ${esc(name)}</button>`;
+    }).join("");
+    return `
+      <div class="tpl-group">
+        <div class="tpl-group-title" onclick="this.nextElementSibling.classList.toggle('hide')">
+          <span>📁 ${esc(pr(c))}</span>
+          <span class="cnt">${arr.length}</span>
+        </div>
+        <div class="tpl-items">${items}</div>
+      </div>
+    `;
+  }).join("");
+}
+
+function openTpl(key){
+  currentTplKey = key;
+  tab = 'sab';
+  closeSidebarMobile();
+  draw();
+  setTimeout(() => {
+    const s = document.getElementById('sbsel');
+    if(s){
+      s.value = key;
+      sabShow();
+    }
+    updateSidebarTpl();
+  }, 10);
+}
+
+/* ---- Veri eşleme (Dosyaya özel şablon verisi öncelikli) ---- */
+function sCtx(f,tj,useT){
+  const k=db.kurum||{}, fs=f.sablon||{}, x=f.f, o={};
+  const S=(a,v)=>{if(v)o[a]=v};
+  const dd=v=>v?v.slice(0,10).split('-').reverse().join('.'):'';
+
+  ['dosyaKonusu','isAdi','isinAdi'].forEach(a=>S(a,x['İşin Adı / Tanımı']));
+  S('dosyaTarihi',dd(x['Dosya Açılış Tarihi']));S('tarih',dd(x['Dosya Açılış Tarihi']));
+  S('dosyaNumarasi',x['Dosya No']);S('teminNo',x['Doğrudan Temin Numarası']);S('yili',x['Bütçe Yılı']);
+  ['birimAdi','mudurluk'].forEach(a=>S(a,x['İhalesi Yapılacak Birim']));S('sunulacakMakamAdi',x['Sunulacak Makam']);
+  S('alimTuru',x['Alım Türü']);S('aciklama',x['Açıklama']);S('isinAciklamasi',x['Açıklama']);
+  S('yukleniciFirma',(f.win[0]||[])[0]);
+
+  // Dosyaya özel şablon alanları öncelikli, boşsa ortak kurumdan al
+  const kfKeys=['evrakSayisi','baskanAdi','baskanUnvan','hazirlayanPersonelAdi','hazirlayanPersonelUnvan','onaylayanPersonelAdi','onaylayanPersonelUnvan'];
+  kfKeys.forEach(a=>{
+    const v = fs[a] || k[a];
+    if(v) o[a]=v;
+  });
+
+  // Malzemeler (Birim Fiyat ve Toplam Tutar ekli)
+  if(f.mat.length){
+    o.ihtiyacKalemleri=f.mat.map((r,i)=>{
+      const miktar = parseFloat(r[6]) || 0;
+      const birimFiyat = parseFloat(r[7]) || 0;
+      const toplamFiyat = (miktar && birimFiyat) ? (miktar * birimFiyat).toFixed(2) : '';
+      return {
+        siraNo: i+1,
+        kodu: r[1]||'',
+        malzemeAdi: r[2]||'',
+        ozelligi: r[3]||'',
+        birimi: r[4]||'',
+        kdvOrani: r[5]||'20',
+        miktar: r[6]||'1',
+        birimFiyat: r[7]||'',
+        toplamFiyat: toplamFiyat,
+        tutar: toplamFiyat
+      };
+    });
+    o.kalemSayisi=f.mat.length;
+  }
+
+  // Komisyonlar (Ad Soyad, Görevi, Unvanı)
+  const km=r=>({adSoyad:r[2]||'',gorevi:r[1]||'',unvan:r[3]||''});
+  if(f.yak.length){o.yaklasikMaliyetKomisyonu=f.yak.map(km);o.komisyon=o.yaklasikMaliyetKomisyonu}
+  if(f.muay.length){o.muayeneKomisyonu=f.muay.map(km);o.komisyon=o.muayeneKomisyonu}
+
+  const kb=f.kab[f.kab.length-1];
+  if(kb){S('faturaNo',kb.h['Fatura No']);S('faturaTarihi',dd(kb.h['Fatura Tarihi']));S('kabulTarihi',dd(kb.h['Kabul Tarihi']))}
+
+  const kk={};Object.keys(k).forEach(a=>{if(k[a])kk[a]=k[a]});
+  if(k.kurumAdi)kk.kurumIci=k.kurumAdi;
+  if(k.antet)kk.antetSatirlari=k.antet.split('\n').filter(Boolean);
+  delete kk.antet;
+
+  return Object.assign({},useT?tj:{},{solLogo:'',sagLogo:'',ustLogo:'',kurumLogo:''},kk,o);
+}
+
+/* ---- Şablonlar sekmesi (Dosyaya özel alanlar & Ortak kurum bilgileri) ---- */
+function sabHTML(){
+  setTimeout(sabInit,0);
+  const f=cur(), fs=f.sablon||{}, k=db.kurum||{};
+  const dosyaAlanlari=[
+    ['evrakSayisi','Evrak Sayısı / Barkod No'],
+    ['baskanAdi','Başkan / Harcama Yetkilisi'],
+    ['baskanUnvan','Başkan Unvanı'],
+    ['hazirlayanPersonelAdi','Hazırlayan Personel'],
+    ['hazirlayanPersonelUnvan','Hazırlayan Unvanı'],
+    ['onaylayanPersonelAdi','Onaylayan Personel'],
+    ['onaylayanPersonelUnvan','Onaylayan Unvanı']
+  ];
+  const kurumAlanlari=[
+    ['kurumAdi','Kurum Adı']
+  ];
+
+  return `
+  <div class='card'>
+    <h2>Şablonlar (.mustache)</h2>
+    <p class='mu'>GitHub'dan indirdiğiniz <b>templates</b> klasörünü seçin. Şablonlar tarayıcıda saklanır, her seferinde yüklemeniz gerekmez.</p>
+    <div class='grid'>
+      <label>Klasör seç<input type='file' id='fdir' webkitdirectory multiple onchange='sabLoad(this.files)'></label>
+      <label>veya tek tek dosya seç<input type='file' multiple accept='.mustache,.json,.html' onchange='sabLoad(this.files)'></label>
+    </div>
+    <div class='bar'><button onclick='sabClear()'>Şablonları temizle</button><span id='sbst' class='mu'></span></div>
+  </div>
+
+  <div class='card'>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+      <h2 style="margin:0;border:none;padding:0">Bu Dosyaya Özel Bilgiler (${esc(f.f["Dosya No"]||"Aktif Dosya")})</h2>
+      <span class="badge" style="background:var(--ac2);color:var(--ac)">Dosyayla birlikte kaydedilir</span>
+    </div>
+    <p class='mu' style="margin-bottom:12px">Bu alanlar sadece seçili dosyanın şablon çıktılarında kullanılır. Boş bırakırsanız aşağıdaki ortak kurum bilgileri devreye girer.</p>
+    <div class='grid'>
+      ${dosyaAlanlari.map(([a,l])=>`<label>${l}<input data-fsab='${a}' value='${esc(fs[a])}' placeholder='${esc(k[a]||"Ortak değer kullanılır")}'></label>`).join('')}
+    </div>
+  </div>
+
+  <div class='card'>
+    <h2>Ortak Kurum Bilgileri (Tüm Dosyalar İçin Ortak)</h2>
+    <p class='mu' style="margin-bottom:12px">Kurum adı, antet satırları ve logolar tüm dosyalarınızda geçerlidir.</p>
+    <div class='grid'>
+      ${kurumAlanlari.map(([a,l])=>`<label>${l}<input data-kr='${a}' value='${esc(k[a])}'></label>`).join('')}
+      <label class='w'>Antet satırları (her satır ayrı)<textarea rows='3' data-kr='antet'>${esc(k.antet)}</textarea></label>
+      <label>Sol logo<input type='file' accept='image/*' onchange='logo(this,"solLogo")'></label>
+      <label>Sağ logo<input type='file' accept='image/*' onchange='logo(this,"sagLogo")'></label>
+    </div>
+  </div>
+
+  <div class='card'>
+    <h2>Şablon Önizleme</h2>
+    <div class='bar' style='margin:0 0 8px'>
+      <select id='sbsel' onchange='sabShow()' style='flex:1;min-width:200px'></select>
+      <label style='flex-direction:row;align-items:center;gap:6px'><input type='checkbox' id='ust' checked onchange='sabShow()' style='width:auto'>Boşlukları şablonun örnek verisiyle doldur</label>
+      <button class='p' onclick='sabPrint()'>Yazdır / PDF</button>
+    </div>
+    <iframe id='fr' sandbox='allow-same-origin allow-modals' style='width:100%;height:78vh;border:1px solid var(--br);background:#fff;border-radius:6px'></iframe>
+  </div>
+  `;
+}
+
+function logo(i,k){const r=new FileReader();r.onload=()=>{db.kurum[k]=r.result;save();sabShow()};if(i.files[0])r.readAsDataURL(i.files[0])}
+
+async function sabInit(){
+  try{TPL=await idbAll()}catch(e){TPL={}}
+  const s=document.getElementById('sbsel');if(!s)return;
+  const keys=Object.keys(TPL).sort(),g={};keys.forEach(k=>{const p=k.split('/');const c=p.length>1?p[0]:'Genel';(g[c]=g[c]||[]).push(k)});
+  const pr=x=>x.replace(/^[0-9]+-/,'').replace(/-/g,' ');
+  s.innerHTML=keys.length?Object.entries(g).map(([c,a])=>`<optgroup label='${esc(pr(c))}'>${a.map(k=>`<option value='${esc(k)}'>${esc(pr(k.split('/').pop()))}</option>`).join('')}</optgroup>`).join(''):'<option value="">Şablon yüklenmedi</option>';
+  if(currentTplKey && TPL[currentTplKey]){ s.value = currentTplKey; }
+  const st=document.getElementById('sbst');if(st&&!st.textContent)st.textContent=keys.length+' şablon yüklü';
+
+  // Dosyaya özel alanları bağla
+  document.querySelectorAll('[data-fsab]').forEach(el=>el.oninput=()=>{
+    const f=cur();
+    if(!f.sablon) f.sablon={};
+    f.sablon[el.dataset.fsab]=el.value;
+    save();
+    sabShow();
+  });
+
+  // Ortak kurum alanlarını bağla
+  document.querySelectorAll('[data-kr]').forEach(el=>el.oninput=()=>{
+    db.kurum[el.dataset.kr]=el.value;
+    save();
+    sabShow();
+  });
+
+  updateSidebarTpl();
+  sabShow();
+}
+
+function sabShow(){
+  const s=document.getElementById('sbsel'),fr=document.getElementById('fr');if(!s||!fr)return;
+  currentTplKey = s.value;
+  updateSidebarTpl();
+  const t=TPL[s.value];
+  if(!t){fr.srcdoc='<p style="font:14px sans-serif;padding:16px;color:#666">Önce şablon klasörünü yükleyin.</p>';return}
+  let tj={};try{tj=JSON.parse(t.json||'{}')}catch(e){}
+  try{fr.srcdoc=mrend(mparse(t.html),[{d:sCtx(cur(),tj,document.getElementById('ust').checked)}])}catch(e){fr.srcdoc='<p style="padding:16px">Şablon işlenemedi: '+esc(e.message)+'</p>'}
+}
+
+function sabPrint(){const w=document.getElementById('fr').contentWindow;w.focus();w.print()}
+
+function addK(){cur().kab.push({h:{},m:[]});kabI=cur().kab.length-1;save();draw()}
+function delK(){cur().kab.splice(kabI,1);save();draw()}
+function dl(n,t,m){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([t],{type:m}));a.download=n;a.click()}
+const fn=()=>(cur().f["Dosya No"]||"dosya").replace(/[^\w-]/g,"_");
+function exJSON(){dl("dosyalar.json",JSON.stringify(db,null,1),"application/json")}
+function flat(f){const q=s=>'"'+String(s??"").replace(/"/g,'""')+'"';let o=["Dosya Bilgileri"];
+ F.forEach(([n])=>o.push([q(n),q(f.f[n])].join(";")));
+ const sec=(t,c,r)=>{o.push("",q(t));o.push(c.map(x=>q(x.replace("*",""))).join(";"));r.forEach((x,i)=>o.push(c.map((cc,j)=>q(cc.endsWith("*")?i+1:x[j])).join(";")))};
+ sec("Malzemeler",T.mat[1],f.mat);sec("Kazanan Firmalar",T.win[1],f.win);sec("Sözleşmeler",T.con[1],f.con);
+ f.kab.forEach((k,i)=>{o.push("",q("Kabul Tutanağı "+(i+1)));KH.forEach(n=>o.push([q(n),q(k.h[n])].join(";")));sec("Kabul Malzemeleri",KM,k.m)});
+ sec("Yaklaşık Maliyet Komisyonu",T.yak[1],f.yak);sec("Muayene Kabul Komisyonu",T.muay[1],f.muay);return o.join("\r\n")}
+function exCSV(){dl(fn()+".csv","\ufeff"+flat(cur()),"text/csv")}
+function copyAll(){const t=flat(cur()).replace(/";"/g,'"\t"').replace(/"/g,"");navigator.clipboard.writeText(t).then(()=>st.textContent="Panoya kopyalandı",()=>st.textContent="Kopyalanamadı")}
+function openTeminModal(){
+  const pb = document.getElementById('teminPreviewBox');
+  if(pb) pb.classList.add('hide');
+  document.getElementById('dlgTemin').showModal();
+}
+
+function copyTeminRows(all){
+  const files = all ? db.files : [cur()];
+  const lines = files.map(item => {
+    const f = item.f || {};
+    const dNo = f['Dosya No'] || '';
+    const dtNo = f['Doğrudan Temin Numarası'] || '';
+    const ad = f['İşin Adı / Tanımı'] || '';
+    const aciklama = f['Açıklama'] || '';
+    const tur = f['Alım Türü'] || 'Mal Alımı';
+    const sekli = (f['Madde'] || '22/d').replace('*', '');
+    const acilis = f['Dosya Açılış Tarihi'] || new Date().toISOString().slice(0, 10);
+    const teklif = f['Son Teklif Verme Tarih/Saati'] || (acilis + 'T14:00');
+    const bitis = f['Tahmini Bitiş Tarihi'] || (acilis.slice(0, 4) + '-12-31');
+    const asama = f['İhale Aşaması'] || 'Hazırlık';
+    return [dNo, dtNo, ad, aciklama, tur, sekli, acilis, teklif, bitis, asama].join('\t');
+  });
+  const tsv = lines.join('\n');
+  const box = document.getElementById('teminPreviewBox');
+  const out = document.getElementById('teminOutput');
+  if(box && out){
+    out.value = tsv;
+    box.classList.remove('hide');
+  }
+  navigator.clipboard.writeText(tsv).then(() => {
+    st.textContent = `Temin 360 için ${files.length} dosya kopyalandı!`;
+  }, () => {
+    if(out){ out.select(); }
+  });
+}
+
+function copyTeminMaterials(){
+  const f = cur();
+  if(!f.mat || !f.mat.length){
+    alert('Bu dosyada kayıtlı malzeme kalemi bulunmuyor.');
+    return;
+  }
+  const lines = f.mat.map((m, i) => {
+    const sira = i + 1;
+    const kod = m[1] || '';
+    const ad = m[2] || '';
+    const ozellik = m[3] || '';
+    const birim = m[4] || 'Adet';
+    const kdv = m[5] || '20';
+    const miktar = m[6] || '1';
+    const fiyat = m[7] || '';
+    return [sira, kod, ad, ozellik, birim, kdv, miktar, fiyat].join('\t');
+  });
+  const tsv = lines.join('\n');
+  const box = document.getElementById('teminPreviewBox');
+  const out = document.getElementById('teminOutput');
+  if(box && out){
+    out.value = tsv;
+    box.classList.remove('hide');
+  }
+  navigator.clipboard.writeText(tsv).then(() => {
+    st.textContent = `${f.mat.length} malzeme panoya kopyalandı!`;
+  }, () => {
+    if(out){ out.select(); }
+  });
+}
+
+function genTeminSql(){
+  const f = cur();
+  const escSql = s => s == null ? 'NULL' : "'" + String(s).replace(/'/g, "''") + "'";
+  const dNo = escSql(f.f['Dosya No']);
+  const dtNo = escSql(f.f['Doğrudan Temin Numarası']);
+  const ad = escSql(f.f['İşin Adı / Tanımı'] || 'Doğrudan Temin Alımı');
+  const aciklama = escSql(f.f['Açıklama'] || '');
+  const tur = escSql(f.f['Alım Türü'] || 'Mal Alımı');
+  const sekli = escSql((f.f['Madde'] || '22/d').replace('*', ''));
+  const acilis = escSql(f.f['Dosya Açılış Tarihi'] || new Date().toISOString().slice(0, 10));
+  const teklif = escSql(f.f['Son Teklif Verme Tarih/Saati'] || null);
+  const bitis = escSql(f.f['Tahmini Bitiş Tarihi'] || null);
+  const asama = escSql(f.f['İhale Aşaması'] || 'Hazırlık');
+
+  let sql = `-- Temin 360 SQLite SQL Çıktısı (${f.f['Dosya No'] || 'Yeni Dosya'})\n`;
+  sql += `INSERT INTO DATA_TeminDosyasi (temin_no, ekap_no, konu, isin_aciklamasi, ihale_tipi, ihale_sekli, dosya_acilis_tarihi, son_teklif_verme_tarihi, teslim_tarihi, status, tur, is_deleted)\n`;
+  sql += `VALUES (${dNo}, ${dtNo}, ${ad}, ${aciklama}, 'Doğrudan Temin', ${sekli}, ${acilis}, ${teklif}, ${bitis}, ${asama}, ${tur}, 0);\n`;
+
+  const box = document.getElementById('teminPreviewBox');
+  const out = document.getElementById('teminOutput');
+  if(box && out){
+    out.value = sql;
+    box.classList.remove('hide');
+  }
+  navigator.clipboard.writeText(sql).then(() => {
+    st.textContent = 'SQL panoya kopyalandı!';
+  }, () => {
+    if(out){ out.select(); }
+  });
+}
+
+function openIO(){io.value="";dlg.showModal()}
+function readFile(i){const r=new FileReader();r.onload=()=>io.value=r.result;if(i.files[0])r.readAsText(i.files[0])}
+
+/* ---- Gelişmiş İçe Aktarım: KamuSistem SQLite/Viewer & Doğrudan Temin JSON Desteği ---- */
+function doImport(){
+  const v = io.value.trim();
+  if(!v) return;
+  try{
+    const j = JSON.parse(v);
+    // 1. Doğrudan Temin tam yedek formatı: { files: [...], cur: 0 }
+    if(j.files && Array.isArray(j.files)){
+      db = j;
+      db.cur = 0;
+      db.files.forEach(f=>{ if(!f.sablon) f.sablon={}; });
+    }
+    // 2. KamuSistem SQLite / Viewer export yapısı: { dosyalar: [...], ihtiyac_kalemleri: [...] }
+    else if(j.dosyalar && Array.isArray(j.dosyalar)){
+      const kMap = {};
+      (j.ihtiyac_kalemleri || []).forEach(k => {
+        const did = String(k.dosya_id || k.sistem_dosya_id || '');
+        if(!kMap[did]) kMap[did] = [];
+        kMap[did].push(['', k.malzeme_kodu || '', k.malzeme_adi || '', k.ozelligi || '', k.birimi || 'Adet', k.kdv_orani || '20', String(k.miktar || '1'), String(k.birim_fiyat || '')]);
+      });
+      const imported = j.dosyalar.map(d => {
+        const nf = blank();
+        const did = String(d.sistem_dosya_id || d.id || '');
+        nf.f['Dosya No'] = d.dosya_no || ('DT-' + did);
+        nf.f['Doğrudan Temin Numarası'] = did;
+        nf.f['İşin Adı / Tanımı'] = d.ihale_adi || d.is_adi || '';
+        nf.f['Alım Türü'] = d.turu || 'Mal Alımı';
+        nf.f['İhale Aşaması'] = d.durum || '';
+        nf.f['İhale Tarihi'] = (d.tarih || '').slice(0, 10);
+        nf.f['Dosya Açılış Tarihi'] = (d.tarih || '').slice(0, 10) || nf.f['Dosya Açılış Tarihi'];
+        if(kMap[did]) nf.mat = kMap[did];
+        return nf;
+      });
+      if(imported.length){
+        db.files.push(...imported);
+        db.cur = db.files.length - imported.length;
+      }
+    }
+    // 3. Dosyalar dizisi: [ { ... }, { ... } ]
+    else if(Array.isArray(j)){
+      j.forEach(item => {
+        if(item.f){ 
+          if(!item.sablon) item.sablon = {};
+          db.files.push(item); 
+        }
+        else{
+          const nf = blank();
+          Object.assign(nf.f, item);
+          const kl = item.malzemeler || item.ihtiyac_kalemleri;
+          if(kl && Array.isArray(kl)){
+            nf.mat = kl.map(k => Array.isArray(k) ? k : ['', k.malzeme_kodu || '', k.malzeme_adi || k.ad || '', k.ozelligi || '', k.birimi || k.birim || 'Adet', k.kdv_orani || '20', String(k.miktar || '1'), String(k.birim_fiyat || '')]);
+          }
+          db.files.push(nf);
+        }
+      });
+      db.cur = db.files.length - 1;
+    }
+    // 4. Tek bir dosya objesi
+    else if(j.f){
+      if(!j.sablon) j.sablon = {};
+      db.files.push(j);
+      db.cur = db.files.length - 1;
+    }
+    // 5. Açık dosyaya aktar
+    else{
+      Object.assign(cur().f, j);
+      const kl = j.malzemeler || j.ihtiyac_kalemleri;
+      if(kl && Array.isArray(kl)){
+        cur().mat = kl.map(k => Array.isArray(k) ? k : ['', k.malzeme_kodu || '', k.malzeme_adi || k.ad || '', k.ozelligi || '', k.birimi || k.birim || 'Adet', k.kdv_orani || '20', String(k.miktar || '1'), String(k.birim_fiyat || '')]);
+      }
+    }
+  }catch(e){
+    // İki sütunlu Excel kopyala-yapıştır alanı
+    const f = cur().f;
+    let n = 0;
+    v.split(/\r?\n/).forEach(l=>{
+      const p = l.split(/\t|:\s{1,}|;/);
+      if(p.length < 2) return;
+      const key = F.find(x => x[0].toLowerCase() == p[0].trim().toLowerCase());
+      if(key){
+        f[key[0]] = p.slice(1).join(" ").trim();
+        n++;
+      }
+    });
+    if(!n){ alert("Eşleşen alan bulunamadı"); return; }
+  }
+  save();
+  dlg.close();
+  draw();
+}
+
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+
+// Başlangıçta IndexedDB'deki şablonları yan menüye yükle
+try{
+  idbAll().then(res=>{
+    TPL = res || {};
+    updateSidebarTpl();
+  });
+}catch(e){}
+
+draw();
+</script></body></html>

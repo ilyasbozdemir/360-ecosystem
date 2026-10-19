@@ -421,7 +421,8 @@ describe('Merkezi Version Manager & Sürüm Karşılaştırma Testleri', () => {
     })
 
     it('loadVersionPolicy paketlenmiş Electron uygulamasında (process.resourcesPath) dosyayı doğru konumdan bulur', () => {
-      const originalResourcesPath = (process as any).resourcesPath
+      const originalDescriptor = Object.getOwnPropertyDescriptor(process, 'resourcesPath')
+      const originalResourcesPath = (process as unknown as { resourcesPath?: string }).resourcesPath
       const tempResourcesDir = fs.mkdtempSync(path.join(GIT_ROOT, 'temp-electron-res-'))
       const tempPolicyFile = path.join(tempResourcesDir, 'version-policy.yaml')
 
@@ -433,8 +434,12 @@ describe('Merkezi Version Manager & Sürüm Karşılaştırma Testleri', () => {
         )
         fs.writeFileSync(tempPolicyFile, realPolicyContent, 'utf-8')
 
-        // Electron packaged resourcesPath taklit et
-        ;(process as any).resourcesPath = tempResourcesDir
+        // Electron packaged resourcesPath taklit et (Electron ortamında read-only tanımlanabileceğinden Object.defineProperty kullan)
+        Object.defineProperty(process, 'resourcesPath', {
+          value: tempResourcesDir,
+          configurable: true,
+          writable: true
+        })
 
         // 1. Doğrudan resourcesPath üzerindeki aday yol üzerinden yükleme testi
         const loadedDirect = loadVersionPolicy(tempPolicyFile)
@@ -468,7 +473,17 @@ describe('Merkezi Version Manager & Sürüm Karşılaştırma Testleri', () => {
           fs.existsSync = originalExistsSync
         }
       } finally {
-        ;(process as any).resourcesPath = originalResourcesPath
+        if (originalDescriptor) {
+          Object.defineProperty(process, 'resourcesPath', originalDescriptor)
+        } else if (originalResourcesPath !== undefined) {
+          Object.defineProperty(process, 'resourcesPath', {
+            value: originalResourcesPath,
+            configurable: true,
+            writable: true
+          })
+        } else {
+          delete (process as unknown as { resourcesPath?: string }).resourcesPath
+        }
         if (fs.existsSync(tempResourcesDir)) {
           fs.rmSync(tempResourcesDir, { recursive: true, force: true })
         }
