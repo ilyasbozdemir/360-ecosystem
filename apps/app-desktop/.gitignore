@@ -19,11 +19,13 @@ pids
 *.seed
 *.pid.lock
 
-# Coverage
+# Coverage & Test outputs
 lib-cov
 coverage
 *.lcov
 .nyc_output
+test-results/
+e2e-report/
 
 # Tool caches
 .grunt

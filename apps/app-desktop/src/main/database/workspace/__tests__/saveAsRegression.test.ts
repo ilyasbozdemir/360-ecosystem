@@ -60,6 +60,7 @@ vi.mock('electron', () => ({
 }))
 
 import { workspaceManager } from '../workspaceManager'
+import { atomicReplaceWorkspaceFile } from '../DtmWorkspace'
 
 describe('DtmWorkspace.saveAs (Farklı Kaydet) Kapsamlı Regresyon Test Paketi', () => {
   let testDir: string
@@ -69,6 +70,7 @@ describe('DtmWorkspace.saveAs (Farklı Kaydet) Kapsamlı Regresyon Test Paketi',
   })
 
   afterEach(() => {
+    vi.restoreAllMocks()
     try {
       workspaceManager.close()
     } catch {
@@ -170,20 +172,59 @@ describe('DtmWorkspace.saveAs (Farklı Kaydet) Kapsamlı Regresyon Test Paketi',
     expect(workspaceManager.getCurrentFilePath()).toBe(path.resolve(targetWithoutExt + '.temin'))
   })
 
-  it('5. Kilit yönetimi: başka bir uygulama tarafından kilitli olan hedefe kayıt engellenmelidir', () => {
+  it('5. Kilit yönetimi: başka bir aktif uygulama tarafından kilitli olan hedefe kayıt engellenmelidir', () => {
     const originalFile = path.join(testDir, 'kilit_orijinal.temin')
     workspaceManager.create(originalFile, 'Kilit Kurum')
 
     const lockedTarget = path.join(testDir, 'baskasi_kilitledi.temin')
-    // Başka bir çalışan process PID'si ile sahte kilit oluştur (PID: 999999)
+    const foreignPid = 88888
     const foreignLock = lockedTarget + '.lock'
-    fs.writeFileSync(foreignLock, process.pid.toString(), { encoding: 'utf-8' })
+    fs.writeFileSync(foreignLock, foreignPid.toString(), { encoding: 'utf-8' })
+
+    // process.kill spy'layarak foreignPid'nin çalıştığını simüle et
+    vi.spyOn(process, 'kill').mockImplementation((pid: number, signal?: string | number) => {
+      if (pid === foreignPid && (signal === 0 || signal === undefined)) {
+        return true
+      }
+      throw new Error('ESRCH')
+    })
 
     const result = workspaceManager.saveAs(lockedTarget)
-    expect(result).toBeDefined()
+    expect(result.success).toBe(false)
+    expect(result.error).toContain('LOCKED|')
+
+    // Aktif dosya yolu eski dosyada kalmalıdır
+    expect(workspaceManager.getCurrentFilePath()).toBe(path.resolve(originalFile))
+    // Orijinal kilit korunmalıdır
+    expect(fs.existsSync(originalFile + '.lock')).toBe(true)
   })
 
-  it('6. IPC katmanı başarısızlık kontrolü: açık dosya yokken saveAs hata döndürmelidir', () => {
+  it('6. Bayat (stale) kilit yönetimi: kapanmış process kilidi temizlenerek işlem başarıyla tamamlanmalıdır', () => {
+    const originalFile = path.join(testDir, 'stale_orijinal.temin')
+    workspaceManager.create(originalFile, 'Stale Kurum')
+
+    const staleTarget = path.join(testDir, 'stale_hedef.temin')
+    const deadPid = 99999
+    const staleLock = staleTarget + '.lock'
+    fs.writeFileSync(staleLock, deadPid.toString(), { encoding: 'utf-8' })
+
+    // process.kill spy'layarak deadPid'nin artık çalışmadığını (ESRCH) simüle et
+    vi.spyOn(process, 'kill').mockImplementation((pid: number) => {
+      if (pid === deadPid) {
+        throw new Error('ESRCH')
+      }
+      return true
+    })
+
+    const result = workspaceManager.saveAs(staleTarget)
+    expect(result.success).toBe(true)
+    expect(fs.existsSync(staleTarget)).toBe(true)
+    // Yeni kilit bizim process'imiz tarafından alınmış olmalıdır
+    const newLockPid = fs.readFileSync(staleLock, 'utf-8').trim()
+    expect(newLockPid).toBe(process.pid.toString())
+  })
+
+  it('7. IPC katmanı başarısızlık kontrolü: açık dosya yokken saveAs hata döndürmelidir', () => {
     workspaceManager.close()
     const result = workspaceManager.saveAs(path.join(testDir, 'hedef.temin'))
 
@@ -191,7 +232,7 @@ describe('DtmWorkspace.saveAs (Farklı Kaydet) Kapsamlı Regresyon Test Paketi',
     expect(result.error).toBe('Açık bir çalışma alanı yok.')
   })
 
-  it('7. Kapatıp yeniden açma: Farklı Kaydet sonrası dosya kapatılıp yeniden açılabilmelidir', () => {
+  it('8. Kapatıp yeniden açma: Farklı Kaydet sonrası dosya kapatılıp yeniden açılabilmelidir', () => {
     const originalFile = path.join(testDir, 'dongu_orijinal.temin')
     workspaceManager.create(originalFile, 'Döngü Kurumu')
 
@@ -210,5 +251,65 @@ describe('DtmWorkspace.saveAs (Farklı Kaydet) Kapsamlı Regresyon Test Paketi',
     expect(openMeta.schema_version).toBe(CURRENT_SCHEMA_VERSION)
     expect(workspaceManager.getCurrentFilePath()).toBe(path.resolve(targetFile))
     expect(fs.existsSync(targetFile + '.lock')).toBe(true)
+  })
+
+  it('9. atomicReplaceWorkspaceFile: doğrulama başarısız olduğunda orijinal dosya güvenlik yedeğinden geri yüklenmelidir', () => {
+    const destFile = path.join(testDir, 'orijinal_korunacak.txt')
+    const sourceFile = path.join(testDir, 'bozuk_yeni.txt')
+
+    const originalContent = 'ORIJINAL_COK_DEGERLI_ICERIK_12345'
+    fs.writeFileSync(destFile, originalContent, 'utf-8')
+    fs.writeFileSync(sourceFile, 'YENI_BOZUK_ICERIK', 'utf-8')
+
+    // postReplaceValidate fırlatıldığında
+    expect(() => {
+      atomicReplaceWorkspaceFile(sourceFile, destFile, 3, () => {
+        throw new Error('Arşiv bütünlük kontrolü simüle edilmiş hata')
+      })
+    }).toThrow('Hedef dosya doğrulanamadı ve orijinal dosya güvenlik yedeğinden geri yüklendi')
+
+    // destFile orijinal içeriği ile sağlam durmalıdır
+    expect(fs.existsSync(destFile)).toBe(true)
+    expect(fs.readFileSync(destFile, 'utf-8')).toBe(originalContent)
+
+    // Dizin içinde yetim yedek dosyası (.bak) kalmamış olmalıdır
+    const files = fs.readdirSync(testDir)
+    const backupFiles = files.filter((f) => f.includes('.bak.'))
+    expect(backupFiles.length).toBe(0)
+  })
+
+  it('10. atomicReplaceWorkspaceFile: geri yükleme (restore) aşaması da hata verirse güvenlik yedeği KORUNMALI ve kritik hata bildirilmelidir', () => {
+    const destFile = path.join(testDir, 'restore_fail_orijinal.txt')
+    const sourceFile = path.join(testDir, 'restore_fail_yeni.txt')
+
+    const originalContent = 'KAYBEDILMEMESI_GEREKEN_VERI'
+    fs.writeFileSync(destFile, originalContent, 'utf-8')
+    fs.writeFileSync(sourceFile, 'YENI_VERI', 'utf-8')
+
+    // fs.copyFileSync mock'layarak restore anında hata vermesini sağla
+    const originalCopyFileSync = fs.copyFileSync
+    const copySpy = vi.spyOn(fs, 'copyFileSync').mockImplementation((src, dst, flags) => {
+      // Sadece .bak dosyasından geri yükleme çağrısında hata fırlat
+      if (typeof src === 'string' && src.includes('.bak.')) {
+        throw new Error('Disk doldu veya ağ bağlantısı koptu (EIO)')
+      }
+      return originalCopyFileSync(src, dst, flags)
+    })
+
+    expect(() => {
+      atomicReplaceWorkspaceFile(sourceFile, destFile, 3, () => {
+        throw new Error('Doğrulama başarısız')
+      })
+    }).toThrow(
+      'KRİTİK HATA: Hedef dosya doğrulanamadı ve güvenlik yedeğinden geri yüklenirken hata oluştu'
+    )
+
+    // Yedek (.bak) dosyası KESİNLİKLE silinmemiş olmalı ve diskte korunmalıdır!
+    const files = fs.readdirSync(testDir)
+    const backupFiles = files.filter((f) => f.includes('.bak.'))
+    expect(backupFiles.length).toBe(1)
+    expect(fs.readFileSync(path.join(testDir, backupFiles[0]), 'utf-8')).toBe(originalContent)
+
+    copySpy.mockRestore()
   })
 })

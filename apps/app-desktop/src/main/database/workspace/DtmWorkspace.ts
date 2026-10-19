@@ -29,7 +29,8 @@ import { seedTemplates } from './templateSeeder'
 export function atomicReplaceWorkspaceFile(
   sourcePath: string,
   destPath: string,
-  maxRetries: number = 10
+  maxRetries: number = 10,
+  postReplaceValidate?: (targetPath: string) => void
 ): void {
   const destDir = path.dirname(destPath)
   const destExists = fs.existsSync(destPath)
@@ -139,7 +140,42 @@ export function atomicReplaceWorkspaceFile(
     }
   }
 
-  // Clean up backup file ONLY upon successful replacement
+  // Post-replacement validation before safety backup cleanup:
+  // If validation fails, restore original destPath from backupPath so original file remains intact!
+  if (postReplaceValidate) {
+    try {
+      postReplaceValidate(destPath)
+    } catch (valErr: unknown) {
+      const msg = valErr instanceof Error ? valErr.message : String(valErr)
+      if (backupCreated && fs.existsSync(backupPath)) {
+        try {
+          fs.copyFileSync(backupPath, destPath)
+          try {
+            fs.unlinkSync(backupPath)
+          } catch {
+            /* ignore backup cleanup error */
+          }
+          throw new Error(
+            `Hedef dosya doğrulanamadı ve orijinal dosya güvenlik yedeğinden geri yüklendi: ${msg}`
+          )
+        } catch (restoreErr: unknown) {
+          if (
+            restoreErr instanceof Error &&
+            restoreErr.message.includes('güvenlik yedeğinden geri yüklendi')
+          ) {
+            throw restoreErr
+          }
+          const restoreMsg = restoreErr instanceof Error ? restoreErr.message : String(restoreErr)
+          throw new Error(
+            `KRİTİK HATA: Hedef dosya doğrulanamadı ve güvenlik yedeğinden geri yüklenirken hata oluştu: ${restoreMsg}. Orijinal veriniz şu yedek dosyasında korundu: ${backupPath}. Doğrulama hatası: ${msg}`
+          )
+        }
+      }
+      throw new Error(`Hedef dosya doğrulanamadı: ${msg}`)
+    }
+  }
+
+  // Clean up backup file ONLY upon successful replacement AND successful validation
   if (backupCreated && fs.existsSync(backupPath)) {
     try {
       fs.unlinkSync(backupPath)
@@ -169,42 +205,72 @@ export class DtmWorkspace {
     )
   }
 
-  private acquireFileLock(filePath: string): void {
+  private acquireFileLock(filePath: string, maxAttempts: number = 3): void {
     const lockPath = filePath + '.lock'
-    if (fs.existsSync(lockPath)) {
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
-        const pidStr = fs.readFileSync(lockPath, 'utf-8')
-        const pid = parseInt(pidStr, 10)
-        if (!isNaN(pid) && pid !== process.pid) {
-          let isRunning = false
+        // Atomic creation via O_CREAT | O_EXCL ('wx' flag): prevents TOCTOU lock race conditions
+        fs.writeFileSync(lockPath, process.pid.toString(), { flag: 'wx', encoding: 'utf-8' })
+        return
+      } catch (err: unknown) {
+        const errObj = err as NodeJS.ErrnoException
+        if (errObj.code === 'EEXIST') {
+          let existingPid: number | null = null
           try {
-            process.kill(pid, 0)
-            isRunning = true
-          } catch {
-            isRunning = false
-          }
-          if (!isRunning) {
-            try {
-              fs.unlinkSync(lockPath)
-            } catch {
-              /* ignore lock unlink error */
+            const pidStr = fs.readFileSync(lockPath, 'utf-8').trim()
+            const parsed = parseInt(pidStr, 10)
+            if (!isNaN(parsed)) {
+              existingPid = parsed
             }
-          } else {
-            throw new Error(
-              'LOCKED|Bu dosya şu anda başka bir pencerede veya programda açık durumda. Çakışmayı önlemek için önce diğer taraftan kapatmalısınız.'
-            )
+          } catch {
+            /* ignore read error if file was deleted in-flight */
           }
+
+          if (existingPid !== null) {
+            if (existingPid === process.pid) {
+              // Lock is already owned by this exact process
+              return
+            }
+
+            let isRunning = false
+            try {
+              process.kill(existingPid, 0)
+              isRunning = true
+            } catch {
+              isRunning = false
+            }
+
+            if (isRunning) {
+              throw new Error(
+                'LOCKED|Bu dosya şu anda başka bir pencerede veya programda açık durumda. Çakışmayı önlemek için önce diğer taraftan kapatmalısınız.'
+              )
+            } else {
+              // Stale lock from a terminated process: unlink and retry
+              try {
+                fs.unlinkSync(lockPath)
+              } catch {
+                /* ignore unlink error */
+              }
+              continue
+            }
+          }
+
+          // Lock file was empty or corrupted: unlink and retry
+          try {
+            fs.unlinkSync(lockPath)
+          } catch {
+            /* ignore unlink error */
+          }
+          continue
         }
-      } catch (err: any) {
-        if (err.message?.startsWith('LOCKED|')) throw err
+
+        const msg = err instanceof Error ? err.message : String(err)
+        throw new Error(`Kilit dosyası oluşturulamadı: ${msg}`)
       }
     }
 
-    try {
-      fs.writeFileSync(lockPath, process.pid.toString(), { encoding: 'utf-8' })
-    } catch (err: any) {
-      throw new Error(`Kilit dosyası oluşturulamadı: ${err.message}`)
-    }
+    throw new Error('Kilit dosyası oluşturulamadı: Eşzamanlı kilit yarışması çözülemedi.')
   }
 
   private releaseFileLock(filePath: string): void {
@@ -521,24 +587,25 @@ export class DtmWorkspace {
         if (!hasMeta || !hasDb) {
           throw new Error('Zorunlu dosyalar (meta.json veya database.sqlite) eksik.')
         }
-      } catch (valErr: any) {
-        throw new Error(`Oluşturulan geçici arşiv doğrulanamadı: ${valErr.message}`)
+      } catch (valErr: unknown) {
+        const msg = valErr instanceof Error ? valErr.message : String(valErr)
+        throw new Error(`Oluşturulan geçici arşiv doğrulanamadı: ${msg}`)
       }
 
-      atomicReplaceWorkspaceFile(tempFile, targetPath)
-
-      // Post-replacement verification: verify destination file actually exists, is non-empty, and is valid zip
-      if (!fs.existsSync(targetPath) || fs.statSync(targetPath).size === 0) {
-        throw new Error('Hedef arşiv dosyası oluşturulamadı veya boş.')
-      }
-      const verifiedZip = new AdmZip(targetPath)
-      const verifiedEntries = verifiedZip.getEntries()
-      if (
-        !verifiedEntries.some((e) => e.entryName === 'meta.json') ||
-        !verifiedEntries.some((e) => e.entryName.endsWith('.sqlite'))
-      ) {
-        throw new Error('Oluşturulan hedef arşiv dosyasında zorunlu dosyalar bulunamadı.')
-      }
+      atomicReplaceWorkspaceFile(tempFile, targetPath, 10, (verifiedPath: string) => {
+        // Post-replacement verification: verify destination file actually exists, is non-empty, and is valid zip
+        if (!fs.existsSync(verifiedPath) || fs.statSync(verifiedPath).size === 0) {
+          throw new Error('Hedef arşiv dosyası oluşturulamadı veya boş.')
+        }
+        const verifiedZip = new AdmZip(verifiedPath)
+        const verifiedEntries = verifiedZip.getEntries()
+        if (
+          !verifiedEntries.some((e) => e.entryName === 'meta.json') ||
+          !verifiedEntries.some((e) => e.entryName.endsWith('.sqlite'))
+        ) {
+          throw new Error('Oluşturulan hedef arşiv dosyasında zorunlu dosyalar bulunamadı.')
+        }
+      })
     } catch (saveErr) {
       if (fs.existsSync(tempFile)) {
         try {

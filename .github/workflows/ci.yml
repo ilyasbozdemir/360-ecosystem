@@ -48,3 +48,9 @@ jobs:
         run: |
           pnpm --filter @temin360/document-templates test
           pnpm --filter app-desktop test
+
+      - name: Build Desktop App
+        run: pnpm --filter app-desktop build
+
+      - name: Run Electron E2E Tests
+        run: pnpm --filter app-desktop test:e2e
