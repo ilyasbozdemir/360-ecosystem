@@ -9,6 +9,7 @@ import {
   Layers,
   Users
 } from 'lucide-react'
+import { copyToClipboard } from '../../../../utils/copyToClipboard'
 import { Button } from '../../../../components/ui/Button'
 import { TabType } from './types'
 
@@ -18,7 +19,7 @@ interface InspectorTabBarProps {
   kalemlerCount: number
   firmalarCount: number
   komisyonCount: number
-  fullPayload: any
+  fullPayload: unknown
 }
 
 export const InspectorTabBar: React.FC<InspectorTabBarProps> = ({
@@ -31,19 +32,10 @@ export const InspectorTabBar: React.FC<InspectorTabBarProps> = ({
 }) => {
   const [copied, setCopied] = useState(false)
 
-  const handleCopyJson = async () => {
+  const handleCopyJson = async (): Promise<void> => {
     try {
       const text = JSON.stringify(fullPayload, null, 2)
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(text)
-      } else {
-        const textarea = document.createElement('textarea')
-        textarea.value = text
-        document.body.appendChild(textarea)
-        textarea.select()
-        document.execCommand('copy')
-        document.body.removeChild(textarea)
-      }
+      await copyToClipboard(text)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {

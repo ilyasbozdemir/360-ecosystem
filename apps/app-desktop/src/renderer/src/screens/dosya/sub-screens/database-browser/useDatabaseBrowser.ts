@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useWorkspaceStore } from '../../../../store/workspaceStore'
 import { TableInfo, ColumnInfo, EditingCell, TabType, StatusMessage } from './types'
 
@@ -10,10 +10,16 @@ export function useDatabaseBrowser() {
   const [columns, setColumns] = useState<ColumnInfo[]>([])
   const [rows, setRows] = useState<Record<string, unknown>[]>([])
   const [dataSearch, setDataSearch] = useState<string>('')
+  const [debouncedDataSearch, setDebouncedDataSearch] = useState<string>('')
   const [loading, setLoading] = useState<boolean>(false)
   const [dbError, setDbError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<TabType>('data')
   const [statusMessage, setStatusMessage] = useState<StatusMessage | null>(null)
+
+  // Server-side / Disk Paging States
+  const [page, setPage] = useState<number>(1)
+  const [pageSize, setPageSize] = useState<number>(50)
+  const [totalRows, setTotalRows] = useState<number>(0)
 
   // Cell Editing State
   const [editingCell, setEditingCell] = useState<EditingCell | null>(null)
@@ -32,11 +38,41 @@ export function useDatabaseBrowser() {
   const [consoleError, setConsoleError] = useState<string | null>(null)
   const [consoleLoading, setConsoleLoading] = useState<boolean>(false)
 
-  // Primary key column detector
-  const pkColumn = useMemo(() => {
-    return columns.find((c) => c.pk > 0) || columns[0]
+  // Primary key column(s) detector - supports Composite Primary Keys
+  const pkColumns = useMemo(() => {
+    return columns.filter((c) => c.pk > 0)
   }, [columns])
 
+  const pkColumn = useMemo(() => {
+    return pkColumns[0] || columns[0]
+  }, [pkColumns, columns])
+
+  // Total pages calculation
+  const totalPages = useMemo(() => {
+    return Math.max(1, Math.ceil(totalRows / pageSize))
+  }, [totalRows, pageSize])
+
+  // Debounce search input to avoid hammering IPC on every keystroke
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedDataSearch(dataSearch)
+      setPage(1)
+    }, 250)
+    return () => clearTimeout(handler)
+  }, [dataSearch])
+
+  // Reset page and search when switching table
+  const prevTableRef = useRef<string>('')
+  useEffect(() => {
+    if (prevTableRef.current !== selectedTable) {
+      prevTableRef.current = selectedTable
+      setPage(1)
+      setDataSearch('')
+      setDebouncedDataSearch('')
+    }
+  }, [selectedTable])
+
+  // Fast Table List & Row Count loader using a single UNION ALL query
   const loadTables = useCallback(async (): Promise<void> => {
     setLoading(true)
     setDbError(null)
@@ -57,20 +93,54 @@ export function useDatabaseBrowser() {
         }
       }
 
-      if (res.success && res.data) {
-        const list: TableInfo[] = []
-        for (const t of res.data) {
-          const countRes = await window.electron.ipcRenderer.invoke(
-            'db:query',
-            `SELECT COUNT(*) as row_count FROM ${t.name}`
+      if (res.success && Array.isArray(res.data) && res.data.length > 0) {
+        const tableNames: string[] = res.data.map((t: { name: string }) => t.name)
+
+        // Tek bir UNION ALL sorgusu ile tüm tabloların satır sayısını TEK IPC turunda getir
+        const unionSql = tableNames
+          .map(
+            (name) =>
+              `SELECT '${name.replace(/'/g, "''")}' as name, COUNT(*) as row_count FROM "${name.replace(/"/g, '""')}"`
           )
-          list.push({
-            name: t.name,
-            count: countRes.success && countRes.data[0] ? countRes.data[0].row_count : 0
-          })
+          .join(' UNION ALL ')
+
+        const countMap: Record<string, number> = {}
+        try {
+          const unionRes = await window.electron.ipcRenderer.invoke('db:query', unionSql)
+          if (unionRes.success && Array.isArray(unionRes.data)) {
+            for (const item of unionRes.data) {
+              countMap[item.name] = Number(item.row_count ?? 0)
+            }
+          }
+        } catch {
+          // Fallback: Paralel toplu sorgulama
+          const counts = await Promise.all(
+            tableNames.map(async (name) => {
+              const cRes = await window.electron.ipcRenderer.invoke(
+                'db:query',
+                `SELECT COUNT(*) as row_count FROM "${name.replace(/"/g, '""')}"`
+              )
+              return {
+                name,
+                count: cRes.success && cRes.data?.[0] ? Number(cRes.data[0].row_count) : 0
+              }
+            })
+          )
+          for (const item of counts) {
+            countMap[item.name] = item.count
+          }
         }
+
+        const list: TableInfo[] = tableNames.map((name) => ({
+          name,
+          count: countMap[name] ?? 0
+        }))
+
         setTables(list)
         setSelectedTable((prev) => prev || (list.length > 0 ? list[0].name : ''))
+      } else if (res.success && Array.isArray(res.data) && res.data.length === 0) {
+        setTables([])
+        setSelectedTable('')
       } else {
         setDbError(res.error || 'Açık bir çalışma veritabanı (.temin) bulunamadı.')
       }
@@ -83,83 +153,74 @@ export function useDatabaseBrowser() {
     }
   }, [activeFilePath, openWorkspace])
 
+  // Initial table list load
   useEffect(() => {
     void loadTables()
-
-    const handleWorkspaceSaved = (): void => {
-      void loadTables()
-    }
-    window.addEventListener('workspace-saved', handleWorkspaceSaved)
-    return () => {
-      window.removeEventListener('workspace-saved', handleWorkspaceSaved)
-    }
   }, [loadTables])
 
-  // Load table details (schema + rows)
-  const loadTableDetails = async (): Promise<void> => {
+  // Load paginated table details (schema + paginated rows directly from SQLite disk)
+  const loadTableDetails = useCallback(async (): Promise<void> => {
     if (!selectedTable) return
     setLoading(true)
     setEditingCell(null)
     setStatusMessage(null)
     try {
+      const safeTableName = `"${selectedTable.replace(/"/g, '""')}"`
+
+      // 1. Fetch column schema
       const schemaRes = await window.electron.ipcRenderer.invoke(
         'db:query',
-        `PRAGMA table_info(${selectedTable})`
+        `PRAGMA table_info(${safeTableName})`
       )
-      if (schemaRes.success) {
-        setColumns(schemaRes.data || [])
+      const cols: ColumnInfo[] = schemaRes.success ? schemaRes.data || [] : []
+      setColumns(cols)
+
+      // 2. Build where filter for search
+      const trimmedSearch = debouncedDataSearch.trim()
+      let whereClause = ''
+      const whereParams: string[] = []
+
+      if (trimmedSearch && cols.length > 0) {
+        const likePredicates = cols
+          .map((c) => `CAST("${c.name.replace(/"/g, '""')}" AS TEXT) LIKE ?`)
+          .join(' OR ')
+        whereClause = ` WHERE ${likePredicates}`
+        const searchParam = `%${trimmedSearch}%`
+        cols.forEach(() => whereParams.push(searchParam))
       }
 
+      // 3. Query total count matching the search criteria
+      const countRes = await window.electron.ipcRenderer.invoke(
+        'db:query',
+        `SELECT COUNT(*) as total FROM ${safeTableName}${whereClause}`,
+        whereParams
+      )
+      const total = countRes.success && countRes.data?.[0] ? Number(countRes.data[0].total) : 0
+      setTotalRows(total)
+
+      // 4. Query only the requested page of rows (LIMIT ? OFFSET ?)
+      const offset = Math.max(0, (page - 1) * pageSize)
       const dataRes = await window.electron.ipcRenderer.invoke(
         'db:query',
-        `SELECT * FROM ${selectedTable} LIMIT 200`
+        `SELECT * FROM ${safeTableName}${whereClause} LIMIT ? OFFSET ?`,
+        [...whereParams, pageSize, offset]
       )
       if (dataRes.success) {
         setRows(dataRes.data || [])
+      } else {
+        setRows([])
       }
     } catch (e) {
       console.error('Failed to load table details:', e)
     } finally {
       setLoading(false)
     }
-  }
+  }, [selectedTable, page, pageSize, debouncedDataSearch])
 
+  // Trigger paginated fetch when table, page, pageSize, or search changes
   useEffect(() => {
-    let isMounted = true
-    if (!selectedTable) return
-
-    const fetchDetails = async (): Promise<void> => {
-      setLoading(true)
-      setEditingCell(null)
-      setStatusMessage(null)
-      try {
-        const schemaRes = await window.electron.ipcRenderer.invoke(
-          'db:query',
-          `PRAGMA table_info(${selectedTable})`
-        )
-        if (schemaRes.success && isMounted) {
-          setColumns(schemaRes.data || [])
-        }
-
-        const dataRes = await window.electron.ipcRenderer.invoke(
-          'db:query',
-          `SELECT * FROM ${selectedTable} LIMIT 200`
-        )
-        if (dataRes.success && isMounted) {
-          setRows(dataRes.data || [])
-        }
-      } catch (e) {
-        console.error('Failed to load table details:', e)
-      } finally {
-        if (isMounted) setLoading(false)
-      }
-    }
-
-    void fetchDetails()
-    return () => {
-      isMounted = false
-    }
-  }, [selectedTable])
+    void loadTableDetails()
+  }, [loadTableDetails])
 
   const filteredTables = useMemo(() => {
     const query = tableSearch.toLowerCase().trim()
@@ -167,31 +228,27 @@ export function useDatabaseBrowser() {
     return tables.filter((t) => t.name.toLowerCase().includes(query))
   }, [tables, tableSearch])
 
-  const filteredRows = useMemo(() => {
-    const q = dataSearch.toLowerCase().trim()
-    if (!q) return rows
-    return rows.filter((row) =>
-      Object.values(row).some((val) =>
-        String(val ?? '')
-          .toLowerCase()
-          .includes(q)
-      )
-    )
-  }, [rows, dataSearch])
+  // Since filtering is executed natively on SQLite disk via SQL WHERE, filteredRows is current page rows
+  const filteredRows = rows
 
-  // Start cell editing
-  const handleCellClick = (rowIndex: number, colName: string, val: unknown): void => {
-    setEditingCell({ rowIndex, colName, originalValue: val })
+  // Start cell editing with direct row snapshot
+  const handleCellClick = (
+    rowIndex: number,
+    colName: string,
+    val: unknown,
+    row?: Record<string, unknown>
+  ): void => {
+    const targetRow = row || rows[rowIndex] || {}
+    setEditingCell({ rowIndex, colName, originalValue: val, row: targetRow })
     setEditValue(val === null || val === undefined ? '' : String(val))
   }
 
   // Save edited cell value to SQLite
   const handleSaveCell = async (): Promise<void> => {
     if (!editingCell || !selectedTable) return
-    const row = rows[editingCell.rowIndex]
+    const { colName, originalValue, row } = editingCell
     if (!row) return
 
-    const { colName, originalValue } = editingCell
     if (String(originalValue ?? '') === editValue.trim()) {
       setEditingCell(null)
       return
@@ -200,17 +257,36 @@ export function useDatabaseBrowser() {
     try {
       let query = ''
       const params: unknown[] = []
+      const safeTableName = `"${selectedTable.replace(/"/g, '""')}"`
+      const safeColName = `"${colName.replace(/"/g, '""')}"`
+      const newValue = editValue.trim() === '' ? null : editValue
 
-      if (pkColumn && row[pkColumn.name] !== undefined) {
-        query = `UPDATE ${selectedTable} SET ${colName} = ? WHERE ${pkColumn.name} = ?`
-        params.push(editValue.trim() === '' ? null : editValue, row[pkColumn.name])
-      } else {
-        const whereClauses = columns
-          .map((c) => (row[c.name] === null ? `${c.name} IS NULL` : `${c.name} = ?`))
+      // 1. Composite & Single Primary Key handling:
+      // If table has primary key(s) and the target row has non-null values for all PK columns
+      const hasValidPks =
+        pkColumns.length > 0 &&
+        pkColumns.every((pk) => row[pk.name] !== undefined && row[pk.name] !== null)
+
+      if (hasValidPks) {
+        const pkWhereClauses = pkColumns
+          .map((pk) => `"${pk.name.replace(/"/g, '""')}" = ?`)
           .join(' AND ')
-        const whereParams = columns.filter((c) => row[c.name] !== null).map((c) => row[c.name])
-        query = `UPDATE ${selectedTable} SET ${colName} = ? WHERE ${whereClauses}`
-        params.push(editValue.trim() === '' ? null : editValue, ...whereParams)
+        query = `UPDATE ${safeTableName} SET ${safeColName} = ? WHERE ${pkWhereClauses}`
+        params.push(newValue, ...pkColumns.map((pk) => row[pk.name]))
+      } else {
+        // Fallback for tables without primary key: match all snapshot column values of the target row
+        const whereClauses = columns
+          .map((c) =>
+            row[c.name] === null || row[c.name] === undefined
+              ? `"${c.name.replace(/"/g, '""')}" IS NULL`
+              : `"${c.name.replace(/"/g, '""')}" = ?`
+          )
+          .join(' AND ')
+        const whereParams = columns
+          .filter((c) => row[c.name] !== null && row[c.name] !== undefined)
+          .map((c) => row[c.name])
+        query = `UPDATE ${safeTableName} SET ${safeColName} = ? WHERE ${whereClauses}`
+        params.push(newValue, ...whereParams)
       }
 
       const res = await window.electron.ipcRenderer.invoke('db:run', query, params)
@@ -219,8 +295,16 @@ export function useDatabaseBrowser() {
           type: 'success',
           text: `Hücre (${colName}) başarıyla güncellendi.`
         })
-        await loadTableDetails()
-        await loadTables()
+        // Update the target row in state by PK match or exact reference (guarantees correct row update)
+        setRows((prev) =>
+          prev.map((r) => {
+            if (hasValidPks) {
+              const matches = pkColumns.every((pk) => r[pk.name] === row[pk.name])
+              return matches ? { ...r, [colName]: newValue } : r
+            }
+            return r === row ? { ...r, [colName]: newValue } : r
+          })
+        )
       } else {
         setStatusMessage({
           type: 'error',
@@ -252,9 +336,11 @@ export function useDatabaseBrowser() {
       return
     }
 
+    const safeTableName = `"${selectedTable.replace(/"/g, '""')}"`
+    const escapedCols = colsToInsert.map((k) => `"${k.replace(/"/g, '""')}"`).join(', ')
     const placeholders = colsToInsert.map(() => '?').join(', ')
     const values = colsToInsert.map((k) => newRowData[k])
-    const sql = `INSERT INTO ${selectedTable} (${colsToInsert.join(', ')}) VALUES (${placeholders})`
+    const sql = `INSERT INTO ${safeTableName} (${escapedCols}) VALUES (${placeholders})`
 
     try {
       const res = await window.electron.ipcRenderer.invoke('db:run', sql, values)
@@ -265,8 +351,12 @@ export function useDatabaseBrowser() {
         })
         setIsAddModalOpen(false)
         setNewRowData({})
+        // Update local table count state without refetching all tables
+        setTables((prev) =>
+          prev.map((t) => (t.name === selectedTable ? { ...t, count: t.count + 1 } : t))
+        )
+        setTotalRows((prev) => prev + 1)
         await loadTableDetails()
-        await loadTables()
       } else {
         setStatusMessage({
           type: 'error',
@@ -282,25 +372,41 @@ export function useDatabaseBrowser() {
     }
   }
 
-  // Delete row
+  // Delete row - fully supports composite primary keys and row snapshot matching
   const handleDeleteRowConfirm = async (): Promise<void> => {
     if (!deletingRow || !selectedTable) return
 
     try {
       let sql = ''
       const params: unknown[] = []
+      const safeTableName = `"${selectedTable.replace(/"/g, '""')}"`
 
-      if (pkColumn && deletingRow[pkColumn.name] !== undefined) {
-        sql = `DELETE FROM ${selectedTable} WHERE ${pkColumn.name} = ?`
-        params.push(deletingRow[pkColumn.name])
+      const hasValidPks =
+        pkColumns.length > 0 &&
+        pkColumns.every(
+          (pk) => deletingRow[pk.name] !== undefined && deletingRow[pk.name] !== null
+        )
+
+      if (hasValidPks) {
+        const pkWhereClauses = pkColumns
+          .map((pk) => `"${pk.name.replace(/"/g, '""')}" = ?`)
+          .join(' AND ')
+        sql = `DELETE FROM ${safeTableName} WHERE ${pkWhereClauses}`
+        params.push(...pkColumns.map((pk) => deletingRow[pk.name]))
       } else {
         const whereClauses = columns
-          .map((c) => (deletingRow[c.name] === null ? `${c.name} IS NULL` : `${c.name} = ?`))
+          .map((c) =>
+            deletingRow[c.name] === null || deletingRow[c.name] === undefined
+              ? `"${c.name.replace(/"/g, '""')}" IS NULL`
+              : `"${c.name.replace(/"/g, '""')}" = ?`
+          )
           .join(' AND ')
         params.push(
-          ...columns.filter((c) => deletingRow[c.name] !== null).map((c) => deletingRow[c.name])
+          ...columns
+            .filter((c) => deletingRow[c.name] !== null && deletingRow[c.name] !== undefined)
+            .map((c) => deletingRow[c.name])
         )
-        sql = `DELETE FROM ${selectedTable} WHERE ${whereClauses}`
+        sql = `DELETE FROM ${safeTableName} WHERE ${whereClauses}`
       }
 
       const res = await window.electron.ipcRenderer.invoke('db:run', sql, params)
@@ -310,8 +416,14 @@ export function useDatabaseBrowser() {
           text: 'Kayıt veritabanından silindi.'
         })
         setDeletingRow(null)
+        // Update local count state
+        setTables((prev) =>
+          prev.map((t) =>
+            t.name === selectedTable ? { ...t, count: Math.max(0, t.count - 1) } : t
+          )
+        )
+        setTotalRows((prev) => Math.max(0, prev - 1))
         await loadTableDetails()
-        await loadTables()
       } else {
         setStatusMessage({
           type: 'error',
@@ -327,33 +439,47 @@ export function useDatabaseBrowser() {
     }
   }
 
-  // Export current view data as CSV/Excel
-  const handleExportCsv = (): void => {
-    if (rows.length === 0 || columns.length === 0) return
+  // Export data as CSV/Excel (fetches up to 10,000 records of table directly from SQLite)
+  const handleExportCsv = async (): Promise<void> => {
+    if (!selectedTable || columns.length === 0) return
 
-    const headers = columns.map((c) => `"${c.name.replace(/"/g, '""')}"`).join(',')
-    const csvLines = rows.map((r) =>
-      columns
-        .map((c) => {
-          const val = r[c.name]
-          if (val === null || val === undefined) return '""'
-          return `"${String(val).replace(/"/g, '""')}"`
-        })
-        .join(',')
-    )
+    try {
+      const safeTableName = `"${selectedTable.replace(/"/g, '""')}"`
+      const allRes = await window.electron.ipcRenderer.invoke(
+        'db:query',
+        `SELECT * FROM ${safeTableName} LIMIT 10000`
+      )
+      const exportRows: Record<string, unknown>[] =
+        allRes.success && Array.isArray(allRes.data) && allRes.data.length > 0 ? allRes.data : rows
 
-    const csvContent = '\uFEFF' + [headers, ...csvLines].join('\n')
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.setAttribute('download', `${selectedTable}_${new Date().toISOString().slice(0, 10)}.csv`)
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+      if (exportRows.length === 0) return
+
+      const headers = columns.map((c) => `"${c.name.replace(/"/g, '""')}"`).join(',')
+      const csvLines = exportRows.map((r) =>
+        columns
+          .map((c) => {
+            const val = r[c.name]
+            if (val === null || val === undefined) return '""'
+            return `"${String(val).replace(/"/g, '""')}"`
+          })
+          .join(',')
+      )
+
+      const csvContent = '\uFEFF' + [headers, ...csvLines].join('\n')
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `${selectedTable}_${new Date().toISOString().slice(0, 10)}.csv`)
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    } catch (err) {
+      console.error('Export CSV failed:', err)
+    }
   }
 
-  // Run SQL Console query
+  // Run SQL Console query with accurate CTE & mutation detection and automatic view sync
   const handleRunQuery = async (): Promise<void> => {
     const rawSql = consoleQuery.trim()
     if (!rawSql) return
@@ -362,19 +488,35 @@ export function useDatabaseBrowser() {
     setConsoleResults([])
 
     try {
-      const isMutation = /^(DELETE|INSERT|UPDATE|DROP|ALTER|CREATE|REPLACE|PRAGMA|VACUUM)/i.test(
-        rawSql
-      )
+      const strippedForDetection = rawSql
+        .replace(/\/\*[\s\S]*?\*\//g, ' ')
+        .replace(/--.*$/gm, ' ')
+        .trim()
+
+      // Accurately detect mutations, including CTEs (WITH ... INSERT/UPDATE/DELETE)
+      const isMutation =
+        /^(DELETE|INSERT|UPDATE|DROP|ALTER|CREATE|REPLACE|PRAGMA|VACUUM)\b/i.test(
+          strippedForDetection
+        ) ||
+        /^WITH\s+[\s\S]*?\b(INSERT\s+INTO|UPDATE|DELETE\s+FROM)\b/i.test(strippedForDetection)
+
       const channel = isMutation ? 'db:run' : 'db:query'
       const res = await window.electron.ipcRenderer.invoke(channel, rawSql)
 
       if (res.success) {
-        if (isMutation) {
+        // Detect if mutation actually altered data (even if CTE executed via db:query)
+        const hasMutations =
+          isMutation ||
+          (res.changes !== undefined && res.changes !== null && Number(res.changes) > 0) ||
+          (res.lastInsertRowid !== undefined && res.lastInsertRowid !== null)
+
+        if (hasMutations) {
           setConsoleResults([
             {
               durum: 'Başarılı',
               etkilenen_satir: res.changes ?? 1,
-              mesaj: 'SQL komutu başarıyla yürütüldü.'
+              son_eklenen_id: res.lastInsertRowid ?? '-',
+              mesaj: 'SQL komutu başarıyla yürütüldü ve veritabanı görünümü güncellendi.'
             }
           ])
           await loadTableDetails()
@@ -403,6 +545,12 @@ export function useDatabaseBrowser() {
     rows,
     dataSearch,
     setDataSearch,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    totalRows,
+    totalPages,
     loading,
     dbError,
     activeTab,
@@ -425,9 +573,11 @@ export function useDatabaseBrowser() {
     consoleError,
     consoleLoading,
     pkColumn,
+    pkColumns,
     filteredTables,
     filteredRows,
     loadTables,
+    loadTableDetails,
     handleCellClick,
     handleSaveCell,
     handleInsertRow,

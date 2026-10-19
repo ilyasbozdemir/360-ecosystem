@@ -100,10 +100,10 @@ export { extractTableAndAction } from '../../ipc/utils/sqlGuard'
 
 export function extractDbInfo(
   sqliteFilePath: string,
-  fallbackName: string
+  fallbackName?: string
 ): { schemaVersion: number; institutionName: string; projectDifferentiator?: string } {
   let schemaVersion = 1
-  let institutionName = fallbackName
+  let institutionName = fallbackName || 'Bilinmeyen Kurum'
   let projectDifferentiator: string | undefined = undefined
   try {
     const tempDb = new Database(sqliteFilePath, { readonly: true })
@@ -136,7 +136,7 @@ export function extractDbInfo(
         institutionName = instRow.value.trim()
       }
     } catch {
-      // institutionName yoksa dosya adi
+      // institutionName yoksa fallbackName
     }
 
     try {

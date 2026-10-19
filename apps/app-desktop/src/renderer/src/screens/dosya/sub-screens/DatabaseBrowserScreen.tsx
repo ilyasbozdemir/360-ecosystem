@@ -27,9 +27,14 @@ export function DatabaseBrowserScreen(): React.JSX.Element {
     tableSearch,
     setTableSearch,
     columns,
-    rows,
     dataSearch,
     setDataSearch,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    totalRows,
+    totalPages,
     loading,
     dbError,
     activeTab,
@@ -114,7 +119,7 @@ export function DatabaseBrowserScreen(): React.JSX.Element {
                 📂 {selectedTable || 'Seçilmedi'}
               </span>
               <span className="text-[10px] text-slate-400 font-semibold font-sans">
-                ({rows.length} kayıt listeleniyor)
+                ({totalRows.toLocaleString('tr-TR')} toplam kayıt)
               </span>
             </div>
 
@@ -237,6 +242,13 @@ export function DatabaseBrowserScreen(): React.JSX.Element {
                 handleCellClick={handleCellClick}
                 handleSaveCell={handleSaveCell}
                 setDeletingRow={setDeletingRow}
+                page={page}
+                setPage={setPage}
+                pageSize={pageSize}
+                setPageSize={setPageSize}
+                totalRows={totalRows}
+                totalPages={totalPages}
+                loading={loading}
               />
             )}
 

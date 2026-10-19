@@ -1,18 +1,28 @@
 export async function copyToClipboard(text: string): Promise<boolean> {
-  if (!text) return false
+  // 1. Electron native clipboard IPC (tam yetkili, odak bağımsız)
+  try {
+    if (window.electron?.ipcRenderer) {
+      const res = await window.electron.ipcRenderer.invoke('clipboard:writeText', text || '')
+      if (res === true) return true
+    }
+  } catch {
+    // proceed to web fallback
+  }
 
+  // 2. Web Clipboard API
   try {
     if (navigator?.clipboard?.writeText) {
-      await navigator.clipboard.writeText(text)
+      await navigator.clipboard.writeText(text || '')
       return true
     }
   } catch {
     // Electron/browser permission error, proceed to fallback
   }
 
+  // 3. Fallback textarea execCommand
   try {
     const textarea = document.createElement('textarea')
-    textarea.value = text
+    textarea.value = text || ''
     textarea.style.position = 'fixed'
     textarea.style.left = '-9999px'
     textarea.style.top = '-9999px'

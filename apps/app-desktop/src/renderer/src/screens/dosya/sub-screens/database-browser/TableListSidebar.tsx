@@ -15,7 +15,7 @@ interface TableListSidebarProps {
   onToggle: () => void
 }
 
-export function TableListSidebar({
+export const TableListSidebar = React.memo(function TableListSidebar({
   tableSearch,
   setTableSearch,
   filteredTables,
@@ -115,4 +115,4 @@ export function TableListSidebar({
       </div>
     </div>
   )
-}
+})

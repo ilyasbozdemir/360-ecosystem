@@ -279,10 +279,10 @@ export class DtmWorkspace {
       const hadExplicitProjectId = Boolean(rawMeta && (rawMeta.project_id || rawMeta.projectId))
       const activeDbFile = rawMeta?.active_db_file || 'database.sqlite'
       const targetDbPath = path.join(this.tempDir, activeDbFile)
-      let projectDifferentiator = path.basename(filePath, path.extname(filePath))
+      let projectDifferentiator: string | undefined = undefined
       if (fs.existsSync(targetDbPath)) {
         try {
-          const info = extractDbInfo(targetDbPath, projectDifferentiator)
+          const info = extractDbInfo(targetDbPath)
           if (info.projectDifferentiator) {
             projectDifferentiator = info.projectDifferentiator
           }

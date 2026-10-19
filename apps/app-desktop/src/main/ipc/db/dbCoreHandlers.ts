@@ -38,7 +38,7 @@ export function registerDbCoreHandlers(): void {
             const { tableName, action } = extractTableAndAction(sql)
             workspaceManager.recordMutation(tableName, action, changes)
             if (workspaceManager.isDirty()) {
-              workspaceManager.save()
+              workspaceManager.saveDebounced(1000)
             }
           }
           return {
@@ -83,7 +83,7 @@ export function registerDbCoreHandlers(): void {
           const { tableName, action } = extractTableAndAction(sql)
           workspaceManager.recordMutation(tableName, action, changes)
           if (workspaceManager.isDirty()) {
-            workspaceManager.save()
+            workspaceManager.saveDebounced(1000)
           }
         }
         return { success: true, lastInsertRowid: info.lastInsertRowid, changes: info.changes }
@@ -120,7 +120,7 @@ export function registerDbCoreHandlers(): void {
           const { tableName, action } = extractTableAndAction(sql)
           workspaceManager.recordMutation(tableName, action, changes)
           if (workspaceManager.isDirty()) {
-            workspaceManager.save()
+            workspaceManager.saveDebounced(1000)
           }
         }
         return { success: true, lastInsertRowid: info.lastInsertRowid, changes: info.changes }

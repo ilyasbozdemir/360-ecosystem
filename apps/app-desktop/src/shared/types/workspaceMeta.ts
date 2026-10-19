@@ -17,8 +17,135 @@ export interface WorkspaceMeta {
 }
 
 /**
- * Generates a deterministic UUID-formatted ID from project characteristics.
- * Works seamlessly in both Node.js and Browser environments without external dependencies.
+ * RFC 4122 Standard UUID Namespace for Temin 360 Projects.
+ * Canonical namespace ensures interoperability and consistent derivation.
+ */
+export const TEMIN360_PROJECT_NAMESPACE = '7e31fee6-42db-2519-a154-c0acd01a5891'
+
+/**
+ * Standard RFC 3174 SHA-1 digest calculation.
+ * Isomorphic, self-contained implementation with zero external dependencies.
+ */
+function sha1Bytes(bytes: Uint8Array): Uint8Array {
+  let h0 = 0x67452301
+  let h1 = 0xefcdab89
+  let h2 = 0x98badcfe
+  let h3 = 0x10325476
+  let h4 = 0xc3d2e1f0
+
+  const len = bytes.length
+  const bitLen = len * 8
+  const padLen = len % 64 < 56 ? 56 - (len % 64) : 120 - (len % 64)
+  const totalLen = len + padLen + 8
+  const padded = new Uint8Array(totalLen)
+  padded.set(bytes)
+  padded[len] = 0x80
+
+  const view = new DataView(padded.buffer)
+  view.setUint32(totalLen - 4, bitLen >>> 0, false)
+  view.setUint32(totalLen - 8, Math.floor(bitLen / 0x100000000), false)
+
+  const w = new Uint32Array(80)
+
+  for (let i = 0; i < totalLen; i += 64) {
+    for (let t = 0; t < 16; t++) {
+      w[t] = view.getUint32(i + t * 4, false)
+    }
+    for (let t = 16; t < 80; t++) {
+      const val = w[t - 3] ^ w[t - 8] ^ w[t - 14] ^ w[t - 16]
+      w[t] = (val << 1) | (val >>> 31)
+    }
+
+    let a = h0
+    let b = h1
+    let c = h2
+    let d = h3
+    let e = h4
+
+    for (let t = 0; t < 80; t++) {
+      let f = 0
+      let k = 0
+      if (t < 20) {
+        f = (b & c) | (~b & d)
+        k = 0x5a827999
+      } else if (t < 40) {
+        f = b ^ c ^ d
+        k = 0x6ed9eba1
+      } else if (t < 60) {
+        f = (b & c) | (b & d) | (c & d)
+        k = 0x8f1bbcdc
+      } else {
+        f = b ^ c ^ d
+        k = 0xca62c1d6
+      }
+      const temp = (((a << 5) | (a >>> 27)) + f + e + k + w[t]) | 0
+      e = d
+      d = c
+      c = (b << 30) | (b >>> 2)
+      b = a
+      a = temp
+    }
+
+    h0 = (h0 + a) | 0
+    h1 = (h1 + b) | 0
+    h2 = (h2 + c) | 0
+    h3 = (h3 + d) | 0
+    h4 = (h4 + e) | 0
+  }
+
+  const result = new Uint8Array(20)
+  const resView = new DataView(result.buffer)
+  resView.setUint32(0, h0, false)
+  resView.setUint32(4, h1, false)
+  resView.setUint32(8, h2, false)
+  resView.setUint32(12, h3, false)
+  resView.setUint32(16, h4, false)
+  return result
+}
+
+/**
+ * Generates an RFC 4122 Version 5 (SHA-1 based) UUID from a name and namespace.
+ * Conforms strictly to RFC 4122 Section 4.3.
+ */
+export function generateUuidV5(
+  name: string,
+  namespace: string = TEMIN360_PROJECT_NAMESPACE
+): string {
+  const cleanNs = namespace.replace(/-/g, '')
+  const nsBytes = new Uint8Array(16)
+  for (let i = 0; i < 16; i++) {
+    nsBytes[i] = parseInt(cleanNs.substr(i * 2, 2), 16)
+  }
+
+  const nameBytes = new TextEncoder().encode(name)
+  const combined = new Uint8Array(nsBytes.length + nameBytes.length)
+  combined.set(nsBytes)
+  combined.set(nameBytes, nsBytes.length)
+
+  const hash = sha1Bytes(combined)
+
+  // RFC 4122 v5: Set version 5 (0x50) in octet 6
+  hash[6] = (hash[6] & 0x0f) | 0x50
+  // RFC 4122 variant: Set variant 1 (0x80) in octet 8
+  hash[8] = (hash[8] & 0x3f) | 0x80
+
+  let hex = ''
+  for (let i = 0; i < 16; i++) {
+    hex += hash[i].toString(16).padStart(2, '0')
+  }
+
+  return [
+    hex.slice(0, 8),
+    hex.slice(8, 12),
+    hex.slice(12, 16),
+    hex.slice(16, 20),
+    hex.slice(20, 32)
+  ].join('-')
+}
+
+/**
+ * Generates an RFC 4122 UUID v5 identifier for legacy workspaces without project_id.
+ * Completely deterministic and independent of local file paths or filenames.
  * Ensures that two computers opening the exact same legacy project derive the IDENTICAL project_id.
  */
 export function deriveDeterministicProjectId(
@@ -33,30 +160,7 @@ export function deriveDeterministicProjectId(
     ? `temin360:proj:${cleanInst}:${cleanDate}:${cleanDisc}`
     : `temin360:proj:${cleanInst}:${cleanDate}`
 
-  let h1 = 0x811c9dc5
-  let h2 = 0x41c64e6d
-  let h3 = 0x9e3779b9
-  let h4 = 0x6a09e667
-
-  for (let i = 0; i < seed.length; i++) {
-    const code = seed.charCodeAt(i)
-    h1 = Math.imul(h1 ^ code, 0x01000193)
-    h2 = Math.imul(h2 ^ (code + i), 0x5bd1e995)
-    h3 = Math.imul(h3 ^ (code >>> 2), 0x1000193)
-    h4 = Math.imul(h4 ^ (code * 31), 0x27d4eb2f)
-  }
-
-  const p1 = (h1 >>> 0).toString(16).padStart(8, '0')
-  const p2 = ((h2 >>> 16) & 0xffff).toString(16).padStart(4, '0')
-  const p3 = ('5' + (h2 & 0x0fff).toString(16).padStart(3, '0')).slice(0, 4)
-  const p4 = (
-    (8 | ((h3 >>> 28) & 0x3)).toString(16) +
-    ((h3 >>> 16) & 0x0fff).toString(16).padStart(3, '0')
-  ).slice(0, 4)
-  const p5 =
-    (h3 >>> 0).toString(16).padStart(8, '0') + (h4 >>> 0).toString(16).padStart(8, '0').slice(0, 4)
-
-  return `${p1}-${p2}-${p3}-${p4}-${p5}`
+  return generateUuidV5(seed, TEMIN360_PROJECT_NAMESPACE)
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -72,9 +176,7 @@ export function normalizeMeta(raw: any, discriminator?: string): WorkspaceMeta {
     raw?.title ||
     raw?.subject ||
     raw?.konu ||
-    raw?.temin_no ||
-    raw?.file_name ||
-    raw?.fileName
+    raw?.temin_no
 
   return {
     dtal_version: raw?.dtal_version || raw?.dtm_version || '1.0',

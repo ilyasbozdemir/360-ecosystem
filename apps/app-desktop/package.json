@@ -10,6 +10,7 @@
   "homepage": "https://electron-vite.org",
   "scripts": {
     "test": "vitest run",
+    "test:electron": "node scripts/test-electron.js run",
     "test:watch": "vitest",
     "test:e2e": "node scripts/generate-e2e-test-file.js && playwright test",
     "analyze": "node ../../scripts/analyze-codebase.mjs",

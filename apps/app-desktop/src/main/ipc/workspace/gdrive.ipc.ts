@@ -130,11 +130,17 @@ async function pruneOldBackups(
       if (projectRoot) {
         const cleanRoot = projectRoot.trim().toLowerCase()
         const escaped = cleanRoot.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-        const pattern = new RegExp(
-          `^${escaped}(?:[-_.](\\d{4}[-_.]\\d{2}[-_.]\\d{2}(?:[-_.T]\\d{2}[-_.]\\d{2}(?:[-_.]\\d{2})?)?|_surum\\s*#?\\d+)?\\.temin$`,
-          'i'
-        )
-        teminFiles = teminFiles.filter((f) => pattern.test(f.name.trim().toLowerCase()))
+        try {
+          const pattern = new RegExp(
+            `^${escaped}(?:(?:[-_.](?:\\d{4}[-_.]\\d{2}[-_.]\\d{2}(?:[-_.T]\\d{2}[-_.]\\d{2}(?:[-_.]\\d{2})?)?)|_surum\\s*#?\\d+)?\\.temin$`,
+            'i'
+          )
+          teminFiles = teminFiles.filter((f) => pattern.test(f.name.trim().toLowerCase()))
+        } catch {
+          teminFiles = teminFiles.filter((f) =>
+            f.name.trim().toLowerCase().startsWith(cleanRoot)
+          )
+        }
       }
 
       if (teminFiles.length > maxVersions) {

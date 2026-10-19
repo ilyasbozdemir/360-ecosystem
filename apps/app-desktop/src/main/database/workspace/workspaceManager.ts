@@ -4,20 +4,51 @@ import path from 'path'
 import { DtmWorkspace } from './DtmWorkspace'
 
 let activeWorkspace: DtmWorkspace | null = null
+let debouncedSaveTimer: NodeJS.Timeout | null = null
 
 export const workspaceManager = {
   create: (filePath: string, institutionName: string) => {
+    workspaceManager.flushSave()
     if (activeWorkspace) activeWorkspace.closeWorkspace()
     activeWorkspace = new DtmWorkspace()
     return activeWorkspace.createWorkspace(filePath, institutionName)
   },
   open: (filePath: string, allowMigration: boolean = false) => {
+    workspaceManager.flushSave()
     if (activeWorkspace) activeWorkspace.closeWorkspace()
     activeWorkspace = new DtmWorkspace()
     return activeWorkspace.openWorkspace(filePath, allowMigration)
   },
   save: (force: boolean = false) => {
+    if (debouncedSaveTimer) {
+      clearTimeout(debouncedSaveTimer)
+      debouncedSaveTimer = null
+    }
     if (activeWorkspace) activeWorkspace.saveWorkspace(force)
+  },
+  saveDebounced: (delayMs: number = 1000, force: boolean = false) => {
+    if (debouncedSaveTimer) {
+      clearTimeout(debouncedSaveTimer)
+    }
+    debouncedSaveTimer = setTimeout(() => {
+      debouncedSaveTimer = null
+      if (activeWorkspace && activeWorkspace.isDirtyState()) {
+        try {
+          activeWorkspace.saveWorkspace(force)
+        } catch (err) {
+          console.error('[workspaceManager] saveDebounced hatası:', err)
+        }
+      }
+    }, delayMs)
+  },
+  flushSave: (force: boolean = false) => {
+    if (debouncedSaveTimer) {
+      clearTimeout(debouncedSaveTimer)
+      debouncedSaveTimer = null
+    }
+    if (activeWorkspace && activeWorkspace.isDirtyState()) {
+      activeWorkspace.saveWorkspace(force)
+    }
   },
   saveAs: (targetFilePath: string) => {
     if (!activeWorkspace) return { success: false, error: 'Açık bir çalışma alanı yok.' }
@@ -53,6 +84,7 @@ export const workspaceManager = {
     return activeWorkspace.calculateCurrentHash()
   },
   close: () => {
+    workspaceManager.flushSave()
     if (activeWorkspace) {
       activeWorkspace.closeWorkspace()
       activeWorkspace = null

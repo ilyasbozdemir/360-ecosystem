@@ -71,7 +71,8 @@ vi.mock('electron', () => ({
 
 import {
   deriveDeterministicProjectId,
-  normalizeMeta
+  normalizeMeta,
+  generateUuidV5
 } from '../../../../shared/types/workspaceMeta'
 import { DtmWorkspace, atomicReplaceWorkspaceFile } from '../DtmWorkspace'
 import { verifyAndRestoreBackupBuffer } from '../../../ipc/workspace/gdrive.ipc'
@@ -185,6 +186,74 @@ describe('Temin 360 - Production Identity & Security Test Suite', () => {
       expect(legacyEmptyDisc).toBe(legacyExpected)
     })
 
+    it('RFC 4122 Bölüm 4.3 UUID v5 standart vektör doğrulaması (SHA-1 tabanlı standart)', () => {
+      // RFC 4122 Resmi Test Vektörü:
+      // DNS Namespace: 6ba7b810-9dad-11d1-80b4-00c04fd430c8, Name: "python.org"
+      // Beklenen UUID v5: 886313e1-3b8a-5372-9b90-0c9aee199e5d
+      const rfcNamespace = '6ba7b810-9dad-11d1-80b4-00c04fd430c8'
+      const computed = generateUuidV5('python.org', rfcNamespace)
+      expect(computed).toBe('886313e1-3b8a-5372-9b90-0c9aee199e5d')
+    })
+
+    it('eski .temin dosyası iki bağımsız bilgisayarda farklı klasör ve farklı dosya adlarıyla açılsa dahi dosya adından bağımsız olarak birebir aynı UUID v5 üretir ve kalıcı olarak kaydeder', () => {
+      // Bilgisayar A ve Bilgisayar B simülasyonu:
+      // İki bağımsız dizin, iki farklı dosya adı ("proje_a.temin" vs "yedek_dosya_b.temin")
+      const compADir = path.join(testDir, 'computer_a')
+      const compBDir = path.join(testDir, 'computer_b')
+      fs.mkdirSync(compADir, { recursive: true })
+      fs.mkdirSync(compBDir, { recursive: true })
+
+      const fileCompA = path.join(compADir, 'ihale_2024_01.temin')
+      const fileCompB = path.join(compBDir, 'farkli_adlandirilmis_kopya_2024.temin')
+
+      // Eski sürümden kalma .temin arşivi oluştur (içinde project_id ALANI YOK)
+      const legacyZip = new AdmZip()
+      legacyZip.addFile(
+        'meta.json',
+        Buffer.from(
+          JSON.stringify({
+            dtal_version: '1.0',
+            schema_version: 45,
+            institution: 'Kayseri Şehir Hastanesi',
+            created_at: '2024-03-12'
+            // project_id kasıtlı olarak yok
+          }),
+          'utf-8'
+        )
+      )
+      legacyZip.addFile('database.sqlite', Buffer.from('SQLite format 3\x00legacy_sqlite_content'))
+      const legacyBuffer = legacyZip.toBuffer()
+
+      // Her iki bilgisayara da aynı dosya kopyalanır
+      fs.writeFileSync(fileCompA, legacyBuffer)
+      fs.writeFileSync(fileCompB, legacyBuffer)
+
+      // Bilgisayar A'da DtmWorkspace açılır
+      const wsA = new DtmWorkspace()
+      const metaA = wsA.openWorkspace(fileCompA)
+      wsA.closeWorkspace()
+
+      // Bilgisayar B'de DtmWorkspace açılır
+      const wsB = new DtmWorkspace()
+      const metaB = wsB.openWorkspace(fileCompB)
+      wsB.closeWorkspace()
+
+      // 1. Her iki bilgisayarda da üretilen kimlik BİREBİR AYNI olmalıdır (dosya adı farklı olmasına rağmen!)
+      expect(metaA.project_id).toBeDefined()
+      expect(metaB.project_id).toBeDefined()
+      expect(metaA.project_id).toBe(metaB.project_id)
+      expect(metaA.project_id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)
+
+      // 2. Açılma sonrasında project_id her iki dosyanın meta.json'ına kalıcı olarak yazılmış olmalıdır
+      const zipA = new AdmZip(fileCompA)
+      const persistedMetaA = JSON.parse(zipA.readAsText('meta.json'))
+      expect(persistedMetaA.project_id).toBe(metaA.project_id)
+
+      const zipB = new AdmZip(fileCompB)
+      const persistedMetaB = JSON.parse(zipB.readAsText('meta.json'))
+      expect(persistedMetaB.project_id).toBe(metaB.project_id)
+    })
+
     it('normalizeMeta mevcut project_id değerini korur ve değiştirmeden döndürür', () => {
       const existingUuid = '9e8d7c6b-5a4b-4c3d-8e1f-2a3b4c5d6e7f'
       const meta = normalizeMeta(
@@ -290,6 +359,49 @@ describe('Temin 360 - Production Identity & Security Test Suite', () => {
         expect(fs.readFileSync(targetFile, 'utf-8')).toBe('dokunulmaz_veri')
       } finally {
         copySpy.mockRestore()
+      }
+    })
+
+    it('fallback hata enjeksiyonu ve kurtarma: hedef dosya .old adına taşındıktan sonra kaynak taşıması çökerse, .old dosyası otomatik olarak hedefe geri yüklenir', () => {
+      const sourceFile = path.join(testDir, 'kaynak_fallback_test.tmp')
+      const targetFile = path.join(testDir, 'hedef_fallback_test.temin')
+
+      fs.writeFileSync(targetFile, 'orijinal_kurtarilacak_dosya_icerigi')
+      fs.writeFileSync(sourceFile, 'yeni_eklenmek_istenen_veri')
+
+      const realRename = fs.renameSync
+
+      // 1. Doğrudan yeniden adlandırma (1. ve 2. denemeler) EPERM versin -> fallback tetiklensin
+      // 2. Fallback'te targetFile -> destOldTmp BAŞARILI olsun
+      // 3. Fallback'te sourceFile -> targetFile ÇÖKSÜN
+      const renameSpy = vi.spyOn(fs, 'renameSync').mockImplementation((oldPath, newPath) => {
+        if (oldPath === sourceFile && newPath === targetFile) {
+          const err = new Error('EPERM: Windows file lock on target')
+          Object.assign(err, { code: 'EPERM' })
+          throw err
+        }
+        return realRename(oldPath, newPath)
+      })
+
+      try {
+        expect(() => {
+          atomicReplaceWorkspaceFile(sourceFile, targetFile, 2)
+        }).toThrow(/Dosya atomik olarak değiştirilemedi/)
+
+        // Kurtarma doğrulaması:
+        // Çöküş anında .old kopyası hedef yola geri getirilmiş olmalıdır!
+        expect(fs.existsSync(targetFile)).toBe(true)
+        expect(fs.readFileSync(targetFile, 'utf-8')).toBe('orijinal_kurtarilacak_dosya_icerigi')
+
+        // Ayrıca güvenlik kopyası (.bak) da diskte sağlam durmalıdır
+        const files = fs.readdirSync(testDir)
+        const bakFile = files.find((f) => f.includes('.hedef_fallback_test.temin.bak.'))
+        expect(bakFile).toBeDefined()
+        expect(fs.readFileSync(path.join(testDir, bakFile!), 'utf-8')).toBe(
+          'orijinal_kurtarilacak_dosya_icerigi'
+        )
+      } finally {
+        renameSpy.mockRestore()
       }
     })
   })
