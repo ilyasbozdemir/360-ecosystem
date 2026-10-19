@@ -9,6 +9,7 @@ export interface GDriveFile {
   description?: string
   manifest?: BackupManifest | null
   manifestFileId?: string | null
+  manifestVerified?: boolean
   isVerified?: boolean
   appProperties?: {
     backupId?: string

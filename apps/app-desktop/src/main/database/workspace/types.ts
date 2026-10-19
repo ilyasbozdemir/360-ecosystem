@@ -45,33 +45,41 @@ export function calculateIntegrityHash(meta: Partial<WorkspaceMeta>): string {
   return crypto.createHash('sha256').update(JSON.stringify(payload)).digest('hex')
 }
 
+import { deriveDeterministicProjectId } from '../../../shared/types/workspaceMeta'
+export { deriveDeterministicProjectId }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function normalizeMeta(raw: any): WorkspaceMeta {
+  const institution = raw?.institution || raw?.institutionName || 'Bilinmeyen Kurum'
+  const createdAt =
+    raw?.created_at ||
+    (raw?.createdAt ? raw.createdAt.split('T')[0] : new Date().toISOString().split('T')[0])
+
   return {
-    dtal_version: raw.dtal_version || raw.dtm_version || '1.0',
-    app_version: raw.app_version || raw.version || '1.0.0',
-    created_at:
-      raw.created_at ||
-      (raw.createdAt ? raw.createdAt.split('T')[0] : new Date().toISOString().split('T')[0]),
-    institution: raw.institution || raw.institutionName || 'Bilinmeyen Kurum',
-    schema_version: parseInt(raw.schema_version || raw.schemaVersion || '1', 10) || 1,
-    platform: raw.platform || process.platform,
-    file_version: raw.file_version || parseInt(raw.fileVersion || '1', 10) || 1,
-    active_db_file: raw.active_db_file || 'database.sqlite',
-    updated_at: raw.updated_at || raw.updatedAt || new Date().toISOString(),
+    dtal_version: raw?.dtal_version || raw?.dtm_version || '1.0',
+    app_version: raw?.app_version || raw?.version || '1.0.0',
+    created_at: createdAt,
+    institution,
+    schema_version: parseInt(raw?.schema_version || raw?.schemaVersion || '1', 10) || 1,
+    platform: raw?.platform || process.platform,
+    file_version: raw?.file_version || parseInt(raw?.fileVersion || '1', 10) || 1,
+    active_db_file: raw?.active_db_file || 'database.sqlite',
+    updated_at: raw?.updated_at || raw?.updatedAt || new Date().toISOString(),
     last_user_mutation_at:
-      raw.last_user_mutation_at ||
-      raw.lastUserMutationAt ||
-      raw.updated_at ||
+      raw?.last_user_mutation_at ||
+      raw?.lastUserMutationAt ||
+      raw?.updated_at ||
       new Date().toISOString(),
-    integrity_hash: raw.integrity_hash,
-    project_id: raw.project_id || raw.projectId || crypto.randomUUID(),
+    integrity_hash: raw?.integrity_hash,
+    project_id:
+      raw?.project_id || raw?.projectId || deriveDeterministicProjectId(institution, createdAt),
     data_revision:
-      typeof raw.data_revision === 'number'
+      typeof raw?.data_revision === 'number'
         ? raw.data_revision
-        : typeof raw.dataRevision === 'number'
+        : typeof raw?.dataRevision === 'number'
           ? raw.dataRevision
           : 1,
-    last_backup_id: raw.last_backup_id || raw.lastBackupId || null,
+    last_backup_id: raw?.last_backup_id || raw?.lastBackupId || null,
     warnings: []
   }
 }

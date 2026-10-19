@@ -19,6 +19,107 @@ import {
 import { ensureSchemaIntegrity } from './schemaIntegrity'
 import { seedTemplates } from './templateSeeder'
 
+/**
+ * Atomically replaces destPath with sourcePath with Windows retry and safety backup.
+ * 1. Creates a safety backup of destPath if it exists.
+ * 2. Renames sourcePath to destPath with retry on Windows EPERM/EBUSY.
+ * 3. If replace fails, restores destPath from the safety backup.
+ * 4. On success, removes the temporary safety backup.
+ */
+export function atomicReplaceWorkspaceFile(
+  sourcePath: string,
+  destPath: string,
+  maxRetries: number = 10
+): void {
+  const destDir = path.dirname(destPath)
+  const destExists = fs.existsSync(destPath)
+  const backupPath = path.join(
+    destDir,
+    `.${path.basename(destPath)}.bak.${Date.now()}.${Math.random().toString(36).slice(2, 6)}`
+  )
+  let backupCreated = false
+
+  if (destExists) {
+    try {
+      fs.copyFileSync(destPath, backupPath)
+      if (!fs.existsSync(backupPath) || fs.statSync(backupPath).size === 0) {
+        throw new Error('Güvenlik yedeği kopyası oluşturulamadı.')
+      }
+      backupCreated = true
+    } catch (bakErr: unknown) {
+      const msg = bakErr instanceof Error ? bakErr.message : String(bakErr)
+      throw new Error(`Hedef dosya için güvenlik yedeği alınamadı: ${msg}. Kaydetme iptal edildi.`)
+    }
+  }
+
+  let replaced = false
+  let lastError: Error | null = null
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      fs.renameSync(sourcePath, destPath)
+      replaced = true
+      break
+    } catch (err: unknown) {
+      const errObj = err as NodeJS.ErrnoException
+      lastError = err instanceof Error ? err : new Error(String(err))
+      if (errObj.code === 'EPERM' || errObj.code === 'EBUSY' || errObj.code === 'EACCES') {
+        if (attempt < maxRetries) {
+          const delay = Math.min(25 * Math.pow(1.5, attempt - 1), 400)
+          try {
+            Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, delay)
+          } catch {
+            const s = Date.now()
+            while (Date.now() - s < delay) {
+              /* wait */
+            }
+          }
+          continue
+        }
+      }
+      break
+    }
+  }
+
+  if (!replaced) {
+    // Windows fallback: if direct rename over existing target is locked, rename dest to old-tmp first
+    try {
+      const destOldTmp = `${destPath}.old.${Date.now()}`
+      fs.renameSync(destPath, destOldTmp)
+      fs.renameSync(sourcePath, destPath)
+      try {
+        fs.unlinkSync(destOldTmp)
+      } catch {
+        /* ignore old tmp cleanup */
+      }
+      replaced = true
+    } catch (fallbackErr: unknown) {
+      // Restore destPath from backupPath if target was removed or damaged
+      if (
+        backupCreated &&
+        fs.existsSync(backupPath) &&
+        (!fs.existsSync(destPath) || fs.statSync(destPath).size === 0)
+      ) {
+        try {
+          fs.copyFileSync(backupPath, destPath)
+        } catch {
+          /* ignore restore error */
+        }
+      }
+      throw lastError || (fallbackErr instanceof Error ? fallbackErr : new Error(String(fallbackErr)))
+    }
+  }
+
+  // Clean up backup file upon successful replacement
+  if (backupCreated && fs.existsSync(backupPath)) {
+    try {
+      fs.unlinkSync(backupPath)
+    } catch {
+      /* ignore backup cleanup */
+    }
+  }
+}
+
 export class DtmWorkspace {
   private tempDir: string
   private db: Database.Database | null = null
@@ -32,7 +133,11 @@ export class DtmWorkspace {
   private lastMutationTime: string | null = null
 
   constructor() {
-    this.tempDir = path.join(app.getPath('userData'), 'dtm_temp', Date.now().toString())
+    this.tempDir = path.join(
+      app.getPath('userData'),
+      'dtm_temp',
+      `${process.pid}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+    )
   }
 
   public openWorkspace(filePath: string, allowMigration: boolean = false): WorkspaceMeta {
@@ -140,6 +245,7 @@ export class DtmWorkspace {
         fs.mkdirSync(attachmentsDir, { recursive: true })
       }
 
+      const hadExplicitProjectId = Boolean(rawMeta && (rawMeta.project_id || rawMeta.projectId))
       const meta = normalizeMeta(rawMeta)
       const fromVersion = meta.schema_version || 1
 
@@ -173,6 +279,15 @@ export class DtmWorkspace {
         const dbFileName = meta.active_db_file || 'database.sqlite'
         const dbPath = path.join(this.tempDir, dbFileName)
         this.db = new Database(dbPath)
+
+        // Eski projelerde projectId kalıcılığı (migration):
+        // Dosyada önceden açıkça project_id yoksa, deterministik türetilen kimliği
+        // diskteki .temin dosyasına kalıcı olarak kaydet.
+        if (!hadExplicitProjectId) {
+          meta.integrity_hash = calculateIntegrityHash(meta)
+          fs.writeFileSync(metaPath, JSON.stringify(meta, null, 2))
+          this.saveWorkspace(true)
+        }
       }
 
       if (this.db) {
@@ -319,7 +434,7 @@ export class DtmWorkspace {
     zip.addLocalFolder(this.tempDir)
 
     // Atomik ve güvenli kaydetme: Önce aynı dizinde geçici bir dosyaya yaz,
-    // boyutu doğrula, ardından asıl hedefi güncelle.
+    // arşivi bütünlük kontrolünden geçir, ardından atomik değiştirme yap.
     const targetDir = path.dirname(this.currentFilePath)
     const tempFile = path.join(
       targetDir,
@@ -330,10 +445,24 @@ export class DtmWorkspace {
       if (!fs.existsSync(tempFile) || fs.statSync(tempFile).size === 0) {
         throw new Error('Geçici arşiv dosyası oluşturulamadı veya boş.')
       }
-      fs.copyFileSync(tempFile, this.currentFilePath)
+
+      // Arşiv bütünlüğü doğrulaması
       try {
-        fs.unlinkSync(tempFile)
-      } catch {}
+        const testZip = new AdmZip(tempFile)
+        const entries = testZip.getEntries()
+        if (!entries || entries.length === 0) {
+          throw new Error('Arşiv içeriği boş.')
+        }
+        const hasMeta = entries.some((e) => e.entryName === 'meta.json')
+        const hasDb = entries.some((e) => e.entryName.endsWith('.sqlite'))
+        if (!hasMeta || !hasDb) {
+          throw new Error('Zorunlu dosyalar (meta.json veya database.sqlite) eksik.')
+        }
+      } catch (valErr: any) {
+        throw new Error(`Oluşturulan geçici arşiv doğrulanamadı: ${valErr.message}`)
+      }
+
+      atomicReplaceWorkspaceFile(tempFile, this.currentFilePath)
     } catch (saveErr) {
       if (fs.existsSync(tempFile)) {
         try {

@@ -1,9 +1,11 @@
 import { ipcMain, app } from 'electron'
-import { basename, join } from 'path'
+import { basename, join, dirname } from 'path'
 import { homedir } from 'os'
 import fs from 'fs'
 import crypto from 'crypto'
+import AdmZip from 'adm-zip'
 import { workspaceManager } from '../../database/workspace'
+import { atomicReplaceWorkspaceFile } from '../../database/workspace/DtmWorkspace'
 import { allExtensions, defaultFormat } from '../../config/fileFormats'
 import { getDeviceInfo } from '../../utils/deviceInfo'
 import { getAnonymousDeviceId } from '../../utils/anonymousDevice'
@@ -828,7 +830,13 @@ export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void):
           fetchedFiles.push(...data.files)
         }
         pageToken = data.nextPageToken
-      } while (pageToken && pageCount < 5)
+      } while (pageToken && pageCount < 100)
+
+      if (pageToken) {
+        console.warn(
+          '[Google Drive] Dosya listeleme 100 sayfa (10.000 dosya) sınırına ulaştı, daha fazla dosya olabilir.'
+        )
+      }
 
       // Split into .temin backups and companion .json manifests
       const teminFiles = fetchedFiles.filter(
@@ -907,13 +915,15 @@ export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void):
           ...tf,
           manifest: isVerified ? manifest : null,
           manifestFileId: matchingJson?.id || null,
+          manifestVerified: isVerified,
           isVerified
         }
       })
 
       return {
         success: true,
-        files: validFiles
+        files: validFiles,
+        hasMore: Boolean(pageToken)
       }
     } catch (error: any) {
       console.error('Google Drive list error:', error)
@@ -1131,15 +1141,64 @@ export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void):
         let targetPath: string
 
         if (args.overwriteActive && currentPath && fs.existsSync(currentPath)) {
-          // Create a safety backup before overwriting active workspace
+          // 1. Guaranteed safety backup: must succeed or operation aborts!
+          const safetyBackupPath = currentPath + '.bak'
           try {
-            fs.copyFileSync(currentPath, currentPath + '.bak')
-          } catch (e) {
-            console.warn('Safety backup could not be created:', e)
+            fs.copyFileSync(currentPath, safetyBackupPath)
+            if (!fs.existsSync(safetyBackupPath) || fs.statSync(safetyBackupPath).size === 0) {
+              throw new Error('Güvenlik yedeği oluşturulamadı veya boş.')
+            }
+          } catch (bakErr: unknown) {
+            const msg = bakErr instanceof Error ? bakErr.message : String(bakErr)
+            throw new Error(
+              `Kritik Güvenlik Uyarısı: Mevcut çalışma alanının güvenlik kopyası (.bak) oluşturulamadı (${msg}). Olası veri kaybını önlemek için bulut yedeğini geri yükleme işlemi derhal durduruldu. Yerel dosyanız korundu.`
+            )
           }
+
+          // 2. Write buffer to temporary file in the same directory and verify archive
+          const tempRestorePath = join(
+            dirname(currentPath),
+            `.${basename(currentPath)}.restore.${Date.now()}.tmp`
+          )
+          try {
+            fs.writeFileSync(tempRestorePath, buffer)
+            const testZip = new AdmZip(tempRestorePath)
+            const entries = testZip.getEntries()
+            if (!entries || entries.length === 0) {
+              throw new Error('İndirilen arşiv geçersiz veya boş.')
+            }
+          } catch (valErr: unknown) {
+            if (fs.existsSync(tempRestorePath)) {
+              try {
+                fs.unlinkSync(tempRestorePath)
+              } catch {
+                /* ignore tmp cleanup */
+              }
+            }
+            const msg = valErr instanceof Error ? valErr.message : String(valErr)
+            throw new Error(`İndirilen bulut arşivi doğrulanamadı: ${msg}. Yerel dosyanız korundu.`)
+          }
+
+          // 3. Close active workspace safely before file replacement
           workspaceManager.close()
-          fs.writeFileSync(currentPath, buffer)
-          targetPath = currentPath
+
+          try {
+            atomicReplaceWorkspaceFile(tempRestorePath, currentPath)
+            targetPath = currentPath
+          } catch (replaceErr: unknown) {
+            // Restore from safety backup immediately if replacement fails
+            if (fs.existsSync(safetyBackupPath)) {
+              try {
+                fs.copyFileSync(safetyBackupPath, currentPath)
+              } catch {
+                /* ignore restore error */
+              }
+            }
+            const msg = replaceErr instanceof Error ? replaceErr.message : String(replaceErr)
+            throw new Error(
+              `Yedek dosyası atomik olarak yazılamadı: ${msg}. Yerel dosya güvenlik yedeğinden (.bak) geri yüklendi.`
+            )
+          }
         } else {
           const defaultPath = join(
             homedir(),
@@ -1148,8 +1207,25 @@ export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void):
               ? args.fileName
               : `${args.fileName}.${defaultFormat.ext}`
           )
-          fs.writeFileSync(defaultPath, buffer)
-          targetPath = defaultPath
+          const tempPath = join(dirname(defaultPath), `.${basename(defaultPath)}.tmp.${Date.now()}`)
+          try {
+            fs.writeFileSync(tempPath, buffer)
+            const testZip = new AdmZip(tempPath)
+            if (!testZip.getEntries() || testZip.getEntries().length === 0) {
+              throw new Error('İndirilen arşiv geçersiz veya boş.')
+            }
+            atomicReplaceWorkspaceFile(tempPath, defaultPath)
+            targetPath = defaultPath
+          } catch (err: unknown) {
+            if (fs.existsSync(tempPath)) {
+              try {
+                fs.unlinkSync(tempPath)
+              } catch {
+                /* ignore tmp cleanup */
+              }
+            }
+            throw err
+          }
         }
 
         // Open downloaded file as active workspace
@@ -1191,7 +1267,10 @@ export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void):
             ? `${args.fileName} buluttan indirildi ve mevcut aktif çalışma dosyanız güncellendi.`
             : `${args.fileName} Google Drive'dan başarıyla indirildi ve çalışma alanı olarak açıldı.`,
           meta,
-          filePath: targetPath
+          filePath: targetPath,
+          verifiedSha256: Boolean(targetManifest?.sha256),
+          verifiedSize: Boolean(targetManifest?.fileSize),
+          contentVerified: Boolean(targetManifest?.sha256)
         }
       } catch (error: any) {
         console.error('Google Drive download error:', error)

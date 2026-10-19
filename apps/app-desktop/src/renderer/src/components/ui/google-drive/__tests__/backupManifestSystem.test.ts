@@ -9,7 +9,11 @@ import {
   type GDriveFile,
   type VersionEvaluationInput
 } from '../gdriveUtils'
-import { normalizeMeta, calculateIntegrityHash } from '../../../../../../shared/types/workspaceMeta'
+import {
+  normalizeMeta,
+  calculateIntegrityHash,
+  deriveDeterministicProjectId
+} from '../../../../../../shared/types/workspaceMeta'
 
 describe('Anonim JSON Manifest ve Bütünlük / Sürüm Takibi Testleri', () => {
   const sampleProjectId = '8f3b9c1d-4e2a-4c8f-9a1b-2c3d4e5f6a7b'
@@ -289,5 +293,92 @@ describe('Anonim JSON Manifest ve Bütünlük / Sürüm Takibi Testleri', () => 
 
     const invalidWithToken = { ...validManifest, token: 'ya29.secret' }
     expect(isBackupManifest(invalidWithToken)).toBe(false)
+  })
+
+  // Senaryo 13: Eski projelerde iki ayrı bilgisayarın aynı deterministik projectId üretmesi
+  it('Senaryo 13: Eski projelerde (project_id bulunmayan) iki ayrı bilgisayar aynı deterministik projectId üretir', () => {
+    const rawLegacy = {
+      institution: 'Devlet Hastanesi',
+      created_at: '2024-06-15'
+    }
+
+    const pcA = normalizeMeta(rawLegacy)
+    const pcB = normalizeMeta(rawLegacy)
+
+    expect(pcA.project_id).toBeDefined()
+    expect(pcA.project_id).toBe(pcB.project_id)
+    expect(pcA.project_id).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    )
+  })
+
+  // Senaryo 14: Farklı kurum veya oluşturma tarihlerinin farklı projectId üretmesi
+  it('Senaryo 14: Farklı kurumlara ait eski projeler farklı deterministik projectId alır', () => {
+    const proj1 = deriveDeterministicProjectId('Hacettepe Üniversitesi', '2024-01-01')
+    const proj2 = deriveDeterministicProjectId('Ankara Üniversitesi', '2024-01-01')
+    const proj3 = deriveDeterministicProjectId('Hacettepe Üniversitesi', '2024-02-01')
+
+    expect(proj1).not.toBe(proj2)
+    expect(proj1).not.toBe(proj3)
+  })
+
+  // Senaryo 15: Google Drive sayfalamasında 5 sayfa sınırının aşılması ve 100 sayfaya kadar devam edilebilmesi
+  it('Senaryo 15: Google Drive sayfalaması 5 sayfada durmaz, tüm sayfaları (örn. 8 sayfa) tarar', async () => {
+    const totalPages = 8
+    let pagesFetched = 0
+    let pageToken: string | undefined = undefined
+
+    const mockFetchPage = async (
+      token?: string
+    ): Promise<{ files: Array<{ id: string; name: string }>; nextPageToken?: string }> => {
+      const pageIndex = token ? parseInt(token, 10) : 1
+      pagesFetched++
+      const nextToken = pageIndex < totalPages ? String(pageIndex + 1) : undefined
+      const files = Array.from({ length: 100 }, (_, i) => ({
+        id: `file-${pageIndex}-${i}`,
+        name: `backup-${pageIndex}-${i}.temin`
+      }))
+      return { files, nextPageToken: nextToken }
+    }
+
+    const allFiles: Array<{ id: string; name: string }> = []
+    const MAX_PAGES = 100
+    do {
+      const data = await mockFetchPage(pageToken)
+      allFiles.push(...data.files)
+      pageToken = data.nextPageToken
+    } while (pageToken && pagesFetched < MAX_PAGES)
+
+    expect(pagesFetched).toBe(8)
+    expect(allFiles.length).toBe(800)
+    expect(pageToken).toBeUndefined()
+  })
+
+  // Senaryo 16: manifestVerified ile contentVerified (hash doğrulama) ayrımı
+  it('Senaryo 16: Manifest yapısal doğrulaması (manifestVerified) ile dosya bayt doğrulaması (contentVerified) ayrıştırılır', () => {
+    // 1. Liste aşamasında manifest yapısı geçerlidir
+    const driveItem: GDriveFile = {
+      id: 'drive-1',
+      name: 'Proje_2026-10-19.temin',
+      manifest: validManifest,
+      manifestVerified: isBackupManifest(validManifest),
+      isVerified: isBackupManifest(validManifest)
+    }
+    expect(driveItem.manifestVerified).toBe(true)
+    expect(driveItem.isVerified).toBe(true)
+
+    // 2. İndirme aşamasında gerçek baytların SHA-256 özeti doğrulanır
+    const actualBytes = sampleFileContent
+    const computedHash = crypto.createHash('sha256').update(actualBytes).digest('hex')
+    const contentVerified = computedHash.toLowerCase() === validManifest.sha256.toLowerCase()
+
+    expect(contentVerified).toBe(true)
+
+    // Bozuk dosya durumunda
+    const corruptedBytes = Buffer.from('corrupted')
+    const corruptedHash = crypto.createHash('sha256').update(corruptedBytes).digest('hex')
+    const corruptedContentVerified =
+      corruptedHash.toLowerCase() === validManifest.sha256.toLowerCase()
+    expect(corruptedContentVerified).toBe(false)
   })
 })

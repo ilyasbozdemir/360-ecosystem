@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import fs from 'fs'
 import path from 'path'
 import os from 'os'
@@ -13,6 +13,11 @@ const {
   resolvePackages,
   readWorkspacePatterns,
   sourceDirOf,
+  sleepSync,
+  areJsonObjectsEquivalent,
+  acquireLock,
+  releaseLock,
+  RETRY_CODES,
   writeLocJsonAtomic,
   runCount,
   allowedExtensions,
@@ -243,13 +248,14 @@ describe('LOC Counter (count-loc.js) Kapsamlı Test Paketi', () => {
     })
   })
 
-  describe('5. Atomik Yazma (writeLocJsonAtomic)', () => {
+  describe('5. Atomik Yazma, Windows EPERM/EBUSY Dayanıklılığı ve Kilitleme (writeLocJsonAtomic)', () => {
     it('JSON dosyasını atomik olarak yazar ve geçersiz .tmp bırakmaz', () => {
       const target = path.join(tempRoot, 'out/generated-loc.json')
       const payload = { test: 123, status: 'ok' }
 
-      writeLocJsonAtomic(target, payload)
+      const written = writeLocJsonAtomic(target, payload)
 
+      expect(written).toBe(true)
       expect(fs.existsSync(target)).toBe(true)
       const read = JSON.parse(fs.readFileSync(target, 'utf-8'))
       expect(read.test).toBe(123)
@@ -258,6 +264,201 @@ describe('LOC Counter (count-loc.js) Kapsamlı Test Paketi', () => {
       // out dizininde artık .tmp kalmamalı
       const files = fs.readdirSync(path.dirname(target))
       expect(files.filter((f) => f.endsWith('.tmp')).length).toBe(0)
+    })
+
+    it('JSON içeriği değişmediğinde dosyayı yeniden yazmayı atlar (no-op)', () => {
+      const target = path.join(tempRoot, 'out/generated-loc.json')
+      const locData1 = {
+        totalFiles: 10,
+        totalLines: 1000,
+        codeLines: 800,
+        nonBlankLines: 800,
+        blankLines: 200,
+        testFiles: 2,
+        testLines: 200,
+        testNonBlankLines: 150,
+        prodFiles: 8,
+        prodLines: 800,
+        prodNonBlankLines: 650,
+        timestamp: '2026-10-19T10:00:00.000Z',
+        scope: 'app+deps',
+        breakdown: [{ name: 'app-desktop', codeLines: 800 }]
+      }
+
+      // İlk yazma
+      const write1 = writeLocJsonAtomic(target, locData1)
+      expect(write1).toBe(true)
+
+      const mtime1 = fs.statSync(target).mtimeMs
+
+      // İkinci yazma: metrikler aynı fakat dinamik timestamp farklı
+      const locData2 = {
+        ...locData1,
+        timestamp: '2026-10-19T10:05:00.000Z'
+      }
+      const write2 = writeLocJsonAtomic(target, locData2)
+      expect(write2).toBe(false) // Yeniden yazma atlandı!
+      expect(fs.statSync(target).mtimeMs).toBe(mtime1)
+
+      // force: true olduğunda zorla yazar
+      const writeForce = writeLocJsonAtomic(target, locData2, { force: true })
+      expect(writeForce).toBe(true)
+
+      // Metrik değiştiğinde yazar
+      const locDataChanged = {
+        ...locData1,
+        codeLines: 850
+      }
+      const write3 = writeLocJsonAtomic(target, locDataChanged)
+      expect(write3).toBe(true)
+      const readChanged = JSON.parse(fs.readFileSync(target, 'utf-8'))
+      expect(readChanged.codeLines).toBe(850)
+    })
+
+    it('areJsonObjectsEquivalent fonksiyonu timestamp hariç tüm metrikleri ve breakdown dizisini doğru karşılaştırır', () => {
+      const base = {
+        totalFiles: 10,
+        totalLines: 100,
+        codeLines: 80,
+        nonBlankLines: 80,
+        blankLines: 20,
+        testFiles: 2,
+        testLines: 20,
+        testNonBlankLines: 15,
+        prodFiles: 8,
+        prodLines: 80,
+        prodNonBlankLines: 65,
+        timestamp: 'T1',
+        scope: 'app',
+        breakdown: [{ name: 'test', codeLines: 80 }]
+      }
+
+      expect(areJsonObjectsEquivalent(base, { ...base, timestamp: 'T2' })).toBe(true)
+      expect(areJsonObjectsEquivalent(base, { ...base, totalFiles: 11 })).toBe(false)
+      expect(areJsonObjectsEquivalent(base, { ...base, breakdown: [] })).toBe(false)
+      expect(areJsonObjectsEquivalent({ a: 1 }, { a: 1 })).toBe(true)
+      expect(areJsonObjectsEquivalent({ a: 1 }, { a: 2 })).toBe(false)
+    })
+
+    it('Windows dosya kilidi (EPERM / EBUSY / EACCES) durumunda yeniden dener ve başarıyla tamamlar', () => {
+      const target = path.join(tempRoot, 'out/locked-test.json')
+      const payload = { test: 'retry-test' }
+
+      let attempts = 0
+      const originalRenameSync = fs.renameSync
+      const renameSpy = vi.spyOn(fs, 'renameSync').mockImplementation((oldPath, newPath) => {
+        attempts++
+        if (attempts <= 2) {
+          const err = new Error('EPERM: operation not permitted, rename')
+          Object.assign(err, { code: 'EPERM' })
+          throw err
+        }
+        return originalRenameSync(oldPath, newPath)
+      })
+
+      try {
+        const result = writeLocJsonAtomic(target, payload, { maxRetries: 5, baseDelayMs: 2 })
+        expect(result).toBe(true)
+        expect(attempts).toBe(3)
+        expect(fs.existsSync(target)).toBe(true)
+      } finally {
+        renameSpy.mockRestore()
+      }
+    })
+
+    it('Yeniden denenemez hata kodlarında (örn: ENOSPC) hemen hata fırlatır, gecikmeli tekrar denemez', () => {
+      const target = path.join(tempRoot, 'out/fatal-error-test.json')
+      const payload = { test: 'fatal' }
+
+      let attempts = 0
+      const renameSpy = vi.spyOn(fs, 'renameSync').mockImplementation(() => {
+        attempts++
+        const err = new Error('ENOSPC: no space left on device')
+        Object.assign(err, { code: 'ENOSPC' })
+        throw err
+      })
+
+      try {
+        expect(() => {
+          writeLocJsonAtomic(target, payload, { maxRetries: 5, baseDelayMs: 2 })
+        }).toThrow(/ENOSPC/)
+        expect(attempts).toBe(1) // Hemen fırlatmalı, 5 kez beklememeli
+      } finally {
+        renameSpy.mockRestore()
+      }
+    })
+
+    it('Tüm denemeler tükendiğinde geçici .tmp dosyasını temizler ve asıl hatayı korur', () => {
+      const target = path.join(tempRoot, 'out/exhausted-test.json')
+      const payload = { test: 'exhausted' }
+
+      const renameSpy = vi.spyOn(fs, 'renameSync').mockImplementation(() => {
+        const err = new Error('EBUSY: resource busy or locked')
+        Object.assign(err, { code: 'EBUSY' })
+        throw err
+      })
+
+      try {
+        expect(() => {
+          writeLocJsonAtomic(target, payload, { maxRetries: 2, baseDelayMs: 2 })
+        }).toThrow(/EBUSY/)
+
+        // Geçici dosya (.tmp) temizlenmiş olmalıdır
+        const outDir = path.dirname(target)
+        if (fs.existsSync(outDir)) {
+          const remainingTmp = fs.readdirSync(outDir).filter((f) => f.endsWith('.tmp'))
+          expect(remainingTmp.length).toBe(0)
+        }
+      } finally {
+        renameSpy.mockRestore()
+      }
+    })
+
+    it('acquireLock ve releaseLock süreçler arası çakışmayı ve stale (eski) kilitleri yönetir', () => {
+      const lockFile = path.join(tempRoot, 'test.lock')
+
+      // İlk kilit alımı başarılı olmalıdır
+      const locked1 = acquireLock(lockFile, 100)
+      expect(locked1).toBe(true)
+      expect(fs.existsSync(lockFile)).toBe(true)
+
+      // Kilit tutuluyorken ikinci alım zaman aşımına uğrar
+      const locked2 = acquireLock(lockFile, 50)
+      expect(locked2).toBe(false)
+
+      // Kilit serbest bırakılır
+      releaseLock(lockFile)
+      expect(fs.existsSync(lockFile)).toBe(false)
+
+      // Kilit serbest bırakıldıktan sonra tekrar alınabilmelidir
+      const locked3 = acquireLock(lockFile, 100)
+      expect(locked3).toBe(true)
+      releaseLock(lockFile)
+
+      // Stale lock testi: 15 saniye önceki bir kilit dosyası
+      fs.writeFileSync(lockFile, '99999\n123456')
+      const staleTime = (Date.now() - 15000) / 1000
+      fs.utimesSync(lockFile, staleTime, staleTime)
+
+      // acquireLock bayat kilidi tespit edip kırabilmeli ve yeni kilidi alabilmelidir
+      const lockedStale = acquireLock(lockFile, 200)
+      expect(lockedStale).toBe(true)
+      releaseLock(lockFile)
+    })
+
+    it('sleepSync fonksiyonu belirlenen süre kadar senkron bekler', () => {
+      const start = Date.now()
+      sleepSync(20)
+      const elapsed = Date.now() - start
+      expect(elapsed).toBeGreaterThanOrEqual(15)
+    })
+
+    it('RETRY_CODES beklenen Windows hata kodlarını (EPERM, EBUSY, EACCES) içerir', () => {
+      expect(RETRY_CODES.has('EPERM')).toBe(true)
+      expect(RETRY_CODES.has('EBUSY')).toBe(true)
+      expect(RETRY_CODES.has('EACCES')).toBe(true)
+      expect(RETRY_CODES.has('ENOENT')).toBe(false)
+      expect(RETRY_CODES.has('ENOSPC')).toBe(false)
     })
   })
 

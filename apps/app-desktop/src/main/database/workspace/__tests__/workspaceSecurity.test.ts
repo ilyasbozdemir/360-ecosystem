@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import path from 'path'
 import fs from 'fs'
@@ -5,15 +6,23 @@ import os from 'os'
 import AdmZip from 'adm-zip'
 import { CURRENT_SCHEMA_VERSION } from '@dt/database'
 
-// Mock better-sqlite3 to run under standard Node.js Vitest runner without Electron ABI mismatch
 vi.mock('better-sqlite3', () => {
   return {
     default: class MockDatabase {
+      constructor(dbPath?: string) {
+        if (dbPath && typeof dbPath === 'string' && !fs.existsSync(dbPath)) {
+          try {
+            fs.writeFileSync(dbPath, 'SQLite format 3\x00mock_database_content')
+          } catch {
+            /* noop */
+          }
+        }
+      }
       prepare(): Record<string, unknown> {
         return {
           run: vi.fn(),
           all: vi.fn().mockReturnValue([]),
-          get: vi.fn()
+          get: vi.fn().mockReturnValue({ cnt: 0 })
         }
       }
       transaction<T>(fn: T): T {
@@ -39,13 +48,14 @@ vi.mock('electron', () => ({
   },
   app: {
     getPath: vi.fn().mockReturnValue(os.tmpdir()),
+    getAppPath: vi.fn().mockReturnValue(os.tmpdir()),
     getVersion: vi.fn().mockReturnValue('1.0.0-test')
   },
   BrowserWindow: vi.fn()
 }))
 
 import { workspaceManager } from '../workspaceManager'
-import { DtmWorkspace } from '../DtmWorkspace'
+import { DtmWorkspace, atomicReplaceWorkspaceFile } from '../DtmWorkspace'
 
 describe('Workspace Security & Path Traversal Protections', () => {
   let testDir: string
@@ -203,6 +213,93 @@ describe('Workspace Security & Path Traversal Protections', () => {
       expect(fs.existsSync(lockPath)).toBe(false)
 
       ws.closeWorkspace()
+    })
+  })
+
+  describe('Legacy Project ID Migration and Atomic Workspace Saving', () => {
+    it('eski projelerde (project_id bulunmayan) ilk açılışta deterministik kimlik atanır ve diskteki arşive kalıcı olarak yazılır', () => {
+      const legacyPath = path.join(testDir, 'legacy_project.temin')
+      const zip = new AdmZip()
+      zip.addFile(
+        'meta.json',
+        Buffer.from(
+          JSON.stringify({
+            dtal_version: '1.0',
+            schema_version: CURRENT_SCHEMA_VERSION,
+            institution: 'Eski Hastane',
+            created_at: '2024-03-15'
+          })
+        )
+      )
+      zip.addFile('database.sqlite', Buffer.from('SQLite format 3\x00mock_database_data'))
+      fs.writeFileSync(legacyPath, zip.toBuffer())
+
+      // 1. İlk bilgisayarda açılış
+      const ws1 = new DtmWorkspace()
+      const meta1 = ws1.openWorkspace(legacyPath)
+
+      expect(meta1.project_id).toBeDefined()
+      expect(meta1.project_id).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+      )
+      ws1.closeWorkspace()
+
+      // 2. Diskteki dosyanın fiziksel olarak güncellenmiş ve project_id kaydedilmiş olduğunu doğrula
+      const savedZip = new AdmZip(legacyPath)
+      const metaEntry = savedZip.getEntry('meta.json')
+      expect(metaEntry).not.toBeNull()
+      const parsedDiskMeta = JSON.parse(metaEntry!.getData().toString('utf-8'))
+      expect(parsedDiskMeta.project_id).toBe(meta1.project_id)
+
+      // 3. İkinci bir bilgisayarda / süreçte açıldığında diskteki kalıcı kimliğin aynen okunması
+      const ws2 = new DtmWorkspace()
+      const meta2 = ws2.openWorkspace(legacyPath)
+      expect(meta2.project_id).toBe(meta1.project_id)
+      ws2.closeWorkspace()
+    })
+
+    it('atomicReplaceWorkspaceFile hedef dosyayı atomik olarak değiştirir ve geçici dosya bırakmaz', () => {
+      const sourceFile = path.join(testDir, 'source.tmp')
+      const targetFile = path.join(testDir, 'target.temin')
+
+      fs.writeFileSync(targetFile, 'original-content')
+      fs.writeFileSync(sourceFile, 'new-atomic-content')
+
+      atomicReplaceWorkspaceFile(sourceFile, targetFile)
+
+      expect(fs.existsSync(targetFile)).toBe(true)
+      expect(fs.readFileSync(targetFile, 'utf-8')).toBe('new-atomic-content')
+      expect(fs.existsSync(sourceFile)).toBe(false)
+
+      // .bak temizlenmiş olmalıdır
+      const remainingFiles = fs.readdirSync(testDir)
+      expect(remainingFiles.filter((f) => f.includes('.bak.')).length).toBe(0)
+    })
+
+    it('atomicReplaceWorkspaceFile hata durumunda hedef dosyayı güvenlik kopyasından (.bak) geri yükler', () => {
+      const sourceFile = path.join(testDir, 'source-error.tmp')
+      const targetFile = path.join(testDir, 'target-protected.temin')
+
+      fs.writeFileSync(targetFile, 'critical-existing-data')
+      fs.writeFileSync(sourceFile, 'incoming-data')
+
+      const renameSpy = vi.spyOn(fs, 'renameSync').mockImplementation(() => {
+        const err = new Error('EACCES: permission denied')
+        Object.assign(err, { code: 'EACCES' })
+        throw err
+      })
+
+      try {
+        expect(() => {
+          atomicReplaceWorkspaceFile(sourceFile, targetFile, 2)
+        }).toThrow(/EACCES/)
+
+        // Hedef dosya asla silinmemiş veya boşaltılmamış olmalıdır
+        expect(fs.existsSync(targetFile)).toBe(true)
+        expect(fs.readFileSync(targetFile, 'utf-8')).toBe('critical-existing-data')
+      } finally {
+        renameSpy.mockRestore()
+      }
     })
   })
 })

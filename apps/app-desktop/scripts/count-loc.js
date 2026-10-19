@@ -240,16 +240,190 @@ function countDir(dir, acc, outPath = outputFile) {
   }
 }
 
-function writeLocJsonAtomic(targetPath, data) {
+/**
+ * Synchronous sleep using Atomics.wait (zero CPU utilization).
+ * @param {number} ms
+ */
+function sleepSync(ms) {
+  try {
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)
+  } catch {
+    const start = Date.now()
+    while (Date.now() - start < ms) {}
+  }
+}
+
+/**
+ * Checks if existing LOC JSON data is equivalent to incoming data
+ * (comparing metrics and breakdown, ignoring variable timestamp).
+ */
+function areJsonObjectsEquivalent(existing, incoming) {
+  if (existing === incoming) return true
+  if (!existing || !incoming || typeof existing !== 'object' || typeof incoming !== 'object') {
+    return false
+  }
+
+  // If both are LOC counter result structures, compare metrics and ignore variable timestamp
+  if (
+    typeof existing.totalFiles === 'number' &&
+    typeof incoming.totalFiles === 'number' &&
+    typeof existing.codeLines === 'number' &&
+    typeof incoming.codeLines === 'number'
+  ) {
+    const keys = [
+      'totalFiles',
+      'totalLines',
+      'codeLines',
+      'nonBlankLines',
+      'blankLines',
+      'testFiles',
+      'testLines',
+      'testNonBlankLines',
+      'prodFiles',
+      'prodLines',
+      'prodNonBlankLines',
+      'scope'
+    ]
+    for (const k of keys) {
+      if (existing[k] !== incoming[k]) return false
+    }
+    return JSON.stringify(existing.breakdown) === JSON.stringify(incoming.breakdown)
+  }
+
+  // Fallback for general objects (used in unit tests)
+  return JSON.stringify(existing) === JSON.stringify(incoming)
+}
+
+/**
+ * Acquires a cross-process lockfile to prevent parallel execution collisions.
+ */
+function acquireLock(lockFile, maxWaitMs = 5000) {
+  const start = Date.now()
+  while (Date.now() - start < maxWaitMs) {
+    try {
+      const fd = fs.openSync(lockFile, 'wx')
+      fs.writeSync(fd, `${process.pid}\n${Date.now()}`)
+      fs.closeSync(fd)
+      return true
+    } catch (err) {
+      if (err.code === 'EEXIST') {
+        // Stale lock check (older than 10 seconds)
+        try {
+          const stats = fs.statSync(lockFile)
+          if (Date.now() - stats.mtimeMs > 10000) {
+            try {
+              fs.unlinkSync(lockFile)
+            } catch {}
+            continue
+          }
+        } catch {}
+        sleepSync(30 + Math.floor(Math.random() * 20))
+      } else {
+        try {
+          fs.mkdirSync(path.dirname(lockFile), { recursive: true })
+        } catch {}
+      }
+    }
+  }
+  return false
+}
+
+function releaseLock(lockFile) {
+  try {
+    if (fs.existsSync(lockFile)) {
+      fs.unlinkSync(lockFile)
+    }
+  } catch {}
+}
+
+const RETRY_CODES = new Set(['EPERM', 'EBUSY', 'EACCES'])
+
+/**
+ * Atomically writes JSON to targetPath with retry logic for Windows file locking (EPERM / EBUSY).
+ * Skips write if content has not changed.
+ * Cleans up temporary file on failure.
+ *
+ * @param {string} targetPath
+ * @param {object} data
+ * @param {object} [options]
+ * @param {number} [options.maxRetries=10]
+ * @param {number} [options.baseDelayMs=25]
+ * @param {boolean} [options.force=false]
+ * @returns {boolean} true if file was written, false if skipped
+ */
+function writeLocJsonAtomic(targetPath, data, options = {}) {
+  const maxRetries = options.maxRetries || 10
+  const baseDelayMs = options.baseDelayMs || 25
+  const force = options.force || false
+
   const dir = path.dirname(targetPath)
   fs.mkdirSync(dir, { recursive: true })
-  const tmpPath = `${targetPath}.${Date.now()}.${Math.random().toString(36).slice(2, 8)}.tmp`
-  const jsonStr = JSON.stringify(data, null, 2)
-  fs.writeFileSync(tmpPath, jsonStr, 'utf-8')
-  if (!fs.existsSync(tmpPath) || fs.statSync(tmpPath).size === 0) {
-    throw new Error(`[LOC Counter] Atomik yazma hatası: ${tmpPath} boş veya oluşturulamadı.`)
+
+  // 1. Content check: if identical, avoid rewriting to eliminate file watcher triggers & lock contention
+  if (!force && fs.existsSync(targetPath)) {
+    try {
+      const existing = JSON.parse(fs.readFileSync(targetPath, 'utf-8'))
+      if (areJsonObjectsEquivalent(existing, data)) {
+        return false
+      }
+    } catch {
+      // If unreadable or invalid, proceed to rewrite
+    }
   }
-  fs.renameSync(tmpPath, targetPath)
+
+  // 2. Lockfile to handle concurrent script execution
+  const lockFile = `${targetPath}.lock`
+  const hasLock = acquireLock(lockFile)
+
+  const tmpPath = `${targetPath}.${process.pid}.${Date.now()}.${Math.random().toString(36).slice(2, 8)}.tmp`
+
+  try {
+    const jsonStr = JSON.stringify(data, null, 2)
+    fs.writeFileSync(tmpPath, jsonStr, 'utf-8')
+
+    if (!fs.existsSync(tmpPath) || fs.statSync(tmpPath).size === 0) {
+      throw new Error(`[LOC Counter] Atomik yazma hatası: ${tmpPath} boş veya oluşturulamadı.`)
+    }
+
+    // 3. Rename with retry mechanism for Windows EPERM / EBUSY
+    let lastError = null
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        fs.renameSync(tmpPath, targetPath)
+        lastError = null
+        break
+      } catch (err) {
+        if (RETRY_CODES.has(err.code)) {
+          lastError = err
+          if (attempt < maxRetries) {
+            const delay = Math.min(baseDelayMs * Math.pow(1.5, attempt - 1) + Math.floor(Math.random() * 15), 500)
+            sleepSync(delay)
+            continue
+          }
+        }
+        // Non-retryable error (e.g. ENOSPC, ENOENT) or exhausted retries
+        throw err
+      }
+    }
+
+    if (lastError) {
+      throw lastError
+    }
+
+    return true
+  } catch (err) {
+    // 4. Safe cleanup of temporary file on failure, preserving original error
+    try {
+      if (fs.existsSync(tmpPath)) {
+        fs.unlinkSync(tmpPath)
+      }
+    } catch {}
+    throw err
+  } finally {
+    if (hasLock) {
+      releaseLock(lockFile)
+    }
+  }
 }
 
 function runCount(options = {}) {
@@ -378,6 +552,11 @@ module.exports = {
   isTestFile,
   countFile,
   countDir,
+  sleepSync,
+  areJsonObjectsEquivalent,
+  acquireLock,
+  releaseLock,
+  RETRY_CODES,
   writeLocJsonAtomic,
   runCount
 }
