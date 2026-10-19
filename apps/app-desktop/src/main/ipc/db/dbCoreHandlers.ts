@@ -29,6 +29,25 @@ export function registerDbCoreHandlers(): void {
       const executeQuery = async () => {
         const db = workspaceManager.getDb()
         const stmt = db.prepare(sql)
+        // Defansif kontrol: Eğer çağrılan ifade veri döndürmeyen bir sorgu ise (UPDATE, INSERT, DELETE vb.)
+        // better-sqlite3 "This statement does not return data. Use run() instead" hatası fırlatır.
+        if (!stmt.reader) {
+          const info = stmt.run(...params)
+          const changes = Number(info.changes ?? 0)
+          if (changes > 0) {
+            const { tableName, action } = extractTableAndAction(sql)
+            workspaceManager.recordMutation(tableName, action, changes)
+            if (workspaceManager.isDirty()) {
+              workspaceManager.save()
+            }
+          }
+          return {
+            success: true,
+            data: [],
+            lastInsertRowid: info.lastInsertRowid,
+            changes: info.changes
+          }
+        }
         const rows = stmt.all(...params)
         return { success: true, data: rows }
       }

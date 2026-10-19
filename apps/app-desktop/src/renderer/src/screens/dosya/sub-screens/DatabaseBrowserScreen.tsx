@@ -1,6 +1,15 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { SubScreen } from '../SubScreen'
-import { AlertTriangle, Database, Download, Plus, Search, X } from 'lucide-react'
+import {
+  AlertTriangle,
+  Database,
+  Download,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Plus,
+  Search,
+  X
+} from 'lucide-react'
 import { useDatabaseBrowser } from './database-browser/useDatabaseBrowser'
 import { TableListSidebar } from './database-browser/TableListSidebar'
 import { DataTableTab } from './database-browser/DataTableTab'
@@ -10,6 +19,8 @@ import { AddRowModal } from './database-browser/AddRowModal'
 import { DeleteRowModal } from './database-browser/DeleteRowModal'
 
 export function DatabaseBrowserScreen(): React.JSX.Element {
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true)
+
   const {
     selectedTable,
     setSelectedTable,
@@ -59,9 +70,11 @@ export function DatabaseBrowserScreen(): React.JSX.Element {
       hideStepper
       requireActiveDosya={false}
     >
-      <div className="flex gap-6 h-[calc(100vh-240px)] min-h-125 mt-4 relative font-sans">
+      <div className="flex gap-4 h-[calc(100vh-240px)] min-h-125 mt-4 relative font-sans">
         {/* Sidebar: Tables List */}
         <TableListSidebar
+          isOpen={isSidebarOpen}
+          onToggle={() => setIsSidebarOpen(false)}
           tableSearch={tableSearch}
           setTableSearch={setTableSearch}
           filteredTables={filteredTables}
@@ -73,14 +86,34 @@ export function DatabaseBrowserScreen(): React.JSX.Element {
         />
 
         {/* Main Content Area */}
-        <div className="flex-1 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 overflow-hidden flex flex-col h-full bg-white dark:bg-slate-900">
+        <div className="flex-1 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 overflow-hidden flex flex-col h-full bg-white dark:bg-slate-900 transition-all duration-300 shadow-xs">
           {/* Top Header & Actions Bar */}
           <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4 mb-4 shrink-0 flex-wrap gap-2">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5">
+              {!isSidebarOpen && (
+                <button
+                  onClick={() => setIsSidebarOpen(true)}
+                  className="flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:hover:bg-blue-900/80 dark:text-blue-300 border border-blue-200 dark:border-blue-800 text-xs font-bold px-2.5 py-1 rounded-xl transition-all cursor-pointer shadow-xs active:scale-95"
+                  title="Tablo Listesini Göster"
+                >
+                  <PanelLeftOpen className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                  <span>Tablolar ({filteredTables.length})</span>
+                </button>
+              )}
+              {isSidebarOpen && (
+                <button
+                  onClick={() => setIsSidebarOpen(false)}
+                  className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer border-0 bg-transparent"
+                  title="Tablo Listesini Gizle (Genişletilmiş Tablo Görünümü)"
+                >
+                  <PanelLeftClose className="w-4 h-4" />
+                </button>
+              )}
+
               <span className="text-xs font-bold font-mono text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-xl">
                 📂 {selectedTable || 'Seçilmedi'}
               </span>
-              <span className="text-[10px] text-slate-400 font-semibold">
+              <span className="text-[10px] text-slate-400 font-semibold font-sans">
                 ({rows.length} kayıt listeleniyor)
               </span>
             </div>

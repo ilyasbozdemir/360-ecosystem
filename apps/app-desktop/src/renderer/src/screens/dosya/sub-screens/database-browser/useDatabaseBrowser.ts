@@ -213,7 +213,7 @@ export function useDatabaseBrowser() {
         params.push(editValue.trim() === '' ? null : editValue, ...whereParams)
       }
 
-      const res = await window.electron.ipcRenderer.invoke('db:query', query, params)
+      const res = await window.electron.ipcRenderer.invoke('db:run', query, params)
       if (res.success) {
         setStatusMessage({
           type: 'success',
