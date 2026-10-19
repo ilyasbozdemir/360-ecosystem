@@ -381,4 +381,81 @@ describe('Anonim JSON Manifest ve Bütünlük / Sürüm Takibi Testleri', () => 
       corruptedHash.toLowerCase() === validManifest.sha256.toLowerCase()
     expect(corruptedContentVerified).toBe(false)
   })
+
+  // Senaryo 17: Aynı kurum ve tarihte oluşturulan farklı projelerin discriminator ile farklı projectId alması
+  it('Senaryo 17: Aynı kurum ve aynı oluşturma tarihine sahip farklı projeler discriminator ile farklı projectId alır', () => {
+    const institution = 'İstanbul İl Sağlık Müdürlüğü'
+    const createdAt = '2026-10-19'
+    const discA = '2026/01 Medikal Cihaz Bakımı'
+    const discB = '2026/02 İlaç ve Serum Alımı'
+
+    const idA = deriveDeterministicProjectId(institution, createdAt, discA)
+    const idB = deriveDeterministicProjectId(institution, createdAt, discB)
+    const idLegacy = deriveDeterministicProjectId(institution, createdAt)
+
+    expect(idA).not.toBe(idB)
+    expect(idA).not.toBe(idLegacy)
+    expect(idB).not.toBe(idLegacy)
+
+    // normalizeMeta ile konu veya dosya adı ayırt edici olarak kullanıldığında farklı kimlik atanır
+    const metaA = normalizeMeta({ institution, created_at: createdAt, konu: discA })
+    const metaB = normalizeMeta({ institution, created_at: createdAt, konu: discB })
+    expect(metaA.project_id).not.toBe(metaB.project_id)
+  })
+
+  // Senaryo 18: İki bilgisayarlı sürüm çakışması (aynı revizyonda farklı cihaz yedeği)
+  it('Senaryo 18: İki bilgisayar aynı revizyonda iken farklı yedek kimlikleri çakışma (isConflict: true) olarak değerlendirilir', () => {
+    const conflictResult = evaluateNewerVersion({
+      currentFileName: 'Proje_2026-10-19.temin',
+      activeMeta: {
+        project_id: sampleProjectId,
+        data_revision: 2,
+        last_backup_id: 'backup-id-computer-B'
+      },
+      isDirty: false,
+      cloudFiles: [
+        {
+          id: 'cloud-file-A',
+          name: 'Proje_2026-10-19_18-00.temin',
+          manifest: {
+            ...validManifest,
+            backupId: 'backup-id-computer-A',
+            dataRevision: 2
+          }
+        }
+      ]
+    })
+
+    expect(conflictResult.hasNewerVersion).toBe(true)
+    expect(conflictResult.isConflict).toBe(true)
+    expect(conflictResult.reason).toContain('Eşzamanlı değişiklik çakışması')
+  })
+
+  // Senaryo 19: İki bilgisayarlı sürüm çakışması (daha yeni bulut revizyonu + yerel kaydedilmemiş değişiklik)
+  it('Senaryo 19: Bulutta daha yeni revizyon varken yerelde de değişiklik varsa çakışma (isConflict: true) bildirilir', () => {
+    const conflictResult = evaluateNewerVersion({
+      currentFileName: 'Proje_2026-10-19.temin',
+      activeMeta: {
+        project_id: sampleProjectId,
+        data_revision: 2,
+        last_backup_id: 'backup-id-computer-B'
+      },
+      isDirty: true,
+      cloudFiles: [
+        {
+          id: 'cloud-file-A',
+          name: 'Proje_2026-10-19_19-00.temin',
+          manifest: {
+            ...validManifest,
+            backupId: 'backup-id-computer-A-rev3',
+            dataRevision: 3
+          }
+        }
+      ]
+    })
+
+    expect(conflictResult.hasNewerVersion).toBe(true)
+    expect(conflictResult.isConflict).toBe(true)
+    expect(conflictResult.reason).toContain('kaydedilmemiş değişiklikler mevcut (Çakışma)')
+  })
 })

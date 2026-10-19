@@ -43,7 +43,7 @@ export function atomicReplaceWorkspaceFile(
     try {
       fs.copyFileSync(destPath, backupPath)
       if (!fs.existsSync(backupPath) || fs.statSync(backupPath).size === 0) {
-        throw new Error('Güvenlik yedeği kopyası oluşturulamadı.')
+        throw new Error('Güvenlik yedeği kopyası oluşturulamadı veya boş.')
       }
       backupCreated = true
     } catch (bakErr: unknown) {
@@ -82,19 +82,35 @@ export function atomicReplaceWorkspaceFile(
   }
 
   if (!replaced) {
-    // Windows fallback: if direct rename over existing target is locked, rename dest to old-tmp first
+    const destOldTmp = `${destPath}.old.${Date.now()}.${Math.random().toString(36).slice(2, 6)}`
     try {
-      const destOldTmp = `${destPath}.old.${Date.now()}`
-      fs.renameSync(destPath, destOldTmp)
+      if (fs.existsSync(destPath)) {
+        fs.renameSync(destPath, destOldTmp)
+      }
       fs.renameSync(sourcePath, destPath)
-      try {
-        fs.unlinkSync(destOldTmp)
-      } catch {
-        /* ignore old tmp cleanup */
+      if (fs.existsSync(destOldTmp)) {
+        try {
+          fs.unlinkSync(destOldTmp)
+        } catch {
+          /* ignore old tmp cleanup */
+        }
       }
       replaced = true
     } catch (fallbackErr: unknown) {
-      // Restore destPath from backupPath if target was removed or damaged
+      // 1. Try restoring from destOldTmp if it exists and destPath is missing/empty
+      if (
+        fs.existsSync(destOldTmp) &&
+        fs.statSync(destOldTmp).size > 0 &&
+        (!fs.existsSync(destPath) || fs.statSync(destPath).size === 0)
+      ) {
+        try {
+          fs.copyFileSync(destOldTmp, destPath)
+        } catch {
+          /* fallback to backupPath */
+        }
+      }
+
+      // 2. Restore destPath from backupPath if target was removed or damaged
       if (
         backupCreated &&
         fs.existsSync(backupPath) &&
@@ -106,11 +122,26 @@ export function atomicReplaceWorkspaceFile(
           /* ignore restore error */
         }
       }
-      throw lastError || (fallbackErr instanceof Error ? fallbackErr : new Error(String(fallbackErr)))
+
+      const primaryErr =
+        lastError || (fallbackErr instanceof Error ? fallbackErr : new Error(String(fallbackErr)))
+      const backupInfo =
+        backupCreated && fs.existsSync(backupPath)
+          ? ` Güvenlik yedeği korundu: ${backupPath}.`
+          : ''
+      const err = new Error(
+        `Dosya atomik olarak değiştirilemedi: ${primaryErr.message}.${backupInfo}`
+      )
+      Object.assign(err, {
+        code: (primaryErr as NodeJS.ErrnoException).code,
+        originalError: primaryErr,
+        backupPath: backupCreated ? backupPath : undefined
+      })
+      throw err
     }
   }
 
-  // Clean up backup file upon successful replacement
+  // Clean up backup file ONLY upon successful replacement
   if (backupCreated && fs.existsSync(backupPath)) {
     try {
       fs.unlinkSync(backupPath)
@@ -246,7 +277,20 @@ export class DtmWorkspace {
       }
 
       const hadExplicitProjectId = Boolean(rawMeta && (rawMeta.project_id || rawMeta.projectId))
-      const meta = normalizeMeta(rawMeta)
+      const activeDbFile = rawMeta?.active_db_file || 'database.sqlite'
+      const targetDbPath = path.join(this.tempDir, activeDbFile)
+      let projectDifferentiator = path.basename(filePath, path.extname(filePath))
+      if (fs.existsSync(targetDbPath)) {
+        try {
+          const info = extractDbInfo(targetDbPath, projectDifferentiator)
+          if (info.projectDifferentiator) {
+            projectDifferentiator = info.projectDifferentiator
+          }
+        } catch {
+          /* ignore */
+        }
+      }
+      const meta = normalizeMeta(rawMeta, projectDifferentiator)
       const fromVersion = meta.schema_version || 1
 
       if (fromVersion < CURRENT_SCHEMA_VERSION) {
@@ -376,6 +420,7 @@ export class DtmWorkspace {
         file_version: 1,
         active_db_file: 'database.sqlite',
         updated_at: new Date().toISOString(),
+        project_id: crypto.randomUUID(),
         warnings: []
       }
       meta.integrity_hash = calculateIntegrityHash(meta)
@@ -383,7 +428,7 @@ export class DtmWorkspace {
       fs.writeFileSync(metaPath, JSON.stringify(meta, null, 2))
       fs.mkdirSync(path.join(this.tempDir, 'attachments'))
       seedTemplates(this.db)
-      this.saveWorkspace()
+      this.saveWorkspace(true)
       this.meta = meta
       this.initialHash = this.calculateCurrentHash()
       this.initialDataVersion = this.getDataVersion()

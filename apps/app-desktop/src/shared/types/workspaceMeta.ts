@@ -21,10 +21,17 @@ export interface WorkspaceMeta {
  * Works seamlessly in both Node.js and Browser environments without external dependencies.
  * Ensures that two computers opening the exact same legacy project derive the IDENTICAL project_id.
  */
-export function deriveDeterministicProjectId(institution?: string, createdAt?: string): string {
+export function deriveDeterministicProjectId(
+  institution?: string,
+  createdAt?: string,
+  discriminator?: string
+): string {
   const cleanInst = (institution || 'DefaultInstitution').trim().toLowerCase()
   const cleanDate = (createdAt || '2026-01-01').trim()
-  const seed = `temin360:proj:${cleanInst}:${cleanDate}`
+  const cleanDisc = (discriminator || '').trim().toLowerCase()
+  const seed = cleanDisc
+    ? `temin360:proj:${cleanInst}:${cleanDate}:${cleanDisc}`
+    : `temin360:proj:${cleanInst}:${cleanDate}`
 
   let h1 = 0x811c9dc5
   let h2 = 0x41c64e6d
@@ -47,18 +54,27 @@ export function deriveDeterministicProjectId(institution?: string, createdAt?: s
     ((h3 >>> 16) & 0x0fff).toString(16).padStart(3, '0')
   ).slice(0, 4)
   const p5 =
-    (h3 >>> 0).toString(16).padStart(8, '0') +
-    (h4 >>> 0).toString(16).padStart(8, '0').slice(0, 4)
+    (h3 >>> 0).toString(16).padStart(8, '0') + (h4 >>> 0).toString(16).padStart(8, '0').slice(0, 4)
 
   return `${p1}-${p2}-${p3}-${p4}-${p5}`
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function normalizeMeta(raw: any): WorkspaceMeta {
+export function normalizeMeta(raw: any, discriminator?: string): WorkspaceMeta {
   const institution = raw?.institution || raw?.institutionName || 'Bilinmeyen Kurum'
   const createdAt =
     raw?.created_at ||
     (raw?.createdAt ? raw.createdAt.split('T')[0] : new Date().toISOString().split('T')[0])
+  const effectiveDiscriminator =
+    discriminator ||
+    raw?.project_name ||
+    raw?.projectName ||
+    raw?.title ||
+    raw?.subject ||
+    raw?.konu ||
+    raw?.temin_no ||
+    raw?.file_name ||
+    raw?.fileName
 
   return {
     dtal_version: raw?.dtal_version || raw?.dtm_version || '1.0',
@@ -77,7 +93,9 @@ export function normalizeMeta(raw: any): WorkspaceMeta {
       new Date().toISOString(),
     integrity_hash: raw?.integrity_hash,
     project_id:
-      raw?.project_id || raw?.projectId || deriveDeterministicProjectId(institution, createdAt),
+      raw?.project_id ||
+      raw?.projectId ||
+      deriveDeterministicProjectId(institution, createdAt, effectiveDiscriminator),
     data_revision:
       typeof raw?.data_revision === 'number'
         ? raw.data_revision

@@ -49,11 +49,21 @@ import { deriveDeterministicProjectId } from '../../../shared/types/workspaceMet
 export { deriveDeterministicProjectId }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function normalizeMeta(raw: any): WorkspaceMeta {
+export function normalizeMeta(raw: any, discriminator?: string): WorkspaceMeta {
   const institution = raw?.institution || raw?.institutionName || 'Bilinmeyen Kurum'
   const createdAt =
     raw?.created_at ||
     (raw?.createdAt ? raw.createdAt.split('T')[0] : new Date().toISOString().split('T')[0])
+  const effectiveDiscriminator =
+    discriminator ||
+    raw?.project_name ||
+    raw?.projectName ||
+    raw?.title ||
+    raw?.subject ||
+    raw?.konu ||
+    raw?.temin_no ||
+    raw?.file_name ||
+    raw?.fileName
 
   return {
     dtal_version: raw?.dtal_version || raw?.dtm_version || '1.0',
@@ -72,7 +82,9 @@ export function normalizeMeta(raw: any): WorkspaceMeta {
       new Date().toISOString(),
     integrity_hash: raw?.integrity_hash,
     project_id:
-      raw?.project_id || raw?.projectId || deriveDeterministicProjectId(institution, createdAt),
+      raw?.project_id ||
+      raw?.projectId ||
+      deriveDeterministicProjectId(institution, createdAt, effectiveDiscriminator),
     data_revision:
       typeof raw?.data_revision === 'number'
         ? raw.data_revision
@@ -89,9 +101,10 @@ export { extractTableAndAction } from '../../ipc/utils/sqlGuard'
 export function extractDbInfo(
   sqliteFilePath: string,
   fallbackName: string
-): { schemaVersion: number; institutionName: string } {
+): { schemaVersion: number; institutionName: string; projectDifferentiator?: string } {
   let schemaVersion = 1
   let institutionName = fallbackName
+  let projectDifferentiator: string | undefined = undefined
   try {
     const tempDb = new Database(sqliteFilePath, { readonly: true })
     try {
@@ -126,9 +139,27 @@ export function extractDbInfo(
       // institutionName yoksa dosya adi
     }
 
+    try {
+      const dossierRow = tempDb
+        .prepare('SELECT id, temin_no, konu FROM DATA_TeminDosyasi ORDER BY id LIMIT 1')
+        .get() as { id?: number; temin_no?: string; konu?: string } | undefined
+      if (dossierRow) {
+        projectDifferentiator =
+          dossierRow.konu ||
+          dossierRow.temin_no ||
+          (dossierRow.id ? `dosya_${dossierRow.id}` : undefined)
+      }
+    } catch {
+      // DATA_TeminDosyasi may not exist yet
+    }
+
     tempDb.close()
   } catch (e) {
     console.warn('[Workspace] DB bilgileri okunurken uyari:', e)
   }
-  return { schemaVersion, institutionName }
+  return {
+    schemaVersion,
+    institutionName,
+    projectDifferentiator: projectDifferentiator || fallbackName
+  }
 }

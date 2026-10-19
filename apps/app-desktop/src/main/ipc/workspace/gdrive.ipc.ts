@@ -1,9 +1,10 @@
 import { ipcMain, app } from 'electron'
 import { basename, join, dirname } from 'path'
-import { homedir } from 'os'
+import { homedir, tmpdir } from 'os'
 import fs from 'fs'
 import crypto from 'crypto'
 import AdmZip from 'adm-zip'
+import Database from 'better-sqlite3'
 import { workspaceManager } from '../../database/workspace'
 import { atomicReplaceWorkspaceFile } from '../../database/workspace/DtmWorkspace'
 import { allExtensions, defaultFormat } from '../../config/fileFormats'
@@ -231,8 +232,206 @@ async function getOrCreateAppFolder(token: string): Promise<string> {
     return folderData.id
   }
 
-  const errText = await createRes.text()
-  throw new Error(`Google Drive klasörü oluşturulamadı (${createRes.status}): ${errText}`)
+  const createErr = await createRes.text()
+  throw new Error(`Google Drive klasör oluşturma hatası (${createRes.status}): ${createErr}`)
+}
+
+export interface BackupRestoreOptions {
+  fileName: string
+  targetManifest?: BackupManifest | null
+  expectedSha256?: string
+  expectedSize?: number
+  overwriteActive?: boolean
+  currentPath?: string | null
+  destinationPath?: string | null
+}
+
+export interface BackupRestoreResult {
+  success: boolean
+  targetPath: string
+  verifiedSha256: boolean
+  verifiedSize: boolean
+  contentVerified: boolean
+  actualSha256: string
+  actualSize: number
+}
+
+export function verifyAndRestoreBackupBuffer(
+  buffer: Buffer,
+  options: BackupRestoreOptions
+): BackupRestoreResult {
+  // 1. Temel ZIP başlık doğrulaması
+  if (!buffer || buffer.length < 512 || buffer.subarray(0, 2).toString() !== 'PK') {
+    throw new Error(
+      'Güvenlik Hatası: İndirilen dosya geçerli bir TEMİN 360 arşivi değil veya bozuk (0 byte / geçersiz başlık).'
+    )
+  }
+
+  // 2. Bütünlük ve Manifest Doğrulaması (SHA-256 + Boyut)
+  const actualSha256 = crypto.createHash('sha256').update(buffer).digest('hex')
+  const actualSize = buffer.length
+
+  const expectedSha = options.targetManifest?.sha256 || options.expectedSha256
+  if (expectedSha) {
+    if (actualSha256.toLowerCase() !== expectedSha.toLowerCase()) {
+      throw new Error(
+        `Güvenlik ve Bütünlük Hatası: İndirilen yedeğin SHA-256 özeti (${actualSha256}) manifestteki (${expectedSha}) ile uyuşmuyor! Dosya aktarım sırasında bozulmuş veya üzerinde oynanmış olabilir. Yerel çalışma dosyanız korundu.`
+      )
+    }
+  }
+
+  const expectedSize = options.targetManifest?.fileSize ?? options.expectedSize
+  if (typeof expectedSize === 'number') {
+    if (actualSize !== expectedSize) {
+      throw new Error(
+        `Güvenlik ve Bütünlük Hatası: İndirilen dosya boyutu (${actualSize} bayt) manifestteki beklenen (${expectedSize} bayt) ile uyuşmuyor! Yerel çalışma dosyanız korundu.`
+      )
+    }
+  }
+
+  // 3. ZIP arşivi yapısal doğrulaması (meta.json ve database.sqlite varlığı)
+  let testZip: AdmZip
+  try {
+    testZip = new AdmZip(buffer)
+  } catch (zipErr: unknown) {
+    const msg = zipErr instanceof Error ? zipErr.message : String(zipErr)
+    throw new Error(`İndirilen arşiv açılamadı (bozuk zip): ${msg}`)
+  }
+
+  const entries = testZip.getEntries()
+  if (!entries || entries.length === 0) {
+    throw new Error('İndirilen arşiv geçersiz veya boş.')
+  }
+  const hasMeta = entries.some((e) => e.entryName === 'meta.json')
+  const dbEntry = entries.find((e) => e.entryName.endsWith('.sqlite'))
+  if (!hasMeta || !dbEntry) {
+    throw new Error('İndirilen arşivde zorunlu dosyalar (meta.json veya database.sqlite) eksik.')
+  }
+
+  // 4. SQLite veritabanı bütünlük doğrulaması (PRAGMA quick_check)
+  const dbData = dbEntry.getData()
+  if (!dbData || dbData.length === 0) {
+    throw new Error('İndirilen arşivdeki SQLite veritabanı boş.')
+  }
+
+  const tempSqliteDir = fs.mkdtempSync(join(tmpdir(), 'temin-chk-'))
+  const tempSqliteFile = join(tempSqliteDir, 'verify.sqlite')
+  try {
+    fs.writeFileSync(tempSqliteFile, dbData)
+    const checkDb = new Database(tempSqliteFile, { readonly: true })
+    try {
+      const checkRow = checkDb.prepare('PRAGMA quick_check;').get() as
+        | Record<string, unknown>
+        | undefined
+      const checkVal = checkRow ? Object.values(checkRow)[0] : null
+      if (checkVal !== 'ok') {
+        throw new Error(`SQLite bütünlük kontrolü başarısız: ${String(checkVal)}`)
+      }
+    } finally {
+      checkDb.close()
+    }
+  } catch (sqlErr: unknown) {
+    const msg = sqlErr instanceof Error ? sqlErr.message : String(sqlErr)
+    throw new Error(
+      `İndirilen veritabanı bütünlük testinden geçemedi (bozuk sqlite): ${msg}. Yerel dosyanız korundu.`
+    )
+  } finally {
+    try {
+      if (fs.existsSync(tempSqliteDir)) {
+        fs.rmSync(tempSqliteDir, { recursive: true, force: true })
+      }
+    } catch {
+      /* ignore cleanup */
+    }
+  }
+
+  // 5. Hedef dosya atomik değiştirme ve güvenlik yedeği akışı
+  const currentPath = options.currentPath || workspaceManager.getCurrentFilePath()
+  let targetPath: string
+
+  if (options.overwriteActive && currentPath && fs.existsSync(currentPath)) {
+    // 1. Guaranteed safety backup: must succeed or operation aborts!
+    const safetyBackupPath = currentPath + '.bak'
+    try {
+      fs.copyFileSync(currentPath, safetyBackupPath)
+      if (!fs.existsSync(safetyBackupPath) || fs.statSync(safetyBackupPath).size === 0) {
+        throw new Error('Güvenlik yedeği oluşturulamadı veya boş.')
+      }
+    } catch (bakErr: unknown) {
+      const msg = bakErr instanceof Error ? bakErr.message : String(bakErr)
+      throw new Error(
+        `Kritik Güvenlik Uyarısı: Mevcut çalışma alanının güvenlik kopyası (.bak) oluşturulamadı (${msg}). Olası veri kaybını önlemek için bulut yedeğini geri yükleme işlemi derhal durduruldu. Yerel dosyanız korundu.`
+      )
+    }
+
+    const tempRestorePath = join(
+      dirname(currentPath),
+      `.${basename(currentPath)}.restore.${Date.now()}.${Math.random().toString(36).slice(2, 6)}.tmp`
+    )
+    fs.writeFileSync(tempRestorePath, buffer)
+
+    // Close active workspace before file replacement
+    try {
+      workspaceManager.close()
+    } catch {
+      /* ignore */
+    }
+
+    try {
+      atomicReplaceWorkspaceFile(tempRestorePath, currentPath)
+      targetPath = currentPath
+    } catch (replaceErr: unknown) {
+      if (fs.existsSync(safetyBackupPath)) {
+        try {
+          fs.copyFileSync(safetyBackupPath, currentPath)
+        } catch {
+          /* ignore restore error */
+        }
+      }
+      const msg = replaceErr instanceof Error ? replaceErr.message : String(replaceErr)
+      throw new Error(
+        `Yedek dosyası atomik olarak yazılamadı: ${msg}. Yerel dosya güvenlik yedeğinden (.bak) geri yüklendi.`
+      )
+    }
+  } else {
+    const defaultPath =
+      options.destinationPath ||
+      join(
+        homedir(),
+        'Desktop',
+        allExtensions.some((ext) => options.fileName.toLowerCase().endsWith('.' + ext))
+          ? options.fileName
+          : `${options.fileName}.${defaultFormat.ext}`
+      )
+    const tempPath = join(
+      dirname(defaultPath),
+      `.${basename(defaultPath)}.tmp.${Date.now()}.${Math.random().toString(36).slice(2, 6)}`
+    )
+    try {
+      fs.writeFileSync(tempPath, buffer)
+      atomicReplaceWorkspaceFile(tempPath, defaultPath)
+      targetPath = defaultPath
+    } catch (err: unknown) {
+      if (fs.existsSync(tempPath)) {
+        try {
+          fs.unlinkSync(tempPath)
+        } catch {
+          /* ignore */
+        }
+      }
+      throw err
+    }
+  }
+
+  return {
+    success: true,
+    targetPath,
+    verifiedSha256: true,
+    verifiedSize: true,
+    contentVerified: true,
+    actualSha256,
+    actualSize: buffer.length
+  }
 }
 
 export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void): void {
@@ -1095,10 +1294,14 @@ export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void):
               const rawM = (await mRes.json()) as unknown
               if (isBackupManifest(rawM)) {
                 targetManifest = rawM
+              } else {
+                throw new Error('İndirilen manifest dosyası geçerli bir BackupManifest şemasına uymuyor.')
               }
+            } else {
+              throw new Error(`Manifest dosyası indirilemedi (HTTP ${mRes.status}).`)
             }
-          } catch (mErr) {
-            console.warn('[Google Drive] Manifest indirilemedi:', mErr)
+          } catch (mErr: any) {
+            throw new Error(`Manifest yükleme/doğrulama hatası: ${mErr.message}`)
           }
         }
 
@@ -1121,112 +1324,22 @@ export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void):
           }
         }
 
-        // Manifest mevcutsa SHA-256 ve boyut doğrulaması yap
-        if (targetManifest?.sha256) {
-          const actualSha256 = crypto.createHash('sha256').update(buffer).digest('hex')
-          if (actualSha256.toLowerCase() !== targetManifest.sha256.toLowerCase()) {
-            throw new Error(
-              `Güvenlik ve Bütünlük Hatası: İndirilen yedeğin SHA-256 özeti (${actualSha256}) manifestteki (${targetManifest.sha256}) ile uyuşmuyor! Dosya aktarım sırasında bozulmuş veya üzerinde oynanmış olabilir. Yerel çalışma dosyanız korundu.`
-            )
-          }
-          if (targetManifest.fileSize && buffer.length !== targetManifest.fileSize) {
-            throw new Error(
-              `Güvenlik ve Bütünlük Hatası: İndirilen dosya boyutu (${buffer.length} bayt) manifestteki beklenen (${targetManifest.fileSize} bayt) ile uyuşmuyor! Yerel çalışma dosyanız korundu.`
-            )
-          }
-        }
-
-        // Determine destination path: overwrite active workspace or save as new file
-        const currentPath = workspaceManager.getCurrentFilePath()
-        let targetPath: string
-
-        if (args.overwriteActive && currentPath && fs.existsSync(currentPath)) {
-          // 1. Guaranteed safety backup: must succeed or operation aborts!
-          const safetyBackupPath = currentPath + '.bak'
-          try {
-            fs.copyFileSync(currentPath, safetyBackupPath)
-            if (!fs.existsSync(safetyBackupPath) || fs.statSync(safetyBackupPath).size === 0) {
-              throw new Error('Güvenlik yedeği oluşturulamadı veya boş.')
-            }
-          } catch (bakErr: unknown) {
-            const msg = bakErr instanceof Error ? bakErr.message : String(bakErr)
-            throw new Error(
-              `Kritik Güvenlik Uyarısı: Mevcut çalışma alanının güvenlik kopyası (.bak) oluşturulamadı (${msg}). Olası veri kaybını önlemek için bulut yedeğini geri yükleme işlemi derhal durduruldu. Yerel dosyanız korundu.`
-            )
-          }
-
-          // 2. Write buffer to temporary file in the same directory and verify archive
-          const tempRestorePath = join(
-            dirname(currentPath),
-            `.${basename(currentPath)}.restore.${Date.now()}.tmp`
-          )
-          try {
-            fs.writeFileSync(tempRestorePath, buffer)
-            const testZip = new AdmZip(tempRestorePath)
-            const entries = testZip.getEntries()
-            if (!entries || entries.length === 0) {
-              throw new Error('İndirilen arşiv geçersiz veya boş.')
-            }
-          } catch (valErr: unknown) {
-            if (fs.existsSync(tempRestorePath)) {
-              try {
-                fs.unlinkSync(tempRestorePath)
-              } catch {
-                /* ignore tmp cleanup */
-              }
-            }
-            const msg = valErr instanceof Error ? valErr.message : String(valErr)
-            throw new Error(`İndirilen bulut arşivi doğrulanamadı: ${msg}. Yerel dosyanız korundu.`)
-          }
-
-          // 3. Close active workspace safely before file replacement
-          workspaceManager.close()
-
-          try {
-            atomicReplaceWorkspaceFile(tempRestorePath, currentPath)
-            targetPath = currentPath
-          } catch (replaceErr: unknown) {
-            // Restore from safety backup immediately if replacement fails
-            if (fs.existsSync(safetyBackupPath)) {
-              try {
-                fs.copyFileSync(safetyBackupPath, currentPath)
-              } catch {
-                /* ignore restore error */
-              }
-            }
-            const msg = replaceErr instanceof Error ? replaceErr.message : String(replaceErr)
-            throw new Error(
-              `Yedek dosyası atomik olarak yazılamadı: ${msg}. Yerel dosya güvenlik yedeğinden (.bak) geri yüklendi.`
-            )
-          }
-        } else {
-          const defaultPath = join(
+        // 2. Doğrulama ve Güvenli Geri Yükleme (verifyAndRestoreBackupBuffer)
+        const restoreResult = verifyAndRestoreBackupBuffer(buffer, {
+          fileName: args.fileName,
+          targetManifest,
+          overwriteActive: args.overwriteActive,
+          currentPath: workspaceManager.getCurrentFilePath(),
+          destinationPath: join(
             homedir(),
             'Desktop',
             allExtensions.some((ext) => args.fileName.toLowerCase().endsWith('.' + ext))
               ? args.fileName
               : `${args.fileName}.${defaultFormat.ext}`
           )
-          const tempPath = join(dirname(defaultPath), `.${basename(defaultPath)}.tmp.${Date.now()}`)
-          try {
-            fs.writeFileSync(tempPath, buffer)
-            const testZip = new AdmZip(tempPath)
-            if (!testZip.getEntries() || testZip.getEntries().length === 0) {
-              throw new Error('İndirilen arşiv geçersiz veya boş.')
-            }
-            atomicReplaceWorkspaceFile(tempPath, defaultPath)
-            targetPath = defaultPath
-          } catch (err: unknown) {
-            if (fs.existsSync(tempPath)) {
-              try {
-                fs.unlinkSync(tempPath)
-              } catch {
-                /* ignore tmp cleanup */
-              }
-            }
-            throw err
-          }
-        }
+        })
+
+        const targetPath = restoreResult.targetPath
 
         // Open downloaded file as active workspace
         closeAllSecondaryWindows()
