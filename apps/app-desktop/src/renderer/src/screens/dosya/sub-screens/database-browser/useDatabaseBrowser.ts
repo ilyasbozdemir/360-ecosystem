@@ -292,23 +292,38 @@ export function useDatabaseBrowser() {
           .filter((c) => row[c.name] !== null && row[c.name] !== undefined)
           .map((c) => row[c.name])
 
-        // SAFETY PRE-CHECK: Verify that matching all columns targets EXACTLY ONE unique row.
-        // If there are duplicate identical rows, abort to prevent mass unintended row mutations!
+        // STRICT FAIL-SAFE PRE-CHECK:
+        // We MUST verify that matching all columns targets EXACTLY ONE unique row.
+        // If the query fails, returns null/empty data, or match_count !== 1, WE MUST HALT!
         const countCheckRes = await window.electron.ipcRenderer.invoke(
           'db:query',
           `SELECT COUNT(*) as match_count FROM ${safeTableName} WHERE ${whereClauses}`,
           whereParams
         )
-        const matchCount =
-          countCheckRes.success && countCheckRes.data?.[0]?.match_count
-            ? Number(countCheckRes.data[0].match_count)
-            : 0
 
-        if (matchCount > 1) {
+        if (!countCheckRes?.success || !countCheckRes.data || countCheckRes.data.length === 0) {
           setStatusMessage({
             type: 'error',
-            text: `Bu tabloda birincil anahtar (Primary Key) bulunmamaktadır ve bu değerlere sahip ${matchCount} adet özdeş kayıt mevcuttur. Yanlış kayıtların güncellenmesini önlemek için işlem durduruldu.`
+            text: `Doğrulama sorgusu başarısız oldu (${countCheckRes?.error || 'Bilinmeyen hata'}). Veri güvenliği nedeniyle işlem durduruldu.`
           })
+          return
+        }
+
+        const rawCount = countCheckRes.data[0]?.match_count
+        const matchCount = rawCount !== undefined && rawCount !== null ? Number(rawCount) : NaN
+
+        if (isNaN(matchCount) || matchCount !== 1) {
+          if (matchCount > 1) {
+            setStatusMessage({
+              type: 'error',
+              text: `Bu tabloda birincil anahtar (Primary Key) bulunmamaktadır ve bu değerlere sahip ${matchCount} adet özdeş kayıt mevcuttur. Yanlış kayıtların güncellenmesini önlemek için işlem durduruldu.`
+            })
+          } else {
+            setStatusMessage({
+              type: 'error',
+              text: `Güncellenecek kayıt veritabanında bulunamadı (eşleşen: ${matchCount}). Kayıt başka bir işlem tarafından değiştirilmiş veya silinmiş olabilir.`
+            })
+          }
           return
         }
 
@@ -317,7 +332,7 @@ export function useDatabaseBrowser() {
       }
 
       const res = await window.electron.ipcRenderer.invoke('db:run', query, params)
-      if (res.success) {
+      if (res.success && res.changes === 1) {
         setStatusMessage({
           type: 'success',
           text: `Hücre (${colName}) başarıyla güncellendi.`
@@ -332,6 +347,12 @@ export function useDatabaseBrowser() {
             return r === row ? { ...r, [colName]: newValue } : r
           })
         )
+      } else if (res.success && res.changes !== 1) {
+        setStatusMessage({
+          type: 'error',
+          text: `Beklenmeyen durum: Güncelleme sonucunda tam 1 satır yerine ${res.changes ?? 0} satır etkilendi! Veriler yeniden yükleniyor.`
+        })
+        await loadTableDetails()
       } else {
         setStatusMessage({
           type: 'error',
@@ -432,23 +453,39 @@ export function useDatabaseBrowser() {
           .filter((c) => deletingRow[c.name] !== null && deletingRow[c.name] !== undefined)
           .map((c) => deletingRow[c.name])
 
-        // SAFETY PRE-CHECK: Verify that matching all columns targets EXACTLY ONE unique row.
-        // If there are duplicate identical rows, abort to prevent mass unintended row deletion!
+        // STRICT FAIL-SAFE PRE-CHECK:
+        // We MUST verify that matching all columns targets EXACTLY ONE unique row.
+        // If the query fails, returns null/empty data, or match_count !== 1, WE MUST HALT!
         const countCheckRes = await window.electron.ipcRenderer.invoke(
           'db:query',
           `SELECT COUNT(*) as match_count FROM ${safeTableName} WHERE ${whereClauses}`,
           whereParams
         )
-        const matchCount =
-          countCheckRes.success && countCheckRes.data?.[0]?.match_count
-            ? Number(countCheckRes.data[0].match_count)
-            : 0
 
-        if (matchCount > 1) {
+        if (!countCheckRes?.success || !countCheckRes.data || countCheckRes.data.length === 0) {
           setStatusMessage({
             type: 'error',
-            text: `Bu tabloda birincil anahtar (Primary Key) bulunmamaktadır ve bu değerlere sahip ${matchCount} adet özdeş kayıt mevcuttur. Yanlış kayıtların silinmesini önlemek için işlem engellendi.`
+            text: `Doğrulama sorgusu başarısız oldu (${countCheckRes?.error || 'Bilinmeyen hata'}). Veri güvenliği nedeniyle silme işlemi durduruldu.`
           })
+          setDeletingRow(null)
+          return
+        }
+
+        const rawCount = countCheckRes.data[0]?.match_count
+        const matchCount = rawCount !== undefined && rawCount !== null ? Number(rawCount) : NaN
+
+        if (isNaN(matchCount) || matchCount !== 1) {
+          if (matchCount > 1) {
+            setStatusMessage({
+              type: 'error',
+              text: `Bu tabloda birincil anahtar (Primary Key) bulunmamaktadır ve bu değerlere sahip ${matchCount} adet özdeş kayıt mevcuttur. Yanlış kayıtların silinmesini önlemek için işlem engellendi.`
+            })
+          } else {
+            setStatusMessage({
+              type: 'error',
+              text: `Silinecek kayıt veritabanında bulunamadı (eşleşen: ${matchCount}). Kayıt başka bir işlem tarafından silinmiş veya değiştirilmiş olabilir.`
+            })
+          }
           setDeletingRow(null)
           return
         }
@@ -458,7 +495,7 @@ export function useDatabaseBrowser() {
       }
 
       const res = await window.electron.ipcRenderer.invoke('db:run', sql, params)
-      if (res.success) {
+      if (res.success && res.changes === 1) {
         setStatusMessage({
           type: 'success',
           text: 'Kayıt veritabanından silindi.'
@@ -471,6 +508,13 @@ export function useDatabaseBrowser() {
           )
         )
         setTotalRows((prev) => Math.max(0, prev - 1))
+        await loadTableDetails()
+      } else if (res.success && res.changes !== 1) {
+        setStatusMessage({
+          type: 'error',
+          text: `Beklenmeyen durum: Silme sonucunda tam 1 satır yerine ${res.changes ?? 0} satır etkilendi! Veriler yeniden yükleniyor.`
+        })
+        setDeletingRow(null)
         await loadTableDetails()
       } else {
         setStatusMessage({

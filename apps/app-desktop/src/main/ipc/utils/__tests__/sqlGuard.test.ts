@@ -84,6 +84,40 @@ describe('SQL Guard Security Suite (sqlGuard.ts)', () => {
         validateSqlQuery('WITH cte AS (SELECT 1 as x) UPDATE DATA_TeminDosyasi SET konu = ? WHERE id = 1', ['test'])
       }).not.toThrow()
     })
+
+    it('kolon veya tanımlayıcı adı "WHERE" veya [WHERE] olduğunda bunu WHERE koşulu sanmaz ve kitle güncellemeyi engeller', () => {
+      expect(() => {
+        validateSqlQuery('UPDATE "T" SET "WHERE" = 1')
+      }).toThrow(/Unparameterized mass UPDATE without WHERE clause/)
+
+      expect(() => {
+        validateSqlQuery('UPDATE T SET [WHERE] = 1')
+      }).toThrow(/Unparameterized mass UPDATE without WHERE clause/)
+
+      expect(() => {
+        validateSqlQuery('UPDATE T SET `WHERE` = 1')
+      }).toThrow(/Unparameterized mass UPDATE without WHERE clause/)
+    })
+
+    it('string içinde geçen "WHERE" kelimesini WHERE koşulu sanmaz ve kitle güncellemeyi engeller', () => {
+      expect(() => {
+        validateSqlQuery("UPDATE DATA_TeminDosyasi SET durum = 'WHERE'")
+      }).toThrow(/Unparameterized mass UPDATE without WHERE clause/)
+
+      expect(() => {
+        validateSqlQuery("UPDATE DATA_TeminDosyasi SET durum = 'hello /* comment */ WHERE'")
+      }).toThrow(/Unparameterized mass UPDATE without WHERE clause/)
+    })
+
+    it('string literalleri içinde geçen yorum sembolleri ve noktalı virgülleri bozmaz', () => {
+      expect(() => {
+        validateSqlQuery("SELECT * FROM DATA_TeminDosyasi WHERE konu = 'test /* not a comment */ data'")
+      }).not.toThrow()
+
+      expect(() => {
+        validateSqlQuery("SELECT * FROM DATA_TeminDosyasi WHERE konu = 'test -- not a comment'")
+      }).not.toThrow()
+    })
   })
 
   describe('4. Sensitive Settings / TANIM_Ayar Protection', () => {

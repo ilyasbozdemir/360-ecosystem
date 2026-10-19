@@ -322,6 +322,66 @@ describe('useDatabaseBrowser - Regression & Security Test Suite', () => {
     expect(result.current.statusMessage?.text).toContain('özdeş kayıt')
   })
 
+  it('4c. Primary key bulunmayan tablolarda ön kontrol sorgusu hata verdiğinde veya boş döndüğünde işlem kesinlikle durdurulur (Fail-Safe)', async () => {
+    const { result } = renderHook(() => useDatabaseBrowser())
+
+    await act(async () => {
+      result.current.setSelectedTable('NO_PK_TABLE')
+      await result.current.loadTableDetails()
+    })
+
+    const noPkRow = {
+      tag: 'ERROR_TAG',
+      val: 'TEST_VAL'
+    }
+
+    // 1. Simülasyon: Ön kontrol sorgusu IPC hatası döndürsün
+    mockIpcInvoke.mockImplementation((channel: string, sql?: string) => {
+      if (channel === 'db:query' && typeof sql === 'string' && sql.includes('match_count')) {
+        return Promise.resolve({ success: false, error: 'Database locked' })
+      }
+      return Promise.resolve({ success: true, data: [] })
+    })
+
+    act(() => {
+      result.current.handleCellClick(0, 'val', 'TEST_VAL', noPkRow)
+      result.current.setEditValue('HataDurumundaDegismemeli')
+    })
+
+    await act(async () => {
+      await result.current.handleSaveCell()
+    })
+
+    // db:run ASLA çağrılmamalıdır!
+    let runCalls = mockIpcInvoke.mock.calls.filter((call) => call[0] === 'db:run')
+    expect(runCalls.length).toBe(0)
+    expect(result.current.statusMessage?.type).toBe('error')
+    expect(result.current.statusMessage?.text).toContain('Doğrulama sorgusu başarısız oldu')
+
+    // 2. Simülasyon: Ön kontrol sorgusu 0 satır döndürsün (kayıt bulunamadı)
+    mockIpcInvoke.mockImplementation((channel: string, sql?: string) => {
+      if (channel === 'db:query' && typeof sql === 'string' && sql.includes('match_count')) {
+        return Promise.resolve({ success: true, data: [{ match_count: 0 }] })
+      }
+      return Promise.resolve({ success: true, data: [] })
+    })
+
+    act(() => {
+      result.current.handleCellClick(0, 'val', 'TEST_VAL', noPkRow)
+      result.current.setEditValue('BulunamayanKayit')
+    })
+
+    await act(async () => {
+      await result.current.handleSaveCell()
+    })
+
+    // db:run yine ASLA çağrılmamalıdır!
+    runCalls = mockIpcInvoke.mock.calls.filter((call) => call[0] === 'db:run')
+    expect(runCalls.length).toBe(0)
+    expect(result.current.statusMessage?.type).toBe('error')
+    expect(result.current.statusMessage?.text).toContain('bulunamadı')
+  })
+
   it('5. SQL Konsolunda WITH (CTE) yazma sorguları (INSERT/UPDATE/DELETE) tespit edilir ve otomatik yenileme tetiklenir', async () => {
     const { result } = renderHook(() => useDatabaseBrowser())
 
