@@ -10,12 +10,14 @@ export function validateSqlQuery(sql: string, _params?: unknown[]): void {
   void _params
   const cleanSql = sql.trim()
 
-  // 1. Strip string literals ('...' and "...") to prevent false positives on keywords/semicolons inside strings
-  const strippedSql = cleanSql
+  // 1. Strip comments
+  let strippedSql = cleanSql
     .replace(/\/\*[\s\S]*?\*\//g, ' ') // Strip block comments
     .replace(/--.*$/gm, ' ') // Strip line comments
-    .replace(/'(?:''|[^'])*'/g, "''") // Strip single-quoted string literals
-    .replace(/"(?:""|[^"])*"/g, '""') // Strip double-quoted identifier/string literals
+
+  // 2. Strip single-quoted string literals ONLY ('...').
+  // NOTE: Double quotes ("), backticks (`), and brackets ([]) in SQLite are IDENTIFIERS (table/column names), NOT string literals!
+  strippedSql = strippedSql.replace(/'(?:''|[^'])*'/g, "''")
 
   // Check for multi-statement injection (e.g. SELECT 1; DELETE FROM tutanaklar)
   const statements = strippedSql.split(';').filter((stmt) => stmt.trim().length > 0)
@@ -23,30 +25,40 @@ export function validateSqlQuery(sql: string, _params?: unknown[]): void {
     throw new Error('[sqlGuard] Multi-statement SQL injection detected and blocked.')
   }
 
-  // 2. Reject destructive DDL statements (DROP, TRUNCATE, ALTER, ATTACH, DETACH)
-  if (/\b(DROP\s+(?:TABLE|VIEW|DATABASE|INDEX)|TRUNCATE\s+TABLE|ALTER\s+TABLE|ATTACH\s+DATABASE|DETACH\s+DATABASE)\b/i.test(strippedSql)) {
+  // 3. Normalize SQL identifiers by unwrapping double quotes, backticks, and square brackets
+  // e.g. "settings" -> settings, [TANIM_AYAR] -> TANIM_AYAR, `settings` -> settings, "main"."settings" -> main.settings
+  const normalizedSql = strippedSql
+    .replace(/\[([^\]]+)\]/g, '$1')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/"((?:""|[^"])+)"/g, (_, id) => id.replace(/""/g, '"'))
+
+  // 4. Reject destructive DDL statements (DROP, TRUNCATE, ALTER, ATTACH, DETACH)
+  if (
+    /\b(DROP\s+(?:TABLE|VIEW|DATABASE|INDEX)|TRUNCATE\s+TABLE|ALTER\s+TABLE|ATTACH\s+DATABASE|DETACH\s+DATABASE)\b/i.test(
+      normalizedSql
+    )
+  ) {
     throw new Error(
       '[sqlGuard] Destructive DDL operations (DROP/TRUNCATE/ALTER/ATTACH/DETACH) are prohibited via IPC.'
     )
   }
 
-  // 3. Reject mass DELETE / UPDATE without WHERE clause (including CTEs e.g. WITH ... DELETE/UPDATE)
-  // Check if query contains DELETE FROM or UPDATE ... SET
-  const hasDelete = /\bDELETE\s+FROM\b/i.test(strippedSql)
-  const hasUpdate = /\bUPDATE\s+["`[A-Za-z0-9_.]+\s+SET\b/i.test(strippedSql)
+  // 5. Reject mass DELETE / UPDATE without WHERE clause (including CTEs e.g. WITH ... DELETE/UPDATE)
+  const hasDelete = /\bDELETE\s+FROM\b/i.test(normalizedSql)
+  const hasUpdate = /\bUPDATE\s+([A-Za-z0-9_.]+\s+)?SET\b/i.test(normalizedSql)
 
-  if (hasDelete && !/\bWHERE\b/i.test(strippedSql)) {
+  if (hasDelete && !/\bWHERE\b/i.test(normalizedSql)) {
     throw new Error('[sqlGuard] Unparameterized mass DELETE without WHERE clause is prohibited.')
   }
-  if (hasUpdate && !/\bWHERE\b/i.test(strippedSql)) {
+  if (hasUpdate && !/\bWHERE\b/i.test(normalizedSql)) {
     throw new Error('[sqlGuard] Unparameterized mass UPDATE without WHERE clause is prohibited.')
   }
 
-  // 4. Default-Deny rule for restricted key-value tables (settings / TANIM_Ayar)
+  // 6. Default-Deny rule for restricted key-value tables (settings / TANIM_Ayar)
   // General db:query / db:run channels must NOT directly execute raw SQL on settings.
   // Named handlers (db:get-settings, db:save-settings) must be used.
   const containsRestrictedTable = RESTRICTED_TABLES.some((table) =>
-    new RegExp(`\\b${table}\\b`, 'i').test(strippedSql)
+    new RegExp(`\\b${table}\\b`, 'i').test(normalizedSql)
   )
 
   if (containsRestrictedTable) {

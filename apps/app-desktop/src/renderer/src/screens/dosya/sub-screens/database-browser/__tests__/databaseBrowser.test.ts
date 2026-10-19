@@ -108,7 +108,7 @@ describe('useDatabaseBrowser - Regression & Security Test Suite', () => {
     } as any
   })
 
-  it('1. Filtrelenmiş görünümde hücre güncellendiğinde ham indeks değil, doğru satırın kimliği (snapshot) güncellenir', async () => {
+  it('1. Filtrelenmiş görünümde arama yapıldığında ekrandaki satır güncellenir; ham indeks ile hedef satır asla karışmaz', async () => {
     const { result } = renderHook(() => useDatabaseBrowser())
 
     // Tablo listesi ve detayları yüklensin
@@ -117,19 +117,27 @@ describe('useDatabaseBrowser - Regression & Security Test Suite', () => {
     })
 
     expect(result.current.rows.length).toBe(3)
+    expect(result.current.rows[0].id).toBe(10) // Ham satır 0: Elma Alımı
+    expect(result.current.rows[2].id).toBe(30) // Ham satır 2: Muz Alımı
 
-    // Filtreleme simülasyonu: Kullanıcı arama yaparak ekranda 3. satırı (id: 30, 'Muz Alımı') filtreli listenin 1. sırası (index: 0) olarak görüyor
-    const targetRow = result.current.rows[2] // { id: 30, temin_no: '2026/03', konu: 'Muz Alımı' }
-    expect(targetRow.id).toBe(30)
-
-    // Hücreye tıklama (filteredIndex: 0, colName: 'konu', val: 'Muz Alımı', row: targetRow)
+    // Gerçek arama akışı: Kullanıcı arama kutusuna 'Muz' yazar
     act(() => {
-      result.current.handleCellClick(0, 'konu', 'Muz Alımı', targetRow)
+      result.current.setDataSearch('Muz')
+    })
+
+    // filteredRows anında 1 satıra iner ve ilk sırada (filteredIndex: 0) Muz Alımı bulunur
+    expect(result.current.filteredRows.length).toBe(1)
+    expect(result.current.filteredRows[0].id).toBe(30)
+    expect(result.current.rows[0].id).toBe(10) // rows[0] hala Elma Alımı
+
+    // Kullanıcı ekranda görünen 0. satıra tıklar (4. parametre olan satır nesnesi verilmeden çağrıldığında dahi filteredRows[0] kullanılmalıdır)
+    act(() => {
+      result.current.handleCellClick(0, 'konu', 'Muz Alımı')
       result.current.setEditValue('Organik Muz Alımı')
     })
 
     expect(result.current.editingCell).toBeDefined()
-    expect(result.current.editingCell?.row).toBe(targetRow)
+    expect((result.current.editingCell?.row as Record<string, unknown>)?.id).toBe(30)
 
     const countCallsBefore = mockIpcInvoke.mock.calls.filter(
       (call) =>
@@ -229,7 +237,7 @@ describe('useDatabaseBrowser - Regression & Security Test Suite', () => {
     expect(params).toEqual([105, 4])
   })
 
-  it('4. Primary key bulunmayan tablolarda tüm satır değerleriyle eşleştirme yapılır ve NULL değerler IS NULL ile işlenir', async () => {
+  it('4. Primary key bulunmayan tablolarda eşsiz kayıt varsa tüm kolonlar eşleştirilir ve güncellenir', async () => {
     const { result } = renderHook(() => useDatabaseBrowser())
 
     await act(async () => {
@@ -243,6 +251,17 @@ describe('useDatabaseBrowser - Regression & Security Test Suite', () => {
       tag: 'KOD_1',
       val: null
     }
+
+    // Uniqueness pre-check tek kayıt döndürsün (match_count: 1)
+    mockIpcInvoke.mockImplementation((channel: string, sql?: string) => {
+      if (channel === 'db:query' && typeof sql === 'string' && sql.includes('match_count')) {
+        return Promise.resolve({ success: true, data: [{ match_count: 1 }] })
+      }
+      if (channel === 'db:run') {
+        return Promise.resolve({ success: true, changes: 1 })
+      }
+      return Promise.resolve({ success: true, data: [] })
+    })
 
     act(() => {
       result.current.handleCellClick(0, 'val', '', noPkRow)
@@ -259,6 +278,48 @@ describe('useDatabaseBrowser - Regression & Security Test Suite', () => {
 
     expect(sql).toContain('UPDATE "NO_PK_TABLE" SET "val" = ? WHERE "tag" = ? AND "val" IS NULL')
     expect(params).toEqual(['Yeni Deger', 'KOD_1'])
+  })
+
+  it('4b. Primary key bulunmayan tablolarda birden fazla özdeş kayıt varsa güncelleme engellenir (Veri Güvenliği)', async () => {
+    const { result } = renderHook(() => useDatabaseBrowser())
+
+    await act(async () => {
+      result.current.setSelectedTable('NO_PK_TABLE')
+      await result.current.loadTableDetails()
+    })
+
+    const noPkRow = {
+      tag: 'DUPLICATE_TAG',
+      val: 'AYNI_DEGER'
+    }
+
+    // Uniqueness pre-check 2 adet eşleşen kayıt döndürsün
+    mockIpcInvoke.mockImplementation((channel: string, sql?: string) => {
+      if (channel === 'db:query' && typeof sql === 'string' && sql.includes('match_count')) {
+        return Promise.resolve({ success: true, data: [{ match_count: 2 }] })
+      }
+      if (channel === 'db:run') {
+        return Promise.resolve({ success: true, changes: 2 })
+      }
+      return Promise.resolve({ success: true, data: [] })
+    })
+
+    act(() => {
+      result.current.handleCellClick(0, 'val', 'AYNI_DEGER', noPkRow)
+      result.current.setEditValue('DegistirilmeyeCalisilan')
+    })
+
+    await act(async () => {
+      await result.current.handleSaveCell()
+    })
+
+    // db:run ASLA çağrılmamalıdır!
+    const runCalls = mockIpcInvoke.mock.calls.filter((call) => call[0] === 'db:run')
+    expect(runCalls.length).toBe(0)
+
+    // Hata mesajı verilmiş olmalıdır
+    expect(result.current.statusMessage?.type).toBe('error')
+    expect(result.current.statusMessage?.text).toContain('özdeş kayıt')
   })
 
   it('5. SQL Konsolunda WITH (CTE) yazma sorguları (INSERT/UPDATE/DELETE) tespit edilir ve otomatik yenileme tetiklenir', async () => {

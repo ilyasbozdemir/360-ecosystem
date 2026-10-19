@@ -96,6 +96,46 @@ describe('SQL Guard Security Suite (sqlGuard.ts)', () => {
         validateSqlQuery('SELECT * FROM TANIM_Ayar WHERE id = 1')
       }).toThrow(/Direct raw SQL query on settings\/TANIM_Ayar/)
     })
+
+    it('çift tırnaklı ("settings"), köşeli parantezli ([SETTINGS]) ve backtick ile yazılmış tanımlayıcıları engeller', () => {
+      expect(() => {
+        validateSqlQuery('SELECT * FROM "settings"')
+      }).toThrow(/Direct raw SQL query on settings\/TANIM_Ayar/)
+
+      expect(() => {
+        validateSqlQuery('SELECT * FROM [SETTINGS]')
+      }).toThrow(/Direct raw SQL query on settings\/TANIM_Ayar/)
+
+      expect(() => {
+        validateSqlQuery('SELECT * FROM `settings`')
+      }).toThrow(/Direct raw SQL query on settings\/TANIM_Ayar/)
+
+      expect(() => {
+        validateSqlQuery('SELECT * FROM "TANIM_AYAR"')
+      }).toThrow(/Direct raw SQL query on settings\/TANIM_Ayar/)
+
+      expect(() => {
+        validateSqlQuery('UPDATE "settings" SET val = ? WHERE key = ?')
+      }).toThrow(/Direct raw SQL query on settings\/TANIM_Ayar/)
+
+      expect(() => {
+        validateSqlQuery('SELECT * FROM main."settings"')
+      }).toThrow(/Direct raw SQL query on settings\/TANIM_Ayar/)
+
+      expect(() => {
+        validateSqlQuery('WITH cte AS (SELECT 1) SELECT * FROM "settings"')
+      }).toThrow(/Direct raw SQL query on settings\/TANIM_Ayar/)
+    })
+
+    it('çift tırnaklı tanımlayıcı içeren silme ve güncelleme işlemlerinde WHERE zorunluluğunu korur', () => {
+      expect(() => {
+        validateSqlQuery('DELETE FROM "DATA_TeminDosyasi"')
+      }).toThrow(/Unparameterized mass DELETE without WHERE clause/)
+
+      expect(() => {
+        validateSqlQuery('UPDATE "DATA_TeminDosyasi" SET "durum" = ?')
+      }).toThrow(/Unparameterized mass UPDATE without WHERE clause/)
+    })
   })
 
   describe('5. extractTableAndAction Parsing', () => {

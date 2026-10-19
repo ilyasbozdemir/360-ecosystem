@@ -228,8 +228,14 @@ export function useDatabaseBrowser() {
     return tables.filter((t) => t.name.toLowerCase().includes(query))
   }, [tables, tableSearch])
 
-  // Since filtering is executed natively on SQLite disk via SQL WHERE, filteredRows is current page rows
-  const filteredRows = rows
+  // Dual filtering: Native SQLite query for debounced search, plus instant client-side filtering on current page
+  const filteredRows = useMemo(() => {
+    const q = dataSearch.toLowerCase().trim()
+    if (!q) return rows
+    return rows.filter((r) =>
+      columns.some((c) => String(r[c.name] ?? '').toLowerCase().includes(q))
+    )
+  }, [rows, dataSearch, columns])
 
   // Start cell editing with direct row snapshot
   const handleCellClick = (
@@ -238,7 +244,7 @@ export function useDatabaseBrowser() {
     val: unknown,
     row?: Record<string, unknown>
   ): void => {
-    const targetRow = row || rows[rowIndex] || {}
+    const targetRow = row || filteredRows[rowIndex] || rows[rowIndex] || {}
     setEditingCell({ rowIndex, colName, originalValue: val, row: targetRow })
     setEditValue(val === null || val === undefined ? '' : String(val))
   }
@@ -285,6 +291,27 @@ export function useDatabaseBrowser() {
         const whereParams = columns
           .filter((c) => row[c.name] !== null && row[c.name] !== undefined)
           .map((c) => row[c.name])
+
+        // SAFETY PRE-CHECK: Verify that matching all columns targets EXACTLY ONE unique row.
+        // If there are duplicate identical rows, abort to prevent mass unintended row mutations!
+        const countCheckRes = await window.electron.ipcRenderer.invoke(
+          'db:query',
+          `SELECT COUNT(*) as match_count FROM ${safeTableName} WHERE ${whereClauses}`,
+          whereParams
+        )
+        const matchCount =
+          countCheckRes.success && countCheckRes.data?.[0]?.match_count
+            ? Number(countCheckRes.data[0].match_count)
+            : 0
+
+        if (matchCount > 1) {
+          setStatusMessage({
+            type: 'error',
+            text: `Bu tabloda birincil anahtar (Primary Key) bulunmamaktadır ve bu değerlere sahip ${matchCount} adet özdeş kayıt mevcuttur. Yanlış kayıtların güncellenmesini önlemek için işlem durduruldu.`
+          })
+          return
+        }
+
         query = `UPDATE ${safeTableName} SET ${safeColName} = ? WHERE ${whereClauses}`
         params.push(newValue, ...whereParams)
       }
@@ -401,11 +428,32 @@ export function useDatabaseBrowser() {
               : `"${c.name.replace(/"/g, '""')}" = ?`
           )
           .join(' AND ')
-        params.push(
-          ...columns
-            .filter((c) => deletingRow[c.name] !== null && deletingRow[c.name] !== undefined)
-            .map((c) => deletingRow[c.name])
+        const whereParams = columns
+          .filter((c) => deletingRow[c.name] !== null && deletingRow[c.name] !== undefined)
+          .map((c) => deletingRow[c.name])
+
+        // SAFETY PRE-CHECK: Verify that matching all columns targets EXACTLY ONE unique row.
+        // If there are duplicate identical rows, abort to prevent mass unintended row deletion!
+        const countCheckRes = await window.electron.ipcRenderer.invoke(
+          'db:query',
+          `SELECT COUNT(*) as match_count FROM ${safeTableName} WHERE ${whereClauses}`,
+          whereParams
         )
+        const matchCount =
+          countCheckRes.success && countCheckRes.data?.[0]?.match_count
+            ? Number(countCheckRes.data[0].match_count)
+            : 0
+
+        if (matchCount > 1) {
+          setStatusMessage({
+            type: 'error',
+            text: `Bu tabloda birincil anahtar (Primary Key) bulunmamaktadır ve bu değerlere sahip ${matchCount} adet özdeş kayıt mevcuttur. Yanlış kayıtların silinmesini önlemek için işlem engellendi.`
+          })
+          setDeletingRow(null)
+          return
+        }
+
+        params.push(...whereParams)
         sql = `DELETE FROM ${safeTableName} WHERE ${whereClauses}`
       }
 
