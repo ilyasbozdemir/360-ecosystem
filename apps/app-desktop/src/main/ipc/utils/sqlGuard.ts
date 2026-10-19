@@ -57,6 +57,7 @@ const SQL_KEYWORDS = new Set([
   'VIEW',
   'INDEX',
   'TRIGGER',
+  'VIRTUAL',
   'ATTACH',
   'DETACH',
   'DATABASE',
@@ -296,17 +297,7 @@ export function validateSqlQuery(sql: string, _params?: unknown[]): void {
   const tokens = tokenizeSql(sql)
   if (tokens.length === 0) return
 
-  // 1. Check for multi-statement injection (semicolons followed by non-punctuation tokens)
-  for (let idx = 0; idx < tokens.length; idx++) {
-    if (tokens[idx].type === 'PUNCTUATION' && tokens[idx].value === ';') {
-      const hasSubsequentTokens = tokens.slice(idx + 1).some((t) => t.type !== 'PUNCTUATION')
-      if (hasSubsequentTokens) {
-        throw new Error('[sqlGuard] Multi-statement SQL injection detected and blocked.')
-      }
-    }
-  }
-
-  // 2. Reject destructive DDL operations (DROP, TRUNCATE, ALTER, ATTACH, DETACH)
+  // 1. Reject destructive DDL operations & schema tampering (DROP, TRUNCATE, ALTER, ATTACH, DETACH, CREATE TRIGGER, PRAGMA)
   for (let idx = 0; idx < tokens.length; idx++) {
     const t = tokens[idx]
     if (t.type === 'KEYWORD') {
@@ -347,6 +338,79 @@ export function validateSqlQuery(sql: string, _params?: unknown[]): void {
         throw new Error(
           '[sqlGuard] Destructive DDL operations (DROP/TRUNCATE/ALTER/ATTACH/DETACH) are prohibited via IPC.'
         )
+      }
+      // Reject CREATE TRIGGER / CREATE VIRTUAL TABLE schema tampering
+      if (
+        t.value === 'CREATE' &&
+        (nextToken?.type === 'KEYWORD' || nextToken?.type === 'IDENTIFIER') &&
+        ['TRIGGER', 'VIRTUAL'].includes(nextVal)
+      ) {
+        throw new Error(
+          '[sqlGuard] Schema tampering operations (CREATE TRIGGER/VIRTUAL TABLE) are prohibited via IPC.'
+        )
+      }
+
+      // PRAGMA security checks: restrict to safe read-only inspection PRAGMAs
+      if (t.value === 'PRAGMA') {
+        const pragmaToken = tokens[idx + 1]
+        const pragmaName = pragmaToken?.value?.toUpperCase()
+
+        if (!pragmaToken || !pragmaName) {
+          throw new Error('[sqlGuard] Invalid PRAGMA syntax.')
+        }
+
+        if (pragmaName === 'WRITABLE_SCHEMA') {
+          throw new Error(
+            '[sqlGuard] Tampering with database internal schema via PRAGMA writable_schema is prohibited.'
+          )
+        }
+
+        // Check for modifying PRAGMA assignments (PRAGMA ... = ...)
+        let isAssignment = false
+        for (let sIdx = idx + 1; sIdx < tokens.length; sIdx++) {
+          if (tokens[sIdx].value === ';') break
+          if (tokens[sIdx].value === '=' && tokens[sIdx].depth === t.depth) {
+            isAssignment = true
+            break
+          }
+        }
+
+        if (isAssignment) {
+          throw new Error(
+            `[sqlGuard] Modifying database configuration via PRAGMA assignment ('PRAGMA ${pragmaName} = ...') is prohibited via IPC.`
+          )
+        }
+
+        const SAFE_READ_PRAGMAS = new Set([
+          'TABLE_INFO',
+          'TABLE_XINFO',
+          'FOREIGN_KEY_LIST',
+          'INDEX_LIST',
+          'INDEX_INFO',
+          'DATABASE_LIST',
+          'USER_VERSION',
+          'SCHEMA_VERSION',
+          'QUICK_CHECK',
+          'INTEGRITY_CHECK',
+          'DATA_VERSION',
+          'COLLATION_LIST'
+        ])
+
+        if (!SAFE_READ_PRAGMAS.has(pragmaName)) {
+          throw new Error(
+            `[sqlGuard] Execution of unapproved PRAGMA '${pragmaName}' is prohibited via IPC.`
+          )
+        }
+      }
+    }
+  }
+
+  // 2. Check for multi-statement injection (semicolons followed by non-punctuation tokens)
+  for (let idx = 0; idx < tokens.length; idx++) {
+    if (tokens[idx].type === 'PUNCTUATION' && tokens[idx].value === ';') {
+      const hasSubsequentTokens = tokens.slice(idx + 1).some((t) => t.type !== 'PUNCTUATION')
+      if (hasSubsequentTokens) {
+        throw new Error('[sqlGuard] Multi-statement SQL injection detected and blocked.')
       }
     }
   }

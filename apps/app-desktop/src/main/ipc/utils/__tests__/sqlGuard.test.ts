@@ -247,4 +247,66 @@ describe('SQL Guard Security Suite (sqlGuard.ts)', () => {
       })
     })
   })
+
+  describe('6. PRAGMA & Schema Tampering Protection', () => {
+    it('güvenli şema inceleme PRAGMA komutlarına izin verir', () => {
+      expect(() => {
+        validateSqlQuery('PRAGMA table_info("DATA_TeminDosyasi")')
+      }).not.toThrow()
+
+      expect(() => {
+        validateSqlQuery('PRAGMA foreign_key_list(DATA_TeminKalem)')
+      }).not.toThrow()
+
+      expect(() => {
+        validateSqlQuery('PRAGMA index_list(DATA_TeminDosyasi)')
+      }).not.toThrow()
+
+      expect(() => {
+        validateSqlQuery('PRAGMA quick_check')
+      }).not.toThrow()
+    })
+
+    it('PRAGMA writable_schema saldırısını engeller', () => {
+      expect(() => {
+        validateSqlQuery('PRAGMA writable_schema = ON')
+      }).toThrow(/PRAGMA writable_schema is prohibited/)
+
+      expect(() => {
+        validateSqlQuery('PRAGMA writable_schema = 1')
+      }).toThrow(/PRAGMA writable_schema is prohibited/)
+    })
+
+    it('veritabanı ayarlarını değiştiren atamalı PRAGMA komutlarını engeller', () => {
+      expect(() => {
+        validateSqlQuery('PRAGMA foreign_keys = OFF')
+      }).toThrow(/Modifying database configuration via PRAGMA assignment/)
+
+      expect(() => {
+        validateSqlQuery('PRAGMA journal_mode = OFF')
+      }).toThrow(/Modifying database configuration via PRAGMA assignment/)
+
+      expect(() => {
+        validateSqlQuery('PRAGMA auto_vacuum = 1')
+      }).toThrow(/Modifying database configuration via PRAGMA assignment/)
+    })
+
+    it('onay listesinde (allowlist) olmayan PRAGMA komutlarını engeller', () => {
+      expect(() => {
+        validateSqlQuery('PRAGMA compile_options')
+      }).toThrow(/Execution of unapproved PRAGMA/)
+    })
+
+    it('CREATE TRIGGER ve CREATE VIRTUAL TABLE şema manipülasyonlarını engeller', () => {
+      expect(() => {
+        validateSqlQuery(
+          'CREATE TRIGGER trg_malicious AFTER INSERT ON DATA_TeminDosyasi BEGIN UPDATE DATA_TeminDosyasi SET durum = 1; END;'
+        )
+      }).toThrow(/Schema tampering operations/)
+
+      expect(() => {
+        validateSqlQuery('CREATE VIRTUAL TABLE v_table USING fts5(data)')
+      }).toThrow(/Schema tampering operations/)
+    })
+  })
 })
