@@ -154,20 +154,41 @@ export function applyPassword(db: any, user: string, pass: string, hostname: str
       })
     } catch {}
 
-    // 2. Açık veri modeli: Bu kullanıcının kayıtlı cihazlarını çek (userDevices_${user})
-    const knownDevices = new Set<string>()
+    // 2. Açık veri modeli: Sistemdeki tüm bilinen cihaz adlarını topla (userDevices_*, history, users)
+    const allKnownHostnames = new Set<string>()
     const userDevicesKey = `userDevices_${user}`
-    const userDevicesRow = db.prepare('SELECT value FROM settings WHERE key = ?').get(userDevicesKey) as
-      | { value?: string }
-      | undefined
-    if (userDevicesRow?.value) {
-      try {
-        const parsed = JSON.parse(userDevicesRow.value)
-        if (Array.isArray(parsed)) {
-          parsed.forEach((d: any) => typeof d === 'string' && knownDevices.add(d))
+
+    try {
+      const deviceKeyRows = (db
+        .prepare("SELECT key, value FROM settings WHERE key LIKE 'userDevices!_%' ESCAPE '!'")
+        .all() || []) as { key: string; value?: string }[]
+      for (const dRow of deviceKeyRows) {
+        const u = dRow.key.slice('userDevices_'.length)
+        if (u && u !== user) otherUsers.add(u)
+        if (dRow.value) {
+          try {
+            const parsed = JSON.parse(dRow.value)
+            if (Array.isArray(parsed)) {
+              parsed.forEach((h: any) => typeof h === 'string' && allKnownHostnames.add(h))
+            }
+          } catch {}
         }
-      } catch {}
-    }
+      }
+    } catch {}
+
+    // passwordHistory ve additionalUsers'tan bilinen cihazları ve diğer kullanıcıları topla
+    try {
+      const hist = readHistory(db)
+      hist.forEach((h: any) => {
+        if (h?.hostname) allKnownHostnames.add(h.hostname)
+        if (h?.username && h.username !== user) otherUsers.add(h.username)
+      })
+    } catch {}
+
+    usersList.forEach((u: any) => {
+      if (u?.hostname) allKnownHostnames.add(u.hostname)
+      if (u?.username && u.username !== user) otherUsers.add(u.username)
+    })
 
     // 3. Kullanıcıya ait tüm eski bilgisayar şifre önbelleklerini temizle.
     // LIKE sorgusunda '_' ve '%' karakterleri joker olduğu için kullanıcı adı '!' ile kaçış (ESCAPE) yapılır.
@@ -189,9 +210,6 @@ export function applyPassword(db: any, user: string, pass: string, hostname: str
         continue
       }
 
-      // Anahtardan 'pcPass_' önekini kaldırıp kullanıcı ve cihaz parçalarını ayrıştır
-      const rest = k.slice('pcPass_'.length)
-
       // Katman 1: Başka bir kayıtlı kullanıcının (örn. admin_backup) tam adıyla başlayan anahtarları KORU
       const isOtherUserPrefix = Array.from(otherUsers).some(
         (other) => k.startsWith(`pcPass_${other}_`) || k === `pcPass_${other}`
@@ -200,19 +218,30 @@ export function applyPassword(db: any, user: string, pass: string, hostname: str
         continue
       }
 
-      // Katman 2: Son alt çizgi ayrıştırması ile kullanıcı adını yapısal olarak doğrula.
-      // pcPass_${user}_${hostname} yapısında son alt çizgiden önceki kısım kullanıcı adıdır.
-      // Eğer bu kısım hedef kullanıcı adıyla birebir eşleşmiyorsa (örn. 'admin_backup' != 'admin'),
-      // ve knownDevices içinde açıkça doğrulanmamışsa SİLME! (additionalUsers bozuk olsa dahi tam koruma sağlar)
-      const lastUnderscore = rest.lastIndexOf('_')
+      // Katman 2: Anahtardan kullanıcı adını ve cihaz adını kesin olarak belirle.
+      const raw = k.slice('pcPass_'.length)
       let belongsToThisUser = false
 
-      if (lastUnderscore !== -1) {
-        const keyUser = rest.slice(0, lastUnderscore)
-        if (keyUser === user) {
-          belongsToThisUser = true
-        } else if (knownDevices.has(rest.slice(user.length + 1))) {
-          belongsToThisUser = true
+      // 2a. Eğer anahtar bilinen bir cihaz adı (allKnownHostnames) ile bitiyorsa:
+      // Cihaz adında birden fazla alt çizgi (örn: PC_WORK_1_OFFICE) olsa dahi kullanıcı adı tam tespit edilir.
+      for (const h of allKnownHostnames) {
+        if (raw.endsWith(`_${h}`) && raw.length > h.length + 1) {
+          const keyUser = raw.slice(0, raw.length - h.length - 1)
+          if (keyUser === user) {
+            belongsToThisUser = true
+            break
+          }
+        }
+      }
+
+      // 2b. Bilinen cihaz listesinde yoksa (eski/miras veritabanı): son alt çizgiden önceki kısım tam kullanıcı adıysa sil
+      if (!belongsToThisUser) {
+        const lastU = raw.lastIndexOf('_')
+        if (lastU !== -1) {
+          const keyUser = raw.slice(0, lastU)
+          if (keyUser === user) {
+            belongsToThisUser = true
+          }
         }
       }
 

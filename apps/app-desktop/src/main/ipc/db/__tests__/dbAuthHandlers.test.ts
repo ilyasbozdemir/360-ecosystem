@@ -74,6 +74,16 @@ class MockDb {
       },
       all(...args: any[]) {
         if (sql.includes('SELECT key FROM settings WHERE')) {
+          if (sql.includes('userDevices')) {
+            return Array.from(self.store.keys())
+              .filter((k) => k.startsWith('userDevices_'))
+              .map((key) => ({ key }))
+          }
+          if (args.length === 0) {
+            return Array.from(self.store.keys())
+              .filter((k) => k.startsWith('pcPass_'))
+              .map((key) => ({ key }))
+          }
           // SQL: (key LIKE 'pcPass!_' || ? || '!_%' ESCAPE '!') OR (key = 'pcPass_' || ?)
           // args[0] is escapedUser, args[1] is user
           const rawUser = args[1] || (args[0] ? args[0].replace(/!(.)/g, '$1') : '')
@@ -279,6 +289,30 @@ describe('dbAuthHandlers password management and multi-device invalidation', () 
     expect(store.get('userDevices_admin')).toBe(JSON.stringify(['OFFICE-2']))
     expect(store.has('pcPass_admin_OFFICE-1')).toBe(false)
     expect(store.has('pcPass_admin_OFFICE-2')).toBe(true)
+  })
+
+  it('correctly handles hostnames containing multiple underscores (e.g. PC_WORK_1_OFFICE) and preserves similarly-named accounts', () => {
+    const db = new MockDb()
+    const store = db.getRawStore()
+
+    // Setup another user in userDevices
+    store.set('userDevices_admin_backup', JSON.stringify(['PC_WORK_1_OFFICE']))
+    store.set('additionalUsers', JSON.stringify([{ username: 'admin_backup' }]))
+
+    // Both users have keys on a PC with multiple underscores in hostname
+    store.set('pcPass_admin_PC_WORK_1_OFFICE', 'adminOldHash')
+    store.set('pcPass_admin_backup_PC_WORK_1_OFFICE', 'backupHash')
+
+    // Admin updates password on a new PC
+    applyPassword(db, 'admin', 'NewPass123!', 'NEW_LAPTOP_2')
+
+    // Admin's old multi-underscore device key must be deleted
+    expect(store.has('pcPass_admin_PC_WORK_1_OFFICE')).toBe(false)
+    expect(store.has('pcPass_admin_NEW_LAPTOP_2')).toBe(true)
+
+    // admin_backup's key on the same multi-underscore PC must be strictly preserved!
+    expect(store.has('pcPass_admin_backup_PC_WORK_1_OFFICE')).toBe(true)
+    expect(store.get('pcPass_admin_backup_PC_WORK_1_OFFICE')).toBe('backupHash')
   })
 })
 
