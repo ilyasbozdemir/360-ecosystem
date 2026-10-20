@@ -2,6 +2,10 @@ import { create } from 'zustand'
 import { useTabStore } from './tabStore'
 import { APP_ROUTES } from '../constants/routeConstants'
 
+import { DocumentSource } from '../screens/dosya/components/DocumentPreviewModalV3/document-engine/types'
+
+export type { DocumentSource }
+
 export interface DocumentPreviewTab {
   tabId: string
   documentId: string
@@ -12,6 +16,9 @@ export interface DocumentPreviewTab {
   selectedFirma?: Record<string, unknown> | null
   initialData?: Record<string, unknown> | null
   stage?: number | string | null
+  source?: DocumentSource
+  raporId?: number | null
+  initialTemplateId?: string
 }
 
 export interface GlobalDocumentPreviewState {
@@ -21,6 +28,8 @@ export interface GlobalDocumentPreviewState {
   tabs: DocumentPreviewTab[]
   documentId: string | null
   dosyaId?: number | null
+  source?: DocumentSource
+  raporId?: number | null
   invitedFirms?: unknown[]
   selectedFirma?: Record<string, unknown> | null
   initialData?: Record<string, unknown> | null
@@ -37,6 +46,9 @@ export interface GlobalDocumentPreviewState {
     initialData?: Record<string, unknown> | null
     stage?: number | string | null
     startAsBalloon?: boolean
+    source?: DocumentSource
+    raporId?: number | null
+    initialTemplateId?: string
     onClose?: () => void
   }) => void
 
@@ -48,9 +60,11 @@ export interface GlobalDocumentPreviewState {
   toggleBalloon: () => void
 }
 
-function generateTabId(params: {
+export function generateTabId(params: {
   documentId: string
   dosyaId?: number | null
+  source?: DocumentSource
+  raporId?: number | null
   selectedFirma?: Record<string, unknown> | null
 }): string {
   const f = params.selectedFirma
@@ -60,7 +74,24 @@ function generateTabId(params: {
     (f?.temin_firma_id as string | number) ||
     (f?.unvan as string) ||
     'all'
-  return `${params.dosyaId ?? '0'}::${params.documentId}::${fKey}`
+
+  let effectiveRaporId: number | null | undefined = params.raporId
+  if (params.source?.kind === 'ihtiyacRaporu') {
+    effectiveRaporId = params.source.raporId
+  }
+  if (effectiveRaporId) {
+    return `rapor::${effectiveRaporId}::${params.documentId}`
+  }
+
+  let effectiveDosyaId: number | null | undefined = params.dosyaId
+  if (params.source?.kind === 'dosya') {
+    effectiveDosyaId = params.source.dosyaId
+  }
+  if (effectiveDosyaId) {
+    return `dosya::${effectiveDosyaId}::${params.documentId}::${fKey}`
+  }
+
+  return `doc::${params.documentId}::${fKey}`
 }
 
 export const useGlobalDocumentPreviewStore = create<GlobalDocumentPreviewState>((set, get) => ({
@@ -70,6 +101,8 @@ export const useGlobalDocumentPreviewStore = create<GlobalDocumentPreviewState>(
   tabs: [],
   documentId: null,
   dosyaId: null,
+  source: undefined,
+  raporId: null,
   invitedFirms: [],
   selectedFirma: null,
   initialData: null,
@@ -81,7 +114,33 @@ export const useGlobalDocumentPreviewStore = create<GlobalDocumentPreviewState>(
   },
 
   openDocument: (params) => {
-    const tabId = generateTabId(params)
+    let effectiveRaporId: number | null | undefined = params.raporId
+    if (params.source?.kind === 'ihtiyacRaporu') {
+      effectiveRaporId = params.source.raporId
+    }
+
+    let effectiveDosyaId: number | null | undefined = params.dosyaId
+    if (params.source?.kind === 'dosya') {
+      effectiveDosyaId = params.source.dosyaId
+    }
+
+    let effectiveSource: DocumentSource | undefined = params.source
+    if (!effectiveSource) {
+      if (effectiveRaporId) {
+        effectiveSource = { kind: 'ihtiyacRaporu', raporId: effectiveRaporId }
+      } else if (effectiveDosyaId) {
+        effectiveSource = { kind: 'dosya', dosyaId: effectiveDosyaId }
+      }
+    }
+
+    const tabId = generateTabId({
+      documentId: params.documentId,
+      dosyaId: effectiveDosyaId,
+      source: effectiveSource,
+      raporId: effectiveRaporId,
+      selectedFirma: params.selectedFirma
+    })
+
     const { tabs } = get()
     const existingIndex = tabs.findIndex((t) => t.tabId === tabId)
 
@@ -90,9 +149,11 @@ export const useGlobalDocumentPreviewStore = create<GlobalDocumentPreviewState>(
       const titleParam = params.documentTitle
         ? `&title=${encodeURIComponent(params.documentTitle)}`
         : ''
-      const idParam = params.dosyaId ? `&id=${params.dosyaId}` : ''
+      const idParam = effectiveDosyaId ? `&id=${effectiveDosyaId}` : ''
+      const raporParam = effectiveRaporId ? `&raporId=${effectiveRaporId}` : ''
+      const sourceKindParam = effectiveSource?.kind ? `&sourceKind=${effectiveSource.kind}` : ''
       const docParam = `doc=${encodeURIComponent(params.documentId)}`
-      const targetPath = `${APP_ROUTES.BELGE_ONIZLEME}?${docParam}${idParam}${titleParam}`
+      const targetPath = `${APP_ROUTES.BELGE_ONIZLEME}?${docParam}${idParam}${raporParam}${sourceKindParam}${titleParam}`
 
       const currentActiveTabPath = useTabStore.getState().activeTabPath
       const isAlreadyOnBelgeOnizleme = currentActiveTabPath
@@ -122,10 +183,19 @@ export const useGlobalDocumentPreviewStore = create<GlobalDocumentPreviewState>(
       if (params.stage !== undefined && tabs[existingIndex].stage !== params.stage) {
         tabs[existingIndex].stage = params.stage
       }
+      if (effectiveSource && !tabs[existingIndex].source) {
+        tabs[existingIndex].source = effectiveSource
+      }
+      if (effectiveRaporId && !tabs[existingIndex].raporId) {
+        tabs[existingIndex].raporId = effectiveRaporId
+      }
       set({
         isOpen: true,
         isBalloon: params.startAsBalloon ?? false,
         activeTabId: tabId,
+        source: effectiveSource,
+        raporId: effectiveRaporId || null,
+        dosyaId: effectiveDosyaId || null,
         onCloseCallback: params.onClose || get().onCloseCallback
       })
       return
@@ -134,13 +204,16 @@ export const useGlobalDocumentPreviewStore = create<GlobalDocumentPreviewState>(
     const newTab: DocumentPreviewTab = {
       tabId,
       documentId: params.documentId,
-      dosyaId: params.dosyaId || null,
-      dosyaNo: params.dosyaNo || (params.dosyaId ? `#${params.dosyaId}` : null),
+      dosyaId: effectiveDosyaId || null,
+      dosyaNo: params.dosyaNo || (effectiveDosyaId ? `#${effectiveDosyaId}` : null),
       documentTitle: params.documentTitle || null,
       invitedFirms: params.invitedFirms || [],
       selectedFirma: params.selectedFirma || null,
       initialData: params.initialData || null,
-      stage: params.stage ?? null
+      stage: params.stage ?? null,
+      source: effectiveSource,
+      raporId: effectiveRaporId || null,
+      initialTemplateId: params.initialTemplateId || params.documentId
     }
 
     set({
@@ -148,6 +221,9 @@ export const useGlobalDocumentPreviewStore = create<GlobalDocumentPreviewState>(
       isBalloon: params.startAsBalloon ?? false,
       tabs: [...tabs, newTab],
       activeTabId: tabId,
+      source: effectiveSource,
+      raporId: effectiveRaporId || null,
+      dosyaId: effectiveDosyaId || null,
       onCloseCallback: params.onClose || get().onCloseCallback
     })
   },
@@ -216,6 +292,32 @@ export const useGlobalDocumentPreviewStore = create<GlobalDocumentPreviewState>(
     get().closeAllTabs()
   },
 
-  setIsBalloon: (isBalloon) => set({ isBalloon }),
-  toggleBalloon: () => set((state) => ({ isBalloon: !state.isBalloon }))
+  setIsBalloon: (isBalloon) => {
+    set({ isBalloon })
+    if (!isBalloon && get().isOpen && get().tabs.length > 0) {
+      const activeTab = get().getActiveTab()
+      if (activeTab) {
+        const titleParam = activeTab.documentTitle
+          ? `&title=${encodeURIComponent(activeTab.documentTitle)}`
+          : ''
+        const idParam = activeTab.dosyaId ? `&id=${activeTab.dosyaId}` : ''
+        const raporParam = activeTab.raporId ? `&raporId=${activeTab.raporId}` : ''
+        const sourceKindParam = activeTab.source?.kind ? `&sourceKind=${activeTab.source.kind}` : ''
+        const docParam = `doc=${encodeURIComponent(activeTab.documentId)}`
+        const targetPath = `${APP_ROUTES.BELGE_ONIZLEME}?${docParam}${idParam}${raporParam}${sourceKindParam}${titleParam}`
+
+        const currentActiveTabPath = useTabStore.getState().activeTabPath
+        if (!currentActiveTabPath.split('?')[0].startsWith(APP_ROUTES.BELGE_ONIZLEME)) {
+          useTabStore.getState().addTab(targetPath)
+          if (typeof window !== 'undefined') {
+            window.location.hash = targetPath
+          }
+        }
+      }
+    }
+  },
+  toggleBalloon: () => {
+    const nextVal = !get().isBalloon
+    get().setIsBalloon(nextVal)
+  }
 }))

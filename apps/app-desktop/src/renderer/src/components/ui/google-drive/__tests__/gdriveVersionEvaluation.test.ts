@@ -35,9 +35,7 @@ describe('Google Drive Version Evaluation & Project Matching', () => {
     })
 
     it('matches when appProperties.projectRoot is set', () => {
-      expect(
-        isBackupOfProject('ozel_yedek_adi.temin', 'ihale', 'ihale')
-      ).toBe(true)
+      expect(isBackupOfProject('ozel_yedek_adi.temin', 'ihale', 'ihale')).toBe(true)
     })
   })
 

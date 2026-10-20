@@ -12,9 +12,12 @@ export function resolveFirmsAndItems(
   items: any[],
   bids: any[]
 ): void {
+  const safeFileFirms = Array.isArray(fileFirms) ? fileFirms : []
+  const safeCombinedFirms = Array.isArray(combinedFirms) ? combinedFirms : []
+
   const activeFirms =
-    fileFirms.length > 0
-      ? fileFirms
+    safeFileFirms.length > 0
+      ? safeFileFirms
       : propInvitedFirms && propInvitedFirms.length > 0
         ? propInvitedFirms
         : baseData.firmalar && Array.isArray(baseData.firmalar) && baseData.firmalar.length > 0
@@ -23,20 +26,20 @@ export function resolveFirmsAndItems(
               Array.isArray(baseData.firmaListesi) &&
               baseData.firmaListesi.length > 0
             ? baseData.firmaListesi.slice(0, 3)
-            : combinedFirms && combinedFirms.length > 0
-              ? combinedFirms.slice(0, 3)
+            : safeCombinedFirms && safeCombinedFirms.length > 0
+              ? safeCombinedFirms.slice(0, 3)
               : []
   baseData.firmalar = activeFirms
-  baseData.firmaListesi = combinedFirms
+  baseData.firmaListesi = safeCombinedFirms
 
   // Kazanan firma tespiti
   const winnerFirmaId =
-    payloadData.dosya?.firma_id ||
+    payloadData?.dosya?.firma_id ||
     dosyaRecord?.firma_id ||
-    fileFirms.find((f: any) => f.kazandi_mi === 1 || f.kazanan_mi === 1 || f.isWinner)?.id
+    safeFileFirms.find((f: any) => f.kazandi_mi === 1 || f.kazanan_mi === 1 || f.isWinner)?.id
 
   const winnerFirm =
-    fileFirms.find(
+    safeFileFirms.find(
       (f: any) =>
         (winnerFirmaId &&
           (f.id === winnerFirmaId ||
@@ -45,9 +48,9 @@ export function resolveFirmsAndItems(
         f.kazanan_mi === 1 ||
         f.isWinner
     ) ||
-    fileFirms[0] ||
+    safeFileFirms[0] ||
     activeFirms[0] ||
-    combinedFirms[0]
+    safeCombinedFirms[0]
 
   if (winnerFirm && (winnerFirm.unvan || winnerFirm.firma_adi)) {
     const resolvedUnvan = winnerFirm.unvan || winnerFirm.firma_adi

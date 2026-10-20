@@ -364,7 +364,10 @@ describe('Workspace Security & Path Traversal Protections', () => {
 
       // writeWorkspaceArchive çağrısını hata fırlatacak şekilde mockla
       const saveSpy = vi
-        .spyOn(ws as unknown as Record<string, (...args: unknown[]) => unknown>, 'writeWorkspaceArchive')
+        .spyOn(
+          ws as unknown as Record<string, (...args: unknown[]) => unknown>,
+          'writeWorkspaceArchive'
+        )
         .mockImplementation(() => {
           throw new Error('Disk full simulation')
         })

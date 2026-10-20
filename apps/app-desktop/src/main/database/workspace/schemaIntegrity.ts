@@ -213,7 +213,93 @@ export function ensureSchemaIntegrity(db: Database.Database): void {
 
   try {
     db.exec(`ALTER TABLE DATA_DosyaSablonVeri ADD COLUMN "sablon_kodu" TEXT;`)
-  } catch {}
+  } catch {
+    /* ignore */
+  }
+
+  try {
+    db.exec(`ALTER TABLE DATA_DosyaSablonVeri ADD COLUMN "sablon_versiyon" INTEGER DEFAULT 1;`)
+  } catch {
+    /* ignore */
+  }
+
+  // Backfill sablon_kodu from TANIM_Sablon if missing
+  try {
+    db.exec(`
+      UPDATE DATA_DosyaSablonVeri 
+      SET sablon_kodu = (
+        SELECT REPLACE(dosya_adi, '.html', '') 
+        FROM TANIM_Sablon 
+        WHERE TANIM_Sablon.id = DATA_DosyaSablonVeri.sablon_id 
+        LIMIT 1
+      )
+      WHERE (sablon_kodu IS NULL OR sablon_kodu = '') AND sablon_id IS NOT NULL;
+    `)
+  } catch {
+    /* ignore */
+  }
+
+  // Deterministic deduplication before unique index creation:
+  // If duplicate records exist for (temin_dosya_id, sablon_kodu), archive older duplicates into DATA_DosyaRevizyon and keep newest
+  try {
+    const duplicates = db
+      .prepare(
+        `SELECT temin_dosya_id, sablon_kodu, COUNT(*) as cnt 
+         FROM DATA_DosyaSablonVeri 
+         WHERE sablon_kodu IS NOT NULL AND sablon_kodu != '' 
+         GROUP BY temin_dosya_id, sablon_kodu 
+         HAVING cnt > 1`
+      )
+      .all() as Array<{ temin_dosya_id: number; sablon_kodu: string }>
+
+    for (const dup of duplicates) {
+      const rows = db
+        .prepare(
+          `SELECT id, veri_json, created_at, updated_at 
+           FROM DATA_DosyaSablonVeri 
+           WHERE temin_dosya_id = ? AND sablon_kodu = ? 
+           ORDER BY updated_at DESC, id DESC`
+        )
+        .all(dup.temin_dosya_id, dup.sablon_kodu) as Array<{
+        id: number
+        veri_json: string
+        created_at?: string
+        updated_at?: string
+      }>
+
+      if (rows.length > 1) {
+        // Keep rows[0] (newest). Archive rows[1..] to DATA_DosyaRevizyon and delete
+        for (let i = 1; i < rows.length; i++) {
+          const oldRow = rows[i]
+          try {
+            db.prepare(
+              `INSERT INTO DATA_DosyaRevizyon (temin_dosya_id, modul_adi, surec_kodu, belge_kodu, versiyon, baslik, veri_json) 
+               VALUES (?, 'BELGE_YONETIMI', 'MIGRATION_DEDUP', ?, 'v_arsiv', 'Eski Mükerrer Belge Verisi Arşivi', ?)`
+            ).run(dup.temin_dosya_id, dup.sablon_kodu, oldRow.veri_json)
+          } catch {
+            /* ignore */
+          }
+          try {
+            db.prepare(`DELETE FROM DATA_DosyaSablonVeri WHERE id = ?`).run(oldRow.id)
+          } catch {
+            /* ignore */
+          }
+        }
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+
+  // Ensure UNIQUE index on (temin_dosya_id, sablon_kodu)
+  try {
+    db.exec(`
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_data_dosyasablonveri_unique 
+      ON DATA_DosyaSablonVeri(temin_dosya_id, sablon_kodu);
+    `)
+  } catch {
+    /* ignore */
+  }
 
   try {
     db.exec(`ALTER TABLE DATA_TeminFirma ADD COLUMN "kazanan_mi" INTEGER DEFAULT 0;`)

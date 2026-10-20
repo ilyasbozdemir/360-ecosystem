@@ -233,7 +233,11 @@ export function useDatabaseBrowser() {
     const q = dataSearch.toLowerCase().trim()
     if (!q) return rows
     return rows.filter((r) =>
-      columns.some((c) => String(r[c.name] ?? '').toLowerCase().includes(q))
+      columns.some((c) =>
+        String(r[c.name] ?? '')
+          .toLowerCase()
+          .includes(q)
+      )
     )
   }, [rows, dataSearch, columns])
 
@@ -431,9 +435,7 @@ export function useDatabaseBrowser() {
 
       const hasValidPks =
         pkColumns.length > 0 &&
-        pkColumns.every(
-          (pk) => deletingRow[pk.name] !== undefined && deletingRow[pk.name] !== null
-        )
+        pkColumns.every((pk) => deletingRow[pk.name] !== undefined && deletingRow[pk.name] !== null)
 
       if (hasValidPks) {
         const pkWhereClauses = pkColumns
@@ -589,8 +591,7 @@ export function useDatabaseBrowser() {
       const isMutation =
         /^(DELETE|INSERT|UPDATE|DROP|ALTER|CREATE|REPLACE|PRAGMA|VACUUM)\b/i.test(
           strippedForDetection
-        ) ||
-        /^WITH\s+[\s\S]*?\b(INSERT\s+INTO|UPDATE|DELETE\s+FROM)\b/i.test(strippedForDetection)
+        ) || /^WITH\s+[\s\S]*?\b(INSERT\s+INTO|UPDATE|DELETE\s+FROM)\b/i.test(strippedForDetection)
 
       const channel = isMutation ? 'db:run' : 'db:query'
       const res = await window.electron.ipcRenderer.invoke(channel, rawSql)

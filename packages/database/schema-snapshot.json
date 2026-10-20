@@ -51,6 +51,7 @@
       "id",
       "sablon_id",
       "sablon_kodu",
+      "sablon_versiyon",
       "temin_dosya_id",
       "updated_at",
       "veri_json"

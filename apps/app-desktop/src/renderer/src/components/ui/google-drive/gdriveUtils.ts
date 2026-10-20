@@ -109,7 +109,10 @@ export function isBackupOfProject(
     return true
   }
 
-  const cleanCloud = cloudFileName.trim().toLowerCase().replace(/\.temin$/i, '')
+  const cleanCloud = cloudFileName
+    .trim()
+    .toLowerCase()
+    .replace(/\.temin$/i, '')
   if (cleanCloud === rootLower) return true
 
   if (!cleanCloud.startsWith(rootLower + '_')) return false
@@ -405,7 +408,8 @@ export function evaluateNewerVersion(input: VersionEvaluationInput): VersionEval
       hasNewerVersion: true,
       newerFile: latestCloudFile,
       isConflict: true,
-      reason: 'Bulutta yeni sürüm var, ancak yerelde de kaydedilmemiş değişiklikler mevcut (Çakışma)'
+      reason:
+        'Bulutta yeni sürüm var, ancak yerelde de kaydedilmemiş değişiklikler mevcut (Çakışma)'
     }
   }
 

@@ -16,6 +16,7 @@ import { FindInPage } from './FindInPage'
 import { APP_ROUTES } from '../../constants/routeConstants'
 import { WorkspaceCloseModal } from './WorkspaceCloseModal'
 import { ShutdownOverlay } from './ShutdownOverlay'
+import { GlobalDocumentPreviewHost } from './GlobalDocumentPreviewHost'
 
 const DisclaimerModal = React.lazy(() =>
   import('../modals/DisclaimerModal').then((m) => ({ default: m.DisclaimerModal }))
@@ -149,6 +150,7 @@ export function PageWrapper(): React.ReactNode {
         onOpenSayiYaziModal={() => setIsSayiModalOpen(true)}
       />
       <FindInPage />
+      <GlobalDocumentPreviewHost />
       <div className="flex flex-col flex-1 min-w-0">
         <Header />
         <TabsBar />

@@ -396,7 +396,10 @@ function writeLocJsonAtomic(targetPath, data, options = {}) {
         if (RETRY_CODES.has(err.code)) {
           lastError = err
           if (attempt < maxRetries) {
-            const delay = Math.min(baseDelayMs * Math.pow(1.5, attempt - 1) + Math.floor(Math.random() * 15), 500)
+            const delay = Math.min(
+              baseDelayMs * Math.pow(1.5, attempt - 1) + Math.floor(Math.random() * 15),
+              500
+            )
             sleepSync(delay)
             continue
           }

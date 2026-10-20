@@ -171,4 +171,219 @@ export function registerDocumentIpcHandlers(): void {
   handleDoc('belge:save-base64-file', 'save-base64-file', (_, payload: any) =>
     saveBase64FileHandler(payload)
   )
+
+  // 16. Get Document (Dosya bazlı belge verisini getirme)
+  handleDoc(
+    'belge:get-document',
+    'get-document',
+    async (_, payload: { dosyaId: number; templateKey: string }) => {
+      try {
+        const db = workspaceManager.getDb()
+        if (!db) {
+          return { success: false, error: 'Çalışma alanı veritabanı aktif değil' }
+        }
+        if (!payload?.dosyaId || !payload?.templateKey) {
+          return { success: false, error: 'dosyaId ve templateKey parametreleri zorunludur' }
+        }
+        const cleanKey = String(payload.templateKey)
+          .replace(/\.html$/i, '')
+          .trim()
+        const row = db
+          .prepare(
+            `SELECT id, temin_dosya_id, dosya_id, sablon_kodu, veri_json, sablon_versiyon, created_at, updated_at 
+             FROM DATA_DosyaSablonVeri 
+             WHERE temin_dosya_id = ? AND (sablon_kodu = ? OR sablon_kodu = ?) 
+             ORDER BY updated_at DESC, id DESC LIMIT 1`
+          )
+          .get(payload.dosyaId, cleanKey, `${cleanKey}.html`) as
+          | {
+              id: number
+              temin_dosya_id: number
+              dosya_id?: number
+              sablon_kodu: string
+              veri_json: string
+              sablon_versiyon?: number
+              created_at: string
+              updated_at: string
+            }
+          | undefined
+
+        if (!row) {
+          return { success: true, exists: false, record: null }
+        }
+
+        let parsedData: unknown = null
+        try {
+          parsedData = JSON.parse(row.veri_json)
+        } catch {
+          parsedData = {}
+        }
+
+        return {
+          success: true,
+          exists: true,
+          record: {
+            id: row.id,
+            dosyaId: row.temin_dosya_id,
+            templateKey: row.sablon_kodu,
+            data: parsedData,
+            sablonVersiyon: row.sablon_versiyon || 1,
+            createdAt: row.created_at,
+            updatedAt: row.updated_at
+          }
+        }
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e)
+        return { success: false, error: msg }
+      }
+    }
+  )
+
+  // 17. Save Document (Dosya bazlı atomik & transaction ile belge kaydetme)
+  handleDoc(
+    'belge:save-document',
+    'save-document',
+    async (
+      _,
+      payload: {
+        dosyaId: number
+        templateKey: string
+        data: unknown
+        sablonVersiyon?: number
+      }
+    ) => {
+      try {
+        const db = workspaceManager.getDb()
+        if (!db) {
+          return { success: false, error: 'Çalışma alanı veritabanı aktif değil' }
+        }
+        if (!payload?.dosyaId || !payload?.templateKey) {
+          return { success: false, error: 'dosyaId ve templateKey parametreleri zorunludur' }
+        }
+        const cleanKey = String(payload.templateKey)
+          .replace(/\.html$/i, '')
+          .trim()
+        const jsonStr =
+          typeof payload.data === 'string' ? payload.data : JSON.stringify(payload.data || {})
+        const versiyon = payload.sablonVersiyon || 1
+
+        const saveTx = db.transaction(() => {
+          const sablonRow = db
+            .prepare(`SELECT id FROM TANIM_Sablon WHERE dosya_adi = ? OR dosya_adi = ? LIMIT 1`)
+            .get(`${cleanKey}.html`, cleanKey) as { id?: number } | undefined
+          const sablonId = sablonRow?.id || null
+
+          db.prepare(
+            `INSERT INTO DATA_DosyaSablonVeri (temin_dosya_id, dosya_id, sablon_id, sablon_kodu, veri_json, sablon_versiyon, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+             ON CONFLICT(temin_dosya_id, sablon_kodu)
+             DO UPDATE SET 
+               veri_json = excluded.veri_json,
+               sablon_id = COALESCE(excluded.sablon_id, DATA_DosyaSablonVeri.sablon_id),
+               dosya_id = excluded.dosya_id,
+               sablon_versiyon = excluded.sablon_versiyon,
+               updated_at = CURRENT_TIMESTAMP`
+          ).run(payload.dosyaId, payload.dosyaId, sablonId, cleanKey, jsonStr, versiyon)
+
+          const savedRow = db
+            .prepare(
+              `SELECT id, updated_at FROM DATA_DosyaSablonVeri WHERE temin_dosya_id = ? AND sablon_kodu = ?`
+            )
+            .get(payload.dosyaId, cleanKey) as { id: number; updated_at: string } | undefined
+
+          return savedRow
+        })
+
+        const result = saveTx()
+        return {
+          success: true,
+          id: result?.id,
+          updatedAt: result?.updated_at,
+          dosyaId: payload.dosyaId,
+          templateKey: cleanKey
+        }
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e)
+        return { success: false, error: msg }
+      }
+    }
+  )
+
+  // 18. Reset Document to Default (Varsayılana Dön: Mevcut kaydı revizyona arşivle ve sil)
+  handleDoc(
+    'belge:reset-document',
+    'reset-document',
+    async (_, payload: { dosyaId: number; templateKey: string }) => {
+      try {
+        const db = workspaceManager.getDb()
+        if (!db) {
+          return { success: false, error: 'Çalışma alanı veritabanı aktif değil' }
+        }
+        if (!payload?.dosyaId || !payload?.templateKey) {
+          return { success: false, error: 'dosyaId ve templateKey parametreleri zorunludur' }
+        }
+        const cleanKey = String(payload.templateKey)
+          .replace(/\.html$/i, '')
+          .trim()
+
+        const resetTx = db.transaction(() => {
+          const existing = db
+            .prepare(
+              `SELECT id, veri_json FROM DATA_DosyaSablonVeri WHERE temin_dosya_id = ? AND sablon_kodu = ?`
+            )
+            .get(payload.dosyaId, cleanKey) as { id: number; veri_json: string } | undefined
+
+          if (existing?.veri_json) {
+            try {
+              db.prepare(
+                `INSERT INTO DATA_DosyaRevizyon (temin_dosya_id, modul_adi, surec_kodu, belge_kodu, versiyon, baslik, veri_json)
+                 VALUES (?, 'BELGE_YONETIMI', 'USER_RESET', ?, 'v_reset', 'Varsayılana Dönüş Öncesi Kullanıcı Verisi', ?)`
+              ).run(payload.dosyaId, cleanKey, existing.veri_json)
+            } catch {
+              /* ignore archive error */
+            }
+          }
+
+          db.prepare(
+            `DELETE FROM DATA_DosyaSablonVeri WHERE temin_dosya_id = ? AND (sablon_kodu = ? OR sablon_kodu = ?)`
+          ).run(payload.dosyaId, cleanKey, `${cleanKey}.html`)
+        })
+
+        resetTx()
+        return { success: true, dosyaId: payload.dosyaId, templateKey: cleanKey }
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e)
+        return { success: false, error: msg }
+      }
+    }
+  )
+
+  // 19. Delete Document (Belirli dosyanın belgesini silme)
+  handleDoc(
+    'belge:delete-document',
+    'delete-document',
+    async (_, payload: { dosyaId: number; templateKey: string }) => {
+      try {
+        const db = workspaceManager.getDb()
+        if (!db) {
+          return { success: false, error: 'Çalışma alanı veritabanı aktif değil' }
+        }
+        if (!payload?.dosyaId || !payload?.templateKey) {
+          return { success: false, error: 'dosyaId ve templateKey parametreleri zorunludur' }
+        }
+        const cleanKey = String(payload.templateKey)
+          .replace(/\.html$/i, '')
+          .trim()
+
+        db.prepare(
+          `DELETE FROM DATA_DosyaSablonVeri WHERE temin_dosya_id = ? AND (sablon_kodu = ? OR sablon_kodu = ?)`
+        ).run(payload.dosyaId, cleanKey, `${cleanKey}.html`)
+
+        return { success: true, dosyaId: payload.dosyaId, templateKey: cleanKey }
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e)
+        return { success: false, error: msg }
+      }
+    }
+  )
 }

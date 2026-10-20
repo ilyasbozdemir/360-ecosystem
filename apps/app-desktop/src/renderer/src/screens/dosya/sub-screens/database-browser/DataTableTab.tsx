@@ -84,9 +84,7 @@ export const DataTableTab = memo(function DataTableTab({
   const [isEditValueCopied, setIsEditValueCopied] = useState<boolean>(false)
   const inlineInputRef = useRef<HTMLInputElement>(null)
 
-  const activeColInfo = editingCell
-    ? columns.find((c) => c.name === editingCell.colName)
-    : null
+  const activeColInfo = editingCell ? columns.find((c) => c.name === editingCell.colName) : null
   const isEditingRelational =
     activeColInfo && (activeColInfo.pk > 0 || activeColInfo.name.endsWith('_id'))
 
@@ -229,7 +227,8 @@ export const DataTableTab = memo(function DataTableTab({
         if (colIndex > 0) setSelectedCell({ rIdx, colName: columns[colIndex - 1].name })
       } else if (e.key === 'ArrowRight') {
         e.preventDefault()
-        if (colIndex < columns.length - 1) setSelectedCell({ rIdx, colName: columns[colIndex + 1].name })
+        if (colIndex < columns.length - 1)
+          setSelectedCell({ rIdx, colName: columns[colIndex + 1].name })
       }
     }
 
@@ -515,7 +514,9 @@ export const DataTableTab = memo(function DataTableTab({
                     </th>
                   )
                 })}
-                <th className="p-2.5 w-14 text-center text-slate-400 font-sans select-none">İşlem</th>
+                <th className="p-2.5 w-14 text-center text-slate-400 font-sans select-none">
+                  İşlem
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-150 dark:divide-slate-850">

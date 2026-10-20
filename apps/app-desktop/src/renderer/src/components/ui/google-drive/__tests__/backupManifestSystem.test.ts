@@ -4,11 +4,7 @@ import {
   isBackupManifest,
   type BackupManifest
 } from '../../../../../../shared/types/backupManifest'
-import {
-  evaluateNewerVersion,
-  type GDriveFile,
-  type VersionEvaluationInput
-} from '../gdriveUtils'
+import { evaluateNewerVersion, type GDriveFile, type VersionEvaluationInput } from '../gdriveUtils'
 import {
   normalizeMeta,
   calculateIntegrityHash,

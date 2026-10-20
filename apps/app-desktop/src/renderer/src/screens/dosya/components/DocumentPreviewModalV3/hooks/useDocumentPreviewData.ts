@@ -137,6 +137,7 @@ export function useDocumentPreviewData({
   const [isPrinting, setIsPrinting] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const [downloadOpen, setDownloadOpen] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [zoomMode, setZoomMode] = useState<'auto' | 'manual'>('auto')
@@ -239,6 +240,7 @@ export function useDocumentPreviewData({
 
   // Save handler
   const handleSaveToDb = async (): Promise<void> => {
+    setSaveError(null)
     if (resolvedSource.kind === 'dosya') {
       if (!activeDosyaId || !resolvedId) return
       setIsSaving(true)
@@ -262,9 +264,12 @@ export function useDocumentPreviewData({
         }
 
         setSaveSuccess(true)
+        setSaveError(null)
         setTimeout(() => setSaveSuccess(false), 2000)
-      } catch (e) {
+      } catch (e: unknown) {
         console.error('Belge kaydetme hatası:', e)
+        const errorMsg = e instanceof Error ? e.message : 'Belge kaydedilirken bir hata oluştu.'
+        setSaveError(errorMsg)
       } finally {
         setIsSaving(false)
       }
@@ -278,7 +283,12 @@ export function useDocumentPreviewData({
           orientation
         })
         setSaveSuccess(true)
+        setSaveError(null)
         setTimeout(() => setSaveSuccess(false), 2000)
+      } catch (e: unknown) {
+        console.error('Belge kaydetme hatası:', e)
+        const errorMsg = e instanceof Error ? e.message : 'Belge kaydedilirken bir hata oluştu.'
+        setSaveError(errorMsg)
       } finally {
         setIsSaving(false)
       }
@@ -455,6 +465,8 @@ export function useDocumentPreviewData({
     isPrinting,
     isSaving,
     saveSuccess,
+    saveError,
+    setSaveError,
     isDirty,
     downloadOpen,
     setDownloadOpen,

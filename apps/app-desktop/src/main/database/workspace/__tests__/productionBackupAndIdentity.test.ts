@@ -119,10 +119,7 @@ function createValidTeminBuffer(options?: {
   zip.addFile('meta.json', Buffer.from(JSON.stringify(metaObj, null, 2), 'utf-8'))
   const rawPayload = options?.sqlitePayload || 'valid_sqlite_mock_database_page_data_ok'
   const padding = crypto.randomBytes(2048)
-  const dbData = Buffer.concat([
-    Buffer.from('SQLite format 3\x00' + rawPayload, 'utf-8'),
-    padding
-  ])
+  const dbData = Buffer.concat([Buffer.from('SQLite format 3\x00' + rawPayload, 'utf-8'), padding])
   zip.addFile('database.sqlite', dbData)
 
   const buffer = zip.toBuffer()
@@ -242,7 +239,9 @@ describe('Temin 360 - Production Identity & Security Test Suite', () => {
       expect(metaA.project_id).toBeDefined()
       expect(metaB.project_id).toBeDefined()
       expect(metaA.project_id).toBe(metaB.project_id)
-      expect(metaA.project_id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)
+      expect(metaA.project_id).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+      )
 
       // 2. Açılma sonrasında project_id her iki dosyanın meta.json'ına kalıcı olarak yazılmış olmalıdır
       const zipA = new AdmZip(fileCompA)

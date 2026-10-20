@@ -83,9 +83,14 @@ const ROUTE_BY_DOSYA_ADI: Record<string, string> = {
 
 export function seedTemplates(db: Database.Database): void {
   try {
-    const templatesDirDev = app.getAppPath() ? path.join(app.getAppPath(), 'resources', 'templates') : ''
-    const templatesDirProd = process.resourcesPath ? path.join(process.resourcesPath, 'templates') : ''
-    const targetDir = templatesDirProd && fs.existsSync(templatesDirProd) ? templatesDirProd : templatesDirDev
+    const templatesDirDev = app.getAppPath()
+      ? path.join(app.getAppPath(), 'resources', 'templates')
+      : ''
+    const templatesDirProd = process.resourcesPath
+      ? path.join(process.resourcesPath, 'templates')
+      : ''
+    const targetDir =
+      templatesDirProd && fs.existsSync(templatesDirProd) ? templatesDirProd : templatesDirDev
 
     if (!fs.existsSync(targetDir)) return
 

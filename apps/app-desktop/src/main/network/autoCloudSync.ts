@@ -293,7 +293,10 @@ export async function performAutoCloudSync(): Promise<void> {
                     `--${manifestBoundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${manifestMetaJson}\r\n`,
                     'utf-8'
                   ),
-                  Buffer.from(`--${manifestBoundary}\r\nContent-Type: application/json\r\n\r\n`, 'utf-8'),
+                  Buffer.from(
+                    `--${manifestBoundary}\r\nContent-Type: application/json\r\n\r\n`,
+                    'utf-8'
+                  ),
                   manifestContent,
                   Buffer.from(`\r\n--${manifestBoundary}--`, 'utf-8')
                 ])
@@ -357,9 +360,7 @@ export async function performAutoCloudSync(): Promise<void> {
             }
 
             // Prune: keep last 7 versions of THIS project (.temin ve .json eşlerini temizle)
-            const qList = encodeURIComponent(
-              `'${folderId}' in parents and trashed = false`
-            )
+            const qList = encodeURIComponent(`'${folderId}' in parents and trashed = false`)
             const listRes = await fetch(
               `https://www.googleapis.com/drive/v3/files?q=${qList}&fields=files(id,name,modifiedTime,createdTime)&orderBy=modifiedTime%20desc`,
               {
@@ -392,7 +393,9 @@ export async function performAutoCloudSync(): Promise<void> {
                   }).catch(() => {})
 
                   // Eşleşen .json manifest dosyasını da sil
-                  const matchingJsonName = (f.name || '').replace(/\.temin$/i, '.json').toLowerCase()
+                  const matchingJsonName = (f.name || '')
+                    .replace(/\.temin$/i, '.json')
+                    .toLowerCase()
                   const matchingJson = allFiles.find(
                     (jf) => (jf.name || '').trim().toLowerCase() === matchingJsonName
                   )

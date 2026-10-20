@@ -1,4 +1,4 @@
-import { TemplateResolver } from '@temin360/document-templates'
+import { TemplateResolver, resolveTemplateKey } from '@temin360/document-templates'
 import { getDefaultMappingForProcess } from '../constants/mappings'
 import { resolveTemplateConfig } from '../screens/dosya/components/DocumentPreviewModalV3/templateResolver'
 
@@ -37,7 +37,8 @@ class DocumentPreloadService {
   }
 
   private getKey(documentId: string, dosyaId: number = 0): string {
-    const cleanDoc = documentId
+    const canonical = resolveTemplateKey(documentId)
+    const cleanDoc = (canonical || documentId)
       .replace(/\.html$/i, '')
       .trim()
       .toLowerCase()

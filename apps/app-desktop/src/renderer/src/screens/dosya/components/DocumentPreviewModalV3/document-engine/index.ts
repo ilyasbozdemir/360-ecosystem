@@ -2,6 +2,7 @@ export * from './types'
 export * from './dosyaResolver'
 export * from './ihtiyacRaporuResolver'
 export * from './DocumentRenderer'
+export * from './DocumentEngine'
 export type { TemplateOptionItem } from '../templateResolver'
 
 import { DocumentResolver, DocumentSource } from './types'

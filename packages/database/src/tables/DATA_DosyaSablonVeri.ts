@@ -19,6 +19,12 @@ export const DATA_DosyaSablonVeri = {
       type: 'DATETIME',
       default: 'CURRENT_TIMESTAMP',
       description: 'Güncellenme Tarihi'
+    },
+    {
+      name: 'sablon_versiyon',
+      type: 'INTEGER',
+      default: 1,
+      description: 'Şablon ve Veri Şeması Sürümü'
     }
   ],
   constraints: [

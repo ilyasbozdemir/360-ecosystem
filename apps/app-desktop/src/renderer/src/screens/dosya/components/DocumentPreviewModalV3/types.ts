@@ -29,6 +29,10 @@ export interface DocumentPreviewModalV3Props {
   /** İsteğe bağlı aşama kimliği veya numarası (1: Hazırlık, 2: Araştırma, 3: Sipariş, 4: Kabul) */
   currentStage?: number | string
   stage?: number | string
+  /** Yüzen balon modunda render et */
+  isBalloon?: boolean
+  /** Balon modunu değiştirme / genişletme tetikleyicisi */
+  onToggleBalloon?: () => void
 }
 
 export interface Personel {

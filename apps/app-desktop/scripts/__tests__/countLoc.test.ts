@@ -542,8 +542,10 @@ describe('LOC Counter (count-loc.js) Kapsamlı Test Paketi', () => {
   })
 
   describe('7. Gerçek Repo Sayımı ve JSON Şema Doğrulaması (runCount)', () => {
-    it('gerçek proje üzerinde runCount çalıştırıldığında paket toplamları genel toplama tam eşittir', () => {
-      const result = runCount({ scope: 'app+deps' })
+    it(
+      'gerçek proje üzerinde runCount çalıştırıldığında paket toplamları genel toplama tam eşittir',
+      () => {
+        const result = runCount({ scope: 'app+deps' })
 
       expect(result.totalFiles).toBeGreaterThan(0)
       expect(result.totalLines).toBe(result.nonBlankLines + result.blankLines)
@@ -574,6 +576,7 @@ describe('LOC Counter (count-loc.js) Kapsamlı Test Paketi', () => {
       expect(typeof result.timestamp).toBe('string')
       expect(result.scope).toBe('app+deps')
       expect(Array.isArray(result.breakdown)).toBe(true)
-    })
+    }, 30000)
   })
 })
+

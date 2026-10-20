@@ -2,11 +2,9 @@ import React from 'react'
 import { renderToString } from 'react-dom/server'
 import { TemplateKey, resolveTemplateKey } from '@temin360/document-templates'
 import { DocumentRenderer } from '../../document-engine/DocumentRenderer'
+import { DocumentEngine } from '../../document-engine/DocumentEngine'
 import { useSettingsStore } from '../../../../../../store/settingsStore'
-import { usePrintQueueStore } from '../../../../../../store/printQueueStore'
-import { documentPreloadService } from '../../../../../../services/documentPreloadService'
 import { buildExportFileName } from '../../../../../../utils/exportFileName'
-import { loadDocumentPreviewData } from './previewDataLoader'
 import { Personel } from '../../types'
 
 interface CompileHtmlParams {
@@ -178,44 +176,13 @@ export async function saveDocumentToDb({
     orientation
   }
   const jsonStr = JSON.stringify(dataToSave)
-  const sablonRes = await window.electron.ipcRenderer.invoke(
-    'db:query',
-    'SELECT id FROM TANIM_Sablon WHERE dosya_adi = ? OR dosya_adi = ? LIMIT 1',
-    [`${resolvedId}.html`, `${selectedDocId}.html`]
-  )
-  let sablonId = sablonRes?.success && sablonRes.data?.length > 0 ? sablonRes.data[0].id : null
-  if (!sablonId) {
-    await window.electron.ipcRenderer.invoke(
-      'db:run',
-      "INSERT OR IGNORE INTO TANIM_Sablon (ad, dosya_adi, dosya_turu, icerik, kategori, aktif_mi) VALUES (?, ?, 'html', '', 'genel', 1)",
-      [activeTemplateConf?.name || resolvedId, `${resolvedId}.html`]
-    )
-    const refetch = await window.electron.ipcRenderer.invoke(
-      'db:query',
-      'SELECT id FROM TANIM_Sablon WHERE dosya_adi = ? LIMIT 1',
-      [`${resolvedId}.html`]
-    )
-    if (refetch?.success && refetch.data?.length > 0) {
-      sablonId = refetch.data[0].id
-    }
-  }
 
-  await window.electron.ipcRenderer.invoke(
-    'db:run',
-    'DELETE FROM DATA_DosyaSablonVeri WHERE temin_dosya_id = ? AND (sablon_kodu = ? OR sablon_kodu = ? OR (sablon_id IS NOT NULL AND sablon_id = ?))',
-    [activeDosyaId, resolvedId, `${resolvedId}.html`, sablonId]
-  )
-
-  await window.electron.ipcRenderer.invoke(
-    'db:run',
-    'INSERT OR REPLACE INTO DATA_DosyaSablonVeri (temin_dosya_id, sablon_id, sablon_kodu, veri_json, updated_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)',
-    [activeDosyaId, sablonId, resolvedId, jsonStr]
-  )
-
-  documentPreloadService.updateCachedResolvedData(resolvedId, activeDosyaId, dataToSave)
-  usePrintQueueStore
-    .getState()
-    .invalidateReadyStatus(activeDosyaId, resolvedId, 'Belge içeriği güncellendi')
+  // Merkezi DocumentEngine üzerinden transactional ve UNIQUE kısıtına uygun kaydet
+  await DocumentEngine.saveDocument({
+    dosyaId: activeDosyaId,
+    templateKey: resolvedId,
+    data: dataToSave
+  })
 
   return jsonStr
 }
@@ -317,23 +284,15 @@ interface RefreshFromDbParams {
 
 export async function refreshDocumentFromDb({
   activeDosyaId,
-  resolvedId,
-  selectedDocId
+  resolvedId
 }: RefreshFromDbParams): Promise<Record<string, any> | null> {
   if (!activeDosyaId || !resolvedId) return null
 
-  await window.electron.ipcRenderer.invoke(
-    'db:run',
-    'DELETE FROM DATA_DosyaSablonVeri WHERE temin_dosya_id = ? AND (sablon_kodu = ? OR sablon_kodu = ?)',
-    [activeDosyaId, resolvedId, `${resolvedId}.html`]
-  )
-  documentPreloadService.invalidateCache(activeDosyaId)
-
-  const previewResult = await loadDocumentPreviewData({
-    activeDosyaId,
-    resolvedId,
-    selectedDocId: selectedDocId || resolvedId
+  // Merkezi DocumentEngine üzerinden güvenli sıfırlama (mevcut veriyi revizyona arşivler ve taze default oluşturur)
+  const docRecord = await DocumentEngine.resetToDefault({
+    dosyaId: activeDosyaId,
+    templateKey: resolvedId
   })
 
-  return previewResult?.finalData || null
+  return (docRecord?.data as Record<string, any>) || null
 }

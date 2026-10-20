@@ -29,9 +29,22 @@ export function DocumentPreviewModalV3({
   onCloseTab,
   onAddTab,
   currentStage: propCurrentStage,
-  stage: propStage
+  stage: propStage,
+  isBalloon: propIsBalloon,
+  onToggleBalloon: propOnToggleBalloon
 }: DocumentPreviewModalV3Props): React.JSX.Element | null {
-  const [isBalloon, setIsBalloon] = useState(false)
+  const [internalBalloon, setInternalBalloon] = useState(false)
+  const isBalloon = propIsBalloon !== undefined ? propIsBalloon : internalBalloon
+  const setIsBalloon = React.useCallback(
+    (val: boolean) => {
+      if (propOnToggleBalloon) {
+        propOnToggleBalloon()
+      } else {
+        setInternalBalloon(val)
+      }
+    },
+    [propOnToggleBalloon]
+  )
   const currentDocKey =
     initialTemplateId ||
     documentId ||
@@ -63,6 +76,7 @@ export function DocumentPreviewModalV3({
     isPrinting,
     isSaving,
     saveSuccess,
+    saveError,
     isDirty,
     downloadOpen,
     setDownloadOpen,
@@ -123,9 +137,17 @@ export function DocumentPreviewModalV3({
   }, [selectedDocId, stageInfo.id, templateOptions])
 
   const handleClose = React.useCallback(() => {
+    if (isDirty) {
+      const confirmClose = window.confirm(
+        'Belgede kaydedilmemiş değişiklikler var. Kaydetmeden çıkmak istediğinizden emin misiniz?'
+      )
+      if (!confirmClose) {
+        return
+      }
+    }
     setIsBalloon(false)
     onClose()
-  }, [onClose])
+  }, [onClose, isDirty, setIsBalloon])
 
   if (!isOpen) return null
 
@@ -191,6 +213,7 @@ export function DocumentPreviewModalV3({
         setSidebarOpen={setSidebarOpen}
         isSaving={isSaving}
         saveSuccess={saveSuccess}
+        saveError={saveError}
         isDirty={isDirty}
         handleSaveToDb={handleSaveToDb}
         isPrinting={isPrinting}

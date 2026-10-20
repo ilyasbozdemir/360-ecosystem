@@ -137,9 +137,7 @@ async function pruneOldBackups(
           )
           teminFiles = teminFiles.filter((f) => pattern.test(f.name.trim().toLowerCase()))
         } catch {
-          teminFiles = teminFiles.filter((f) =>
-            f.name.trim().toLowerCase().startsWith(cleanRoot)
-          )
+          teminFiles = teminFiles.filter((f) => f.name.trim().toLowerCase().startsWith(cleanRoot))
         }
       }
 
@@ -851,7 +849,9 @@ export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void):
 
           // 4. Her iki dosya da başarıyla yüklendiğinde yedeklemeyi tamamen başarılı say
           if (!manifestRes.ok) {
-            console.warn('[Google Drive] Kısmi Başarısızlık: .temin yüklendi ancak manifest.json yüklenemedi.')
+            console.warn(
+              '[Google Drive] Kısmi Başarısızlık: .temin yüklendi ancak manifest.json yüklenemedi.'
+            )
             return {
               success: false,
               partial: true,
@@ -1074,8 +1074,7 @@ export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void):
       const validFiles = teminFiles.map((tf: any) => {
         const baseName = tf.name?.replace(/\.temin$/i, '').toLowerCase()
         const matchingJson =
-          manifestByTargetId.get(tf.id) ||
-          (baseName ? manifestByBaseName.get(baseName) : undefined)
+          manifestByTargetId.get(tf.id) || (baseName ? manifestByBaseName.get(baseName) : undefined)
 
         let manifest: BackupManifest | null = null
         let isVerified = false
@@ -1301,7 +1300,9 @@ export function registerGdriveIpcHandlers(closeAllSecondaryWindows: () => void):
               if (isBackupManifest(rawM)) {
                 targetManifest = rawM
               } else {
-                throw new Error('İndirilen manifest dosyası geçerli bir BackupManifest şemasına uymuyor.')
+                throw new Error(
+                  'İndirilen manifest dosyası geçerli bir BackupManifest şemasına uymuyor.'
+                )
               }
             } else {
               throw new Error(`Manifest dosyası indirilemedi (HTTP ${mRes.status}).`)
