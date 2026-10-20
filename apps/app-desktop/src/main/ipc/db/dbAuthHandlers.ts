@@ -110,12 +110,25 @@ export function savePasswordToHistory(db: any, user: string, _pass: string, host
  * oturum açılması engellenir. İşlem tek bir SQLite transaction içerisinde yürütülür;
  * herhangi bir hata anında tüm değişiklikler geri alınır (rollback).
  */
+/**
+ * Kullanıcı parolasını hashleyerek günceller.
+ * DİĞER BİLGİSAYARLARDAKİ ESKİ pcPass_* KAYITLARINI ATOMİK OLARAK TEMİZLER. Böylece eski şifreyle diğer cihazlardan
+ * oturum açılması engellenir.
+ * İşlem kesinlikle bir SQLite transaction içerisinde yürütülür; db.transaction desteği yoksa
+ * güvenlik gereği sessizce atomiklikten vazgeçmek yerine hata fırlatılır.
+ */
 export function applyPassword(db: any, user: string, pass: string, hostname: string): void {
+  if (!db || typeof db.transaction !== 'function') {
+    throw new Error('Database transaction support is required for atomic password operations.')
+  }
+
   const hashed = hashPassword(pass)
 
   const executeApply = (): void => {
-    // Diğer kayıtlı kullanıcıları tespit et (böylece 'admin_backup' veya 'admin2' anahtarları yanlışlıkla silinmez)
+    // 1. Kayıtlı diğer kullanıcıları topla (additionalUsers, adminUsername, passwordHistory ve userDevices_* anahtarları)
+    const otherUsers = new Set<string>()
     let usersList: any[] = []
+
     const usersRow = db.prepare("SELECT value FROM settings WHERE key = 'additionalUsers'").get() as
       | { value: string }
       | undefined
@@ -123,21 +136,46 @@ export function applyPassword(db: any, user: string, pass: string, hostname: str
       try {
         const parsed = JSON.parse(usersRow.value)
         if (Array.isArray(parsed)) usersList = parsed
-      } catch {}
+      } catch {
+        // additionalUsers bozuk/geçersiz JSON ise çökme, yapısal ayrıştırma ve diğer katmanlara güven
+      }
     }
 
-    const otherUsers = new Set<string>()
+    usersList.forEach((u: any) => {
+      if (u?.username && u.username !== user) otherUsers.add(u.username)
+    })
+
     const adminUserRow = db.prepare("SELECT value FROM settings WHERE key = 'adminUsername'").get() as
       | { value?: string }
       | undefined
     if (adminUserRow?.value && adminUserRow.value !== user) {
       otherUsers.add(adminUserRow.value)
     }
-    usersList.forEach((u: any) => {
-      if (u.username && u.username !== user) otherUsers.add(u.username)
-    })
 
-    // 1. Kullanıcıya ait tüm eski bilgisayar şifre önbelleklerini temizle.
+    // passwordHistory üzerinden bilinen diğer kullanıcı adlarını da topla
+    try {
+      const hist = readHistory(db)
+      hist.forEach((h: any) => {
+        if (h?.username && h.username !== user) otherUsers.add(h.username)
+      })
+    } catch {}
+
+    // 2. Açık veri modeli: Bu kullanıcının kayıtlı cihazlarını çek (userDevices_${user})
+    const knownDevices = new Set<string>()
+    const userDevicesKey = `userDevices_${user}`
+    const userDevicesRow = db.prepare('SELECT value FROM settings WHERE key = ?').get(userDevicesKey) as
+      | { value?: string }
+      | undefined
+    if (userDevicesRow?.value) {
+      try {
+        const parsed = JSON.parse(userDevicesRow.value)
+        if (Array.isArray(parsed)) {
+          parsed.forEach((d: any) => typeof d === 'string' && knownDevices.add(d))
+        }
+      } catch {}
+    }
+
+    // 3. Kullanıcıya ait tüm eski bilgisayar şifre önbelleklerini temizle.
     // LIKE sorgusunda '_' ve '%' karakterleri joker olduğu için kullanıcı adı '!' ile kaçış (ESCAPE) yapılır.
     const escapedUser = user.replace(/([%_!])/g, '!$1')
     const candidateRows = (db
@@ -147,22 +185,56 @@ export function applyPassword(db: any, user: string, pass: string, hostname: str
       .all(escapedUser, user) || []) as { key: string }[]
 
     const deleteStmt = db.prepare('DELETE FROM settings WHERE key = ?')
+
     for (const row of candidateRows) {
       const k = row.key
-      // Başka bir kayıtlı kullanıcının (örn. admin_backup) tam adıyla başlayan anahtarları koru
-      const isOtherUser = Array.from(otherUsers).some(
+
+      // Legacy tam eşleşme: 'pcPass_${user}'
+      if (k === `pcPass_${user}`) {
+        deleteStmt.run(k)
+        continue
+      }
+
+      // Anahtardan 'pcPass_' önekini kaldırıp kullanıcı ve cihaz parçalarını ayrıştır
+      const rest = k.slice('pcPass_'.length)
+
+      // Katman 1: Başka bir kayıtlı kullanıcının (örn. admin_backup) tam adıyla başlayan anahtarları KORU
+      const isOtherUserPrefix = Array.from(otherUsers).some(
         (other) => k.startsWith(`pcPass_${other}_`) || k === `pcPass_${other}`
       )
-      if (!isOtherUser) {
+      if (isOtherUserPrefix) {
+        continue
+      }
+
+      // Katman 2: Son alt çizgi ayrıştırması ile kullanıcı adını yapısal olarak doğrula.
+      // pcPass_${user}_${hostname} yapısında son alt çizgiden önceki kısım kullanıcı adıdır.
+      // Eğer bu kısım hedef kullanıcı adıyla birebir eşleşmiyorsa (örn. 'admin_backup' != 'admin'),
+      // ve knownDevices içinde açıkça doğrulanmamışsa SİLME! (additionalUsers bozuk olsa dahi tam koruma sağlar)
+      const lastUnderscore = rest.lastIndexOf('_')
+      let belongsToThisUser = false
+
+      if (lastUnderscore !== -1) {
+        const keyUser = rest.slice(0, lastUnderscore)
+        if (keyUser === user) {
+          belongsToThisUser = true
+        } else if (knownDevices.has(rest.slice(user.length + 1))) {
+          belongsToThisUser = true
+        }
+      }
+
+      if (belongsToThisUser) {
         deleteStmt.run(k)
       }
     }
 
-    // 2. Güncel bilgileri kaydet
+    // 4. Güncel bilgileri kaydet
     const stmt = db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)')
     stmt.run('adminUsername', user)
     stmt.run('adminPassword', hashed)
     stmt.run(`pcPass_${user}_${hostname}`, hashed)
+
+    // Açık cihaz veri modeli: Kullanıcının güncel geçerli cihazını kaydet
+    stmt.run(userDevicesKey, JSON.stringify([hostname]))
 
     const userEntry = {
       username: user,
@@ -179,11 +251,7 @@ export function applyPassword(db: any, user: string, pass: string, hostname: str
     savePasswordToHistory(db, user, pass, hostname)
   }
 
-  if (typeof db.transaction === 'function') {
-    db.transaction(executeApply)()
-  } else {
-    executeApply()
-  }
+  db.transaction(executeApply)()
 }
 
 function upgradeLegacyKey(db: any, key: string, pass: string): void {

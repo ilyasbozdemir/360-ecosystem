@@ -234,4 +234,51 @@ describe('dbAuthHandlers password management and multi-device invalidation', () 
     expect(sanitized).not.toContain('\n')
     expect(sanitized).not.toContain('\t')
   })
+
+  it('throws an error if db does not support transactions', () => {
+    const dbWithoutTx = { prepare: () => ({ run: () => {} }) }
+    expect(() => {
+      applyPassword(dbWithoutTx as any, 'admin', 'Pass123!', 'PC1')
+    }).toThrow(/transaction support is required/)
+  })
+
+  it('preserves similarly-named user credentials even when additionalUsers is corrupted or missing', () => {
+    const db = new MockDb()
+    const store = db.getRawStore()
+
+    // additionalUsers is corrupted invalid JSON
+    store.set('additionalUsers', '{corrupted_json_string')
+
+    // Pre-populate keys for admin and other similarly-named users
+    store.set('pcPass_admin_PC1', 'adminHash')
+    store.set('pcPass_admin_backup_PC1', 'backupHash')
+    store.set('pcPass_admin2_PC1', 'admin2Hash')
+
+    // Apply password only for "admin"
+    applyPassword(db, 'admin', 'YeniGucluAdmin1!', 'PC2')
+
+    // "admin" keys updated
+    expect(store.has('pcPass_admin_PC1')).toBe(false)
+    expect(store.has('pcPass_admin_PC2')).toBe(true)
+
+    // "admin_backup" and "admin2" MUST remain intact even though additionalUsers was corrupted!
+    expect(store.has('pcPass_admin_backup_PC1')).toBe(true)
+    expect(store.has('pcPass_admin2_PC1')).toBe(true)
+    expect(store.get('pcPass_admin_backup_PC1')).toBe('backupHash')
+    expect(store.get('pcPass_admin2_PC1')).toBe('admin2Hash')
+  })
+
+  it('maintains userDevices explicit data model when updating passwords', () => {
+    const db = new MockDb()
+    const store = db.getRawStore()
+
+    applyPassword(db, 'admin', 'Pass123!', 'OFFICE-1')
+    expect(store.get('userDevices_admin')).toBe(JSON.stringify(['OFFICE-1']))
+
+    applyPassword(db, 'admin', 'Pass456!', 'OFFICE-2')
+    expect(store.get('userDevices_admin')).toBe(JSON.stringify(['OFFICE-2']))
+    expect(store.has('pcPass_admin_OFFICE-1')).toBe(false)
+    expect(store.has('pcPass_admin_OFFICE-2')).toBe(true)
+  })
 })
+
