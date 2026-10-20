@@ -9,6 +9,10 @@ TODO.md
 pocketbase_bin/
 pb_data/
 
+# Test & E2E Reports
+test-results/
+e2e-report/
+
 tum_belgeler_listesi.yaml
 
 # İşlem ve Analiz Belgeleri (Dinamik Wildcard)

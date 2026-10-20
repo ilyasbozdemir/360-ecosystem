@@ -80,8 +80,8 @@ jobs:
         run: |
           if [[ "${{ github.ref_name }}" == *"rc"* ]]; then
             echo "RELEASE_NAME=TEMİN 360 ${{ github.ref_name }} (Sürüm Adayı)" >> $GITHUB_ENV
-            echo "IS_PRERELEASE=false" >> $GITHUB_ENV
-            echo "MAKE_LATEST=true" >> $GITHUB_ENV
+            echo "IS_PRERELEASE=true" >> $GITHUB_ENV
+            echo "MAKE_LATEST=false" >> $GITHUB_ENV
           elif [[ "${{ github.ref_name }}" == *"beta"* || "${{ github.ref_name }}" == *"alpha"* ]]; then
             echo "RELEASE_NAME=TEMİN 360 ${{ github.ref_name }} (Erken Erişim)" >> $GITHUB_ENV
             echo "IS_PRERELEASE=true" >> $GITHUB_ENV
