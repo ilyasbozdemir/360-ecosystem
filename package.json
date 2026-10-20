@@ -1,6 +1,6 @@
 {
   "name": "temin360-monorepo",
-  "version": "1.0.0-rc.4",
+  "version": "1.0.0-rc.5",
   "private": true,
   "engines": {
     "node": ">=22.5.0",
