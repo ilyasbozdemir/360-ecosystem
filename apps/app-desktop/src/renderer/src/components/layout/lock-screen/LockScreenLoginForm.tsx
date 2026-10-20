@@ -54,7 +54,7 @@ export function LockScreenLoginForm({
           <div className="text-[11px] font-bold tracking-wider uppercase text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
             <span>Hoş Geldiniz</span>
           </div>
-          <div className="text-sm font-bold text-slate-850 dark:text-white truncate">
+          <div className="text-sm font-bold text-slate-800 dark:text-white truncate">
             {pcInfo?.suggestedDisplayName || pcInfo?.osUsername || (username === 'admin' ? 'Yönetici' : username)}
           </div>
           <div className="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5 truncate mt-0.5">

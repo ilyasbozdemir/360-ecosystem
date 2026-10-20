@@ -106,49 +106,84 @@ export function savePasswordToHistory(db: any, user: string, _pass: string, host
 
 /**
  * Kullanıcı parolasını hashleyerek günceller.
- * DİĞER BİLGİSAYARLARDAKİ ESKİ pcPass_* KAYITLARINI TEMİZLER. Böylece eski şifreyle diğer cihazlardan
- * oturum açılması engellenir. Çalışma verilerine dokunmaz.
+ * DİĞER BİLGİSAYARLARDAKİ ESKİ pcPass_* KAYITLARINI ATOMİK OLARAK TEMİZLER. Böylece eski şifreyle diğer cihazlardan
+ * oturum açılması engellenir. İşlem tek bir SQLite transaction içerisinde yürütülür;
+ * herhangi bir hata anında tüm değişiklikler geri alınır (rollback).
  */
 export function applyPassword(db: any, user: string, pass: string, hostname: string): void {
   const hashed = hashPassword(pass)
 
-  // 1. Kullanıcıya ait tüm eski bilgisayar şifre önbelleklerini temizle
-  try {
-    db.prepare("DELETE FROM settings WHERE key LIKE 'pcPass_' || ? || '_%'").run(user)
-    db.prepare("DELETE FROM settings WHERE key = 'pcPass_' || ?").run(user)
-  } catch (e) {
-    console.warn('Failed to delete residual pcPass entries:', e)
+  const executeApply = (): void => {
+    // Diğer kayıtlı kullanıcıları tespit et (böylece 'admin_backup' veya 'admin2' anahtarları yanlışlıkla silinmez)
+    let usersList: any[] = []
+    const usersRow = db.prepare("SELECT value FROM settings WHERE key = 'additionalUsers'").get() as
+      | { value: string }
+      | undefined
+    if (usersRow?.value) {
+      try {
+        const parsed = JSON.parse(usersRow.value)
+        if (Array.isArray(parsed)) usersList = parsed
+      } catch {}
+    }
+
+    const otherUsers = new Set<string>()
+    const adminUserRow = db.prepare("SELECT value FROM settings WHERE key = 'adminUsername'").get() as
+      | { value?: string }
+      | undefined
+    if (adminUserRow?.value && adminUserRow.value !== user) {
+      otherUsers.add(adminUserRow.value)
+    }
+    usersList.forEach((u: any) => {
+      if (u.username && u.username !== user) otherUsers.add(u.username)
+    })
+
+    // 1. Kullanıcıya ait tüm eski bilgisayar şifre önbelleklerini temizle.
+    // LIKE sorgusunda '_' ve '%' karakterleri joker olduğu için kullanıcı adı '!' ile kaçış (ESCAPE) yapılır.
+    const escapedUser = user.replace(/([%_!])/g, '!$1')
+    const candidateRows = (db
+      .prepare(
+        "SELECT key FROM settings WHERE (key LIKE 'pcPass!_' || ? || '!_%' ESCAPE '!') OR (key = 'pcPass_' || ?)"
+      )
+      .all(escapedUser, user) || []) as { key: string }[]
+
+    const deleteStmt = db.prepare('DELETE FROM settings WHERE key = ?')
+    for (const row of candidateRows) {
+      const k = row.key
+      // Başka bir kayıtlı kullanıcının (örn. admin_backup) tam adıyla başlayan anahtarları koru
+      const isOtherUser = Array.from(otherUsers).some(
+        (other) => k.startsWith(`pcPass_${other}_`) || k === `pcPass_${other}`
+      )
+      if (!isOtherUser) {
+        deleteStmt.run(k)
+      }
+    }
+
+    // 2. Güncel bilgileri kaydet
+    const stmt = db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)')
+    stmt.run('adminUsername', user)
+    stmt.run('adminPassword', hashed)
+    stmt.run(`pcPass_${user}_${hostname}`, hashed)
+
+    const userEntry = {
+      username: user,
+      password: hashed,
+      hostname,
+      osUsername: os.userInfo().username,
+      updatedAt: new Date().toISOString()
+    }
+    const idx = usersList.findIndex((u: any) => u.username === user)
+    if (idx >= 0) usersList[idx] = { ...usersList[idx], ...userEntry }
+    else usersList.push(userEntry)
+    stmt.run('additionalUsers', JSON.stringify(usersList))
+
+    savePasswordToHistory(db, user, pass, hostname)
   }
 
-  // 2. Güncel bilgileri kaydet
-  const stmt = db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)')
-  stmt.run('adminUsername', user)
-  stmt.run('adminPassword', hashed)
-  stmt.run(`pcPass_${user}_${hostname}`, hashed)
-
-  let usersList: any[] = []
-  const usersRow = db.prepare("SELECT value FROM settings WHERE key = 'additionalUsers'").get() as
-    | { value: string }
-    | undefined
-  if (usersRow?.value) {
-    try {
-      const parsed = JSON.parse(usersRow.value)
-      if (Array.isArray(parsed)) usersList = parsed
-    } catch {}
+  if (typeof db.transaction === 'function') {
+    db.transaction(executeApply)()
+  } else {
+    executeApply()
   }
-  const userEntry = {
-    username: user,
-    password: hashed,
-    hostname,
-    osUsername: os.userInfo().username,
-    updatedAt: new Date().toISOString()
-  }
-  const idx = usersList.findIndex((u: any) => u.username === user)
-  if (idx >= 0) usersList[idx] = { ...usersList[idx], ...userEntry }
-  else usersList.push(userEntry)
-  stmt.run('additionalUsers', JSON.stringify(usersList))
-
-  savePasswordToHistory(db, user, pass, hostname)
 }
 
 function upgradeLegacyKey(db: any, key: string, pass: string): void {
@@ -162,6 +197,99 @@ function upgradeLegacyKey(db: any, key: string, pass: string): void {
   } catch (e) {
     console.error('Legacy password upgrade error:', e)
   }
+}
+
+/**
+ * Kullanıcının işletim sistemindeki görünen/tam adını (Display Name) güvenli şekilde tespit eder.
+ * Shell enjeksiyonu riskini önlemek için execFileSync kullanılır (kabuk kullanılmaz).
+ * Windows (net user), macOS (id -F), Linux (GECOS) ve homedir/username yedeklerini kapsar.
+ */
+export function resolveSystemUserDisplayName(osUsername: string): string {
+  const sanitize = (name: string): string => {
+    if (!name || typeof name !== 'string') return ''
+    return name
+      .replace(/[\r\n\t]/g, ' ')
+      .trim()
+      .split(/\s+/)
+      .map(
+        (part) =>
+          part.charAt(0).toLocaleUpperCase('tr-TR') + part.slice(1).toLocaleLowerCase('tr-TR')
+      )
+      .filter(Boolean)
+      .join(' ')
+      .slice(0, 50)
+  }
+
+  // 1. Windows: shell olmaksızın execFileSync ile 'net user <username>' çağrısı
+  if (process.platform === 'win32') {
+    try {
+      const username = process.env.USERNAME || osUsername
+      // Güvenlik: shell kullanılmaz, argümanlar dizi olarak işletim sistemine doğrudan aktarılır
+      const out = child_process.execFileSync('net', ['user', username], {
+        encoding: 'utf8',
+        timeout: 2500,
+        windowsHide: true
+      })
+      const lines = out.split(/\r?\n/)
+      for (const line of lines) {
+        const match = line.match(
+          /^(?:Tam ad|Full Name|Nom complet|Nombre completo|Nome completo|Vollst.+ndiger Name|[^\s]+ ad)\s{2,}(.+)$/i
+        )
+        if (match && match[1] && match[1].trim()) {
+          const res = sanitize(match[1])
+          if (res) return res
+        }
+      }
+    } catch {
+      // Yerel olmayan veya etki alanı hesaplarında başarısız olursa yedeğe devam et
+    }
+  } else if (process.platform === 'darwin') {
+    // 2. macOS: shell olmaksızın 'id -F' çağrısı
+    try {
+      const out = child_process.execFileSync('id', ['-F'], {
+        encoding: 'utf8',
+        timeout: 2000
+      })
+      if (out && out.trim()) {
+        const res = sanitize(out)
+        if (res) return res
+      }
+    } catch {
+      // yedeğe devam et
+    }
+  } else if (process.platform === 'linux') {
+    // 3. Linux: GECOS alanından tam adı çek (/etc/passwd 5. alan)
+    try {
+      const gecos = (os.userInfo() as any)?.gecos
+      if (gecos) {
+        const fullName = gecos.split(',')[0].trim()
+        const res = sanitize(fullName)
+        if (res) return res
+      }
+    } catch {
+      // yedeğe devam et
+    }
+  }
+
+  // 4. Fallback: Kullanıcı ev dizini klasör adı (örn: C:\Users\ilyas bozdemir)
+  try {
+    const homedir = os.homedir()
+    const folderName = path.basename(homedir)
+    if (
+      folderName &&
+      !['user', 'admin', 'administrator', 'kullanici', 'default', 'root'].includes(
+        folderName.toLowerCase()
+      )
+    ) {
+      const res = sanitize(folderName)
+      if (res) return res
+    }
+  } catch {
+    // yedeğe devam et
+  }
+
+  // 5. Son Fallback: osUsername
+  return sanitize(osUsername) || osUsername || 'Kullanıcı'
 }
 
 /**
@@ -185,97 +313,7 @@ export function registerDbAuthHandlers(): void {
       const platform = os.platform()
       const osType = os.type()
       const userDomain = process.env.USERDOMAIN || ''
-
-      // Windows/macOS/Linux oturum açma (Hoş geldiniz) ekranında gösterilen gerçek kullanıcı adı:
-      // Windows'ta 'net user' ile hesabın resmi "Tam ad" bilgisini çeker.
-      let displayName = ''
-      if (process.platform === 'win32') {
-        try {
-          const username = process.env.USERNAME || osUsername
-          const out = child_process.execSync(`net user "${username}"`, {
-            encoding: 'utf8',
-            shell: 'cmd.exe',
-            timeout: 2500,
-            windowsHide: true
-          })
-          const lines = out.split(/\r?\n/)
-          for (const line of lines) {
-            const match = line.match(
-              /^(?:Tam ad|Full Name|Nom complet|Vollst.+ndiger Name|[^\s]+ ad)\s{2,}(.+)$/i
-            )
-            if (match && match[1] && match[1].trim()) {
-              const rawName = match[1].trim()
-              displayName = rawName
-                .split(/\s+/)
-                .map(
-                  (p) =>
-                    p.charAt(0).toLocaleUpperCase('tr-TR') +
-                    p.slice(1).toLocaleLowerCase('tr-TR')
-                )
-                .join(' ')
-              break
-            }
-          }
-        } catch {
-          // ignore error
-        }
-      } else if (process.platform === 'darwin') {
-        try {
-          const out = child_process.execSync('id -F', { encoding: 'utf8', timeout: 2000 })
-          if (out && out.trim()) {
-            displayName = out.trim()
-          }
-        } catch {
-          // ignore error
-        }
-      }
-
-      // Fallback 1: Kullanıcı ev dizini klasör adı (örn: C:\Users\ilyas bozdemir)
-      if (!displayName) {
-        try {
-          const homedir = os.homedir()
-          const folderName = path.basename(homedir)
-          if (
-            folderName &&
-            !['user', 'admin', 'administrator', 'kullanici', 'default'].includes(
-              folderName.toLowerCase()
-            )
-          ) {
-            displayName = folderName
-              .replace(/[._-]+/g, ' ')
-              .trim()
-              .split(/\s+/)
-              .map((part) => {
-                if (!part) return ''
-                return (
-                  part.charAt(0).toLocaleUpperCase('tr-TR') +
-                  part.slice(1).toLocaleLowerCase('tr-TR')
-                )
-              })
-              .filter(Boolean)
-              .join(' ')
-          }
-        } catch {
-          // ignore error
-        }
-      }
-
-      // Fallback 2: osUsername formatlama
-      if (!displayName) {
-        displayName = osUsername
-          .replace(/[._-]+/g, ' ')
-          .trim()
-          .split(/\s+/)
-          .map((part) => {
-            if (!part) return ''
-            return (
-              part.charAt(0).toLocaleUpperCase('tr-TR') +
-              part.slice(1).toLocaleLowerCase('tr-TR')
-            )
-          })
-          .filter(Boolean)
-          .join(' ')
-      }
+      const suggestedDisplayName = resolveSystemUserDisplayName(osUsername)
 
       return {
         hostname,
@@ -283,7 +321,7 @@ export function registerDbAuthHandlers(): void {
         osUsername,
         osType,
         userDomain,
-        suggestedDisplayName: displayName || osUsername
+        suggestedDisplayName
       }
     } catch {
       return {

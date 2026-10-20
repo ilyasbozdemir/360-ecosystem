@@ -228,6 +228,26 @@ test.describe('E2E: Küçük ekran ve ölçekleme için responsive yerleşim', (
         `${scenario.name} (viewport ${report.viewport.w}x${report.viewport.h}): ${report.violations.join(' | ')}`
       ).toEqual([])
       expect(report.railShortcutCount).toBeGreaterThanOrEqual(14)
+
+      // Somut görünürlük doğrulaması: Kurum alanı ve alt profil/ayarlar öğeleri
+      // viewport sınırları içinde olmalı, taşmamalı ve tıklanabilir olmalıdır.
+      const profile = appInstance.page.locator('[data-testid="rail-profile"]')
+      await expect(profile).toBeVisible()
+      const pBox = await profile.boundingBox()
+      expect(pBox).not.toBeNull()
+      expect(pBox!.x).toBeGreaterThanOrEqual(-1)
+      expect(pBox!.y).toBeGreaterThanOrEqual(-1)
+      expect(pBox!.y + pBox!.height).toBeLessThanOrEqual(report.viewport.h + 2)
+
+      const footer = appInstance.page.locator('[data-testid="rail-footer"]')
+      await expect(footer).toBeVisible()
+      const fBox = await footer.boundingBox()
+      expect(fBox).not.toBeNull()
+      expect(fBox!.y + fBox!.height).toBeLessThanOrEqual(report.viewport.h + 2)
+
+      const firstFooterLink = footer.locator('a').first()
+      await expect(firstFooterLink).toBeVisible()
+      await expect(firstFooterLink).toBeEnabled()
     })
   }
 

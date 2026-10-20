@@ -1,59 +1,89 @@
 import { describe, it, expect } from 'vitest'
-import { applyPassword, savePasswordToHistory, scrubPasswordHistory } from '../dbAuthHandlers'
+import {
+  applyPassword,
+  savePasswordToHistory,
+  scrubPasswordHistory,
+  resolveSystemUserDisplayName
+} from '../dbAuthHandlers'
 
-// Simple mock for better-sqlite3 Database
+// Mock for better-sqlite3 Database supporting transactions and atomic rollbacks
 class MockDb {
   private store: Map<string, string> = new Map()
+  public shouldFailOnStatement: string | null = null
+
+  transaction(fn: (...args: any[]) => any) {
+    return (...args: any[]) => {
+      const snapshot = new Map(this.store)
+      try {
+        const result = fn(...args)
+        return result
+      } catch (err) {
+        this.store.clear()
+        for (const [k, v] of snapshot) {
+          this.store.set(k, v)
+        }
+        throw err
+      }
+    }
+  }
 
   prepare(sql: string) {
-    const store = this.store
+    const self = this
     return {
       run(...args: any[]) {
-        if (sql.includes('DELETE FROM settings WHERE key LIKE')) {
-          // DELETE FROM settings WHERE key LIKE 'pcPass_' || ? || '_%'
-          const prefix = `pcPass_${args[0]}_`
-          for (const k of Array.from(store.keys())) {
-            if (k.startsWith(prefix)) store.delete(k)
-          }
-          return { changes: 1 }
+        if (
+          self.shouldFailOnStatement &&
+          (sql.includes(self.shouldFailOnStatement) || args.includes(self.shouldFailOnStatement))
+        ) {
+          throw new Error(`Simulated database failure on statement: ${sql}`)
         }
-        if (sql.includes('DELETE FROM settings WHERE key =')) {
-          const key = `pcPass_${args[0]}`
-          store.delete(key)
+        if (sql.includes('DELETE FROM settings WHERE key = ?')) {
+          const keyToDelete = args[0]
+          self.store.delete(keyToDelete)
           return { changes: 1 }
         }
         if (sql.includes("VALUES ('passwordHistory', ?)")) {
-          store.set('passwordHistory', args[0])
+          self.store.set('passwordHistory', args[0])
           return { changes: 1 }
         }
         if (sql.includes('INSERT OR REPLACE INTO settings')) {
           const [k, v] = args
-          store.set(k, v)
+          self.store.set(k, v)
           return { changes: 1 }
         }
         return { changes: 0 }
       },
-      get(...args: any[]) {
+      get(arg?: any) {
         if (sql.includes("WHERE key = 'passwordHistory'")) {
-          const val = store.get('passwordHistory')
+          const val = self.store.get('passwordHistory')
           return val !== undefined ? { value: val } : undefined
         }
         if (sql.includes("WHERE key = 'adminPassword'")) {
-          const val = store.get('adminPassword')
+          const val = self.store.get('adminPassword')
           return val !== undefined ? { value: val } : undefined
         }
         if (sql.includes("WHERE key = 'additionalUsers'")) {
-          const val = store.get('additionalUsers')
+          const val = self.store.get('additionalUsers')
           return val !== undefined ? { value: val } : undefined
         }
         if (sql.includes('WHERE key = ?')) {
-          const val = store.get(args[0])
+          const val = self.store.get(arg)
           return val !== undefined ? { value: val } : undefined
         }
         return undefined
       },
-      all() {
-        return Array.from(store.entries()).map(([key, value]) => ({ key, value }))
+      all(...args: any[]) {
+        if (sql.includes('SELECT key FROM settings WHERE')) {
+          // SQL: (key LIKE 'pcPass!_' || ? || '!_%' ESCAPE '!') OR (key = 'pcPass_' || ?)
+          // args[0] is escapedUser, args[1] is user
+          const rawUser = args[1] || (args[0] ? args[0].replace(/!(.)/g, '$1') : '')
+          const prefix = `pcPass_${rawUser}_`
+          const exact = `pcPass_${rawUser}`
+          return Array.from(self.store.keys())
+            .filter((k) => k === exact || k.startsWith(prefix))
+            .map((key) => ({ key }))
+        }
+        return Array.from(self.store.entries()).map(([key, value]) => ({ key, value }))
       }
     }
   }
@@ -73,6 +103,7 @@ describe('dbAuthHandlers password management and multi-device invalidation', () 
     store.set('adminPassword', 'oldHashedAdminPassword')
     store.set('pcPass_admin_DESKTOP-OFFICE', 'oldHashedAdminPassword')
     store.set('pcPass_admin_LAPTOP-REMOTE', 'oldHashedAdminPassword')
+    store.set('pcPass_admin_TABLET-WORK', 'oldHashedAdminPassword')
     store.set('pcPass_operator_OTHER-PC', 'operatorPassword') // Another user
 
     // Now admin changes password on current machine "LAPTOP-HOME"
@@ -82,12 +113,63 @@ describe('dbAuthHandlers password management and multi-device invalidation', () 
     expect(store.has('pcPass_admin_LAPTOP-HOME')).toBe(true)
     expect(store.get('pcPass_admin_LAPTOP-HOME')).not.toBe('oldHashedAdminPassword')
 
-    // 2. Previous machine keys for admin must be completely wiped out!
+    // 2. All previous machine keys for admin must be completely wiped out
     expect(store.has('pcPass_admin_DESKTOP-OFFICE')).toBe(false)
     expect(store.has('pcPass_admin_LAPTOP-REMOTE')).toBe(false)
+    expect(store.has('pcPass_admin_TABLET-WORK')).toBe(false)
 
-    // 3. Other users are not affected
+    // 3. Other users are strictly untouched
     expect(store.has('pcPass_operator_OTHER-PC')).toBe(true)
+  })
+
+  it('rolls back all changes atomically if an error occurs during applyPassword transaction', () => {
+    const db = new MockDb()
+    const store = db.getRawStore()
+
+    // Initial state
+    store.set('adminUsername', 'admin')
+    store.set('adminPassword', 'originalPasswordHash')
+    store.set('pcPass_admin_PC-ORIGINAL', 'originalPasswordHash')
+
+    // Force failure during additionalUsers insertion
+    db.shouldFailOnStatement = 'additionalUsers'
+
+    expect(() => {
+      applyPassword(db, 'admin', 'YeniSifreDenemesi!', 'NEW-PC')
+    }).toThrow(/Simulated database failure/)
+
+    // Entire state must be rolled back!
+    expect(store.get('adminPassword')).toBe('originalPasswordHash')
+    expect(store.get('pcPass_admin_PC-ORIGINAL')).toBe('originalPasswordHash')
+    expect(store.has('pcPass_admin_NEW-PC')).toBe(false)
+  })
+
+  it('does not delete device credentials of users with similar names (e.g. admin vs admin_backup vs admin2)', () => {
+    const db = new MockDb()
+    const store = db.getRawStore()
+
+    // Register other user in additionalUsers
+    const additional = [
+      { username: 'admin_backup' },
+      { username: 'admin2' }
+    ]
+    store.set('additionalUsers', JSON.stringify(additional))
+
+    // Pre-populate keys for admin and other similarly-named users
+    store.set('pcPass_admin_PC1', 'adminHash')
+    store.set('pcPass_admin_backup_PC1', 'backupHash')
+    store.set('pcPass_admin2_PC1', 'admin2Hash')
+
+    // Apply password only for "admin"
+    applyPassword(db, 'admin', 'YeniGucluAdmin1!', 'PC2')
+
+    // "admin" keys updated
+    expect(store.has('pcPass_admin_PC1')).toBe(false)
+    expect(store.has('pcPass_admin_PC2')).toBe(true)
+
+    // "admin_backup" and "admin2" must remain intact
+    expect(store.has('pcPass_admin_backup_PC1')).toBe(true)
+    expect(store.has('pcPass_admin2_PC1')).toBe(true)
   })
 
   it('saves strictly audit-only data to passwordHistory without password or passwordHash', () => {
@@ -133,5 +215,23 @@ describe('dbAuthHandlers password management and multi-device invalidation', () 
     expect(cleaned[0].hostname).toBe('OLD-PC')
     expect(cleaned[0].password).toBeUndefined()
     expect(cleaned[0].passwordHash).toBeUndefined()
+  })
+
+  it('safely resolves system display name with sanitization, length limits, and fallback without shell', () => {
+    // 1. Valid username formatting
+    const name = resolveSystemUserDisplayName('mehmet.ozdemir')
+    expect(typeof name).toBe('string')
+    expect(name.length).toBeGreaterThan(0)
+    expect(name.length).toBeLessThanOrEqual(50)
+
+    // 2. Empty fallback
+    const emptyFallback = resolveSystemUserDisplayName('')
+    expect(typeof emptyFallback).toBe('string')
+    expect(emptyFallback.length).toBeGreaterThan(0)
+
+    // 3. Sanitizes weird characters and extra spaces
+    const sanitized = resolveSystemUserDisplayName('ali   veli\n\tdemir')
+    expect(sanitized).not.toContain('\n')
+    expect(sanitized).not.toContain('\t')
   })
 })
