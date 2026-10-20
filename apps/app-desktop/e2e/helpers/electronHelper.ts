@@ -10,7 +10,8 @@ export interface TestAppInstance {
   userDataDir: string
   consoleLogs: { type: string; text: string; location?: string }[]
   pageErrors: Error[]
-  close: () => Promise<void>
+  assertNoUnhandledErrors: () => void
+  close: (options?: { assertNoErrors?: boolean }) => Promise<void>
 }
 
 export interface LaunchTestAppOptions {
@@ -118,21 +119,36 @@ export async function launchTestApp(
     console.error(`[RENDERER UNHANDLED ERROR] ${err.message}`)
   })
 
-  const close = async (): Promise<void> => {
+  const assertNoUnhandledErrors = (): void => {
+    if (pageErrors.length > 0) {
+      const messages = pageErrors.map((e) => e.stack || e.message).join('\n---\n')
+      throw new Error(
+        `[E2E ASSERTION FAILED] Renderer sürecinde ${pageErrors.length} adet beklenmeyen JavaScript hatası (pageerror) tespit edildi:\n${messages}`
+      )
+    }
+  }
+
+  const close = async (options?: { assertNoErrors?: boolean }): Promise<void> => {
     try {
-      if (electronApp) {
-        await electronApp.close()
+      if (options?.assertNoErrors !== false) {
+        assertNoUnhandledErrors()
       }
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e)
-      console.warn('Error while closing Electron app:', msg)
     } finally {
       try {
-        if (userDataDir && fs.existsSync(userDataDir)) {
-          fs.rmSync(userDataDir, { recursive: true, force: true })
+        if (electronApp) {
+          await electronApp.close()
         }
-      } catch {
-        // Geçici test dizini silme hatası ihmal edilebilir
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e)
+        console.warn('Error while closing Electron app:', msg)
+      } finally {
+        try {
+          if (userDataDir && fs.existsSync(userDataDir)) {
+            fs.rmSync(userDataDir, { recursive: true, force: true })
+          }
+        } catch {
+          // Geçici test dizini silme hatası ihmal edilebilir
+        }
       }
     }
   }
@@ -143,7 +159,32 @@ export async function launchTestApp(
     userDataDir,
     consoleLogs,
     pageErrors,
+    assertNoUnhandledErrors,
     close
+  }
+}
+
+export function cleanTestArtifacts(): void {
+  if (fs.existsSync(DESKTOP_TEST_DIR)) {
+    try {
+      const files = fs.readdirSync(DESKTOP_TEST_DIR)
+      for (const file of files) {
+        if (
+          file.endsWith('.lock') ||
+          file.includes('temp') ||
+          file.includes('kalicilik') ||
+          file.includes('izolasyon')
+        ) {
+          try {
+            fs.unlinkSync(path.join(DESKTOP_TEST_DIR, file))
+          } catch {
+            // ignore
+          }
+        }
+      }
+    } catch {
+      // ignore
+    }
   }
 }
 

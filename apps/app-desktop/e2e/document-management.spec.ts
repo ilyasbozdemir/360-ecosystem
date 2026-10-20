@@ -5,7 +5,9 @@ import {
   launchTestApp,
   takeE2EScreenshot,
   DESKTOP_TEST_FILE,
+  DESKTOP_SECOND_FILE,
   DESKTOP_TEST_DIR,
+  cleanTestArtifacts,
   TestAppInstance
 } from './helpers/electronHelper'
 
@@ -14,6 +16,7 @@ test.describe('E2E: Dosya Bazlı Belge Yönetimi, İzolasyon ve PDF Akışı', (
   const secondTestFile = path.join(DESKTOP_TEST_DIR, 'e2e-belge-izolasyon-test.temin')
 
   test.beforeAll(() => {
+    cleanTestArtifacts()
     // İkinci test dosyasını oluştur (izolasyon testi için)
     if (fs.existsSync(DESKTOP_TEST_FILE) && !fs.existsSync(secondTestFile)) {
       fs.copyFileSync(DESKTOP_TEST_FILE, secondTestFile)
@@ -25,6 +28,7 @@ test.describe('E2E: Dosya Bazlı Belge Yönetimi, İzolasyon ve PDF Akışı', (
       await appInstance.close()
       appInstance = null
     }
+    cleanTestArtifacts()
     try {
       if (fs.existsSync(secondTestFile + '.lock')) {
         fs.unlinkSync(secondTestFile + '.lock')
@@ -35,6 +39,7 @@ test.describe('E2E: Dosya Bazlı Belge Yönetimi, İzolasyon ve PDF Akışı', (
   })
 
   test.afterAll(() => {
+    cleanTestArtifacts()
     try {
       if (fs.existsSync(secondTestFile)) {
         fs.unlinkSync(secondTestFile)
@@ -378,5 +383,203 @@ test.describe('E2E: Dosya Bazlı Belge Yönetimi, İzolasyon ve PDF Akışı', (
       'Birinci paragraf: Doğrudan belge üzerinde Word benzeri düzenleme yapıldı.'
     )
     expect(reopenedText).toContain('İkinci paragraf: Enter ile yeni satır oluşturuldu.')
+  })
+
+  test('İki farklı .temin arşiv dosyası (Kurum A ve Kurum B) arasında tam veri izolasyonu, bağımsız kaydetme ve yeniden açma doğrulanmalıdır', async () => {
+    test.setTimeout(180000)
+    expect(fs.existsSync(DESKTOP_TEST_FILE)).toBe(true)
+    expect(fs.existsSync(DESKTOP_SECOND_FILE)).toBe(true)
+
+    const archiveA = path.join(DESKTOP_TEST_DIR, 'e2e-izolasyon-kurum-a.temin')
+    const archiveB = path.join(DESKTOP_TEST_DIR, 'e2e-izolasyon-kurum-b.temin')
+
+    fs.copyFileSync(DESKTOP_TEST_FILE, archiveA)
+    fs.copyFileSync(DESKTOP_SECOND_FILE, archiveB)
+
+    try {
+      // AŞAMA 1: Kurum A arşivi ile uygulamayı başlat ve Kurum A belgesini kaydet
+      appInstance = await launchTestApp([archiveA])
+      let page = appInstance.page
+      await page.waitForLoadState('domcontentloaded')
+      await expect(page.locator('text=E2E Otomasyon Test Kurumu').first()).toBeVisible({
+        timeout: 20000
+      })
+
+      let passwordInput = page.locator('input[type="password"]')
+      if (await passwordInput.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await passwordInput.fill('123456')
+        await page
+          .locator('button:has-text("Giriş Yap"), button:has-text("Şifre Belirle ve Giriş Yap")')
+          .first()
+          .click()
+        await expect(passwordInput).not.toBeVisible({ timeout: 15000 })
+      }
+
+      const saveKurumA = await page.evaluate(async () => {
+        // @ts-expect-error electron IPC
+        return await window.electron.ipcRenderer.invoke('belge:save-document', {
+          dosyaId: 1,
+          templateKey: 'luzum_muzekkeresi',
+          data: {
+            dosyaKonusu: 'KURUM-A-ÖZEL-LÜZUM',
+            isinAciklamasi: 'Kurum A Arşivine Özel İçerik',
+            tarih: '21.10.2026'
+          },
+          sablonVersiyon: 1
+        })
+      })
+      expect(saveKurumA.success).toBe(true)
+
+      // Arşiv dosyasına fiziksel flush (save) yap
+      const wsSaveA = await page.evaluate(async () => {
+        // @ts-expect-error electron IPC
+        return await window.electron.ipcRenderer.invoke('workspace:save')
+      })
+      expect(wsSaveA.success).toBe(true)
+
+      // Kurum A uygulamasını kapat
+      await appInstance.close()
+      appInstance = null
+      await new Promise((r) => setTimeout(r, 1000))
+
+      // AŞAMA 2: Kurum B arşivi ile uygulamayı başlat.
+      // Kurum A'nın belgesinin Kurum B'ye sızmadığını doğrula!
+      appInstance = await launchTestApp([archiveB])
+      page = appInstance.page
+      await page.waitForLoadState('domcontentloaded')
+      await expect(page.locator('text=E2E İkinci Test Kurumu').first()).toBeVisible({
+        timeout: 20000
+      })
+
+      passwordInput = page.locator('input[type="password"]')
+      if (await passwordInput.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await passwordInput.fill('123456')
+        await page
+          .locator('button:has-text("Giriş Yap"), button:has-text("Şifre Belirle ve Giriş Yap")')
+          .first()
+          .click()
+        await expect(passwordInput).not.toBeVisible({ timeout: 15000 })
+      }
+
+      const checkKurumBInitial = await page.evaluate(async () => {
+        // @ts-expect-error electron IPC
+        return await window.electron.ipcRenderer.invoke('belge:get-document', {
+          dosyaId: 1,
+          templateKey: 'luzum_muzekkeresi'
+        })
+      })
+      // İzolasyon kanıtı: Kurum B içinde dosyaId=1 belgesi henüz yoktur veya Kurum A'nın verisini içermez
+      if (checkKurumBInitial?.exists) {
+        expect(checkKurumBInitial.record?.data?.dosyaKonusu).not.toBe('KURUM-A-ÖZEL-LÜZUM')
+      }
+
+      // Şimdi Kurum B için tamamen farklı bir belge kaydet
+      const saveKurumB = await page.evaluate(async () => {
+        // @ts-expect-error electron IPC
+        return await window.electron.ipcRenderer.invoke('belge:save-document', {
+          dosyaId: 1,
+          templateKey: 'luzum_muzekkeresi',
+          data: {
+            dosyaKonusu: 'KURUM-B-FARKLI-LÜZUM',
+            isinAciklamasi: 'Kurum B Arşivine Özel Bağımsız İçerik',
+            tarih: '21.10.2026'
+          },
+          sablonVersiyon: 1
+        })
+      })
+      expect(saveKurumB.success).toBe(true)
+
+      // Arşiv dosyasına fiziksel flush (save) yap
+      const wsSaveB = await page.evaluate(async () => {
+        // @ts-expect-error electron IPC
+        return await window.electron.ipcRenderer.invoke('workspace:save')
+      })
+      expect(wsSaveB.success).toBe(true)
+
+      // Kurum B uygulamasını kapat
+      await appInstance.close()
+      appInstance = null
+      await new Promise((r) => setTimeout(r, 1000))
+
+      // AŞAMA 3: Tekrar Kurum A arşivini aç ve Kurum A belgesinin aynen korunduğunu doğrula
+      appInstance = await launchTestApp([archiveA])
+      page = appInstance.page
+      await page.waitForLoadState('domcontentloaded')
+      await expect(page.locator('text=E2E Otomasyon Test Kurumu').first()).toBeVisible({
+        timeout: 20000
+      })
+
+      passwordInput = page.locator('input[type="password"]')
+      if (await passwordInput.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await passwordInput.fill('123456')
+        await page
+          .locator('button:has-text("Giriş Yap"), button:has-text("Şifre Belirle ve Giriş Yap")')
+          .first()
+          .click()
+        await expect(passwordInput).not.toBeVisible({ timeout: 15000 })
+      }
+
+      const checkKurumAFinal = await page.evaluate(async () => {
+        // @ts-expect-error electron IPC
+        return await window.electron.ipcRenderer.invoke('belge:get-document', {
+          dosyaId: 1,
+          templateKey: 'luzum_muzekkeresi'
+        })
+      })
+      expect(checkKurumAFinal.success).toBe(true)
+      expect(checkKurumAFinal.exists).toBe(true)
+      expect(checkKurumAFinal.record?.data?.dosyaKonusu).toBe('KURUM-A-ÖZEL-LÜZUM')
+      expect(checkKurumAFinal.record?.data?.isinAciklamasi).toBe('Kurum A Arşivine Özel İçerik')
+
+      // Kurum A uygulamasını kapat
+      await appInstance.close()
+      appInstance = null
+      await new Promise((r) => setTimeout(r, 1000))
+
+      // AŞAMA 4: Tekrar Kurum B arşivini aç ve Kurum B belgesinin de aynen korunduğunu doğrula
+      appInstance = await launchTestApp([archiveB])
+      page = appInstance.page
+      await page.waitForLoadState('domcontentloaded')
+      await expect(page.locator('text=E2E İkinci Test Kurumu').first()).toBeVisible({
+        timeout: 20000
+      })
+
+      passwordInput = page.locator('input[type="password"]')
+      if (await passwordInput.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await passwordInput.fill('123456')
+        await page
+          .locator('button:has-text("Giriş Yap"), button:has-text("Şifre Belirle ve Giriş Yap")')
+          .first()
+          .click()
+        await expect(passwordInput).not.toBeVisible({ timeout: 15000 })
+      }
+
+      const checkKurumBFinal = await page.evaluate(async () => {
+        // @ts-expect-error electron IPC
+        return await window.electron.ipcRenderer.invoke('belge:get-document', {
+          dosyaId: 1,
+          templateKey: 'luzum_muzekkeresi'
+        })
+      })
+      expect(checkKurumBFinal.success).toBe(true)
+      expect(checkKurumBFinal.exists).toBe(true)
+      expect(checkKurumBFinal.record?.data?.dosyaKonusu).toBe('KURUM-B-FARKLI-LÜZUM')
+      expect(checkKurumBFinal.record?.data?.isinAciklamasi).toBe(
+        'Kurum B Arşivine Özel Bağımsız İçerik'
+      )
+    } finally {
+      if (appInstance) {
+        await appInstance.close()
+        appInstance = null
+      }
+      try {
+        if (fs.existsSync(archiveA)) fs.unlinkSync(archiveA)
+        if (fs.existsSync(archiveA + '.lock')) fs.unlinkSync(archiveA + '.lock')
+        if (fs.existsSync(archiveB)) fs.unlinkSync(archiveB)
+        if (fs.existsSync(archiveB + '.lock')) fs.unlinkSync(archiveB + '.lock')
+      } catch {
+        // ignore
+      }
+    }
   })
 })

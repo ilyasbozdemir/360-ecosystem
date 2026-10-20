@@ -195,7 +195,35 @@ function validateGeneratedFile(filePath) {
   console.log('✅ Dosya doğrulandı: meta.json ve database.sqlite sağlam.')
 }
 
+function cleanupStaleLocksAndArchives(dir = targetDir) {
+  if (fs.existsSync(dir)) {
+    try {
+      const entries = fs.readdirSync(dir)
+      for (const file of entries) {
+        if (
+          file.endsWith('.lock') ||
+          file.includes('temp') ||
+          file.includes('kalicilik') ||
+          file.includes('izolasyon')
+        ) {
+          try {
+            fs.unlinkSync(path.join(dir, file))
+          } catch {
+            // ignore
+          }
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+}
+
 if (require.main === module) {
+  cleanupStaleLocksAndArchives(targetDir)
+  if (fallbackDir !== targetDir) {
+    cleanupStaleLocksAndArchives(fallbackDir)
+  }
   generateE2ETestFile()
   generateE2ETestFile(
     secondTargetFile,
