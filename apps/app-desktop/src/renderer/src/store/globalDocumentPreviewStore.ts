@@ -284,6 +284,11 @@ export const useGlobalDocumentPreviewStore = create<GlobalDocumentPreviewState>(
       isBalloon: false,
       tabs: [],
       activeTabId: null,
+      documentId: null,
+      dosyaId: null,
+      source: undefined,
+      raporId: null,
+      initialData: null,
       onCloseCallback: null
     })
   },

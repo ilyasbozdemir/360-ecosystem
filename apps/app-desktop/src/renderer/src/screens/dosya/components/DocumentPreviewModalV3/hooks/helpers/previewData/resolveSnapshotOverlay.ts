@@ -1,3 +1,4 @@
+import { resolveTemplateKey } from '@temin360/document-templates'
 import { useGlobalDocumentPreviewStore } from '../../../../../../../store/globalDocumentPreviewStore'
 import { applyRolePolicy } from './previewDataUtils'
 import type { LoadPreviewDataResult } from '../types'
@@ -25,21 +26,31 @@ export async function resolveSnapshotOverlay(
   let snapshotData = payloadData.savedSnapshot
   if (activeDosyaId) {
     try {
+      const cleanDocId = String(resolvedId).replace(/\.html$/i, '').trim()
+      const canonicalKey = resolveTemplateKey(cleanDocId) || cleanDocId
+      const hyphenKey = canonicalKey.replace(/_/g, '-')
+      const underscoreKey = canonicalKey.replace(/-/g, '_')
+      const candidateKeys = Array.from(
+        new Set([
+          cleanDocId,
+          canonicalKey,
+          hyphenKey,
+          underscoreKey,
+          `${cleanDocId}.html`,
+          `${canonicalKey}.html`,
+          `${hyphenKey}.html`,
+          `${underscoreKey}.html`
+        ])
+      )
+      const placeholders = candidateKeys.map(() => '?').join(', ')
       const dbSnap = await queryExecutor(
         `SELECT veri_json FROM DATA_DosyaSablonVeri 
          WHERE temin_dosya_id = ? AND (
-           sablon_kodu = ? 
-           OR sablon_kodu = ? 
-           OR sablon_id = (SELECT id FROM TANIM_Sablon WHERE dosya_adi = ? OR dosya_adi = ? LIMIT 1)
+           sablon_kodu IN (${placeholders})
+           OR sablon_id IN (SELECT id FROM TANIM_Sablon WHERE dosya_adi IN (${placeholders}))
          )
-         ORDER BY id DESC LIMIT 1`,
-        [
-          activeDosyaId,
-          resolvedId,
-          `${resolvedId}.html`,
-          `${resolvedId}.html`,
-          `${resolvedId}.html`
-        ]
+         ORDER BY updated_at DESC, id DESC LIMIT 1`,
+        [activeDosyaId, ...candidateKeys, ...candidateKeys]
       )
       if (dbSnap && dbSnap.length > 0 && dbSnap[0]?.veri_json) {
         snapshotData = JSON.parse(dbSnap[0].veri_json)

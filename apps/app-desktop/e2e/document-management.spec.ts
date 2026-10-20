@@ -365,6 +365,14 @@ test.describe('E2E: Dosya Bazlı Belge Yönetimi, İzolasyon ve PDF Akışı', (
       .locator('[data-editable-field="true"][data-field-name="isinAciklamasi"]')
       .first()
     await expect(reopenedField).toBeVisible({ timeout: 15000 })
+    await expect(reopenedField).toContainText(
+      'Birinci paragraf: Doğrudan belge üzerinde Word benzeri düzenleme yapıldı.',
+      { timeout: 15000 }
+    )
+    await expect(reopenedField).toContainText(
+      'İkinci paragraf: Enter ile yeni satır oluşturuldu.',
+      { timeout: 15000 }
+    )
     const reopenedText = await reopenedField.innerText()
     expect(reopenedText).toContain(
       'Birinci paragraf: Doğrudan belge üzerinde Word benzeri düzenleme yapıldı.'

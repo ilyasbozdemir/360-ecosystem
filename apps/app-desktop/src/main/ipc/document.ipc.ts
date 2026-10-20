@@ -1,4 +1,5 @@
 import { ipcMain } from 'electron'
+import { resolveTemplateKey } from '@temin360/document-templates'
 import { workspaceManager } from '../database/workspace'
 import {
   exportDocxHandler,
@@ -188,14 +189,30 @@ export function registerDocumentIpcHandlers(): void {
         const cleanKey = String(payload.templateKey)
           .replace(/\.html$/i, '')
           .trim()
+        const canonicalKey = resolveTemplateKey(cleanKey) || cleanKey
+        const hyphenKey = canonicalKey.replace(/_/g, '-')
+        const underscoreKey = canonicalKey.replace(/-/g, '_')
+        const candidateKeys = Array.from(
+          new Set([
+            cleanKey,
+            canonicalKey,
+            hyphenKey,
+            underscoreKey,
+            `${cleanKey}.html`,
+            `${canonicalKey}.html`,
+            `${hyphenKey}.html`,
+            `${underscoreKey}.html`
+          ])
+        )
+        const placeholders = candidateKeys.map(() => '?').join(', ')
         const row = db
           .prepare(
             `SELECT id, temin_dosya_id, dosya_id, sablon_kodu, veri_json, sablon_versiyon, created_at, updated_at 
              FROM DATA_DosyaSablonVeri 
-             WHERE temin_dosya_id = ? AND (sablon_kodu = ? OR sablon_kodu = ?) 
+             WHERE temin_dosya_id = ? AND sablon_kodu IN (${placeholders}) 
              ORDER BY updated_at DESC, id DESC LIMIT 1`
           )
-          .get(payload.dosyaId, cleanKey, `${cleanKey}.html`) as
+          .get(payload.dosyaId, ...candidateKeys) as
           | {
               id: number
               temin_dosya_id: number
@@ -263,16 +280,35 @@ export function registerDocumentIpcHandlers(): void {
         const cleanKey = String(payload.templateKey)
           .replace(/\.html$/i, '')
           .trim()
+        const canonicalKey = resolveTemplateKey(cleanKey) || cleanKey
+        const hyphenKey = canonicalKey.replace(/_/g, '-')
+        const underscoreKey = canonicalKey.replace(/-/g, '_')
+        const candidateKeys = Array.from(
+          new Set([
+            cleanKey,
+            canonicalKey,
+            hyphenKey,
+            underscoreKey,
+            `${cleanKey}.html`,
+            `${canonicalKey}.html`,
+            `${hyphenKey}.html`,
+            `${underscoreKey}.html`
+          ])
+        )
         const jsonStr =
           typeof payload.data === 'string' ? payload.data : JSON.stringify(payload.data || {})
         const versiyon = payload.sablonVersiyon || 1
 
         const saveTx = db.transaction(() => {
+          const sablonPlaceholders = candidateKeys.map(() => '?').join(', ')
           const sablonRow = db
-            .prepare(`SELECT id FROM TANIM_Sablon WHERE dosya_adi = ? OR dosya_adi = ? LIMIT 1`)
-            .get(`${cleanKey}.html`, cleanKey) as { id?: number } | undefined
+            .prepare(
+              `SELECT id FROM TANIM_Sablon WHERE dosya_adi IN (${sablonPlaceholders}) LIMIT 1`
+            )
+            .get(...candidateKeys) as { id?: number } | undefined
           const sablonId = sablonRow?.id || null
 
+          // Canonical key ile kaydet
           db.prepare(
             `INSERT INTO DATA_DosyaSablonVeri (temin_dosya_id, dosya_id, sablon_id, sablon_kodu, veri_json, sablon_versiyon, updated_at)
              VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
@@ -283,13 +319,23 @@ export function registerDocumentIpcHandlers(): void {
                dosya_id = excluded.dosya_id,
                sablon_versiyon = excluded.sablon_versiyon,
                updated_at = CURRENT_TIMESTAMP`
-          ).run(payload.dosyaId, payload.dosyaId, sablonId, cleanKey, jsonStr, versiyon)
+          ).run(payload.dosyaId, payload.dosyaId, sablonId, canonicalKey, jsonStr, versiyon)
+
+          // Varsa eski alternatif anahtarlı yinelenen kayıtları temizle
+          const otherKeys = candidateKeys.filter((k) => k !== canonicalKey)
+          if (otherKeys.length > 0) {
+            const otherPlaceholders = otherKeys.map(() => '?').join(', ')
+            db.prepare(
+              `DELETE FROM DATA_DosyaSablonVeri 
+               WHERE temin_dosya_id = ? AND sablon_kodu IN (${otherPlaceholders})`
+            ).run(payload.dosyaId, ...otherKeys)
+          }
 
           const savedRow = db
             .prepare(
               `SELECT id, updated_at FROM DATA_DosyaSablonVeri WHERE temin_dosya_id = ? AND sablon_kodu = ?`
             )
-            .get(payload.dosyaId, cleanKey) as { id: number; updated_at: string } | undefined
+            .get(payload.dosyaId, canonicalKey) as { id: number; updated_at: string } | undefined
 
           return savedRow
         })

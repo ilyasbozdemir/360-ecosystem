@@ -87,10 +87,17 @@ export function useDocumentPreviewData({
   } = resolveTemplateConfig(selectedDocId)
 
   const initialPreloaded = documentPreloadService.getCachedDocument(resolvedId, activeDosyaId)
+  const hasInitialPreloadData = Boolean(
+    (initialPreloaded?.resolvedData && Object.keys(initialPreloaded.resolvedData).length > 0) ||
+      initialPreloaded?.payloadData?.savedSnapshot
+  )
 
   const [formData, setFormData] = useState<Partial<IhtiyacListesiType>>(() => {
-    if (initialPreloaded?.resolvedData) {
+    if (initialPreloaded?.resolvedData && Object.keys(initialPreloaded.resolvedData).length > 0) {
       return initialPreloaded.resolvedData
+    }
+    if (initialPreloaded?.payloadData?.savedSnapshot) {
+      return initialPreloaded.payloadData.savedSnapshot
     }
     if (propInvitedFirms && propInvitedFirms.length > 0) {
       return {
@@ -131,7 +138,7 @@ export function useDocumentPreviewData({
   const [dosyaRecord, setDosyaRecord] = useState<any>(
     () => initialPreloaded?.payloadData?.dosya || null
   )
-  const [isLoading, setIsLoading] = useState(!initialPreloaded)
+  const [isLoading, setIsLoading] = useState(!hasInitialPreloadData)
   const [orientation, setOrientation] = useState<'portrait' | 'landscape'>('portrait')
   const [isEditingMode, setIsEditingMode] = useState(true)
   const [isPrinting, setIsPrinting] = useState(false)
@@ -146,14 +153,19 @@ export function useDocumentPreviewData({
 
   const previewContainerRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const initialDataForSnapshot =
+    initialPreloaded?.resolvedData && Object.keys(initialPreloaded.resolvedData).length > 0
+      ? initialPreloaded.resolvedData
+      : initialPreloaded?.payloadData?.savedSnapshot || null
+
   const initialSnapshotRef = useRef<string>(
-    initialPreloaded?.resolvedData
+    initialDataForSnapshot
       ? JSON.stringify({
-          ...initialPreloaded.resolvedData,
+          ...initialDataForSnapshot,
           showLogoLeft,
           showLogoRight,
-          olurYazisi: initialPreloaded.resolvedData.olurYazisi !== false,
-          kurumIci: Boolean(initialPreloaded.resolvedData.kurumIci),
+          olurYazisi: initialDataForSnapshot.olurYazisi !== false,
+          kurumIci: Boolean(initialDataForSnapshot.kurumIci),
           orientation: 'portrait'
         })
       : ''
@@ -195,8 +207,12 @@ export function useDocumentPreviewData({
       resolvedSource.kind === 'dosya'
         ? documentPreloadService.getCachedDocument(resolvedId, activeDosyaId)
         : null
+    const hasCachedData = Boolean(
+      (preloaded?.resolvedData && Object.keys(preloaded.resolvedData).length > 0) ||
+        preloaded?.payloadData?.savedSnapshot
+    )
 
-    if (!preloaded) {
+    if (!hasCachedData) {
       setIsLoading(true)
     }
 

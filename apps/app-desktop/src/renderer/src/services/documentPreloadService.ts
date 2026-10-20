@@ -132,10 +132,14 @@ class DocumentPreloadService {
           }
         }
 
-        if (!payloadData || Object.keys(payloadData).length === 0) {
+        if (payloadData?.savedSnapshot && typeof payloadData.savedSnapshot === 'object') {
+          resolvedData = { ...payloadData.savedSnapshot }
+        } else if (!payloadData || Object.keys(payloadData).length === 0) {
           const mapping = getDefaultMappingForProcess(resolvedId)
           const resolver = new TemplateResolver(queryExecutor)
           resolvedData = await resolver.resolve(mapping, dosyaId || 0)
+        } else if (payloadData?.resolvedContext) {
+          resolvedData = { ...payloadData.resolvedContext }
         }
 
         const entry: PreloadedDocumentData = {

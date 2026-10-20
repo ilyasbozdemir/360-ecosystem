@@ -1,4 +1,8 @@
-import { isMemberVisibleInDocument, resolveCommissionCategory } from '@temin360/document-templates'
+import {
+  isMemberVisibleInDocument,
+  resolveCommissionCategory,
+  resolveTemplateKey
+} from '@temin360/document-templates'
 import { formatTurkishDate, getIpcKurumBizimText, getIpcKurumIhtiyacYeri } from './documentUtils'
 
 export function resolveDocumentPayload(
@@ -140,20 +144,35 @@ export function resolveDocumentPayload(
       const cleanDocId = String(documentId)
         .replace(/\.html$/i, '')
         .trim()
+      const canonicalKey = resolveTemplateKey(cleanDocId) || cleanDocId
+      const hyphenKey = canonicalKey.replace(/_/g, '-')
+      const underscoreKey = canonicalKey.replace(/-/g, '_')
+      const candidateKeys = Array.from(
+        new Set([
+          cleanDocId,
+          canonicalKey,
+          hyphenKey,
+          underscoreKey,
+          `${cleanDocId}.html`,
+          `${canonicalKey}.html`,
+          `${hyphenKey}.html`,
+          `${underscoreKey}.html`
+        ])
+      )
       try {
+        const placeholders = candidateKeys.map(() => '?').join(', ')
         const snapRow = db
           .prepare(
             `
         SELECT veri_json FROM DATA_DosyaSablonVeri 
         WHERE temin_dosya_id = ? AND (
-          sablon_kodu = ? 
-          OR sablon_kodu = ?
-          OR sablon_id = (SELECT id FROM TANIM_Sablon WHERE dosya_adi = ? OR dosya_adi = ? LIMIT 1)
+          sablon_kodu IN (${placeholders})
+          OR sablon_id IN (SELECT id FROM TANIM_Sablon WHERE dosya_adi IN (${placeholders}))
         )
-        ORDER BY id DESC LIMIT 1
+        ORDER BY updated_at DESC, id DESC LIMIT 1
       `
           )
-          .get(dosyaId, cleanDocId, `${cleanDocId}.html`, `${cleanDocId}.html`, cleanDocId) as any
+          .get(dosyaId, ...candidateKeys, ...candidateKeys) as any
         if (snapRow?.veri_json) {
           savedSnapshot = JSON.parse(snapRow.veri_json)
         }

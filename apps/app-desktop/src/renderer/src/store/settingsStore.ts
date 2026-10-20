@@ -185,12 +185,27 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         settings.ai_anthropic_api_key?.trim()
       )
 
+      const cleanLogoUrl = (val: string | null | undefined): string | null => {
+        if (!val) return null
+        const trimmed = String(val).trim()
+        if (
+          trimmed === '' ||
+          trimmed === '""' ||
+          trimmed === "''" ||
+          trimmed === 'null' ||
+          trimmed === 'undefined'
+        ) {
+          return null
+        }
+        return trimmed
+      }
+
       set({
         activeKurumId: parseInt(settings.activeKurumId || '1', 10) || 1,
         institutionName: settings.institutionName || 'Kurum Adı Bulunamadı',
-        institutionLogo: settings.institutionLogo || null,
-        logoLeft: settings.logoLeft || null,
-        logoRight: settings.logoRight || null,
+        institutionLogo: cleanLogoUrl(settings.institutionLogo),
+        logoLeft: cleanLogoUrl(settings.logoLeft),
+        logoRight: cleanLogoUrl(settings.logoRight),
         showLogoLeft: settings.showLogoLeft !== 'false',
         showLogoRight: settings.showLogoRight !== 'false',
         adminName: settings.adminName || 'Sistem Yöneticisi',
