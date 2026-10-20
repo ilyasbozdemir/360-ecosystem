@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link, useRouterState } from '@tanstack/react-router'
 import {
   Briefcase,
@@ -20,6 +20,54 @@ import { useSettingsStore } from '../../store/settingsStore'
 import { useWorkspaceStore } from '../../store/workspaceStore'
 import { getInitials } from '@renderer/utils/formatters'
 
+/**
+ * Tooltip `fixed` konumlandırılır: menü alanı kaydırılabilir (overflow) olduğu için
+ * `absolute` bir tooltip yatayda kesilirdi.
+ */
+function useRailTooltip(): {
+  tip: { top: number; left: number } | null
+  handlers: {
+    onMouseEnter: (e: React.MouseEvent<HTMLElement>) => void
+    onMouseLeave: () => void
+    onFocus: (e: React.FocusEvent<HTMLElement>) => void
+    onBlur: () => void
+  }
+} {
+  const [tip, setTip] = useState<{ top: number; left: number } | null>(null)
+  const show = (el: HTMLElement): void => {
+    const r = el.getBoundingClientRect()
+    setTip({ top: r.top + r.height / 2, left: r.right + 12 })
+  }
+  return {
+    tip,
+    handlers: {
+      onMouseEnter: (e) => show(e.currentTarget),
+      onMouseLeave: () => setTip(null),
+      onFocus: (e) => show(e.currentTarget),
+      onBlur: () => setTip(null)
+    }
+  }
+}
+
+function RailTooltip({
+  tip,
+  children
+}: {
+  tip: { top: number; left: number } | null
+  children: React.ReactNode
+}): React.JSX.Element | null {
+  if (!tip) return null
+  return (
+    <div
+      role="tooltip"
+      style={{ top: tip.top, left: tip.left, transform: 'translateY(-50%)' }}
+      className="fixed z-300 max-w-[min(20rem,calc(100vw-6rem))] flex items-center gap-1.5 bg-slate-900 text-white text-xs rounded-lg py-1.5 px-3 shadow-xl pointer-events-none wrap-break-word"
+    >
+      {children}
+    </div>
+  )
+}
+
 interface ShortcutItem {
   name: string
   path: string
@@ -28,11 +76,52 @@ interface ShortcutItem {
   badge?: string
 }
 
+function ShortcutLink({
+  item,
+  isActive
+}: {
+  item: ShortcutItem
+  isActive: boolean
+}): React.JSX.Element {
+  const Icon = item.icon
+  const { tip, handlers } = useRailTooltip()
+  return (
+    <Link
+      to={item.path as never}
+      aria-label={item.name}
+      data-testid="rail-shortcut"
+      {...handlers}
+      className={cn(
+        // Kısa ekranlarda (<= 720px yükseklik) düğmeler küçülür
+        'w-10 h-10 short:w-8 short:h-8 shrink-0 rounded-xl flex items-center justify-center transition-all duration-200 border cursor-pointer relative',
+        isActive
+          ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/25 scale-105'
+          : 'bg-transparent border-transparent text-slate-500 hover:scale-105',
+        !isActive && item.color
+      )}
+    >
+      <Icon className="w-5 h-5 short:w-4 short:h-4" />
+      {item.badge && (
+        <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-cyan-500 ring-2 ring-white dark:ring-slate-900" />
+      )}
+      <RailTooltip tip={tip}>
+        <span>{item.name}</span>
+        {item.badge && (
+          <span className="px-1.5 py-0.2 text-[9px] font-black uppercase rounded bg-cyan-500/30 text-cyan-300">
+            {item.badge}
+          </span>
+        )}
+      </RailTooltip>
+    </Link>
+  )
+}
+
 export function ActiveFileShortcuts(): React.JSX.Element {
   const router = useRouterState()
   const currentPath = router.location.pathname
-  const { adminUsername, adminName, institutionLogo } = useSettingsStore()
+  const { adminUsername, adminName, institutionName, institutionLogo } = useSettingsStore()
   const { activeDosyaId } = useWorkspaceStore()
+  const { tip: profileTip, handlers: profileHandlers } = useRailTooltip()
 
   const primaryItems: ShortcutItem[] = [
     {
@@ -121,62 +210,44 @@ export function ActiveFileShortcuts(): React.JSX.Element {
     }
   ]
 
-  const renderLink = (item: ShortcutItem): React.JSX.Element => {
-    const itemPathClean = item.path.split('?')[0]
-    const isActive = currentPath === itemPathClean
-    const Icon = item.icon
-
-    return (
-      <Link
-        key={item.path}
-        to={item.path as never}
-        className={cn(
-          'w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 border cursor-pointer relative group',
-          isActive
-            ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/25 scale-105'
-            : 'bg-transparent border-transparent text-slate-500 hover:scale-105',
-          !isActive && item.color
-        )}
-      >
-        <Icon className="w-5 h-5" />
-
-        {item.badge && (
-          <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-cyan-500 ring-2 ring-white dark:ring-slate-900" />
-        )}
-
-        {/* Tooltip */}
-        <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 hidden group-hover:flex items-center gap-1.5 z-50 bg-slate-900 text-white text-xs rounded-lg py-1.5 px-3 shadow-xl whitespace-nowrap">
-          <span>{item.name}</span>
-          {item.badge && (
-            <span className="px-1.5 py-0.2 text-[9px] font-black uppercase rounded bg-cyan-500/30 text-cyan-300">
-              {item.badge}
-            </span>
-          )}
-        </div>
-      </Link>
-    )
-  }
+  const renderLink = (item: ShortcutItem): React.JSX.Element => (
+    <ShortcutLink key={item.path} item={item} isActive={currentPath === item.path.split('?')[0]} />
+  )
 
   const userInitials = getInitials(adminName || '')
+  const profileLabel = `Kullanıcı: ${adminUsername} (Profil)${institutionName ? ` — ${institutionName}` : ''}`
 
   return (
-    <div className="h-full w-16 bg-white dark:bg-slate-900 border-r border-slate-250 dark:border-slate-800/80 flex flex-col justify-between py-4 shrink-0 z-30 select-none">
-      {/* Top Section: Primary Navigation */}
-      <div className="w-full flex flex-col items-center gap-2.5 px-2">
+    <nav
+      aria-label="Hızlı erişim"
+      data-testid="active-file-rail"
+      className="h-full min-h-0 w-16 bg-white dark:bg-slate-900 border-r border-slate-250 dark:border-slate-800/80 flex flex-col py-4 short:py-2 shrink-0 z-30 select-none"
+    >
+      {/* Üst: Ana gezinme — sığmazsa yalnızca bu bölüm kayar */}
+      <div
+        data-testid="rail-scroll"
+        className="flex-1 min-h-0 w-full flex flex-col items-center gap-2.5 short:gap-1.5 px-2 overflow-y-auto overflow-x-hidden custom-scrollbar"
+      >
         {primaryItems.map(renderLink)}
       </div>
 
-      {/* Bottom Section: Secondary Nav & Profile Avatar */}
-      <div className="w-full flex flex-col items-center gap-2.5 px-2">
-        <div className="w-8 h-px bg-slate-200 dark:bg-slate-800 my-1" />
+      {/* Alt: ikincil gezinme ve profil — her zaman görünür */}
+      <div
+        data-testid="rail-footer"
+        className="w-full shrink-0 flex flex-col items-center gap-2.5 short:gap-1.5 px-2 pt-2"
+      >
+        <div className="w-8 h-px bg-slate-200 dark:bg-slate-800 my-1 short:my-0" />
         {secondaryItems.map(renderLink)}
 
-        {/* User Profile Avatar (PP) */}
+        {/* Kullanıcı Profili (PP) */}
         {adminUsername && (
           <Link
             to="/profil"
+            aria-label={profileLabel}
+            data-testid="rail-profile"
+            {...profileHandlers}
             className={cn(
-              'w-10 h-10 rounded-full flex items-center justify-center font-extrabold text-[11px] transition-all duration-200 border cursor-pointer relative group mt-1.5 overflow-hidden bg-white dark:bg-slate-900',
+              'w-10 h-10 short:w-8 short:h-8 shrink-0 rounded-full flex items-center justify-center font-extrabold text-[11px] transition-all duration-200 border cursor-pointer relative mt-1.5 short:mt-0 overflow-hidden bg-white dark:bg-slate-900',
               currentPath === '/profil'
                 ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/25 scale-105'
                 : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-350 hover:scale-105'
@@ -185,20 +256,16 @@ export function ActiveFileShortcuts(): React.JSX.Element {
             {institutionLogo ? (
               <img
                 src={institutionLogo}
-                alt="Profile Logo"
+                alt="Kurum logosu"
                 className="w-full h-full object-contain p-0.5"
               />
             ) : (
               userInitials
             )}
-
-            {/* Tooltip */}
-            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 hidden group-hover:block z-50 bg-slate-900 text-white text-xs rounded-lg py-1.5 px-3 shadow-xl whitespace-nowrap">
-              Kullanıcı: {adminUsername} (Profil)
-            </div>
           </Link>
         )}
+        <RailTooltip tip={profileTip}>{profileLabel}</RailTooltip>
       </div>
-    </div>
+    </nav>
   )
 }

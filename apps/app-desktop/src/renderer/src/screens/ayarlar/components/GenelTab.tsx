@@ -1,5 +1,5 @@
 import React from 'react'
-import { Archive, Clock, ShieldCheck } from 'lucide-react'
+import { Archive, Clock, ShieldCheck, Laptop, User } from 'lucide-react'
 
 interface GenelTabProps {
   disableDocumentGuidance: boolean
@@ -8,6 +8,16 @@ interface GenelTabProps {
   setUnifiedStepperMode: (val: boolean) => void
   trashRetentionDays?: number
   setTrashRetentionDays?: (val: number) => void
+  useDesktopUserAsDefault?: boolean
+  setUseDesktopUserAsDefault?: (val: boolean) => void
+  pcInfo?: {
+    hostname?: string
+    osUsername?: string
+    platform?: string
+    osType?: string
+    userDomain?: string
+    suggestedDisplayName?: string
+  } | null
 }
 
 export const GenelTab: React.FC<GenelTabProps> = ({
@@ -16,7 +26,10 @@ export const GenelTab: React.FC<GenelTabProps> = ({
   unifiedStepperMode,
   setUnifiedStepperMode,
   trashRetentionDays = 30,
-  setTrashRetentionDays
+  setTrashRetentionDays,
+  useDesktopUserAsDefault,
+  setUseDesktopUserAsDefault,
+  pcInfo
 }) => {
   return (
     <div className="space-y-6">
@@ -26,13 +39,74 @@ export const GenelTab: React.FC<GenelTabProps> = ({
             Genel Sistem Ayarları
           </h2>
           <p className="text-xs text-slate-500">
-            Uygulamanın genel davranışını, çöp kutusu saklama politikasını ve belge akış
+            Uygulamanın genel davranışını, masaüstü kullanıcı tercihini, çöp kutusu saklama politikasını ve belge akış
             yönlendirmelerini düzenleyin.
           </p>
         </div>
       </div>
 
       <div className="space-y-6">
+        {/* Masaüstü ve Cihaz Kullanıcı Entegrasyonu */}
+        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4 shadow-xs">
+          <div className="flex items-start justify-between gap-3">
+            <div className="space-y-1">
+              <label className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                <Laptop className="w-4 h-4 text-blue-500" />
+                Masaüstü & Cihaz Kullanıcı Entegrasyonu
+              </label>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-2xl">
+                Uygulama açılışında ve kilit ekranında, bu bilgisayarın işletim sistemi kullanıcı adının
+                otomatik olarak algılanıp varsayılan olarak önerilmesini belirleyin.
+              </p>
+            </div>
+            {pcInfo?.osUsername && (
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 shrink-0">
+                <User className="w-3.5 h-3.5" />
+                {pcInfo.osUsername}
+              </div>
+            )}
+          </div>
+
+          {pcInfo?.hostname && (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-slate-50 dark:bg-slate-950/50 rounded-xl border border-slate-100 dark:border-slate-800 text-xs">
+              <div>
+                <span className="text-slate-400 text-[10px] block">Cihaz Adı (Hostname):</span>
+                <span className="font-semibold text-slate-700 dark:text-slate-300 font-mono">
+                  {pcInfo.hostname}
+                </span>
+              </div>
+              <div>
+                <span className="text-slate-400 text-[10px] block">İşletim Sistemi Kullanıcısı:</span>
+                <span className="font-semibold text-slate-700 dark:text-slate-300 font-mono">
+                  {pcInfo.osUsername || 'Bilinmiyor'}
+                </span>
+              </div>
+              <div>
+                <span className="text-slate-400 text-[10px] block">Platform / Sistem:</span>
+                <span className="font-semibold text-slate-700 dark:text-slate-300 font-mono">
+                  {pcInfo.platform} ({pcInfo.osType || 'Yerel'})
+                </span>
+              </div>
+            </div>
+          )}
+
+          <label className="flex items-center gap-3 p-3.5 bg-slate-50/70 dark:bg-slate-950/40 border border-slate-200/70 dark:border-slate-800/70 rounded-xl cursor-pointer hover:bg-slate-100/60 dark:hover:bg-slate-800/30 transition-all">
+            <input
+              type="checkbox"
+              checked={Boolean(useDesktopUserAsDefault)}
+              onChange={(e) => setUseDesktopUserAsDefault?.(e.target.checked)}
+              className="rounded border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
+            />
+            <div>
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
+                Giriş ve Kilit Ekranında Masaüstü Kullanıcısını Varsayılan Yap
+              </span>
+              <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5">
+                Etkinleştirildiğinde, uygulama çalışma dosyası açılışında kullanıcı adı otomatik olarak bu bilgisayarın oturumuyla doldurulur.
+              </span>
+            </div>
+          </label>
+        </div>
         {/* Çöp Kutusu ve Soft Delete Saklama Süresi */}
         <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4 shadow-xs">
           <div className="flex items-start justify-between gap-3">

@@ -38,7 +38,17 @@ export default function LockScreen(): React.JSX.Element {
   const [info, setInfo] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [pcInfo, setPcInfo] = useState<{ hostname?: string; osUsername?: string } | undefined>()
+  const [pcInfo, setPcInfo] = useState<
+    | {
+        hostname?: string
+        osUsername?: string
+        platform?: string
+        osType?: string
+        userDomain?: string
+        suggestedDisplayName?: string
+      }
+    | undefined
+  >()
   const [showPassword, setShowPassword] = useState(false)
 
   // Check if credentials are set up on mount and load settings & remembered credentials & pcInfo
@@ -46,12 +56,39 @@ export default function LockScreen(): React.JSX.Element {
     const checkAuthSetup = async (): Promise<void> => {
       try {
         const res = await window.electron.ipcRenderer.invoke('db:check-auth-setup')
-        if (res && !res.hasCredentials) {
+        const isFresh = res && !res.hasCredentials
+        if (isFresh) {
           setIsSetupMode(true)
         }
         const info = await window.electron.ipcRenderer.invoke('system:get-pc-info')
         if (info) {
           setPcInfo(info)
+        }
+
+        const settings = await window.electron.ipcRenderer.invoke('db:get-settings').catch(() => ({}))
+        const preferDesktop = settings?.useDesktopUserAsDefault === 'true'
+
+        if (fileName) {
+          const isRemembered = localStorage.getItem(`rememberMe_${fileName}`) === 'true'
+          setRememberMe(isRemembered)
+          if (isRemembered) {
+            const savedUser =
+              localStorage.getItem(`rememberedUser_${fileName}`) ||
+              localStorage.getItem('active_username') ||
+              (preferDesktop && info?.osUsername ? info.osUsername : 'admin')
+            const savedPass = localStorage.getItem(`rememberedPass_${fileName}`) || ''
+            setUsername(savedUser)
+            setPassword(savedPass)
+          } else {
+            const defaultUser =
+              (preferDesktop && info?.osUsername) ||
+              localStorage.getItem('active_username') ||
+              (isFresh && info?.osUsername ? info.osUsername : 'admin')
+            setUsername(defaultUser)
+            setPassword('')
+          }
+        } else if (info?.osUsername && (isFresh || preferDesktop)) {
+          setUsername(info.osUsername)
         }
       } catch (err) {
         console.error('Check setup error:', err)
@@ -59,24 +96,6 @@ export default function LockScreen(): React.JSX.Element {
     }
     checkAuthSetup()
     loadSettings() // Load institutional settings pre-login to show name and logo
-
-    if (fileName) {
-      const isRemembered = localStorage.getItem(`rememberMe_${fileName}`) === 'true'
-      setRememberMe(isRemembered)
-      if (isRemembered) {
-        const savedUser =
-          localStorage.getItem(`rememberedUser_${fileName}`) ||
-          localStorage.getItem('active_username') ||
-          'admin'
-        const savedPass = localStorage.getItem(`rememberedPass_${fileName}`) || ''
-        setUsername(savedUser)
-        setPassword(savedPass)
-      } else {
-        const activeUser = localStorage.getItem('active_username') || 'admin'
-        setUsername(activeUser)
-        setPassword('')
-      }
-    }
   }, [loadSettings, fileName])
 
   const handleAuthSuccess = async (userToSave: string, passToSave: string): Promise<void> => {

@@ -32,6 +32,15 @@ export default function ProfilScreen(): React.JSX.Element {
   const [ekapUsername, setEkapUsername] = useState('')
   const [ekapPassword, setEkapPassword] = useState('')
   const [institutionLogo, setInstitutionLogo] = useState<string | null>(null)
+  const [useDesktopUserAsDefault, setUseDesktopUserAsDefault] = useState(false)
+  const [pcInfo, setPcInfo] = useState<{
+    hostname?: string
+    osUsername?: string
+    platform?: string
+    osType?: string
+    userDomain?: string
+    suggestedDisplayName?: string
+  } | null>(null)
 
   // Password History States
   const [passwordHistory, setPasswordHistory] = useState<PasswordHistoryItem[]>([])
@@ -66,6 +75,13 @@ export default function ProfilScreen(): React.JSX.Element {
         setEkapUsername(settings.ekapUsername || '')
         setEkapPassword(settings.ekapPassword || '')
         setInstitutionLogo(settings.institutionLogo || null)
+        setUseDesktopUserAsDefault(settings.useDesktopUserAsDefault === 'true')
+
+        const info = await window.electron.ipcRenderer
+          .invoke('system:get-pc-info')
+          .catch(() => null)
+        if (info) setPcInfo(info)
+
         await fetchKurum()
         await fetchPasswordHistory()
       } catch (error) {
@@ -91,7 +107,8 @@ export default function ProfilScreen(): React.JSX.Element {
         adminUsername,
         adminPassword,
         ekapUsername,
-        ekapPassword
+        ekapPassword,
+        useDesktopUserAsDefault: String(useDesktopUserAsDefault)
       }
       await window.electron.ipcRenderer.invoke('db:save-settings', dataToSave)
       await reloadSettingsStore()
@@ -229,6 +246,9 @@ export default function ProfilScreen(): React.JSX.Element {
         institutionLogo={institutionLogo}
         saving={saving}
         onSaveCredentials={handleSaveCredentials}
+        pcInfo={pcInfo}
+        useDesktopUserAsDefault={useDesktopUserAsDefault}
+        setUseDesktopUserAsDefault={setUseDesktopUserAsDefault}
       />
 
       {/* 3. BÖLÜM: DENETİM VE GÜVENLİK İZLEME */}

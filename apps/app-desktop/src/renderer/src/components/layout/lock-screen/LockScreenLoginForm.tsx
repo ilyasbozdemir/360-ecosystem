@@ -15,7 +15,14 @@ interface LockScreenLoginFormProps {
   onSubmit: (e: React.FormEvent) => void
   onForgotPassword: () => void
   recentUsers?: string[]
-  pcInfo?: { hostname?: string; osUsername?: string }
+  pcInfo?: {
+    hostname?: string
+    osUsername?: string
+    platform?: string
+    osType?: string
+    userDomain?: string
+    suggestedDisplayName?: string
+  }
 }
 
 export function LockScreenLoginForm({
@@ -37,19 +44,45 @@ export function LockScreenLoginForm({
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       {pcInfo?.hostname && (
-        <div className="flex items-center justify-between px-3 py-1.5 bg-slate-100/80 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800/60 rounded-lg text-[11px] text-slate-600 dark:text-slate-400">
-          <span className="flex items-center gap-1.5 truncate">
-            💻 <strong>{pcInfo.hostname}</strong> ({pcInfo.osUsername || 'Cihaz Profili'})
-          </span>
-          <span className="text-[10px] text-blue-600 dark:text-blue-400 font-medium shrink-0 ml-1">
-            Cihaza Özel Şifre Korumalı
-          </span>
+        <div className="flex flex-col gap-1.5 p-2.5 bg-slate-100/80 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800/60 rounded-xl text-[11px] text-slate-600 dark:text-slate-400">
+          <div className="flex items-center justify-between">
+            <span className="flex items-center gap-1.5 truncate">
+              💻 <strong>{pcInfo.hostname}</strong> ({pcInfo.osUsername || 'Cihaz Profili'})
+            </span>
+            <span className="text-[10px] text-blue-600 dark:text-blue-400 font-medium shrink-0 ml-1">
+              Cihaza Özel Güvenli Giriş
+            </span>
+          </div>
+          {pcInfo.osUsername && username !== pcInfo.osUsername && (
+            <div className="flex items-center justify-between pt-1 border-t border-slate-200/50 dark:border-slate-800/50 text-[10px]">
+              <span className="text-slate-500">Masaüstü Kullanıcısı: <strong>{pcInfo.osUsername}</strong></span>
+              <button
+                type="button"
+                onClick={() => setUsername(pcInfo.osUsername!)}
+                className="text-blue-600 dark:text-blue-400 font-semibold hover:underline cursor-pointer"
+              >
+                Giriş Adı Olarak Doldur
+              </button>
+            </div>
+          )}
         </div>
       )}
       <div>
-        <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 ml-1">
-          Kullanıcı Adı
-        </label>
+        <div className="flex items-center justify-between mb-1.5 ml-1">
+          <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400">
+            Kullanıcı Adı
+          </label>
+          {pcInfo?.osUsername && (
+            <button
+              type="button"
+              onClick={() => setUsername(pcInfo.osUsername!)}
+              className="text-[10px] text-blue-600 dark:text-blue-400 hover:underline cursor-pointer flex items-center gap-1"
+              title="Bu bilgisayarın masaüstü kullanıcı adını kullan"
+            >
+              💻 Masaüstü: {pcInfo.osUsername}
+            </button>
+          )}
+        </div>
         <div className="relative">
           <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-550" />
           <input

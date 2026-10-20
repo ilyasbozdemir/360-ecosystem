@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Shield, History, KeyRound, Eye, EyeOff, Lock, Save } from 'lucide-react'
+import { Shield, History, KeyRound, Eye, EyeOff, Lock, Save, Laptop, User } from 'lucide-react'
 import { Button } from '../../../components/ui/Button'
 import { Input } from '../../../components/ui/Input'
 import { getInitials } from '@renderer/utils/formatters'
@@ -20,6 +20,16 @@ interface AdminCredentialsCardProps {
   institutionLogo: string | null
   saving: boolean
   onSaveCredentials: () => Promise<void>
+  pcInfo?: {
+    hostname?: string
+    osUsername?: string
+    platform?: string
+    osType?: string
+    userDomain?: string
+    suggestedDisplayName?: string
+  } | null
+  useDesktopUserAsDefault?: boolean
+  setUseDesktopUserAsDefault?: (val: boolean) => void
 }
 
 export const AdminCredentialsCard: React.FC<AdminCredentialsCardProps> = ({
@@ -37,7 +47,10 @@ export const AdminCredentialsCard: React.FC<AdminCredentialsCardProps> = ({
   setEkapPassword,
   institutionLogo,
   saving,
-  onSaveCredentials
+  onSaveCredentials,
+  pcInfo,
+  useDesktopUserAsDefault,
+  setUseDesktopUserAsDefault
 }) => {
   const [showPassword, setShowPassword] = useState(false)
   const [showEkapPassword, setShowEkapPassword] = useState(false)
@@ -78,6 +91,17 @@ export const AdminCredentialsCard: React.FC<AdminCredentialsCardProps> = ({
               <Shield className="w-3.5 h-3.5" /> Süpervizör / Admin
             </span>
           </div>
+          {pcInfo?.osUsername && (
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-500">Masaüstü Kullanıcısı:</span>
+              <span
+                className="font-semibold text-slate-700 dark:text-slate-300 font-mono truncate max-w-35"
+                title={pcInfo.osUsername}
+              >
+                {pcInfo.osUsername}
+              </span>
+            </div>
+          )}
           <div className="flex justify-between text-xs">
             <span className="text-slate-500">Denetim Altyapısı:</span>
             <span className="font-semibold text-blue-600 dark:text-blue-400 flex items-center gap-1">
@@ -201,6 +225,68 @@ export const AdminCredentialsCard: React.FC<AdminCredentialsCardProps> = ({
               </div>
             </div>
           </div>
+
+          {/* Masaüstü ve Cihaz Entegrasyonu */}
+          {pcInfo?.hostname && (
+            <div className="pt-4 border-t border-slate-100 dark:border-slate-850 space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                  <Laptop className="w-3.5 h-3.5 text-blue-500" /> Bilgisayar & Masaüstü Kullanıcı Entegrasyonu
+                </h4>
+                <span className="text-[10px] text-slate-400 font-mono">
+                  {pcInfo.hostname} • {pcInfo.platform}
+                </span>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200/60 dark:border-slate-800/60 space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <span className="text-slate-400 text-[11px] block">Cihaz / Hostname:</span>
+                    <span className="font-semibold text-slate-700 dark:text-slate-300 font-mono">
+                      {pcInfo.hostname}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 text-[11px] block">Masaüstü (OS) Kullanıcısı:</span>
+                    <span className="font-semibold text-slate-700 dark:text-slate-300 font-mono">
+                      {pcInfo.osUsername || 'Bilinmiyor'}
+                    </span>
+                  </div>
+                  {pcInfo.suggestedDisplayName && (
+                    <div className="sm:col-span-2">
+                      <span className="text-slate-400 text-[11px] block">Algılanan Ad Soyad:</span>
+                      <span className="font-semibold text-slate-700 dark:text-slate-300">
+                        {pcInfo.suggestedDisplayName}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-200/50 dark:border-slate-800/50">
+                  <label className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-350 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(useDesktopUserAsDefault)}
+                      onChange={(e) => setUseDesktopUserAsDefault?.(e.target.checked)}
+                      className="rounded border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span>Giriş ekranında bu masaüstü kullanıcısını varsayılan yap</span>
+                  </label>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (pcInfo.osUsername) setAdminUsername(pcInfo.osUsername)
+                      if (pcInfo.suggestedDisplayName) setAdminName(pcInfo.suggestedDisplayName)
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/40 border border-blue-200 dark:border-blue-800/60 transition-colors cursor-pointer"
+                  >
+                    <User className="w-3.5 h-3.5" /> Masaüstü Bilgilerini Forma Aktar
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="flex justify-end pt-2">
             <Button

@@ -21,6 +21,25 @@
 
 ---
 
+## 📸 Uygulama Arayüzü ve Ekran Görüntüleri
+
+| Başlatıcı & Dosya Seçimi | Çalışma Alanı & Süreç Yönetimi |
+| :---: | :---: |
+| ![Başlatıcı Ekranı](apps/app-desktop/e2e-screenshots/01-launcher-screen.png) | ![Çalışma Alanı](apps/app-desktop/e2e-screenshots/02-workspace-opened.png) |
+| *Kurum, birim ve `.temin` dosyası seçimi* | *İhale / temin sürecinin uçtan uca yürütüldüğü ana çalışma alanı* |
+
+| Dinamik Form & Süreç Modu | Canlı Word & Belge Önizleme |
+| :---: | :---: |
+| ![Mod Etkileşimi](apps/app-desktop/e2e-screenshots/03-mode-switched-interaction.png) | ![Word Düzenleme Önizleme](apps/app-desktop/e2e-screenshots/11-word-editing-preview.png) |
+| *Alım türüne ve yasal usule göre uyarlanan dinamik veri alanları* | *Mevzuata uygun resmi şablonlar ve canlı Word/PDF önizleme motoru* |
+
+| Dizüstü & Kompakt Ekran (1366×768) | Full HD Geniş Ekran (1920×1080) |
+| :---: | :---: |
+| ![Laptop 1366x768](apps/app-desktop/e2e-screenshots/responsive-1366x768.png) | ![Full HD 1920x1080](apps/app-desktop/e2e-screenshots/responsive-1920x1080.png) |
+| *Dizüstü bilgisayarlarda menü ve kurum alanlarının optimize yerleşimi* | *Geniş ekranlarda maksimum veri görünürlüğü ve konforlu kullanım* |
+
+---
+
 ## 📥 İndir ve Kur
 
 En güncel kararlı masaüstü sürümlerini doğrudan indirebilirsiniz:

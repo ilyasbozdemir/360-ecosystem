@@ -151,12 +151,12 @@ export function PageWrapper(): React.ReactNode {
       />
       <FindInPage />
       <GlobalDocumentPreviewHost />
-      <div className="flex flex-col flex-1 min-w-0">
+      <div className="flex flex-col flex-1 min-w-0 min-h-0 h-full overflow-hidden">
         <Header />
         <TabsBar />
-        <div className="flex flex-1 overflow-hidden relative">
+        <div className="flex flex-1 min-h-0 overflow-hidden relative">
           {activeDosyaId && <ActiveFileShortcuts />}
-          <main className="flex-1 relative overflow-hidden">
+          <main className="flex-1 min-h-0 relative overflow-hidden">
             {tabs.map((tab) => {
               const isActive = tab.path === activeTabPath
               const isExpired = expiredPaths[tab.path]

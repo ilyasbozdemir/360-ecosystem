@@ -1,6 +1,8 @@
 @import 'tailwindcss';
 
 @custom-variant dark (.dark &);
+/* Low-height screens (viewport height <= 720px) */
+@custom-variant short (@media (max-height: 720px));
 
 :root {
   /* Dynamic CSS variable mappings for Light Mode (Crisp Grayscale Default) */

@@ -69,6 +69,8 @@ interface SettingsState {
   aiProvider: string
   defaultKurumIci: boolean
   setDefaultKurumIci: (val: boolean) => Promise<void>
+  useDesktopUserAsDefault: boolean
+  setUseDesktopUserAsDefault: (val: boolean) => Promise<void>
   loadSettings: () => Promise<void>
 }
 
@@ -92,6 +94,19 @@ export const useSettingsStore = create<SettingsState>((set) => ({
       }
     } catch (e) {
       console.error('Failed to save defaultKurumIci setting:', e)
+    }
+  },
+  useDesktopUserAsDefault: false,
+  setUseDesktopUserAsDefault: async (val: boolean) => {
+    set({ useDesktopUserAsDefault: val })
+    try {
+      if (window.electron?.ipcRenderer) {
+        await window.electron.ipcRenderer.invoke('db:save-settings', {
+          useDesktopUserAsDefault: String(val)
+        })
+      }
+    } catch (e) {
+      console.error('Failed to save useDesktopUserAsDefault setting:', e)
     }
   },
   adminName: 'Sistem Yöneticisi',
@@ -208,7 +223,8 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         isAiConfigured,
         aiProvider,
         defaultKurumIci:
-          settings.defaultKurumIci !== undefined ? settings.defaultKurumIci !== 'false' : true
+          settings.defaultKurumIci !== undefined ? settings.defaultKurumIci !== 'false' : true,
+        useDesktopUserAsDefault: settings.useDesktopUserAsDefault === 'true'
         // isDisclaimerAccepted is intentionally not loaded from DB to show it on every app launch
       })
     } catch (error) {

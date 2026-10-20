@@ -57,11 +57,11 @@ function readHistory(db: any): any[] {
     const parsed = JSON.parse(row.value)
     if (!Array.isArray(parsed)) return []
     return parsed.map((h: any) => {
-      const { password, ...rest } = h || {}
-      return {
-        ...rest,
-        passwordHash: rest.passwordHash || (password ? hashPassword(String(password)) : undefined)
-      }
+      // Audit-only: Asla parola veya parola özeti (hash) tutulmaz.
+      const safe = { ...h }
+      delete safe.password
+      delete safe.passwordHash
+      return safe
     })
   } catch {
     return []
@@ -73,7 +73,8 @@ export function scrubPasswordHistory(db: any): void {
     const row = db.prepare("SELECT value FROM settings WHERE key = 'passwordHistory'").get() as
       | { value?: string }
       | undefined
-    if (!row?.value || !row.value.includes('"password"')) return
+    if (!row?.value) return
+    if (!row.value.includes('"password"') && !row.value.includes('"passwordHash"')) return
     db.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('passwordHistory', ?)").run(
       JSON.stringify(readHistory(db))
     )
@@ -82,14 +83,12 @@ export function scrubPasswordHistory(db: any): void {
   }
 }
 
-export function savePasswordToHistory(db: any, user: string, pass: string, hostname: string): void {
-  if (!pass) return
+export function savePasswordToHistory(db: any, user: string, _pass: string, hostname: string): void {
   try {
     let history = readHistory(db)
     history.unshift({
       id: `${Date.now()}_${crypto.randomBytes(3).toString('hex')}`,
       username: user,
-      passwordHash: hashPassword(pass),
       hostname,
       osUsername: os.userInfo().username,
       createdAt: new Date().toISOString()
@@ -104,11 +103,22 @@ export function savePasswordToHistory(db: any, user: string, pass: string, hostn
 }
 
 /**
- * Kullanıcı parolasını hashleyerek tüm ilgili kayıtlara (adminPassword, pcPass_*, additionalUsers)
- * yazar ve denetim geçmişine ekler. Çalışma verilerine dokunmaz.
+ * Kullanıcı parolasını hashleyerek günceller.
+ * DİĞER BİLGİSAYARLARDAKİ ESKİ pcPass_* KAYITLARINI TEMİZLER. Böylece eski şifreyle diğer cihazlardan
+ * oturum açılması engellenir. Çalışma verilerine dokunmaz.
  */
 export function applyPassword(db: any, user: string, pass: string, hostname: string): void {
   const hashed = hashPassword(pass)
+
+  // 1. Kullanıcıya ait tüm eski bilgisayar şifre önbelleklerini temizle
+  try {
+    db.prepare("DELETE FROM settings WHERE key LIKE 'pcPass_' || ? || '_%'").run(user)
+    db.prepare("DELETE FROM settings WHERE key = 'pcPass_' || ?").run(user)
+  } catch (e) {
+    console.warn('Failed to delete residual pcPass entries:', e)
+  }
+
+  // 2. Güncel bilgileri kaydet
   const stmt = db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)')
   stmt.run('adminUsername', user)
   stmt.run('adminPassword', hashed)
@@ -168,16 +178,41 @@ export function registerDbAuthHandlers(): void {
    */
   ipcMain.handle('system:get-pc-info', async () => {
     try {
+      const osUsername = os.userInfo().username || process.env.USERNAME || 'User'
+      const hostname = os.hostname() || process.env.COMPUTERNAME || 'LOCAL-PC'
+      const platform = os.platform()
+      const osType = os.type()
+      const userDomain = process.env.USERDOMAIN || ''
+
+      // Masaüstü kullanıcı adından formatlı ve temiz ad soyad önerisi oluştur:
+      // örn: "ilyas.bozdemir" -> "İlyas Bozdemir", "ilyas bozdemir" -> "İlyas Bozdemir"
+      const cleanName = osUsername
+        .replace(/[._-]+/g, ' ')
+        .trim()
+        .split(/\s+/)
+        .map((part) => {
+          if (!part) return ''
+          return part.charAt(0).toLocaleUpperCase('tr-TR') + part.slice(1).toLocaleLowerCase('tr-TR')
+        })
+        .filter(Boolean)
+        .join(' ')
+
       return {
-        hostname: os.hostname(),
-        platform: os.platform(),
-        osUsername: os.userInfo().username
+        hostname,
+        platform,
+        osUsername,
+        osType,
+        userDomain,
+        suggestedDisplayName: cleanName || osUsername
       }
     } catch {
       return {
         hostname: 'LOCAL-PC',
         platform: 'win32',
-        osUsername: 'User'
+        osUsername: 'User',
+        osType: 'Windows_NT',
+        userDomain: '',
+        suggestedDisplayName: 'Kullanıcı'
       }
     }
   })

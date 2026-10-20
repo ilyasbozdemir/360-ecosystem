@@ -135,38 +135,41 @@ export function Sidebar(): React.JSX.Element {
 
       <div
         className={cn(
-          'flex flex-col items-center border-b border-sidebar-border transition-all duration-300',
-          isCollapsed ? 'py-4 px-0' : 'py-6 px-4'
+          'flex flex-col items-center border-b border-sidebar-border transition-all duration-300 shrink-0',
+          isCollapsed ? 'py-4 px-0' : 'py-6 px-4 short:py-3 short:px-3'
         )}
       >
         <div
           className={cn(
             'flex items-center justify-center transition-all duration-300 shrink-0',
-            isCollapsed ? 'w-10 h-10' : 'w-16 h-16'
+            isCollapsed ? 'w-10 h-10' : 'w-16 h-16 short:w-10 short:h-10'
           )}
         >
           {institutionLogo ? (
             <img src={institutionLogo} alt="Logo" className="w-full h-full object-contain" />
           ) : (
             <Building2
-              className={cn('text-sidebar-active-text', isCollapsed ? 'w-6 h-6' : 'w-10 h-10')}
+              className={cn('text-sidebar-active-text', isCollapsed ? 'w-6 h-6' : 'w-10 h-10 short:w-8 short:h-8')}
             />
           )}
         </div>
         {!isCollapsed && (
-          <div className="flex flex-col items-center mt-3 text-center w-full px-1">
-            <span className="text-sidebar-text/70 text-[10px] font-semibold tracking-wider uppercase mt-1 w-full px-2 wrap-break-word leading-normal">
+          <div className="flex flex-col items-center mt-3 short:mt-1.5 text-center w-full px-1">
+            <span
+              className="text-sidebar-text/70 text-[10px] font-semibold tracking-wider uppercase mt-1 w-full px-2 wrap-break-word leading-normal line-clamp-2"
+              title={institutionName}
+            >
               {institutionName}
             </span>
 
-            <span className="text-sidebar-hover-text font-bold text-base tracking-wide whitespace-nowrap leading-tight mt-1 flex items-center gap-1.5 justify-center">
+            <span className="text-sidebar-hover-text font-bold text-base short:text-sm tracking-wide whitespace-nowrap leading-tight mt-1 flex items-center gap-1.5 justify-center">
               TEMİN 360
             </span>
           </div>
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto py-4 px-3 space-y-6 custom-scrollbar">
+      <div className="flex-1 min-h-0 overflow-y-auto py-4 px-3 short:py-2 short:px-2 space-y-6 short:space-y-3 custom-scrollbar">
         {finalMenuGroups.map((group, idx) => (
           <div key={idx} className="space-y-1.5">
             {!isCollapsed && (
@@ -311,16 +314,16 @@ export function Sidebar(): React.JSX.Element {
         ))}
       </div>
 
-      <div className="p-4 border-t border-sidebar-border space-y-3">
+      <div className="p-4 short:p-2 border-t border-sidebar-border space-y-3 short:space-y-1.5 shrink-0">
         <Link
           to="/profil"
           className={cn(
             'flex items-center rounded-md bg-sidebar-hover-bg/50 hover:bg-sidebar-hover-bg transition-all border border-transparent hover:border-sidebar-border cursor-pointer',
-            isCollapsed ? 'justify-center p-2' : 'px-2 py-2'
+            isCollapsed ? 'justify-center p-2' : 'px-2 py-2 short:py-1'
           )}
           title="Kullanıcı Profili ve Güvenlik Ayarlarına Git"
         >
-          <div className="w-8 h-8 flex items-center justify-center shrink-0">
+          <div className="w-8 h-8 short:w-7 short:h-7 flex items-center justify-center shrink-0">
             <div className="w-full h-full rounded-full bg-blue-600 dark:bg-blue-500 text-white flex items-center justify-center border border-sidebar-border/30 shadow-xs">
               <span className="text-xs font-bold">
                 {getInitials(adminName || adminUsername || 'SY')}
@@ -348,8 +351,8 @@ export function Sidebar(): React.JSX.Element {
         <button
           onClick={handleCloseWorkspace}
           className={cn(
-            'w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-sidebar-text/80 hover:text-red-400 hover:bg-red-500/10 transition-colors border border-sidebar-border hover:border-red-500/20',
-            isCollapsed ? 'py-2 px-0' : 'py-2'
+            'w-full flex items-center justify-center gap-2 px-3 py-2 short:py-1 rounded-lg text-xs font-semibold text-sidebar-text/80 hover:text-red-400 hover:bg-red-500/10 transition-colors border border-sidebar-border hover:border-red-500/20',
+            isCollapsed ? 'py-2 px-0' : 'py-2 short:py-1'
           )}
           title="Çalışma Dosyasını Kapat"
         >

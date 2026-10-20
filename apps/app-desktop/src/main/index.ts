@@ -7,7 +7,8 @@ import {
   Tray,
   session,
   protocol,
-  nativeImage
+  nativeImage,
+  screen
 } from 'electron'
 import { join, basename, dirname, resolve, sep } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
@@ -317,12 +318,16 @@ function resolveSafeDtaResPath(requestUrl: string): string | null {
 
 function createWindow(): void {
   const winIcon = getAppIcon()
+  // Çalışma alanına (görev çubuğu hariç) göre boyutla; küçük ekranlarda pencere dışarı taşmasın.
+  const workArea = screen.getPrimaryDisplay().workAreaSize
+  const MIN_WIDTH = 800
+  const MIN_HEIGHT = 420
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 800,
-    minWidth: 1024,
-    minHeight: 768,
+    width: Math.max(MIN_WIDTH, Math.min(1280, workArea.width)),
+    height: Math.max(MIN_HEIGHT, Math.min(800, workArea.height)),
+    minWidth: MIN_WIDTH,
+    minHeight: MIN_HEIGHT,
     show: false,
     autoHideMenuBar: true,
     frame: false,

@@ -4,6 +4,10 @@ module.exports = {
   content: ['./src/renderer/index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      screens: {
+        short: { raw: '(max-height: 720px)' },
+        xshort: { raw: '(max-height: 540px)' }
+      },
       colors: {
         'primary-100': 'var(--primary-100)',
         'primary-200': 'var(--primary-200)',

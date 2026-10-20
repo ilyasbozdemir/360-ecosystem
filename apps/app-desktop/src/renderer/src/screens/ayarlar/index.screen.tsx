@@ -75,6 +75,15 @@ export default function AyarlarScreen(): React.ReactNode {
   const [disableDocumentGuidance, setDisableDocumentGuidance] = useState(true)
   const [unifiedStepperMode, setUnifiedStepperMode] = useState(true)
   const [trashRetentionDays, setTrashRetentionDays] = useState(30)
+  const [useDesktopUserAsDefault, setUseDesktopUserAsDefault] = useState(false)
+  const [pcInfo, setPcInfo] = useState<{
+    hostname?: string
+    osUsername?: string
+    platform?: string
+    osType?: string
+    userDomain?: string
+    suggestedDisplayName?: string
+  } | null>(null)
 
   // Tab: Geliştirici Ayarları
   const [devUpdateTestMode, setDevUpdateTestMode] = useState(false)
@@ -102,6 +111,13 @@ export default function AyarlarScreen(): React.ReactNode {
         setIsPackaged(packaged)
       })
       .catch(console.error)
+
+    window.electron.ipcRenderer
+      .invoke('system:get-pc-info')
+      .then((info) => {
+        if (info) setPcInfo(info)
+      })
+      .catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -131,6 +147,7 @@ export default function AyarlarScreen(): React.ReactNode {
         setDisableDocumentGuidance(settings.disableDocumentGuidance !== 'false')
         setUnifiedStepperMode(settings.unifiedStepperMode !== 'false')
         setTrashRetentionDays(parseInt(settings.trashRetentionDays || '30', 10) || 30)
+        setUseDesktopUserAsDefault(settings.useDesktopUserAsDefault === 'true')
       }, 0)
     }
   }, [settings])
@@ -224,7 +241,9 @@ export default function AyarlarScreen(): React.ReactNode {
         dataToSave.disableDocumentGuidance = disableDocumentGuidance ? 'true' : 'false'
         dataToSave.unifiedStepperMode = unifiedStepperMode ? 'true' : 'false'
         dataToSave.trashRetentionDays = String(trashRetentionDays)
+        dataToSave.useDesktopUserAsDefault = useDesktopUserAsDefault ? 'true' : 'false'
         useSettingsStore.getState().setTrashRetentionDays(trashRetentionDays)
+        useSettingsStore.getState().setUseDesktopUserAsDefault(useDesktopUserAsDefault)
       } else if (tab === 'smtp') {
         dataToSave.smtp_host = smtpHost
         dataToSave.smtpHost = smtpHost
@@ -305,6 +324,9 @@ export default function AyarlarScreen(): React.ReactNode {
                     setUnifiedStepperMode={setUnifiedStepperMode}
                     trashRetentionDays={trashRetentionDays}
                     setTrashRetentionDays={setTrashRetentionDays}
+                    useDesktopUserAsDefault={useDesktopUserAsDefault}
+                    setUseDesktopUserAsDefault={setUseDesktopUserAsDefault}
+                    pcInfo={pcInfo}
                   />
                 )}
 

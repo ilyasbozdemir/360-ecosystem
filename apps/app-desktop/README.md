@@ -72,24 +72,47 @@ tüm birimlerle canlı olarak çalışabilirsiniz.
 
 ---
 
-## Ekran Görüntüleri
+## 📸 Uygulama Arayüzü ve E2E Test Ekran Görüntüleri
+
+Temin 360 masaüstü uygulaması; farklı ekran çözünürlükleri, dosya yönetimi ve belge düzenleme süreçleri için otomatik E2E (End-to-End) testleriyle sürekli taranmakta ve ekran görüntüleri arşivlenmektedir.
+
+### 1. Başlatıcı ve Çalışma Alanı Yönetimi
+
+| Başlatıcı & Dosya Seçimi | Çalışma Alanı & Süreç Yönetimi |
+| :---: | :---: |
+| ![Başlatıcı Ekranı](e2e-screenshots/01-launcher-screen.png) | ![Çalışma Alanı](e2e-screenshots/02-workspace-opened.png) |
+| *Kurum, birim veya mevcut `.temin` çalışma dosyasının seçildiği başlatıcı arayüzü.* | *İhale ve doğrudan temin sürecinin tüm aşamalarını barındıran ana çalışma alanı.* |
+
+| Mod & Form Etkileşimi | Canlı Belge ve Word Düzenleme Önizlemesi |
+| :---: | :---: |
+| ![Mod Etkileşimi](e2e-screenshots/03-mode-switched-interaction.png) | ![Word Düzenleme Önizleme](e2e-screenshots/11-word-editing-preview.png) |
+| *Alım türüne ve mevzuat moduna göre dinamik form alanları.* | *Resmi evrakların anlık şablon düzenlemesi ve canlı Word önizleme paneli.* |
+
+### 2. Taşınabilir `.temin` Dosya ve Veritabanı Döngüsü
+
+| Farklı Kaydet & Veritabanı İhracı | Kayıtlı Dosyanın Yeniden Açılması |
+| :---: | :---: |
+| ![Farklı Kaydet](e2e-screenshots/07-after-save-as.png) | ![Yeniden Açılan Dosya](e2e-screenshots/08-reopened-saved-file.png) |
+| *Sürecin tüm veritabanını bağımsız bir `.temin` dosyası olarak kaydetme.* | *Kayıtlı dosyanın doğrulanarak tüm verileriyle eksiksiz açılması.* |
+
+### 3. Responsive ve Farklı Ekran Çözünürlükleri (E2E Test Doğrulamaları)
+
+Uygulama, hem büyük masaüstü monitörlerde hem de küçük dizüstü ekranlarında (1024x600, 1280x720, 1366x768, 1920x1080) kurum logosu, sol menü ve formlar taşmadan kusursuz çalışacak şekilde tasarlanmıştır:
+
+| Full HD (1920×1080) | Standart Laptop (1366×768) |
+| :---: | :---: |
+| ![Full HD 1920x1080](e2e-screenshots/responsive-1920x1080.png) | ![1366x768](e2e-screenshots/responsive-1366x768.png) |
+| *Geniş ekranlarda maksimum veri görünürlüğü ve ferah çalışma alanı.* | *Standart laptop ekranlarında optimize edilmiş arayüz düzeni.* |
+
+| HD Kompakt (1280×720) | Küçük Ekran (1024×600) |
+| :---: | :---: |
+| ![1280x720](e2e-screenshots/responsive-1280x720.png) | ![1024x600](e2e-screenshots/responsive-1024x600.png) |
+| *Düşük çözünürlüklü ekranlarda menü ve içeriklerin taşmasız görünümü.* | *Netbook / küçük cihazlarda menü kaydırma ve kompakt düzen.* |
 
 <p align="center">
-  <img src="docs/screenshots/launcher_screen.png" alt="Başlatıcı Ekranı" width="600" />
+  <img src="e2e-screenshots/responsive-minimum_pencere_800x420_.png" alt="Minimum Pencere Boyutu" width="600" />
   <br/>
-  <em>Kurum veya çalışma dosyası seçimi</em>
-</p>
-
-<p align="center">
-  <img src="docs/screenshots/login_screen.png" alt="Giriş Ekranı" width="600" />
-  <br/>
-  <em>Dosya giriş ekranı</em>
-</p>
-
-<p align="center">
-  <img src="docs/screenshots/dashboard_screen.png" alt="Gösterge Paneli" width="800" />
-  <br/>
-  <em>Süreçlerinizi ve istatistikleri görüntüleyebileceğiniz ana gösterge paneli</em>
+  <em>Desteklenen minimum pencere boyutu (800×420) — Menü ve kurum alanı güvenle daralır ve kaydırılabilir.</em>
 </p>
 
 ---
