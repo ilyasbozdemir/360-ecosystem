@@ -107,12 +107,6 @@ export function savePasswordToHistory(db: any, user: string, _pass: string, host
 /**
  * Kullanıcı parolasını hashleyerek günceller.
  * DİĞER BİLGİSAYARLARDAKİ ESKİ pcPass_* KAYITLARINI ATOMİK OLARAK TEMİZLER. Böylece eski şifreyle diğer cihazlardan
- * oturum açılması engellenir. İşlem tek bir SQLite transaction içerisinde yürütülür;
- * herhangi bir hata anında tüm değişiklikler geri alınır (rollback).
- */
-/**
- * Kullanıcı parolasını hashleyerek günceller.
- * DİĞER BİLGİSAYARLARDAKİ ESKİ pcPass_* KAYITLARINI ATOMİK OLARAK TEMİZLER. Böylece eski şifreyle diğer cihazlardan
  * oturum açılması engellenir.
  * İşlem kesinlikle bir SQLite transaction içerisinde yürütülür; db.transaction desteği yoksa
  * güvenlik gereği sessizce atomiklikten vazgeçmek yerine hata fırlatılır.
