@@ -1,5 +1,7 @@
 import { ipcMain } from 'electron'
 import os from 'os'
+import path from 'path'
+import child_process from 'child_process'
 import crypto from 'crypto'
 import { workspaceManager } from '../../database/workspace'
 import { getSetting } from '../../utils/settingsHelper'
@@ -184,18 +186,96 @@ export function registerDbAuthHandlers(): void {
       const osType = os.type()
       const userDomain = process.env.USERDOMAIN || ''
 
-      // Masaüstü kullanıcı adından formatlı ve temiz ad soyad önerisi oluştur:
-      // örn: "ilyas.bozdemir" -> "İlyas Bozdemir", "ilyas bozdemir" -> "İlyas Bozdemir"
-      const cleanName = osUsername
-        .replace(/[._-]+/g, ' ')
-        .trim()
-        .split(/\s+/)
-        .map((part) => {
-          if (!part) return ''
-          return part.charAt(0).toLocaleUpperCase('tr-TR') + part.slice(1).toLocaleLowerCase('tr-TR')
-        })
-        .filter(Boolean)
-        .join(' ')
+      // Windows/macOS/Linux oturum açma (Hoş geldiniz) ekranında gösterilen gerçek kullanıcı adı:
+      // Windows'ta 'net user' ile hesabın resmi "Tam ad" bilgisini çeker.
+      let displayName = ''
+      if (process.platform === 'win32') {
+        try {
+          const username = process.env.USERNAME || osUsername
+          const out = child_process.execSync(`net user "${username}"`, {
+            encoding: 'utf8',
+            shell: 'cmd.exe',
+            timeout: 2500,
+            windowsHide: true
+          })
+          const lines = out.split(/\r?\n/)
+          for (const line of lines) {
+            const match = line.match(
+              /^(?:Tam ad|Full Name|Nom complet|Vollst.+ndiger Name|[^\s]+ ad)\s{2,}(.+)$/i
+            )
+            if (match && match[1] && match[1].trim()) {
+              const rawName = match[1].trim()
+              displayName = rawName
+                .split(/\s+/)
+                .map(
+                  (p) =>
+                    p.charAt(0).toLocaleUpperCase('tr-TR') +
+                    p.slice(1).toLocaleLowerCase('tr-TR')
+                )
+                .join(' ')
+              break
+            }
+          }
+        } catch {
+          // ignore error
+        }
+      } else if (process.platform === 'darwin') {
+        try {
+          const out = child_process.execSync('id -F', { encoding: 'utf8', timeout: 2000 })
+          if (out && out.trim()) {
+            displayName = out.trim()
+          }
+        } catch {
+          // ignore error
+        }
+      }
+
+      // Fallback 1: Kullanıcı ev dizini klasör adı (örn: C:\Users\ilyas bozdemir)
+      if (!displayName) {
+        try {
+          const homedir = os.homedir()
+          const folderName = path.basename(homedir)
+          if (
+            folderName &&
+            !['user', 'admin', 'administrator', 'kullanici', 'default'].includes(
+              folderName.toLowerCase()
+            )
+          ) {
+            displayName = folderName
+              .replace(/[._-]+/g, ' ')
+              .trim()
+              .split(/\s+/)
+              .map((part) => {
+                if (!part) return ''
+                return (
+                  part.charAt(0).toLocaleUpperCase('tr-TR') +
+                  part.slice(1).toLocaleLowerCase('tr-TR')
+                )
+              })
+              .filter(Boolean)
+              .join(' ')
+          }
+        } catch {
+          // ignore error
+        }
+      }
+
+      // Fallback 2: osUsername formatlama
+      if (!displayName) {
+        displayName = osUsername
+          .replace(/[._-]+/g, ' ')
+          .trim()
+          .split(/\s+/)
+          .map((part) => {
+            if (!part) return ''
+            return (
+              part.charAt(0).toLocaleUpperCase('tr-TR') +
+              part.slice(1).toLocaleLowerCase('tr-TR')
+            )
+          })
+          .filter(Boolean)
+          .join(' ')
+      }
 
       return {
         hostname,
@@ -203,7 +283,7 @@ export function registerDbAuthHandlers(): void {
         osUsername,
         osType,
         userDomain,
-        suggestedDisplayName: cleanName || osUsername
+        suggestedDisplayName: displayName || osUsername
       }
     } catch {
       return {

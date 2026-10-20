@@ -254,8 +254,10 @@ export const AdminCredentialsCard: React.FC<AdminCredentialsCardProps> = ({
                   </div>
                   {pcInfo.suggestedDisplayName && (
                     <div className="sm:col-span-2">
-                      <span className="text-slate-400 text-[11px] block">Algılanan Ad Soyad:</span>
-                      <span className="font-semibold text-slate-700 dark:text-slate-300">
+                      <span className="text-slate-400 text-[11px] block">
+                        Oturum Açma / Karşılama Ekranı Adı (Hoş Geldiniz):
+                      </span>
+                      <span className="font-semibold text-blue-600 dark:text-blue-400">
                         {pcInfo.suggestedDisplayName}
                       </span>
                     </div>
