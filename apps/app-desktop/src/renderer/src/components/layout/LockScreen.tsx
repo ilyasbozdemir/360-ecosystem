@@ -33,8 +33,9 @@ export default function LockScreen(): React.JSX.Element {
   })
   const [recoveryCode, setRecoveryCode] = useState('')
   const [recoveryEmail, setRecoveryEmail] = useState('')
-  const [testCode, setTestCode] = useState<string | null>(null)
-  const [recoveryWarning, setRecoveryWarning] = useState<string | null>(null)
+  const [newPassword, setNewPassword] = useState('')
+  const [newPasswordConfirm, setNewPasswordConfirm] = useState('')
+  const [info, setInfo] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [pcInfo, setPcInfo] = useState<{ hostname?: string; osUsername?: string } | undefined>()
@@ -137,24 +138,24 @@ export default function LockScreen(): React.JSX.Element {
     }
   }
 
+  const resetRecoveryState = (): void => {
+    setRecoveryCode('')
+    setNewPassword('')
+    setNewPasswordConfirm('')
+    setRecoveryStep('login')
+  }
+
   const handleSendRecoveryEmail = async (): Promise<void> => {
     setError(null)
-    setRecoveryWarning(null)
-    setTestCode(null)
+    setInfo(null)
     setLoading(true)
     try {
-      const res = await window.electron.ipcRenderer.invoke('db:send-recovery-email')
+      const res = await window.electron.ipcRenderer.invoke('db:send-recovery-email', recoveryEmail)
       if (res && res.success) {
-        setRecoveryEmail(res.email || 'Tanımlı E-posta')
-        if (res.testCode) {
-          setTestCode(res.testCode)
-        }
-        if (res.warning) {
-          setRecoveryWarning(res.warning)
-        }
+        setInfo(res.message || 'Adres kayıtlıysa doğrulama kodu gönderildi.')
         setRecoveryStep('verify_code')
       } else {
-        setError(res?.error || 'SMTP veya E-posta gönderme hatası!')
+        setError(res?.error || 'E-posta gönderilemedi!')
       }
     } catch (err: unknown) {
       setError(
@@ -167,6 +168,7 @@ export default function LockScreen(): React.JSX.Element {
 
   const handleVerifyRecoveryCode = async (): Promise<void> => {
     setError(null)
+    setInfo(null)
     setLoading(true)
     try {
       const res = await window.electron.ipcRenderer.invoke('db:verify-recovery-code', recoveryCode)
@@ -185,19 +187,26 @@ export default function LockScreen(): React.JSX.Element {
   const handleResetSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault()
     setError(null)
+    if (newPassword !== newPasswordConfirm) {
+      setError('Parolalar eşleşmiyor!')
+      return
+    }
     setLoading(true)
     try {
-      const res = await window.electron.ipcRenderer.invoke('db:setup-auth', '', username, password)
+      const res = await window.electron.ipcRenderer.invoke('db:reset-password', newPassword)
       if (res.success) {
-        if (rememberMe && fileName) {
-          localStorage.setItem(`rememberMe_${fileName}`, 'true')
-          localStorage.setItem(`rememberedUser_${fileName}`, username)
-          localStorage.setItem(`rememberedPass_${fileName}`, password)
+        // Adım 4: normal girişe dön; kullanıcı yeni parolasıyla giriş yapar.
+        if (fileName) {
+          localStorage.removeItem(`rememberedPass_${fileName}`)
+          localStorage.setItem(`rememberMe_${fileName}`, 'false')
+          setRememberMe(false)
         }
-        setIsAuthenticated(true)
-        await loadSettings()
+        if (res.username) setUsername(res.username)
+        setPassword('')
+        resetRecoveryState()
+        setInfo('Parolanız güncellendi. Yeni parolanızla giriş yapabilirsiniz.')
       } else {
-        setError(res.error || 'Şifre güncellenemedi!')
+        setError(res.error || 'Parola güncellenemedi!')
       }
     } catch (err: unknown) {
       setError('Güncelleme hatası: ' + (err instanceof Error ? err.message : String(err)))
@@ -235,6 +244,12 @@ export default function LockScreen(): React.JSX.Element {
           fileName={fileName}
         />
 
+        {info && !error && (
+          <div className="mb-6 p-4 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-2xl text-xs text-emerald-700 dark:text-emerald-400 font-medium text-center">
+            {info}
+          </div>
+        )}
+
         {error && (
           <div className="mb-6 p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-2xl text-xs text-red-650 dark:text-red-450 font-medium text-center">
             {error}
@@ -259,29 +274,30 @@ export default function LockScreen(): React.JSX.Element {
             onSubmit={handleSubmit}
             onForgotPassword={() => {
               setError(null)
+              setInfo(null)
               setRecoveryStep('send_code')
             }}
           />
         )}
 
-        {/* 2. Şifre Kurtarma - E-posta Kod Gönderme */}
+        {/* Kurtarma 1/3 - E-posta */}
         {recoveryStep === 'send_code' && (
           <LockScreenSendCode
             loading={loading}
+            email={recoveryEmail}
+            setEmail={setRecoveryEmail}
             onSendCode={handleSendRecoveryEmail}
             onCancel={() => {
               setError(null)
-              setRecoveryStep('login')
+              resetRecoveryState()
             }}
           />
         )}
 
-        {/* 3. Şifre Kurtarma - Kod Doğrulama & Test Kodu */}
+        {/* Kurtarma 2/3 - Kod doğrulama */}
         {recoveryStep === 'verify_code' && (
           <LockScreenVerifyCode
             recoveryEmail={recoveryEmail}
-            testCode={testCode}
-            recoveryWarning={recoveryWarning}
             recoveryCode={recoveryCode}
             setRecoveryCode={setRecoveryCode}
             loading={loading}
@@ -289,25 +305,25 @@ export default function LockScreen(): React.JSX.Element {
             onResend={handleSendRecoveryEmail}
             onCancel={() => {
               setError(null)
-              setRecoveryStep('login')
+              resetRecoveryState()
             }}
           />
         )}
 
-        {/* 4. Şifre Kurtarma - Yeni Şifre Belirleme */}
+        {/* Kurtarma 3/3 - Yeni parola */}
         {recoveryStep === 'reset_password' && (
           <LockScreenResetPassword
-            username={username}
-            setUsername={setUsername}
-            password={password}
-            setPassword={setPassword}
+            password={newPassword}
+            setPassword={setNewPassword}
+            confirmPassword={newPasswordConfirm}
+            setConfirmPassword={setNewPasswordConfirm}
             showPassword={showPassword}
             setShowPassword={setShowPassword}
             loading={loading}
             onSubmit={handleResetSubmit}
             onCancel={() => {
               setError(null)
-              setRecoveryStep('login')
+              resetRecoveryState()
             }}
           />
         )}

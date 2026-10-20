@@ -1,68 +1,155 @@
 import { ipcMain } from 'electron'
 import os from 'os'
+import crypto from 'crypto'
 import { workspaceManager } from '../../database/workspace'
 import { getSetting } from '../../utils/settingsHelper'
+import { hashPassword, verifyPassword, isHashedPassword } from './authCrypto'
 
-// Recovery code cache in memory (valid for 15 minutes)
-let activeRecovery: { code: string; expiresAt: number; email: string } | null = null
+const RECOVERY_TTL_MS = 10 * 60 * 1000
+const RECOVERY_MAX_ATTEMPTS = 5
+const RECOVERY_RESEND_COOLDOWN_MS = 30 * 1000
+const MIN_PASSWORD_LENGTH = 6
 
-export function savePasswordToHistory(db: any, user: string, pass: string, hostname: string): void {
-  if (!pass) return
+// Recovery state is kept in main-process memory only. The code itself is never stored
+// in plain form and never returned over IPC or written to logs.
+interface RecoveryState {
+  salt: string
+  codeHash: string
+  expiresAt: number
+  attempts: number
+  verified: boolean
+  lastSentAt: number
+}
+let activeRecovery: RecoveryState | null = null
+
+function hashRecoveryCode(salt: string, code: string): string {
+  return crypto.createHash('sha256').update(`${salt}:${code}`).digest('hex')
+}
+
+function getRegisteredEmails(): string[] {
+  const candidates = [
+    getSetting('smtpReceiver'),
+    getSetting('smtp_receiver'),
+    getSetting('kurum_eposta'),
+    getSetting('kurumEposta'),
+    getSetting('adminEmail'),
+    getSetting('admin_email')
+  ]
+    .filter((v): v is string => !!v && v.includes('@'))
+    .map((v) => v.trim().toLowerCase())
+  if (candidates.length === 0) {
+    const smtpUser = getSetting('smtpUser') || getSetting('smtp_user')
+    if (smtpUser && smtpUser.includes('@')) candidates.push(smtpUser.trim().toLowerCase())
+  }
+  return Array.from(new Set(candidates))
+}
+
+/**
+ * Parola geçmişi YALNIZCA denetim amaçlıdır: gerçek parola tutulmaz, giriş doğrulamasında kullanılmaz.
+ * Eski sürümlerden kalan düz metin kayıtlar hash'e dönüştürülür.
+ */
+function readHistory(db: any): any[] {
+  const row = db.prepare("SELECT value FROM settings WHERE key = 'passwordHistory'").get() as
+    | { value?: string }
+    | undefined
+  if (!row?.value) return []
+  try {
+    const parsed = JSON.parse(row.value)
+    if (!Array.isArray(parsed)) return []
+    return parsed.map((h: any) => {
+      const { password, ...rest } = h || {}
+      return {
+        ...rest,
+        passwordHash: rest.passwordHash || (password ? hashPassword(String(password)) : undefined)
+      }
+    })
+  } catch {
+    return []
+  }
+}
+
+export function scrubPasswordHistory(db: any): void {
   try {
     const row = db.prepare("SELECT value FROM settings WHERE key = 'passwordHistory'").get() as
       | { value?: string }
       | undefined
-    let history: any[] = []
-    if (row?.value) {
-      try {
-        history = JSON.parse(row.value)
-      } catch {}
-    }
-
-    const alreadyExists = history.some(
-      (h: any) => h.username === user && h.password === pass && h.hostname === hostname
+    if (!row?.value || !row.value.includes('"password"')) return
+    db.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('passwordHistory', ?)").run(
+      JSON.stringify(readHistory(db))
     )
-    if (!alreadyExists) {
-      history.unshift({
-        id: `${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
-        username: user,
-        password: pass,
-        hostname: hostname,
-        osUsername: os.userInfo().username,
-        createdAt: new Date().toISOString()
-      })
-      if (history.length > 100) {
-        history = history.slice(0, 100)
-      }
-      db.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('passwordHistory', ?)").run(
-        JSON.stringify(history)
-      )
-    }
+  } catch (e) {
+    console.error('Scrub password history error:', e)
+  }
+}
+
+export function savePasswordToHistory(db: any, user: string, pass: string, hostname: string): void {
+  if (!pass) return
+  try {
+    let history = readHistory(db)
+    history.unshift({
+      id: `${Date.now()}_${crypto.randomBytes(3).toString('hex')}`,
+      username: user,
+      passwordHash: hashPassword(pass),
+      hostname,
+      osUsername: os.userInfo().username,
+      createdAt: new Date().toISOString()
+    })
+    if (history.length > 100) history = history.slice(0, 100)
+    db.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES ('passwordHistory', ?)").run(
+      JSON.stringify(history)
+    )
   } catch (e) {
     console.error('Save password history error:', e)
   }
 }
 
-export function checkPasswordHistory(db: any, user: string, pass: string): boolean {
-  if (!pass) return false
-  try {
-    const row = db.prepare("SELECT value FROM settings WHERE key = 'passwordHistory'").get() as
-      | { value?: string }
-      | undefined
-    if (row?.value) {
-      const history = JSON.parse(row.value)
-      if (Array.isArray(history)) {
-        const matched = history.find(
-          (h: any) =>
-            (h.username === user || user === 'admin' || !h.username) && h.password === pass
-        )
-        if (matched) return true
-      }
-    }
-  } catch (e) {
-    console.error('Check password history error:', e)
+/**
+ * Kullanıcı parolasını hashleyerek tüm ilgili kayıtlara (adminPassword, pcPass_*, additionalUsers)
+ * yazar ve denetim geçmişine ekler. Çalışma verilerine dokunmaz.
+ */
+export function applyPassword(db: any, user: string, pass: string, hostname: string): void {
+  const hashed = hashPassword(pass)
+  const stmt = db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)')
+  stmt.run('adminUsername', user)
+  stmt.run('adminPassword', hashed)
+  stmt.run(`pcPass_${user}_${hostname}`, hashed)
+
+  let usersList: any[] = []
+  const usersRow = db.prepare("SELECT value FROM settings WHERE key = 'additionalUsers'").get() as
+    | { value: string }
+    | undefined
+  if (usersRow?.value) {
+    try {
+      const parsed = JSON.parse(usersRow.value)
+      if (Array.isArray(parsed)) usersList = parsed
+    } catch {}
   }
-  return false
+  const userEntry = {
+    username: user,
+    password: hashed,
+    hostname,
+    osUsername: os.userInfo().username,
+    updatedAt: new Date().toISOString()
+  }
+  const idx = usersList.findIndex((u: any) => u.username === user)
+  if (idx >= 0) usersList[idx] = { ...usersList[idx], ...userEntry }
+  else usersList.push(userEntry)
+  stmt.run('additionalUsers', JSON.stringify(usersList))
+
+  savePasswordToHistory(db, user, pass, hostname)
+}
+
+function upgradeLegacyKey(db: any, key: string, pass: string): void {
+  try {
+    db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)').run(
+      key,
+      hashPassword(pass)
+    )
+    workspaceManager.recordMutation('SETTINGS')
+    workspaceManager.save()
+  } catch (e) {
+    console.error('Legacy password upgrade error:', e)
+  }
 }
 
 /**
@@ -123,17 +210,17 @@ export function registerDbAuthHandlers(): void {
 
   /**
    * <summary>
-   * Şifre Geçmişi Listesini Getirici
+   * Parola Geçmişi (YALNIZCA DENETİM) — gerçek veya hash parola değeri dışarı verilmez
    * </summary>
    */
   ipcMain.handle('db:get-password-history', async () => {
     try {
       const db = workspaceManager.getDb()
-      const row = db.prepare("SELECT value FROM settings WHERE key = 'passwordHistory'").get() as
-        | { value?: string }
-        | undefined
-      if (!row?.value) return { success: true, history: [] }
-      const history = JSON.parse(row.value)
+      const history = readHistory(db).map((h: Record<string, unknown>) => {
+        const safe = { ...h }
+        delete safe.passwordHash
+        return safe
+      })
       return { success: true, history }
     } catch (error: any) {
       return { success: false, history: [], error: error.message }
@@ -142,53 +229,30 @@ export function registerDbAuthHandlers(): void {
 
   /**
    * <summary>
-   * İlk Kullanıcı ve Kimlik Bilgileri Kurulumu (Cihaz/Kullanıcı Destekli)
+   * İlk Kullanıcı ve Kimlik Bilgileri Kurulumu — yalnızca henüz kimlik bilgisi tanımlı değilse çalışır
    * </summary>
-   * <param name="code">e-Bütçe Kurum Kodu</param>
-   * <param name="user">Yönetici Kullanıcı Adı</param>
-   * <param name="pass">Yönetici Şifresi</param>
    */
   ipcMain.handle('db:setup-auth', async (_, code: string, user: string, pass: string) => {
     try {
       const db = workspaceManager.getDb()
-      const hostname = os.hostname()
-      const stmt = db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)')
-      stmt.run('eButceKodu', code)
-      stmt.run('adminUsername', user)
-      stmt.run('adminPassword', pass)
-      stmt.run(`pcPass_${user}_${hostname}`, pass)
-
-      // Save to password history log
-      savePasswordToHistory(db, user, pass, hostname)
-
-      // Update additionalUsers list with PC mapping
-      let usersList: any[] = []
-      const usersRow = db
-        .prepare("SELECT value FROM settings WHERE key = 'additionalUsers'")
-        .get() as { value: string } | undefined
-      if (usersRow?.value) {
-        try {
-          usersList = JSON.parse(usersRow.value)
-        } catch {}
+      const existing = db
+        .prepare("SELECT value FROM settings WHERE key = 'adminPassword'")
+        .get() as { value?: string } | undefined
+      if (existing?.value) {
+        return {
+          success: false,
+          error:
+            'Kimlik bilgileri zaten tanımlı. Parolanızı unuttuysanız "Parolamı Unuttum" akışını kullanın.'
+        }
       }
-
-      const existingIndex = usersList.findIndex((u: any) => u.username === user)
-      const userEntry = {
-        username: user,
-        password: pass,
-        hostname: hostname,
-        osUsername: os.userInfo().username,
-        updatedAt: new Date().toISOString()
+      if (!user || typeof pass !== 'string' || pass.length < MIN_PASSWORD_LENGTH) {
+        return { success: false, error: `Parola en az ${MIN_PASSWORD_LENGTH} karakter olmalıdır.` }
       }
-
-      if (existingIndex >= 0) {
-        usersList[existingIndex] = { ...usersList[existingIndex], ...userEntry }
-      } else {
-        usersList.push(userEntry)
-      }
-
-      stmt.run('additionalUsers', JSON.stringify(usersList))
-
+      db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)').run(
+        'eButceKodu',
+        code
+      )
+      applyPassword(db, user, pass, os.hostname())
       workspaceManager.recordMutation('SETTINGS')
       workspaceManager.save()
       return { success: true }
@@ -200,17 +264,18 @@ export function registerDbAuthHandlers(): void {
 
   /**
    * <summary>
-   * Kullanıcı Giriş İşleyicisi (Çoklu PC, Kullanıcı Profili & Şifre Geçmişi Fallback Uyumlu)
+   * Kullanıcı Giriş İşleyicisi — yalnızca güncel parola geçerlidir; eski parolalar kabul edilmez.
+   * Eski düz metin kayıtlar başarılı girişte otomatik olarak hash'e yükseltilir.
    * </summary>
-   * <param name="_code">Opsiyonel Kod</param>
-   * <param name="user">Giriş Yapılacak Kullanıcı Adı</param>
-   * <param name="pass">Giriş Şifresi</param>
-   * <returns>Giriş başarılı ise kullanıcı bilgileri</returns>
    */
   ipcMain.handle('db:login', async (_, _code: string, user: string, pass: string) => {
     try {
       const db = workspaceManager.getDb()
       const hostname = os.hostname()
+      const finish = <T extends Record<string, unknown>>(result: T): T => {
+        scrubPasswordHistory(db)
+        return result
+      }
 
       const userRow = db.prepare("SELECT value FROM settings WHERE key = 'adminUsername'").get() as
         | { value: string }
@@ -219,48 +284,54 @@ export function registerDbAuthHandlers(): void {
         | { value: string }
         | undefined
 
-      // Check device specific password
-      const pcPassRow = db
-        .prepare('SELECT value FROM settings WHERE key = ?')
-        .get(`pcPass_${user}_${hostname}`) as { value: string } | undefined
-
-      if (pcPassRow?.value && pcPassRow.value === pass) {
-        return { success: true, username: user, hostname }
+      const pcKey = `pcPass_${user}_${hostname}`
+      const pcPassRow = db.prepare('SELECT value FROM settings WHERE key = ?').get(pcKey) as
+        | { value: string }
+        | undefined
+      if (pcPassRow?.value && verifyPassword(pass, pcPassRow.value)) {
+        if (!isHashedPassword(pcPassRow.value)) upgradeLegacyKey(db, pcKey, pass)
+        return finish({ success: true, username: user, hostname })
       }
 
       const expectedUser = userRow?.value || 'admin'
-      const expectedPass = passRow?.value || ''
-
-      if (user === expectedUser && pass === expectedPass) {
-        return { success: true, username: expectedUser }
+      if (user === expectedUser && passRow?.value && verifyPassword(pass, passRow.value)) {
+        if (!isHashedPassword(passRow.value)) upgradeLegacyKey(db, 'adminPassword', pass)
+        return finish({ success: true, username: expectedUser })
       }
 
-      // Check additionalUsers in settings if multi-user setup exists
       const additionalUsersRow = db
         .prepare("SELECT value FROM settings WHERE key = 'additionalUsers'")
         .get() as { value: string } | undefined
-
       if (additionalUsersRow?.value) {
         try {
           const list = JSON.parse(additionalUsersRow.value)
           if (Array.isArray(list)) {
-            const matched = list.find((u: any) => u.username === user && u.password === pass)
+            const matched = list.find(
+              (u: any) => u.username === user && verifyPassword(pass, u.password)
+            )
             if (matched) {
-              return { success: true, username: matched.username, role: matched.role || 'user' }
+              if (!isHashedPassword(matched.password)) {
+                const upgraded = list.map((u: any) =>
+                  u.password && !isHashedPassword(u.password)
+                    ? { ...u, password: hashPassword(String(u.password)) }
+                    : u
+                )
+                db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)').run(
+                  'additionalUsers',
+                  JSON.stringify(upgraded)
+                )
+                workspaceManager.recordMutation('SETTINGS')
+                workspaceManager.save()
+              }
+              return finish({
+                success: true,
+                username: matched.username,
+                role: matched.role || 'user'
+              })
             }
           }
         } catch (e) {
           console.error('Failed to parse additionalUsers:', e)
-        }
-      }
-
-      // Check password history fallback for legacy/backup files
-      if (checkPasswordHistory(db, user, pass)) {
-        return {
-          success: true,
-          username: user,
-          isHistoricalMatch: true,
-          notice: 'Geçmiş şifre kaydıyla oturum açıldı.'
         }
       }
 
@@ -273,146 +344,187 @@ export function registerDbAuthHandlers(): void {
 
   /**
    * <summary>
-   * Şifre Sıfırlama E-postası / 6 Haneli Doğrulama Kodu Gönderici
+   * Adım 1: Kayıtlı e-posta doğrulaması ve tek kullanımlık 6 haneli kod gönderimi.
+   * Kod IPC yanıtında veya loglarda ASLA yer almaz. SMTP yoksa/başarısızsa hata döner.
    * </summary>
-   * <returns>Maskelenmiş e-posta adresi ve doğrulama durumu</returns>
    */
-  ipcMain.handle('db:send-recovery-email', async () => {
+  ipcMain.handle('db:send-recovery-email', async (_, inputEmail: string) => {
     try {
+      const email = (inputEmail || '').toString().trim().toLowerCase()
+      if (!email || !email.includes('@')) {
+        return { success: false, error: 'Geçerli bir e-posta adresi girin.' }
+      }
+
+      const now = Date.now()
+      if (activeRecovery && now - activeRecovery.lastSentAt < RECOVERY_RESEND_COOLDOWN_MS) {
+        const wait = Math.ceil(
+          (RECOVERY_RESEND_COOLDOWN_MS - (now - activeRecovery.lastSentAt)) / 1000
+        )
+        return { success: false, error: `Yeni kod istemek için ${wait} sn bekleyin.` }
+      }
+
       const smtpHost = getSetting('smtpHost') || getSetting('smtp_host')
       const smtpPort = parseInt(getSetting('smtpPort') || getSetting('smtp_port') || '587', 10)
       const smtpUser = getSetting('smtpUser') || getSetting('smtp_user')
       const smtpPass = getSetting('smtpPass') || getSetting('smtp_pass')
       const smtpSecure = getSetting('smtpSecure') === 'true' || getSetting('smtp_secure') === 'true'
-      const targetEmail =
-        getSetting('smtpReceiver') ||
-        getSetting('smtp_receiver') ||
-        getSetting('kurum_eposta') ||
-        getSetting('kurumEposta') ||
-        getSetting('adminEmail') ||
-        getSetting('admin_email') ||
-        smtpUser
 
-      // Generate 6-digit random code
-      const code = Math.floor(100000 + Math.random() * 900000).toString()
-      activeRecovery = {
-        code,
-        expiresAt: Date.now() + 15 * 60 * 1000,
-        email: targetEmail || 'tanimsiz@kurum.gov.tr'
+      const registered = getRegisteredEmails()
+      if (registered.length === 0) {
+        return {
+          success: false,
+          error:
+            'Kayıtlı bir kurtarma e-posta adresi tanımlı değil. Ayarlardan kurum e-postasını tanımlayın.'
+        }
       }
-
-      // Mask email for privacy (e.g. adm***@domain.com)
-      const maskEmail = (mail: string): string => {
-        if (!mail || !mail.includes('@')) return mail || 'kurum-eposta'
-        const [local, dom] = mail.split('@')
-        const maskedLocal = local.length <= 2 ? local + '***' : local.slice(0, 2) + '***'
-        return `${maskedLocal}@${dom}`
-      }
-
-      const maskedDisplay = targetEmail ? maskEmail(targetEmail) : 'Kurum E-postası'
-
-      // Check if SMTP is configured
-      if (smtpHost && smtpUser && smtpPass) {
-        try {
-          const actualSecure =
-            smtpPort === 465
-              ? true
-              : smtpPort === 587 || smtpPort === 25 || smtpPort === 2525
-                ? false
-                : smtpSecure
-
-          const nodemailer = await import('nodemailer')
-          const transporter = nodemailer.createTransport({
-            host: smtpHost,
-            port: smtpPort,
-            secure: actualSecure,
-            auth: {
-              user: smtpUser,
-              pass: smtpPass
-            },
-            tls: {
-              rejectUnauthorized: false
-            }
-          })
-
-          const institution = getSetting('institutionName') || 'TEMİN 360 Kurumu'
-          await transporter.sendMail({
-            from: `"${institution} (TEMİN 360)" <${smtpUser}>`,
-            to: targetEmail || smtpUser,
-            subject: `[TEMİN 360] Şifre Sıfırlama Kodu: ${code}`,
-            html: `
-              <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff;">
-                <h2 style="color: #1e293b; margin-top: 0;">TEMİN 360 Güvenlik Doğrulaması</h2>
-                <p style="color: #475569; font-size: 14px;"><strong>${institution}</strong> çalışma dosyası için şifre sıfırlama talebinde bulunuldu.</p>
-                <div style="background: #f1f5f9; padding: 18px; border-radius: 8px; text-align: center; margin: 20px 0;">
-                  <span style="font-size: 28px; font-weight: bold; letter-spacing: 6px; color: #2563eb;">${code}</span>
-                </div>
-                <p style="color: #64748b; font-size: 12px; margin-bottom: 0;">Bu kod 15 dakika boyunca geçerlidir. Talebi siz yapmadıysanız lütfen bu e-postayı dikkate almayınız.</p>
-              </div>
-            `
-          })
-
-          return {
-            success: true,
-            email: maskedDisplay,
-            isTestMode: false,
-            testCode: code
-          }
-        } catch (mailError: any) {
-          console.warn('SMTP Send error, falling back to test mode code:', mailError?.message)
-          return {
-            success: true,
-            email: maskedDisplay,
-            isTestMode: true,
-            testCode: code,
-            warning: `SMTP e-posta gönderimi başarısız oldu (${mailError?.message || 'Bağlantı hatası'}). Test için doğrulama kodunuz hazırlandı.`
-          }
+      if (!smtpHost || !smtpUser || !smtpPass) {
+        return {
+          success: false,
+          error: 'SMTP sunucusu yapılandırılmamış; kurtarma kodu gönderilemiyor.'
         }
       }
 
-      // SMTP not configured - enable test mode with generated code
-      return {
-        success: true,
-        email: maskedDisplay,
-        isTestMode: true,
-        testCode: code,
-        warning: 'SMTP sunucusu yapılandırılmadığı için test modu aktiftir.'
+      const genericOk = { success: true, message: 'Adres kayıtlıysa doğrulama kodu gönderildi.' }
+      if (!registered.includes(email)) {
+        // Do not reveal whether the address is registered.
+        return genericOk
       }
+
+      const code = crypto.randomInt(100000, 1000000).toString()
+      const salt = crypto.randomBytes(16).toString('hex')
+      const candidate: RecoveryState = {
+        salt,
+        codeHash: hashRecoveryCode(salt, code),
+        expiresAt: now + RECOVERY_TTL_MS,
+        attempts: 0,
+        verified: false,
+        lastSentAt: now
+      }
+
+      const actualSecure =
+        smtpPort === 465
+          ? true
+          : smtpPort === 587 || smtpPort === 25 || smtpPort === 2525
+            ? false
+            : smtpSecure
+
+      try {
+        const nodemailer = await import('nodemailer')
+        const transporter = nodemailer.createTransport({
+          host: smtpHost,
+          port: smtpPort,
+          secure: actualSecure,
+          auth: { user: smtpUser, pass: smtpPass }
+        })
+        const institution = getSetting('institutionName') || 'TEMİN 360 Kurumu'
+        await transporter.sendMail({
+          from: `"${institution} (TEMİN 360)" <${smtpUser}>`,
+          to: email,
+          subject: '[TEMİN 360] Parola Sıfırlama Kodu',
+          html: `
+              <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff;">
+                <h2 style="color: #1e293b; margin-top: 0;">TEMİN 360 Güvenlik Doğrulaması</h2>
+                <p style="color: #475569; font-size: 14px;"><strong>${institution}</strong> çalışma dosyası için parola sıfırlama talebinde bulunuldu.</p>
+                <div style="background: #f1f5f9; padding: 18px; border-radius: 8px; text-align: center; margin: 20px 0;">
+                  <span style="font-size: 28px; font-weight: bold; letter-spacing: 6px; color: #2563eb;">${code}</span>
+                </div>
+                <p style="color: #64748b; font-size: 12px; margin-bottom: 0;">Bu kod 10 dakika geçerlidir ve tek kullanımlıktır. Talebi siz yapmadıysanız bu e-postayı dikkate almayın.</p>
+              </div>
+            `
+        })
+      } catch (mailError: any) {
+        activeRecovery = null
+        console.warn('Recovery e-mail could not be sent:', mailError?.code || 'SMTP_ERROR')
+        return {
+          success: false,
+          error: 'E-posta gönderilemedi. SMTP ayarlarınızı kontrol edip tekrar deneyin.'
+        }
+      }
+
+      activeRecovery = candidate
+      return genericOk
     } catch (error: any) {
-      console.error('Send recovery email error:', error)
-      return { success: false, error: error.message }
+      console.error('Send recovery email error:', error?.message)
+      return { success: false, error: 'Kurtarma işlemi başlatılamadı.' }
     }
   })
 
   /**
    * <summary>
-   * Kurtarma Kodu Doğrulama İşleyicisi
+   * Adım 2: Kod doğrulama (10 dk, en fazla 5 deneme, tek kullanımlık)
    * </summary>
-   * <param name="inputCode">Kullanıcının girdiği 6 haneli doğrulama kodu</param>
    */
   ipcMain.handle('db:verify-recovery-code', async (_, inputCode: string) => {
     try {
       if (!activeRecovery) {
-        return {
-          success: false,
-          error: 'Aktif bir kurtarma kodu bulunamadı. Lütfen tekrar kod isteyin.'
-        }
+        return { success: false, error: 'Aktif bir kurtarma kodu yok. Lütfen yeni kod isteyin.' }
       }
       if (Date.now() > activeRecovery.expiresAt) {
         activeRecovery = null
         return {
           success: false,
-          error: 'Doğrulama kodunun geçerlilik süresi dolmuş (15 dk). Lütfen yeni kod isteyin.'
+          error: 'Doğrulama kodunun süresi doldu (10 dk). Lütfen yeni kod isteyin.'
         }
       }
+      if (activeRecovery.verified) return { success: true }
+
+      activeRecovery.attempts += 1
       const cleanInput = (inputCode || '').toString().trim()
-      if (cleanInput !== activeRecovery.code) {
-        return { success: false, error: 'Girdiğiniz 6 haneli doğrulama kodu hatalı!' }
+      const given = Buffer.from(hashRecoveryCode(activeRecovery.salt, cleanInput), 'hex')
+      const expected = Buffer.from(activeRecovery.codeHash, 'hex')
+      if (!crypto.timingSafeEqual(given, expected)) {
+        if (activeRecovery.attempts >= RECOVERY_MAX_ATTEMPTS) {
+          activeRecovery = null
+          return {
+            success: false,
+            error: 'Çok fazla hatalı deneme. Kod iptal edildi; lütfen yeni kod isteyin.'
+          }
+        }
+        return {
+          success: false,
+          error: `Doğrulama kodu hatalı! Kalan deneme: ${RECOVERY_MAX_ATTEMPTS - activeRecovery.attempts}`
+        }
       }
+      activeRecovery.verified = true
+      activeRecovery.expiresAt = Date.now() + RECOVERY_TTL_MS
       return { success: true }
     } catch (error: any) {
-      console.error('Verify recovery code error:', error)
-      return { success: false, error: error.message }
+      console.error('Verify recovery code error:', error?.message)
+      return { success: false, error: 'Kod doğrulanamadı.' }
+    }
+  })
+
+  /**
+   * <summary>
+   * Adım 3: Doğrulanmış kurtarma oturumuyla yeni parola belirleme.
+   * Yalnızca parolayı günceller; çalışma dosyası verilerine dokunmaz. Tek kullanımlıktır.
+   * </summary>
+   */
+  ipcMain.handle('db:reset-password', async (_, newPassword: string) => {
+    try {
+      if (!activeRecovery || !activeRecovery.verified || Date.now() > activeRecovery.expiresAt) {
+        activeRecovery = null
+        return {
+          success: false,
+          error: 'Doğrulanmış bir kurtarma oturumu yok. Süreci yeniden başlatın.'
+        }
+      }
+      if (typeof newPassword !== 'string' || newPassword.length < MIN_PASSWORD_LENGTH) {
+        return { success: false, error: `Parola en az ${MIN_PASSWORD_LENGTH} karakter olmalıdır.` }
+      }
+      const db = workspaceManager.getDb()
+      const userRow = db.prepare("SELECT value FROM settings WHERE key = 'adminUsername'").get() as
+        | { value?: string }
+        | undefined
+      const username = userRow?.value || 'admin'
+      applyPassword(db, username, newPassword, os.hostname())
+      workspaceManager.recordMutation('SETTINGS')
+      workspaceManager.save()
+      activeRecovery = null
+      return { success: true, username }
+    } catch (error: any) {
+      console.error('Reset password error:', error?.message)
+      return { success: false, error: 'Parola güncellenemedi.' }
     }
   })
 }

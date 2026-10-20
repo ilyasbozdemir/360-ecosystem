@@ -1,10 +1,8 @@
 import React from 'react'
-import { ClipboardCheck, Sparkles } from 'lucide-react'
+import { ClipboardCheck } from 'lucide-react'
 
 interface LockScreenVerifyCodeProps {
   recoveryEmail: string
-  testCode: string | null
-  recoveryWarning: string | null
   recoveryCode: string
   setRecoveryCode: (code: string) => void
   loading: boolean
@@ -15,8 +13,6 @@ interface LockScreenVerifyCodeProps {
 
 export function LockScreenVerifyCode({
   recoveryEmail,
-  testCode,
-  recoveryWarning,
   recoveryCode,
   setRecoveryCode,
   loading,
@@ -27,35 +23,9 @@ export function LockScreenVerifyCode({
   return (
     <div className="space-y-4">
       <p className="text-slate-650 dark:text-slate-300 text-xs leading-relaxed">
-        Kurtarma kodu <strong>{recoveryEmail}</strong> adresine başarıyla gönderildi. Lütfen gelen 6
-        haneli kodu girin.
+        <strong>{recoveryEmail}</strong> adresi kayıtlıysa 6 haneli doğrulama kodu gönderildi. Kod
+        10 dakika geçerlidir; en fazla 5 deneme hakkınız vardır.
       </p>
-
-      {import.meta.env.DEV && testCode && (
-        <div className="p-3.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-2xl flex flex-col gap-2 animate-in fade-in">
-          <div className="flex items-center gap-2 text-xs font-semibold text-amber-800 dark:text-amber-300">
-            <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
-            <span>Test Modu Doğrulama Kodu</span>
-          </div>
-          <div className="flex items-center justify-between bg-white dark:bg-slate-900 px-3 py-2 rounded-xl border border-amber-100 dark:border-amber-900/50">
-            <span className="font-mono text-base font-bold tracking-[3px] text-amber-700 dark:text-amber-300">
-              {testCode}
-            </span>
-            <button
-              type="button"
-              onClick={() => setRecoveryCode(testCode)}
-              className="text-[11px] font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 underline cursor-pointer"
-            >
-              Kodu Kutuya Doldur
-            </button>
-          </div>
-          {recoveryWarning && (
-            <span className="text-[10px] text-amber-700/80 dark:text-amber-400/80 leading-tight">
-              {recoveryWarning}
-            </span>
-          )}
-        </div>
-      )}
 
       <div>
         <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 ml-1">

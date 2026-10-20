@@ -3,7 +3,11 @@ import fs from 'fs'
 import os from 'os'
 import { workspaceManager } from '../../database/workspace'
 import { getSetting } from '../../utils/settingsHelper'
-import { savePasswordToHistory } from './dbAuthHandlers'
+import { applyPassword } from './dbAuthHandlers'
+import { verifyPassword } from './authCrypto'
+
+// Kimlik bilgisi anahtarları genel ayar IPC'si üzerinden okunamaz/yazılamaz.
+const PROTECTED_KEY_RE = /^(adminPassword|passwordHistory|additionalUsers|pcPass_.*)$/
 
 /**
  * Sistem Ayarları ve SMTP Konfigürasyonu IPC İşleyicileri
@@ -23,7 +27,7 @@ export function registerDbSettingsHandlers(): void {
       }[]
       const settingsObj: Record<string, string | string[] | undefined> = {}
       for (const r of rows) {
-        if (r.key && r.value !== undefined && r.value !== null) {
+        if (r.key && !PROTECTED_KEY_RE.test(r.key) && r.value !== undefined && r.value !== null) {
           settingsObj[r.key] = r.value
         }
       }
@@ -127,18 +131,24 @@ export function registerDbSettingsHandlers(): void {
       const insertStmt = db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)')
       const transaction = db.transaction((settings: Record<string, string>) => {
         for (const [key, value] of Object.entries(settings)) {
+          if (PROTECTED_KEY_RE.test(key)) continue
           insertStmt.run(key, value)
         }
       })
       transaction(settingsMap)
 
-      // Password history tracking
+      // Parola değişikliği: yalnızca yeni (boş olmayan) parola gönderildiyse ve mevcut parolayla
+      // aynı değilse hashlenerek kaydedilir.
       if (settingsMap.adminPassword) {
         const hostname = os.hostname()
-        const user = settingsMap.adminUsername || 'admin'
+        const user = settingsMap.adminUsername || getSetting('adminUsername') || 'admin'
         const pass = settingsMap.adminPassword
-        insertStmt.run(`pcPass_${user}_${hostname}`, pass)
-        savePasswordToHistory(db, user, pass, hostname)
+        const current = db
+          .prepare("SELECT value FROM settings WHERE key = 'adminPassword'")
+          .get() as { value?: string } | undefined
+        if (!verifyPassword(pass, current?.value)) {
+          applyPassword(db, user, pass, hostname)
+        }
       }
 
       workspaceManager.recordMutation('SETTINGS')
