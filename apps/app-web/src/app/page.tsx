@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
@@ -151,11 +151,11 @@ export default function Home(): React.JSX.Element {
     tag: "v1.0.0-rc.1",
     size: "157 MB",
     date: "18.10.2026",
-    url: "https://github.com/ilyasbozdemir/temin-360-app/releases/latest",
+    url: "https://github.com/ilyasbozdemir/workdesk-360/releases/latest",
     downloadUrlExe:
-      "https://github.com/ilyasbozdemir/temin-360-app/releases/latest",
+      "https://github.com/ilyasbozdemir/workdesk-360/releases/latest",
     downloadUrlDmg:
-      "https://github.com/ilyasbozdemir/temin-360-app/releases/latest",
+      "https://github.com/ilyasbozdemir/workdesk-360/releases/latest",
   });
 
   const terminalEndRef = useRef<HTMLDivElement>(null);
@@ -215,7 +215,7 @@ export default function Home(): React.JSX.Element {
   // Fetch GitHub Latest Release dynamically
   useEffect(() => {
     fetch(
-      "https://api.github.com/repos/ilyasbozdemir/temin-360-app/releases/latest",
+      "https://api.github.com/repos/ilyasbozdemir/workdesk-360/releases/latest",
     )
       .then((res) => res.json())
       .then((data) => {
@@ -243,13 +243,13 @@ export default function Home(): React.JSX.Element {
             size: sizeMb,
             date: dateStr,
             url: data.html_url ||
-              "https://github.com/ilyasbozdemir/temin-360-app/releases",
+              "https://github.com/ilyasbozdemir/workdesk-360/releases",
             downloadUrlExe: exeAsset?.browser_download_url ||
               data.html_url ||
-              "https://github.com/ilyasbozdemir/temin-360-app/releases/latest",
+              "https://github.com/ilyasbozdemir/workdesk-360/releases/latest",
             downloadUrlDmg: dmgAsset?.browser_download_url ||
               data.html_url ||
-              "https://github.com/ilyasbozdemir/temin-360-app/releases/latest",
+              "https://github.com/ilyasbozdemir/workdesk-360/releases/latest",
           });
         }
       })
@@ -1527,7 +1527,7 @@ export default function Home(): React.JSX.Element {
                         İndirme Kanalları
                       </span>
                       <a
-                        href="https://github.com/ilyasbozdemir/temin-360-app/releases"
+                        href="https://github.com/ilyasbozdemir/workdesk-360/releases"
                         target="_blank"
                         rel="noreferrer"
                         className="text-xs text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center gap-1 font-bold"

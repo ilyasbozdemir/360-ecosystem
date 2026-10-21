@@ -33,3 +33,10 @@ nsis:
   shortcutName: Workspace 360
   uninstallDisplayName: Workspace 360
   createDesktopShortcut: always
+
+publish:
+  provider: github
+  owner: ilyasbozdemir
+  repo: workdesk-360
+  updaterCacheDirName: workspace-360-updater
+

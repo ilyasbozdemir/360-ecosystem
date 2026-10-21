@@ -1,4 +1,4 @@
-import React from 'react'
+﻿import React from 'react'
 import {
   ShieldCheck,
   Server,
@@ -188,7 +188,7 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps): React.ReactNod
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
             <button
               type="button"
-              onClick={() => openExternal('https://github.com/ilyasbozdemir/temin-360-app')}
+              onClick={() => openExternal('https://github.com/ilyasbozdemir/workdesk-360')}
               className="flex items-center gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-blue-50 dark:hover:bg-blue-950/40 border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700 transition-all cursor-pointer group"
             >
               <Star className="w-4 h-4 text-amber-500 group-hover:scale-110 transition-transform shrink-0" />
@@ -218,7 +218,7 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps): React.ReactNod
 
             <button
               type="button"
-              onClick={() => openExternal('https://github.com/ilyasbozdemir/temin-360-app/issues')}
+              onClick={() => openExternal('https://github.com/ilyasbozdemir/workdesk-360/issues')}
               className="flex items-center gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-slate-200 dark:border-slate-700 hover:border-rose-300 dark:hover:border-rose-700 transition-all cursor-pointer group"
             >
               <Bug className="w-4 h-4 text-rose-500 group-hover:scale-110 transition-transform shrink-0" />

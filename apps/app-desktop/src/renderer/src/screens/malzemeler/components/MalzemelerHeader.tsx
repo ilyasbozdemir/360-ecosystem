@@ -1,4 +1,4 @@
-import React from 'react'
+﻿import React from 'react'
 import { Link } from '@tanstack/react-router'
 import { FolderTree, HardHat, PackageSearch, Plus, Tag, Trash2 } from 'lucide-react'
 import { APP_ROUTES } from '../../../constants/routeConstants'
@@ -57,7 +57,7 @@ export function MalzemelerHeader({
               📣 Uygulama altyapımız bu kodları tamamen desteklemektedir. Hazır malzeme listesi ve
               kodlarının varsayılan olarak eklenmesi için{' '}
               <a
-                href="https://github.com/ilyasbozdemir/temin-360-app"
+                href="https://github.com/ilyasbozdemir/workdesk-360"
                 target="_blank"
                 rel="noreferrer"
                 className="underline font-semibold hover:text-blue-800 dark:hover:text-blue-200"

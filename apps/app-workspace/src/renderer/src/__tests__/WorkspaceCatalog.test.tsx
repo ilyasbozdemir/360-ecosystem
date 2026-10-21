@@ -69,4 +69,43 @@ describe('Workspace 360 - Uygulama Kataloğu ve Başlatıcı', () => {
     fireEvent.click(closeBtns[0])
     expect(screen.queryByText(/Doğrulanmış Yerel Uygulama Tanımı/i)).toBeNull()
   })
+
+  it('window.workspaceAPI mevcut olduğunda gerçek tespit rozetini ve başlatma yanıtını yansıtmalıdır', async () => {
+    // Mock workspaceAPI
+    window.workspaceAPI = {
+      isElectron: true,
+      launchApp: async () => ({ success: true, message: 'TEMİN 360 başarıyla başlatıldı (EXE)' }),
+      checkAppInstalled: async (appId: string) => {
+        if (appId === 'dev.ilyasbozdemir.temin360') {
+          return { installed: true, isDevSource: true, path: 'apps/app-desktop' }
+        }
+        return { installed: false }
+      },
+      getSystemInfo: async () => ({
+        platform: 'win32',
+        arch: 'x64',
+        nodeVersion: '22.0.0',
+        electronVersion: '39.0.0'
+      }),
+      minimizeWindow: () => {},
+      maximizeWindow: () => {},
+      closeWindow: () => {}
+    }
+
+    render(<App />)
+
+    // Geliştirici modu rozeti görünmeli
+    const devBadge = await screen.findByText('Geliştirici Modu (Dev)')
+    expect(devBadge).toBeDefined()
+
+    // Başlat butonuna tıklandığında gerçek mesaj görünmeli
+    const launchBtns = screen.getAllByText('Başlat')
+    fireEvent.click(launchBtns[0])
+
+    const successToast = await screen.findByText(/TEMİN 360 başarıyla başlatıldı/i)
+    expect(successToast).toBeDefined()
+
+    // Temizle
+    delete window.workspaceAPI
+  })
 })

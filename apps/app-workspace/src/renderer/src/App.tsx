@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import {
   DEFAULT_ECOSYSTEM_MANIFESTS,
   AppCategory,
@@ -20,6 +20,30 @@ export const App: React.FC = () => {
   const [inspectedManifest, setInspectedManifest] = useState<AppManifest | null>(null)
   const [isDark, setIsDark] = useState(false)
   const [launchNotification, setLaunchNotification] = useState<string | null>(null)
+  const [realDetections, setRealDetections] = useState<
+    Record<string, { installed: boolean; isDevSource?: boolean; path?: string; details?: string }>
+  >({})
+
+  useEffect(() => {
+    if (window.workspaceAPI?.checkAppInstalled) {
+      Promise.all(
+        DEFAULT_ECOSYSTEM_MANIFESTS.map(async (m) => {
+          try {
+            const res = await window.workspaceAPI!.checkAppInstalled(m.appId)
+            return [m.appId, res] as const
+          } catch {
+            return [m.appId, { installed: false }] as const
+          }
+        })
+      ).then((results) => {
+        const map: Record<string, { installed: boolean; isDevSource?: boolean; path?: string; details?: string }> = {}
+        for (const [id, res] of results) {
+          map[id] = res
+        }
+        setRealDetections(map)
+      })
+    }
+  }, [])
 
   const toggleTheme = () => {
     setIsDark((prev) => {
@@ -113,6 +137,7 @@ export const App: React.FC = () => {
               <AppCard
                 key={manifest.id}
                 manifest={manifest}
+                realStatus={realDetections[manifest.appId]}
                 onInspect={setInspectedManifest}
                 onLaunch={handleLaunch}
               />

@@ -1,7 +1,7 @@
-# 💼 WorkSuite 360 — Mimari, Masaüstü Uygulamaları ve Workspace 360
+﻿# 💼 WorkSuite 360 — Mimari, Masaüstü Uygulamaları ve Workspace 360
 
-> **Ana Depo:** [github.com/ilyasbozdemir/worksuite-360](https://github.com/ilyasbozdemir/worksuite-360)  
-> **Temin & İhale Uygulaması:** [TEMİN 360](https://github.com/ilyasbozdemir/temin-360-app)
+> **Ana Depo:** [github.com/ilyasbozdemir/workdesk-360](https://github.com/ilyasbozdemir/workdesk-360)  
+> **Temin & İhale Uygulaması:** [TEMİN 360](https://github.com/ilyasbozdemir/workdesk-360)
 
 ---
 
@@ -68,7 +68,7 @@ Workspace 360, kullanıcının bilgisayarında kurulu olan WorkSuite 360 uygulam
 ## 6. Monorepo Yapısı ve Paketler
 
 ```text
-temin-360-app/
+workdesk-360/
 ├── apps/
 │   ├── app-desktop/          # TEMİN 360 (Electron + React + SQLite)
 │   ├── app-workspace/        # Workspace 360 (Vite + React + Tailwind + Catalog)

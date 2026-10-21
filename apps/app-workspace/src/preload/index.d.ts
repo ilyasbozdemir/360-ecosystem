@@ -5,10 +5,17 @@ export interface SystemInfo {
   electronVersion: string
 }
 
+export interface AppDetectionResult {
+  installed: boolean
+  isDevSource?: boolean
+  path?: string
+  details?: string
+}
+
 export interface WorkspaceAPI {
   isElectron: boolean
   launchApp: (appId: string) => Promise<{ success: boolean; message?: string }>
-  checkAppInstalled: (appId: string) => Promise<{ installed: boolean; path?: string }>
+  checkAppInstalled: (appId: string) => Promise<AppDetectionResult>
   getSystemInfo: () => Promise<SystemInfo>
   minimizeWindow: () => void
   maximizeWindow: () => void

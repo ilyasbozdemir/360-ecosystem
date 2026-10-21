@@ -1,5 +1,5 @@
 import React from 'react'
-import { LayoutGrid, Moon, Sun, Search, Sparkles } from 'lucide-react'
+import { LayoutGrid, Moon, Sun, Search, Sparkles, Minus, Square, X } from 'lucide-react'
 
 interface HeaderProps {
   searchQuery: string
@@ -14,29 +14,46 @@ export const Header: React.FC<HeaderProps> = ({
   isDark,
   onToggleTheme
 }) => {
+  const isElectron = typeof window !== 'undefined' && !!window.workspaceAPI
+
+  const handleMinimize = () => {
+    window.workspaceAPI?.minimizeWindow()
+  }
+
+  const handleMaximize = () => {
+    window.workspaceAPI?.maximizeWindow()
+  }
+
+  const handleClose = () => {
+    window.workspaceAPI?.closeWindow()
+  }
+
   return (
     <header
       style={{
         backgroundColor: 'var(--theme-bg-200)',
         borderBottom: '1px solid var(--theme-border-100)'
       }}
-      className="sticky top-0 z-40 px-6 py-4 backdrop-blur-md"
+      className="sticky top-0 z-40 shadow-xs backdrop-blur-md select-none"
     >
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
-        {/* Brand & Title */}
+      {/* Üst Vurgu Çizgisi - TEMİN 360 İmzası */}
+      <div className="h-0.5 w-full bg-gradient-to-r from-blue-500 via-sky-400 to-indigo-500" />
+
+      <div className="px-5 py-3 flex flex-col md:flex-row md:items-center justify-between gap-3">
+        {/* Sol Alan: Logo, Başlık ve Ekosistem Rozeti */}
         <div className="flex items-center gap-3">
           <div
             style={{
-              background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+              background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
               color: '#ffffff'
             }}
-            className="w-10 h-10 rounded-xl flex items-center justify-center shadow-md font-bold text-lg"
+            className="w-9 h-9 rounded-xl flex items-center justify-center shadow-md font-bold text-lg shrink-0"
           >
-            <LayoutGrid size={22} />
+            <LayoutGrid size={20} />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold tracking-tight" style={{ color: 'var(--theme-text-100)' }}>
+              <h1 className="text-base font-bold tracking-tight" style={{ color: 'var(--theme-text-100)' }}>
                 Workspace 360
               </h1>
               <span
@@ -45,22 +62,23 @@ export const Header: React.FC<HeaderProps> = ({
                   color: 'var(--theme-badge-planned-text)',
                   borderColor: 'var(--theme-badge-planned-border)'
                 }}
-                className="text-xs px-2 py-0.5 rounded-full border font-medium flex items-center gap-1"
+                className="text-[11px] px-2 py-0.5 rounded-full border font-semibold flex items-center gap-1"
               >
-                <Sparkles size={11} /> WorkSuite 360 Hub
+                <Sparkles size={11} /> WorkSuite 360
               </span>
             </div>
-            <p className="text-xs" style={{ color: 'var(--theme-text-200)' }}>
+            <p className="text-[11px]" style={{ color: 'var(--theme-text-200)' }}>
               Merkezi Masaüstü Çalışma Alanı, Uygulama Kataloğu ve Başlatıcı
             </p>
           </div>
         </div>
 
-        {/* Search & Actions */}
-        <div className="flex items-center gap-3">
-          <div className="relative w-full md:w-72">
+        {/* Sağ Alan: Arama, Tema Geçişi ve Pencere Kontrolleri */}
+        <div className="flex items-center gap-2">
+          {/* Arama Kutusu */}
+          <div className="relative w-full md:w-64">
             <Search
-              size={16}
+              size={14}
               className="absolute left-3 top-1/2 -translate-y-1/2"
               style={{ color: 'var(--theme-text-200)' }}
             />
@@ -68,16 +86,17 @@ export const Header: React.FC<HeaderProps> = ({
               type="text"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Uygulama, modül veya işlev ara..."
+              placeholder="Uygulama veya modül ara..."
               style={{
                 backgroundColor: 'var(--theme-bg-100)',
                 color: 'var(--theme-text-100)',
                 borderColor: 'var(--theme-border-100)'
               }}
-              className="w-full pl-9 pr-3 py-1.5 text-sm rounded-lg border focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border focus:outline-none focus:ring-1.5 focus:ring-blue-500 transition-all"
             />
           </div>
 
+          {/* Tema Butonu */}
           <button
             onClick={onToggleTheme}
             aria-label="Tema Değiştir"
@@ -86,10 +105,43 @@ export const Header: React.FC<HeaderProps> = ({
               borderColor: 'var(--theme-border-100)',
               color: 'var(--theme-text-100)'
             }}
-            className="p-2 rounded-lg border hover:opacity-80 transition-opacity"
+            className="p-1.5 rounded-lg border hover:opacity-80 transition-all"
           >
-            {isDark ? <Sun size={18} /> : <Moon size={18} />}
+            {isDark ? <Sun size={15} /> : <Moon size={15} />}
           </button>
+
+          {/* Electron Pencere Kontrolleri (Masaüstü Modunda Aktif) */}
+          {isElectron && (
+            <div
+              className="flex items-center gap-1 pl-2 border-l ml-1"
+              style={{ borderColor: 'var(--theme-border-100)' }}
+            >
+              <button
+                onClick={handleMinimize}
+                aria-label="Simge Durumuna Küçült"
+                style={{ color: 'var(--theme-text-200)' }}
+                className="p-1.5 rounded hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors"
+              >
+                <Minus size={14} />
+              </button>
+              <button
+                onClick={handleMaximize}
+                aria-label="Ekranı Kapla"
+                style={{ color: 'var(--theme-text-200)' }}
+                className="p-1.5 rounded hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors"
+              >
+                <Square size={12} />
+              </button>
+              <button
+                onClick={handleClose}
+                aria-label="Kapat"
+                style={{ color: 'var(--theme-text-200)' }}
+                className="p-1.5 rounded hover:bg-red-500 hover:text-white transition-colors"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>

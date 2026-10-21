@@ -1,11 +1,11 @@
-{
+﻿{
   "antetSatirlari": [
     "T.C.",
     "ADIYAMAN VALİLİĞİ",
     "İL MİLLİ EĞİTİM MÜDÜRLÜĞÜ",
     "Birsen Esensoy İlkokulu Müdürlüğü"
   ],
-  "solLogo": "https://raw.githubusercontent.com/ilyasbozdemir/temin-360-app/main/public/icon.png",
+  "solLogo": "https://raw.githubusercontent.com/ilyasbozdemir/workdesk-360/main/public/icon.png",
   "sagLogo": "",
   "kurumUstBirim": "ADIYAMAN VALİLİĞİ",
   "kurumBirim": "İL MİLLİ EĞİTİM MÜDÜRLÜĞÜ",

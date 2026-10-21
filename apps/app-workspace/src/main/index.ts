@@ -1,5 +1,6 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
-import { join } from 'path'
+import { join, resolve, basename } from 'path'
+import { spawn } from 'child_process'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import fs from 'fs'
 
@@ -19,6 +20,117 @@ function getIconPath(): string | undefined {
     }
   }
   return undefined
+}
+
+function getRepoRoot(): string {
+  // __dirname in dev: apps/app-workspace/out/main
+  return resolve(__dirname, '../../../..')
+}
+
+export interface AppDetectionResult {
+  installed: boolean
+  isDevSource?: boolean
+  path?: string
+  details?: string
+}
+
+function detectTemin360(): AppDetectionResult {
+  const repoRoot = getRepoRoot()
+
+  // 1. Check local production dist-local or unpacked build
+  const localDevUnpacked = resolve(repoRoot, 'apps/app-desktop/dist-local/win-unpacked/TEMIN360.exe')
+  if (fs.existsSync(localDevUnpacked)) {
+    return {
+      installed: true,
+      isDevSource: false,
+      path: localDevUnpacked,
+      details: 'Yerel paketlenmiş sürüm (dist-local/win-unpacked)'
+    }
+  }
+
+  // 2. Check standard Windows installation directories
+  const localAppData = process.env.LOCALAPPDATA || ''
+  const programFiles = process.env.ProgramFiles || ''
+  const programFilesX86 = process.env['ProgramFiles(x86)'] || ''
+
+  const candidatePaths = [
+    join(localAppData, 'Programs', 'temin360', 'TEMIN360.exe'),
+    join(localAppData, 'temin360', 'TEMIN360.exe'),
+    join(localAppData, 'Programs', 'TEMİN 360', 'TEMIN360.exe'),
+    join(programFiles, 'TEMİN 360', 'TEMIN360.exe'),
+    join(programFilesX86, 'TEMİN 360', 'TEMIN360.exe')
+  ]
+
+  for (const p of candidatePaths) {
+    if (p && fs.existsSync(p)) {
+      return {
+        installed: true,
+        isDevSource: false,
+        path: p,
+        details: 'Windows kurulu sürüm'
+      }
+    }
+  }
+
+  // 3. Check if running inside development workspace repo with source available
+  const desktopSourcePkg = resolve(repoRoot, 'apps/app-desktop/package.json')
+  if (fs.existsSync(desktopSourcePkg)) {
+    return {
+      installed: true,
+      isDevSource: true,
+      path: resolve(repoRoot, 'apps/app-desktop'),
+      details: 'Geliştirici ortamı kaynak kodu (apps/app-desktop)'
+    }
+  }
+
+  return {
+    installed: false,
+    details: 'Uygulama sistemi üzerinde bulunamadı.'
+  }
+}
+
+async function launchTemin360(): Promise<{ success: boolean; message: string }> {
+  const detection = detectTemin360()
+  if (!detection.installed) {
+    return {
+      success: false,
+      message: 'TEMİN 360 bulunamadı. Lütfen önce kurulumu gerçekleştirin.'
+    }
+  }
+
+  try {
+    if (!detection.isDevSource && detection.path && fs.existsSync(detection.path)) {
+      const child = spawn(detection.path, [], {
+        detached: true,
+        stdio: 'ignore'
+      })
+      child.unref()
+      return {
+        success: true,
+        message: `TEMİN 360 masaüstü uygulaması başlatıldı (${basename(detection.path)}).`
+      }
+    }
+
+    const repoRoot = getRepoRoot()
+    const pnpmCmd = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
+    const child = spawn(pnpmCmd, ['--filter', 'app-desktop', 'dev'], {
+      cwd: repoRoot,
+      shell: true,
+      detached: true,
+      stdio: 'ignore'
+    })
+    child.unref()
+    return {
+      success: true,
+      message: 'TEMİN 360 geliştirici modunda (pnpm dev) başlatılıyor...'
+    }
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : String(err)
+    return {
+      success: false,
+      message: `Başlatma hatası: ${errorMsg}`
+    }
+  }
 }
 
 function createWindow(): void {
@@ -48,8 +160,6 @@ function createWindow(): void {
     return { action: 'deny' }
   })
 
-  // HMR for renderer base on electron-vite cli.
-  // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
@@ -59,24 +169,20 @@ function createWindow(): void {
 
 function registerIpcHandlers(): void {
   ipcMain.handle('workspace:launch-app', async (_event, appId: string) => {
-    try {
-      // In production or development, handle launching brother apps
-      if (appId === 'dev.ilyasbozdemir.temin360') {
-        // Can open installed executable or emit success
-        return { success: true, message: 'TEMİN 360 başlatıldı.' }
-      }
-      return { success: true, message: `${appId} başlatma isteği alındı.` }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err)
-      return { success: false, message: `Başlatma hatası: ${msg}` }
+    if (appId === 'dev.ilyasbozdemir.temin360') {
+      return await launchTemin360()
+    }
+    return {
+      success: false,
+      message: `${appId} için henüz çalıştırılabilir bir paket bulunmamaktadır.`
     }
   })
 
   ipcMain.handle('workspace:check-app', async (_event, appId: string) => {
     if (appId === 'dev.ilyasbozdemir.temin360') {
-      return { installed: true, path: 'TEMIN360.exe' }
+      return detectTemin360()
     }
-    return { installed: false }
+    return { installed: false, details: 'Uygulama henüz yayınlanmadı.' }
   })
 
   ipcMain.handle('workspace:get-system-info', async () => {
@@ -106,11 +212,8 @@ function registerIpcHandlers(): void {
 }
 
 app.whenReady().then(() => {
-  // Set app user model id for windows
   electronApp.setAppUserModelId('dev.ilyasbozdemir.workspace360')
 
-  // Default open or close DevTools by F12 in dev
-  // and ignore CommandOrControl + R in production.
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })

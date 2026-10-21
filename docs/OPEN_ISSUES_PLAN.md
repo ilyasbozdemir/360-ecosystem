@@ -1,4 +1,4 @@
-# 📋 TEMİN 360 — Açık 7 Issue Çözüm ve Uygulama Rehberi
+﻿# 📋 TEMİN 360 — Açık 7 Issue Çözüm ve Uygulama Rehberi
 
 Bu belge, **TEMİN 360** projesinde açık durumda olan **7 GitHub Issue'nun** detaylı teknik analizini, çözüm önerilerini, kodlama adımlarını ve uygulanacak mimarileri içermektedir.
 
@@ -63,7 +63,7 @@ Yeni dosya oluşturma ekranı şu an tek parça uzun bir formdan oluşuyor. Kull
 Dosya takip ekranında tüm dosyalar liste şeklinde görünüyor. Süreçlerin durumlarına göre görsel olarak sürüklenebileceği bir tahta yok.
 
 #### 🛠️ Çözüm & Kodlama Adımları
-1. [`DosyaTakip.screen.tsx`](file:///d:/Github/ilyas-bozdemir/temin-360-app/apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaTakip.screen.tsx) içerisine Kanban modları eklenecek (Liste Görünümü / Kanban Görünümü).
+1. [`DosyaTakip.screen.tsx`](file:///d:/Github/ilyas-bozdemir/workdesk-360/apps/app-desktop/src/renderer/src/screens/dosya/sub-screens/DosyaTakip.screen.tsx) içerisine Kanban modları eklenecek (Liste Görünümü / Kanban Görünümü).
 2. **4 Kolonlu Kanban Tahtası**:
    - 🟡 **Hazırlık Aşamasında** (`DURUM_HAZIRLIK`)
    - 🔵 **Teklif Toplanıyor** (`DURUM_TEKLIF_TOPLAMA`)
@@ -104,7 +104,7 @@ Uygulamada tüm yazılar sabit rem/px boyutlarında. Az gören veya büyük yaz�
      toggleHighContrast: () => set((state) => ({ highContrast: !state.highContrast }))
    }));
    ```
-2. [`PageWrapper.tsx`](file:///d:/Github/ilyas-bozdemir/temin-360-app/apps/app-desktop/src/renderer/src/components/layout/PageWrapper.tsx) ana elementine `style={{ fontSize: `${fontSizeScale * 100}%` }}` veya `data-contrast={highContrast}` özniteliği eklenecek.
+2. [`PageWrapper.tsx`](file:///d:/Github/ilyas-bozdemir/workdesk-360/apps/app-desktop/src/renderer/src/components/layout/PageWrapper.tsx) ana elementine `style={{ fontSize: `${fontSizeScale * 100}%` }}` veya `data-contrast={highContrast}` özniteliği eklenecek.
 3. Sidebar veya Üst Bar'a `A-`, `A+`, `Yüksek Kontrast` kısayol araçları yerleştirilecek.
 
 ---

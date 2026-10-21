@@ -1,4 +1,4 @@
-# Destek ve İletişim Rehberi (Support & Community)
+﻿# Destek ve İletişim Rehberi (Support & Community)
 
 Temin 360 ekosistemine hoş geldiniz! Projeyi kurarken, geliştirirken veya
 kurumunuzda devreye alırken ihtiyaç duyabileceğiniz destek kanalları aşağıda
@@ -12,12 +12,12 @@ Açık kaynak kullanıcılarımız için aşağıdaki kanallar üzerinden toplul
 sağlanmaktadır:
 
 - **Soru & Fikir Paylaşımı:**
-  [GitHub Discussions](https://github.com/ilyasbozdemir/temin-360-app/discussions)
+  [GitHub Discussions](https://github.com/ilyasbozdemir/workdesk-360/discussions)
   üzerinden sorularınızı sorabilir, süreç akışları ve şablonlar hakkında
   önerilerde bulunabilirsiniz.
 - **Hata Bildirimi (Bug Reports):** Karşılaştığınız yazılımsal hataları, işletim
   sistemi (Windows/Linux/macOS) ve adım adım ekran görüntüleri ile birlikte
-  [GitHub Issues](https://github.com/ilyasbozdemir/temin-360-app/issues)
+  [GitHub Issues](https://github.com/ilyasbozdemir/workdesk-360/issues)
   alanında açabilirsiniz.
 - **Yeni Özellik Talepleri (Feature Requests):** Mevzuat değişiklikleri veya
   yeni modül ihtiyaçları için issue etiketlerinde `enhancement` seçerek talep

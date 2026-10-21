@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
@@ -101,13 +101,13 @@ export default function Home() {
     tag: "v1.0.0-rc.1",
     size: "157 MB",
     date: "18.10.2026",
-    url: "https://github.com/ilyasbozdemir/temin-360-app/releases/latest",
+    url: "https://github.com/ilyasbozdemir/workdesk-360/releases/latest",
   });
 
   // Fetch GitHub Release info on mount
   useEffect(() => {
     fetch(
-      "https://api.github.com/repos/ilyasbozdemir/temin-360-app/releases/latest",
+      "https://api.github.com/repos/ilyasbozdemir/workdesk-360/releases/latest",
     )
       .then((res) => res.json())
       .then((data) => {
@@ -128,7 +128,7 @@ export default function Home() {
             size: sizeMb,
             date: dateStr,
             url: data.html_url ||
-              "https://github.com/ilyasbozdemir/temin-360-app/releases",
+              "https://github.com/ilyasbozdemir/workdesk-360/releases",
           });
         }
       })
@@ -269,7 +269,7 @@ export default function Home() {
           <div className="flex items-center gap-1.5 sm:gap-2.5">
             {/* GitHub Link */}
             <a
-              href="https://github.com/ilyasbozdemir/temin-360-app"
+              href="https://github.com/ilyasbozdemir/workdesk-360"
               target="_blank"
               rel="noopener noreferrer"
               className="p-2 sm:p-2 rounded-xl text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-900 dark:hover:bg-slate-800 transition-all border border-slate-200/80 dark:border-slate-800"
@@ -382,7 +382,7 @@ export default function Home() {
               </span>
               <div className="flex gap-2">
                 <a
-                  href="https://github.com/ilyasbozdemir/temin-360-app"
+                  href="https://github.com/ilyasbozdemir/workdesk-360"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-2 rounded-lg bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-200"
@@ -446,7 +446,7 @@ export default function Home() {
             <span>Web Sürümünü Dene (Demo)</span>
           </a>
           <a
-            href="https://github.com/ilyasbozdemir/temin-360-app"
+            href="https://github.com/ilyasbozdemir/workdesk-360"
             target="_blank"
             rel="noopener noreferrer"
             className="w-full sm:w-auto px-5 py-3.5 rounded-2xl bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-900/60 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 active:scale-95"
@@ -465,25 +465,25 @@ export default function Home() {
           <span className="hidden sm:inline w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
           <div className="flex items-center gap-2">
             <a
-              href="https://github.com/ilyasbozdemir/temin-360-app/releases/latest"
+              href="https://github.com/ilyasbozdemir/workdesk-360/releases/latest"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block hover:opacity-90 transition-opacity"
             >
               <img
-                src="https://img.shields.io/github/v/release/ilyasbozdemir/temin-360-app?style=flat-square&logo=github&label=Son%20S%C3%BCr%C3%BCm"
+                src="https://img.shields.io/github/v/release/ilyasbozdemir/workdesk-360?style=flat-square&logo=github&label=Son%20S%C3%BCr%C3%BCm"
                 alt="Latest Release"
                 className="h-5 rounded"
               />
             </a>
             <a
-              href="https://github.com/ilyasbozdemir/temin-360-app/releases"
+              href="https://github.com/ilyasbozdemir/workdesk-360/releases"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block hover:opacity-90 transition-opacity"
             >
               <img
-                src="https://img.shields.io/github/downloads/ilyasbozdemir/temin-360-app/total?style=flat-square&logo=github&color=blue"
+                src="https://img.shields.io/github/downloads/ilyasbozdemir/workdesk-360/total?style=flat-square&logo=github&color=blue"
                 alt="Downloads"
                 className="h-5 rounded"
               />
@@ -918,7 +918,7 @@ volumes:
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
             {/* Windows Download Card */}
             <a
-              href="https://github.com/ilyasbozdemir/temin-360-app/releases/latest"
+              href="https://github.com/ilyasbozdemir/workdesk-360/releases/latest"
               target="_blank"
               rel="noopener noreferrer"
               className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-500 shadow-md hover:shadow-xl transition-all group cursor-pointer active:scale-[0.99]"
@@ -947,7 +947,7 @@ volumes:
 
             {/* macOS Download Card */}
             <a
-              href="https://github.com/ilyasbozdemir/temin-360-app/releases/latest"
+              href="https://github.com/ilyasbozdemir/workdesk-360/releases/latest"
               target="_blank"
               rel="noopener noreferrer"
               className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-500 shadow-md hover:shadow-xl transition-all group cursor-pointer active:scale-[0.99]"
@@ -1004,7 +1004,7 @@ volumes:
           {/* Social Links & Navigation */}
           <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 font-bold text-slate-600 dark:text-slate-400">
             <a
-              href="https://github.com/ilyasbozdemir/temin-360-app"
+              href="https://github.com/ilyasbozdemir/workdesk-360"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1.5 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
@@ -1031,7 +1031,7 @@ volumes:
               <span>Web Panel</span>
             </a>
             <a
-              href="https://github.com/ilyasbozdemir/temin-360-app/releases"
+              href="https://github.com/ilyasbozdemir/workdesk-360/releases"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"

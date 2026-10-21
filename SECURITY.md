@@ -1,4 +1,4 @@
-# Güvenlik Politikası ve Lisans İhlal Bildirimi (Security & Compliance Policy)
+﻿# Güvenlik Politikası ve Lisans İhlal Bildirimi (Security & Compliance Policy)
 
 Temin 360, doğrudan temin, ihale ve resmî yazışma gibi hassas mali ve kurumsal
 süreçlerin yönetildiği kritik bir sistemdir. Kullanıcılarımızın ve kamu/özel
@@ -31,7 +31,7 @@ Güvenlik açıklarını bildirmek için:
 1. **E-Posta:** `bozdemir.ib70@gmail.com` adresine konu kısmına
    `[GÜVENLİK AÇIĞI] - Temin 360` yazarak bildirimde bulununuz.
 2. **GitHub Security Advisory:** Depomuzun
-   [Security Advisories](https://github.com/ilyasbozdemir/temin-360-app/security/advisories)
+   [Security Advisories](https://github.com/ilyasbozdemir/workdesk-360/security/advisories)
    sekmesini kullanarak gizli güvenlik bildirimi (Private Vulnerability Report)
    oluşturabilirsiniz.
 

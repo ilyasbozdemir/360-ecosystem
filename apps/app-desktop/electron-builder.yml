@@ -1,4 +1,4 @@
-appId: dev.ilyasbozdemir.temin360
+﻿appId: dev.ilyasbozdemir.temin360
 productName: TEMİN 360
 fileAssociations:
   - ext: temin
@@ -63,5 +63,5 @@ npmRebuild: true
 publish:
   provider: github
   owner: ilyasbozdemir
-  repo: temin-360-app
-  updaterCacheDirName: temin-360-app-updater
+  repo: workdesk-360
+  updaterCacheDirName: workdesk-360-updater

@@ -1,7 +1,7 @@
-import { TopluPozRow } from './toplu.types'
+﻿import { TopluPozRow } from './toplu.types'
 
 export const DEFAULT_GITHUB_RAW_URL =
-  'https://raw.githubusercontent.com/ilyasbozdemir/temin-360-app/main/catalogs/pozlar.json'
+  'https://raw.githubusercontent.com/ilyasbozdemir/workdesk-360/main/catalogs/pozlar.json'
 
 export const ORNEK_GITHUB_JSON_DATA = [
   {

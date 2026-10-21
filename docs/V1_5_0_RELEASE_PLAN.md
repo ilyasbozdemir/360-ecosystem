@@ -1,6 +1,6 @@
-# 📋 TEMİN 360 — v1.5.0 Sürüm Planı ve Mimari Yol Haritası
+﻿# 📋 TEMİN 360 — v1.5.0 Sürüm Planı ve Mimari Yol Haritası
 
-**Milestone:** [v1.5.0 — Gelişmiş Analiz ve Belge Yönetimi](https://github.com/ilyasbozdemir/temin-360-app/milestone/4)  
+**Milestone:** [v1.5.0 — Gelişmiş Analiz ve Belge Yönetimi](https://github.com/ilyasbozdemir/workdesk-360/milestone/4)  
 **Hedef Kapsam:** Harici yapay zekâ (Cloud LLM) bağımlılığı olmadan, kamu kurumlarının yerel/hava boşluklu (air-gapped) bilgisayarlarında çalışan, çevrimdışı, deterministik veri ve belge analiz altyapısı.
 
 ---
@@ -19,14 +19,14 @@
 
 | Issue # | Başlık | Modül | Öncelik | Bağımlılık |
 |---|---|---|---|---|
-| **[#29](https://github.com/ilyasbozdemir/temin-360-app/issues/29)** | `feat(core-analysis): yerel analiz motoru mimarisi ve tip güvenli ipc sözleşmesi` | Main / Core | 🔴 Yüksek (Temel) | Yok |
-| **[#30](https://github.com/ilyasbozdemir/temin-360-app/issues/30)** | `feat(document-analysis): belge alan çıkarımı ve imza durumu doğrulayıcı modülü` | Main / Docs | 🔴 Yüksek | #29, #16 |
-| **[#31](https://github.com/ilyasbozdemir/temin-360-app/issues/31)** | `feat(data-analysis): excel ve csv sayısal veri, fiyat ve aykırı değer analiz modülü` | Main / Domain | 🟡 Orta | #29 |
-| **[#32](https://github.com/ilyasbozdemir/temin-360-app/issues/32)** | `feat(rule-engine): belge ve alım türüne göre yapılandırılabilir analiz kural motoru` | Domain | 🟡 Orta | #29 |
-| **[#33](https://github.com/ilyasbozdemir/temin-360-app/issues/33)** | `feat(audit-log): sqlite analiz geçmişi, bulgu ilişkilendirme ve karşılaştırmalı raporlama` | Database | 🟡 Orta | #29 |
-| **[#34](https://github.com/ilyasbozdemir/temin-360-app/issues/34)** | `feat(ml-dataset): yerel modelleme için izinli örnek etiketleme ve veri seti yönetim altyapısı` | Main / ML | 🟢 Düşük (Hazırlık) | #30 |
-| **[#35](https://github.com/ilyasbozdemir/temin-360-app/issues/35)** | `feat(renderer): analiz merkezi arayüzü ve bulgu yönetim paneli` | Renderer UI | 🟡 Orta | #29, #33 |
-| **[#36](https://github.com/ilyasbozdemir/temin-360-app/issues/36)** | `test(analysis): yerel analiz motoru ve belge kuralları kapsamlı test paketi` | QA / Testing | 🔴 Yüksek | #29, #30, #31, #32, #33 |
+| **[#29](https://github.com/ilyasbozdemir/workdesk-360/issues/29)** | `feat(core-analysis): yerel analiz motoru mimarisi ve tip güvenli ipc sözleşmesi` | Main / Core | 🔴 Yüksek (Temel) | Yok |
+| **[#30](https://github.com/ilyasbozdemir/workdesk-360/issues/30)** | `feat(document-analysis): belge alan çıkarımı ve imza durumu doğrulayıcı modülü` | Main / Docs | 🔴 Yüksek | #29, #16 |
+| **[#31](https://github.com/ilyasbozdemir/workdesk-360/issues/31)** | `feat(data-analysis): excel ve csv sayısal veri, fiyat ve aykırı değer analiz modülü` | Main / Domain | 🟡 Orta | #29 |
+| **[#32](https://github.com/ilyasbozdemir/workdesk-360/issues/32)** | `feat(rule-engine): belge ve alım türüne göre yapılandırılabilir analiz kural motoru` | Domain | 🟡 Orta | #29 |
+| **[#33](https://github.com/ilyasbozdemir/workdesk-360/issues/33)** | `feat(audit-log): sqlite analiz geçmişi, bulgu ilişkilendirme ve karşılaştırmalı raporlama` | Database | 🟡 Orta | #29 |
+| **[#34](https://github.com/ilyasbozdemir/workdesk-360/issues/34)** | `feat(ml-dataset): yerel modelleme için izinli örnek etiketleme ve veri seti yönetim altyapısı` | Main / ML | 🟢 Düşük (Hazırlık) | #30 |
+| **[#35](https://github.com/ilyasbozdemir/workdesk-360/issues/35)** | `feat(renderer): analiz merkezi arayüzü ve bulgu yönetim paneli` | Renderer UI | 🟡 Orta | #29, #33 |
+| **[#36](https://github.com/ilyasbozdemir/workdesk-360/issues/36)** | `test(analysis): yerel analiz motoru ve belge kuralları kapsamlı test paketi` | QA / Testing | 🔴 Yüksek | #29, #30, #31, #32, #33 |
 
 ---
 

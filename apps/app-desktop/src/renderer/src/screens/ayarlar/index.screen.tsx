@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+﻿import React, { useEffect, useState } from 'react'
 import { useAyarlarHooks } from './ayarlar.hooks'
 import { menuItems } from './ayarlar.constants'
 import { Button } from '../../components/ui/Button'
@@ -154,7 +154,7 @@ export default function AyarlarScreen(): React.ReactNode {
 
   useEffect(() => {
     if (activeTab === 'developer') {
-      fetch('https://api.github.com/repos/ilyasbozdemir/temin-360-app/releases')
+      fetch('https://api.github.com/repos/ilyasbozdemir/workdesk-360/releases')
         .then((res) => res.json())
         .then((data) => {
           if (Array.isArray(data)) {

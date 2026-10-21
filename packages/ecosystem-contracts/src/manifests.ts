@@ -1,4 +1,4 @@
-import { AppManifest } from './schema.js'
+﻿import { AppManifest } from './schema.js'
 
 export const TEMIN_360_MANIFEST: AppManifest = {
   id: 'temin-360',
@@ -29,7 +29,7 @@ export const TEMIN_360_MANIFEST: AppManifest = {
   minEcosystemVersion: '1.0.0',
   author: 'ilyasbozdemir.dev',
   websiteUrl: 'https://temin360.ilyasbozdemir.dev',
-  repositoryUrl: 'https://github.com/ilyasbozdemir/temin-360-app',
+  repositoryUrl: 'https://github.com/ilyasbozdemir/workdesk-360',
   sizeEstimatedMb: 125
 }
 
@@ -49,7 +49,7 @@ export const WORKSPACE_360_MANIFEST: AppManifest = {
   releaseChannel: 'alpha',
   minEcosystemVersion: '1.0.0',
   author: 'ilyasbozdemir.dev',
-  repositoryUrl: 'https://github.com/ilyasbozdemir/worksuite-360',
+  repositoryUrl: 'https://github.com/ilyasbozdemir/workdesk-360',
   sizeEstimatedMb: 85
 }
 
@@ -76,7 +76,7 @@ export const DOSYA_360_MANIFEST: AppManifest = {
   releaseChannel: 'planned',
   minEcosystemVersion: '1.0.0',
   author: 'ilyasbozdemir.dev',
-  repositoryUrl: 'https://github.com/ilyasbozdemir/worksuite-360',
+  repositoryUrl: 'https://github.com/ilyasbozdemir/workdesk-360',
   sizeEstimatedMb: 110
 }
 
@@ -96,7 +96,7 @@ export const SUREC_360_MANIFEST: AppManifest = {
   releaseChannel: 'planned',
   minEcosystemVersion: '1.0.0',
   author: 'ilyasbozdemir.dev',
-  repositoryUrl: 'https://github.com/ilyasbozdemir/worksuite-360'
+  repositoryUrl: 'https://github.com/ilyasbozdemir/workdesk-360'
 }
 
 export const HARITA_360_MANIFEST: AppManifest = {
@@ -115,7 +115,7 @@ export const HARITA_360_MANIFEST: AppManifest = {
   releaseChannel: 'planned',
   minEcosystemVersion: '1.0.0',
   author: 'ilyasbozdemir.dev',
-  repositoryUrl: 'https://github.com/ilyasbozdemir/worksuite-360'
+  repositoryUrl: 'https://github.com/ilyasbozdemir/workdesk-360'
 }
 
 export const PERSONEL_360_MANIFEST: AppManifest = {
@@ -134,7 +134,7 @@ export const PERSONEL_360_MANIFEST: AppManifest = {
   releaseChannel: 'planned',
   minEcosystemVersion: '1.0.0',
   author: 'ilyasbozdemir.dev',
-  repositoryUrl: 'https://github.com/ilyasbozdemir/worksuite-360'
+  repositoryUrl: 'https://github.com/ilyasbozdemir/workdesk-360'
 }
 
 export const BELGE_360_MANIFEST: AppManifest = {
@@ -153,7 +153,7 @@ export const BELGE_360_MANIFEST: AppManifest = {
   releaseChannel: 'planned',
   minEcosystemVersion: '1.0.0',
   author: 'ilyasbozdemir.dev',
-  repositoryUrl: 'https://github.com/ilyasbozdemir/worksuite-360'
+  repositoryUrl: 'https://github.com/ilyasbozdemir/workdesk-360'
 }
 
 export const ARSIV_360_MANIFEST: AppManifest = {
@@ -172,7 +172,7 @@ export const ARSIV_360_MANIFEST: AppManifest = {
   releaseChannel: 'planned',
   minEcosystemVersion: '1.0.0',
   author: 'ilyasbozdemir.dev',
-  repositoryUrl: 'https://github.com/ilyasbozdemir/worksuite-360'
+  repositoryUrl: 'https://github.com/ilyasbozdemir/workdesk-360'
 }
 
 export const DEFAULT_ECOSYSTEM_MANIFESTS: AppManifest[] = [

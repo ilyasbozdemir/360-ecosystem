@@ -1,4 +1,4 @@
-# ⚖️ TEMİN 360
+﻿# ⚖️ TEMİN 360
 
 > **"Kamu Harcamaları, İhale, Doğrudan Temin ve Hakediş Süreçlerinde Akıllı Masaüstü Asistanı."**  
 > *Bu uygulama, [WorkSuite 360](docs/WORKSUITE.md) masaüstü ürün ailesinin kamu alımları, ihale ve hakediş yönetimi uzmanlık modülüdür. Merkezi başlatıcı ve uygulama kataloğu için [Workspace 360](docs/WORKSUITE.md#5-workspace-360%C4%B1n-rol%C3%BC) dokümantasyonunu inceleyebilirsiniz.*
@@ -46,7 +46,7 @@
 En güncel kararlı masaüstü sürümlerini doğrudan indirebilirsiniz:
 
 - 🚀 **Resmi Web Portalı:** [temin360.ilyasbozdemir.dev](https://temin360.ilyasbozdemir.dev)
-- 📦 **Doğrudan İndirme:** [GitHub Releases](https://github.com/ilyasbozdemir/temin-360-app/releases) *(Windows `.exe` ve macOS `.dmg`)*
+- 📦 **Doğrudan İndirme:** [GitHub Releases](https://github.com/ilyasbozdemir/workdesk-360/releases) *(Windows `.exe` ve macOS `.dmg`)*
 - ☁️ **Canlı Demo Gateway:** [temin360app.demo.ilyasbozdemir.dev](https://temin360app.demo.ilyasbozdemir.dev)
 
 ---
@@ -56,7 +56,7 @@ En güncel kararlı masaüstü sürümlerini doğrudan indirebilirsiniz:
 TEMİN 360 modern, yüksek performanslı ve çevrimdışı (offline-first) bir monorepo mimarisi üzerine inşa edilmiştir:
 
 ```text
-temin-360-app/
+workdesk-360/
 ├── apps/
 │   ├── app-desktop/      # Electron 39 + React 19 + TypeScript + SQLite Masaüstü Uygulaması
 │   ├── app-landing/      # Next.js 16 + Tailwind CSS Tanıtım ve Dağıtım Portalı
