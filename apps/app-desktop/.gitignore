@@ -26,6 +26,7 @@ coverage
 .nyc_output
 test-results/
 e2e-report/
+e2e-screenshots/*.png
 
 # Tool caches
 .grunt

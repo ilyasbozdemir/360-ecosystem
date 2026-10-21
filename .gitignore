@@ -12,6 +12,8 @@ pb_data/
 # Test & E2E Reports
 test-results/
 e2e-report/
+e2e-screenshots/*.png
+**/e2e-screenshots/*.png
 
 tum_belgeler_listesi.yaml
 

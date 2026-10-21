@@ -11,6 +11,7 @@ export interface TestAppInstance {
   consoleLogs: { type: string; text: string; location?: string }[]
   pageErrors: Error[]
   assertNoUnhandledErrors: () => void
+  assertNoCriticalConsoleErrors: (extraAllowedPatterns?: (string | RegExp)[]) => void
   close: (options?: { assertNoErrors?: boolean }) => Promise<void>
 }
 
@@ -128,6 +129,31 @@ export async function launchTestApp(
     }
   }
 
+  const assertNoCriticalConsoleErrors = (extraAllowedPatterns: (string | RegExp)[] = []): void => {
+    const defaultAllowed = [
+      'Failed to load resource: net::ERR_FILE_NOT_FOUND',
+      'Failed to load resource: net::ERR_INVALID_URL',
+      'favicon.ico',
+      'Electron Security Warning'
+    ]
+    const allAllowed = [...defaultAllowed, ...extraAllowedPatterns]
+    const criticalErrors = consoleLogs.filter(
+      (log) =>
+        log.type === 'error' &&
+        !allAllowed.some((pattern) =>
+          typeof pattern === 'string' ? log.text.includes(pattern) : pattern.test(log.text)
+        )
+    )
+    if (criticalErrors.length > 0) {
+      const messages = criticalErrors
+        .map((l) => `${l.text} (${l.location || 'unknown'})`)
+        .join('\n')
+      throw new Error(
+        `[E2E ASSERTION FAILED] Renderer konsolunda ${criticalErrors.length} adet kritik hata tespit edildi:\n${messages}`
+      )
+    }
+  }
+
   const close = async (options?: { assertNoErrors?: boolean }): Promise<void> => {
     try {
       if (options?.assertNoErrors !== false) {
@@ -160,6 +186,7 @@ export async function launchTestApp(
     consoleLogs,
     pageErrors,
     assertNoUnhandledErrors,
+    assertNoCriticalConsoleErrors,
     close
   }
 }

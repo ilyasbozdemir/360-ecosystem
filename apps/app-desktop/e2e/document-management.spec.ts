@@ -468,9 +468,17 @@ test.describe('E2E: Dosya Bazlı Belge Yönetimi, İzolasyon ve PDF Akışı', (
           templateKey: 'luzum_muzekkeresi'
         })
       })
-      // İzolasyon kanıtı: Kurum B içinde dosyaId=1 belgesi henüz yoktur veya Kurum A'nın verisini içermez
-      if (checkKurumBInitial?.exists) {
+      // İzolasyon kanıtı: IPC sorgusu kesinlikle başarılı dönmeli ve Kurum B içinde
+      // dosyaId=1 belgesi henüz bulunmamalı veya Kurum A'ya ait veriyi taşımamalıdır
+      expect(checkKurumBInitial).toBeDefined()
+      expect(checkKurumBInitial.success).toBe(true)
+      if (checkKurumBInitial.exists) {
         expect(checkKurumBInitial.record?.data?.dosyaKonusu).not.toBe('KURUM-A-ÖZEL-LÜZUM')
+        expect(checkKurumBInitial.record?.data?.isinAciklamasi).not.toBe(
+          'Kurum A Arşivine Özel İçerik'
+        )
+      } else {
+        expect(checkKurumBInitial.exists).toBe(false)
       }
 
       // Şimdi Kurum B için tamamen farklı bir belge kaydet
