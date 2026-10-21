@@ -32,6 +32,10 @@ export function getDogrudanTeminMenus(
           onClick: (): Promise<void> => navigate({ to: APP_ROUTES.HIZLI_DOSYA_EKLE })
         },
         {
+          label: '📥 Harici Dosya Aktar (JSON)',
+          onClick: (): Promise<void> => navigate({ to: APP_ROUTES.HARICI_DOSYA_AKTAR })
+        },
+        {
           label: 'Süreç Akış Haritası (Beta)',
           onClick: (): Promise<void> => navigate({ to: APP_ROUTES.SUREC_AKISI })
         },

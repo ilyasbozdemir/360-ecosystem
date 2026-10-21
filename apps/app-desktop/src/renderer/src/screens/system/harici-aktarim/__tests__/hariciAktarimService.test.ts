@@ -51,6 +51,16 @@ describe('hariciAktarimService', () => {
       expect(result.error).toContain('dosyaBilgileri')
     })
 
+    it('takvimde olmayan tarihleri reddeder, geçerli tarihleri kabul eder', () => {
+      const build = (t: string): string =>
+        JSON.stringify({ dosyaBilgileri: { dosyaNo: '1', isinAdi: 'x', ihaleTarihi: t } })
+      expect(parseDogrudanTeminJson(build('2026-99-99')).success).toBe(false)
+      expect(parseDogrudanTeminJson(build('2025-02-30')).success).toBe(false)
+      expect(parseDogrudanTeminJson(build('2025-10-24T14:30')).success).toBe(true)
+      expect(parseDogrudanTeminJson(build('2025-10-22T10:00:00.000Z')).success).toBe(true)
+      expect(parseDogrudanTeminJson(build('2024-02-29')).success).toBe(true)
+    })
+
     it('hem isinAdi hem de dosyaNo eksikse hata döner', () => {
       const result = parseDogrudanTeminJson(JSON.stringify({ dosyaBilgileri: {} }))
       expect(result.success).toBe(false)
@@ -276,7 +286,7 @@ describe('hariciAktarimService', () => {
           return { success: true, lastInsertRowid: 999, changes: 1 }
         }
         if (channel === 'db:transaction') {
-          return { success: true }
+          return { success: true, rootInsertRowid: 999, lastInsertRowid: 999 }
         }
         return { success: true }
       })

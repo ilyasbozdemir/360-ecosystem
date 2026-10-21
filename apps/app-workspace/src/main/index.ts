@@ -28,10 +28,32 @@ function getRepoRoot(): string {
 }
 
 export interface AppDetectionResult {
+  /** Çalıştırılabilir (EXE) kurulu sürüm bulundu mu? */
   installed: boolean
   isDevSource?: boolean
+  /** Monorepo içinde kaynak kodu mevcut mu? (kurulu anlamına gelmez) */
+  sourceAvailable?: boolean
+  /** Bu makinede gerçekten başlatılabilir mi? (EXE veya tanımlı dev script'i) */
+  launchable?: boolean
+  /** Geliştirici modunda kullanılacak paket adı */
+  packageName?: string
   path?: string
   details?: string
+}
+
+function readDevScriptInfo(
+  appDir: string
+): { packageName: string; hasDevScript: boolean } | null {
+  try {
+    const pkg = JSON.parse(fs.readFileSync(join(appDir, 'package.json'), 'utf-8')) as {
+      name?: string
+      scripts?: Record<string, string>
+    }
+    if (!pkg.name) return null
+    return { packageName: pkg.name, hasDevScript: Boolean(pkg.scripts?.dev) }
+  } catch {
+    return null
+  }
 }
 
 function detectTemin360(): AppDetectionResult {
@@ -131,13 +153,20 @@ function detectApp(appId: string): AppDetectionResult {
     }
   }
 
-  const projectPkg = resolve(repoRoot, `apps/${appSlug}/package.json`)
-  if (fs.existsSync(projectPkg)) {
+  const appDir = resolve(repoRoot, `apps/${appSlug}`)
+  if (fs.existsSync(join(appDir, 'package.json'))) {
+    const info = readDevScriptInfo(appDir)
+    const launchable = Boolean(info?.hasDevScript)
     return {
-      installed: true,
+      installed: false,
       isDevSource: true,
-      path: resolve(repoRoot, `apps/${appSlug}`),
-      details: 'Monorepo kaynak kodu'
+      sourceAvailable: true,
+      launchable,
+      packageName: info?.packageName,
+      path: appDir,
+      details: launchable
+        ? 'Kurulu değil; monorepo kaynak kodu geliştirici modunda çalıştırılabilir.'
+        : 'Kurulu değil; kaynak kodu var ancak tanımlı bir "dev" script\'i yok.'
     }
   }
 
@@ -240,33 +269,36 @@ async function launchApp(appId: string): Promise<{ success: boolean; message: st
   }
 
   const detection = detectApp(appId)
-  if (!detection.installed) {
-    return {
-      success: false,
-      message: `${appId} bulunamadı veya henüz yayınlanmadı.`
-    }
-  }
 
-  if (detection.path && fs.existsSync(detection.path)) {
+  // 1) Kurulu çalıştırılabilir dosya (yalnızca gerçek bir DOSYA ise spawn edilir)
+  if (
+    detection.installed &&
+    detection.path &&
+    fs.existsSync(detection.path) &&
+    fs.statSync(detection.path).isFile()
+  ) {
     return new Promise((resolvePromise) => {
       let resolved = false
+      const finish = (res: { success: boolean; message: string }): void => {
+        if (!resolved) {
+          resolved = true
+          resolvePromise(res)
+        }
+      }
       try {
         const child = spawn(detection.path!, [], { detached: true, stdio: 'ignore' })
-        child.on('error', (err) => {
-          if (!resolved) {
-            resolved = true
-            resolvePromise({ success: false, message: `Başlatma hatası: ${err.message}` })
+        child.on('error', (err) => finish({ success: false, message: `Başlatma hatası: ${err.message}` }))
+        child.on('exit', (code) => {
+          if (code !== null && code !== 0) {
+            finish({ success: false, message: `${appId} başlatılamadı (çıkış kodu: ${code}).` })
           }
         })
         setTimeout(() => {
-          if (!resolved) {
-            resolved = true
-            child.unref()
-            resolvePromise({ success: true, message: `${appId} başlatıldı.` })
-          }
-        }, 300)
+          child.unref()
+          finish({ success: true, message: `${appId} başlatıldı.` })
+        }, 500)
       } catch (err: unknown) {
-        resolvePromise({
+        finish({
           success: false,
           message: `Başlatma hatası: ${err instanceof Error ? err.message : String(err)}`
         })
@@ -274,9 +306,61 @@ async function launchApp(appId: string): Promise<{ success: boolean; message: st
     })
   }
 
+  // 2) Kaynak koddan geliştirici modunda başlatma (paketin kendi dev script'i ile)
+  if (detection.sourceAvailable && detection.launchable && detection.packageName) {
+    return new Promise((resolvePromise) => {
+      let resolved = false
+      const finish = (res: { success: boolean; message: string }): void => {
+        if (!resolved) {
+          resolved = true
+          resolvePromise(res)
+        }
+      }
+      try {
+        const pnpmCmd = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
+        const child = spawn(pnpmCmd, ['--filter', detection.packageName!, 'dev'], {
+          cwd: getRepoRoot(),
+          shell: true,
+          detached: true,
+          stdio: 'ignore'
+        })
+        child.on('error', (err) =>
+          finish({ success: false, message: `Geliştirici modu başlatma hatası: ${err.message}` })
+        )
+        child.on('exit', (code) => {
+          if (code !== null && code !== 0) {
+            finish({
+              success: false,
+              message: `${appId} geliştirici süreci sonlandı (çıkış kodu: ${code}).`
+            })
+          }
+        })
+        setTimeout(() => {
+          child.unref()
+          finish({
+            success: true,
+            message: `${appId} geliştirici modunda (pnpm --filter ${detection.packageName} dev) başlatılıyor...`
+          })
+        }, 600)
+      } catch (err: unknown) {
+        finish({
+          success: false,
+          message: `Başlatma hatası: ${err instanceof Error ? err.message : String(err)}`
+        })
+      }
+    })
+  }
+
+  if (detection.sourceAvailable) {
+    return {
+      success: false,
+      message: `${appId} için kaynak kodu var ancak başlatılabilir bir "dev" script'i tanımlı değil.`
+    }
+  }
+
   return {
     success: false,
-    message: `${appId} için çalıştırılabilir dosya yolu tespit edilemedi.`
+    message: `${appId} bulunamadı veya henüz yayınlanmadı.`
   }
 }
 

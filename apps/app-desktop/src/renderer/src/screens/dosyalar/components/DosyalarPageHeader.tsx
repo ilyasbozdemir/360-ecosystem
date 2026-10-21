@@ -1,6 +1,6 @@
 import React from 'react'
 import { cn } from '../../../utils/cn'
-import { FileText, Grid, List, Sparkles, Plus, ClipboardList } from 'lucide-react'
+import { FileText, Grid, List, Sparkles, Plus, ClipboardList, FileDown } from 'lucide-react'
 import { useNavigate } from '@tanstack/react-router'
 import { APP_ROUTES } from '../../../constants/routeConstants'
 
@@ -92,6 +92,19 @@ export function DosyalarPageHeader({
         >
           <ClipboardList size={16} />
           <span>Toplu Hızlı Ekle</span>
+        </button>
+
+        {/* HARİCİ JSON AKTAR */}
+        <button
+          onClick={() =>
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            navigate({ to: APP_ROUTES.HARICI_DOSYA_AKTAR as any })
+          }
+          className="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 rounded-xl text-xs font-bold transition-all border border-emerald-200 dark:border-emerald-800 flex items-center gap-1.5 cursor-pointer shrink-0 h-10"
+          title="Harici doğrudan temin JSON dosyasını içeri aktar ve mevcut dosyalarla eşleştir"
+        >
+          <FileDown size={16} className="text-emerald-600 dark:text-emerald-400" />
+          <span>JSON İçe Aktar</span>
         </button>
 
         {/* YENİ EKLE */}

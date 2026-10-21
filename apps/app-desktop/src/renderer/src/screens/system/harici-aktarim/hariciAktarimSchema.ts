@@ -1,10 +1,35 @@
 import { z } from 'zod'
 
+function isValidCalendarDate(year: number, month: number, day: number): boolean {
+  if (month < 1 || month > 12 || day < 1) return false
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate()
+  return day <= daysInMonth
+}
+
+/**
+ * Kabul edilen biçimler:
+ *  - YYYY-MM-DD
+ *  - YYYY-MM-DDTHH:mm  /  YYYY-MM-DDTHH:mm:ss[.sss][Z|±HH:mm]
+ * Takvim tarihi gerçekten doğrulanır (örn. 2026-99-99 veya 2025-02-30 reddedilir).
+ */
+export function isValidDateString(val: string): boolean {
+  const m = /^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2})(?::(\d{2})(?:\.\d{1,3})?)?(?:Z|[+-]\d{2}:\d{2})?)?$/.exec(
+    val
+  )
+  if (!m) return false
+  if (!isValidCalendarDate(Number(m[1]), Number(m[2]), Number(m[3]))) return false
+  if (m[4] !== undefined) {
+    if (Number(m[4]) > 23 || Number(m[5]) > 59) return false
+    if (m[6] !== undefined && Number(m[6]) > 59) return false
+  }
+  return true
+}
+
 const optionalDateString = z
   .string()
   .trim()
-  .refine((val) => !val || !isNaN(Date.parse(val)) || /^\d{4}-\d{2}-\d{2}/.test(val), {
-    message: 'Geçersiz tarih formatı (YYYY-MM-DD veya ISO-8601 formatı bekleniyor).'
+  .refine((val) => !val || isValidDateString(val), {
+    message: 'Geçersiz tarih (YYYY-MM-DD veya ISO-8601 biçiminde, gerçek bir takvim tarihi olmalı).'
   })
   .optional()
 

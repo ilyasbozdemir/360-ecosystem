@@ -155,34 +155,27 @@ export async function executeDossierEzmeSync(
 
   const updatedFields: string[] = []
   let finalDosyaId = targetId
-  let isNew = false
+  const isNew = finalDosyaId === null
 
-  // 1. Yeni Dosya Eklenecekse Hedef ID'yi Önceden Belirle (Tek bir atomik transaction içinde eklemek için)
-  if (finalDosyaId === null) {
-    const maxRow = await ipc.invoke(
-      'db:query',
-      'SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM DATA_TeminDosyasi'
-    )
-    finalDosyaId = Number(maxRow?.[0]?.next_id || 1)
-    isNew = true
-  }
+  // Eşzamanlı çakışmaları önlemek için ID üretimini doğrudan SQLite'a bırakıyoruz.
+  // Yeni dosya ise child tablolarda '$ROOT_ID' belirteci kullanılarak ilk INSERT'ün rowid'si bağlanır.
+  const targetDosyaParam: string | number = isNew ? '$ROOT_ID' : finalDosyaId!
 
   // Atomik Transaction Sorguları Listesi (Tüm ana ve alt kayıtlar TEK bir transaction ile çalışır)
   const txQueries: Array<{ sql: string; params?: unknown[] }> = []
 
-  try {
-    // 2. Yeni Dosya ise Header Kaydını Transaction'ın 1. Sorgusu Olarak Ekle
+  // 2. Yeni Dosya ise Header Kaydını Transaction'ın 1. Sorgusu Olarak Ekle (id AUTOINCREMENT'e bırakılır)
     if (isNew) {
       txQueries.push({
         sql: `INSERT INTO DATA_TeminDosyasi (
-          id, temin_no, ekap_no, konu, isin_aciklamasi, dosya_acilis_tarihi, butce_yili, butce_tipi,
+          temin_no, ekap_no, konu, isin_aciklamasi, dosya_acilis_tarihi, butce_yili, butce_tipi,
           birim, sunulacak_makam, ihtiyac_yeri, ihale_sekli, ihale_tipi, tur,
           teklif_sozlesme_turu, alt_yuklenici_olacak_mi, kismi_teklif_verilecek_mi,
           fiyat_farki_dayanagi, yatirim_proje_no, avans_verilecek_mi, yaklasik_maliyet_hesaplamasi,
           kdv, hesaplama_esasi, komisyon_takdiri, tibbi_cihaz_alimi_mi, son_teklif_verme_tarihi,
           teslim_tarihi, fonksiyonel_kod, e_butce, finansman_kodu, notlar, durum_asama_id, is_deleted
         ) VALUES (
-          ?, ?, ?, ?, ?, ?, ?, ?,
+          ?, ?, ?, ?, ?, ?, ?,
           ?, ?, ?, ?, ?, ?,
           ?, ?, ?,
           ?, ?, ?, ?,
@@ -190,7 +183,6 @@ export async function executeDossierEzmeSync(
           ?, ?, ?, ?, ?, 1, 0
         )`,
         params: [
-          finalDosyaId,
           info.dosyaNo || info.dogrudanTeminNumarasi || 'YENİ-DT',
           info.dogrudanTeminNumarasi || data.id || null,
           info.isinAdi || 'Doğrudan Temin Alımı',
@@ -278,24 +270,31 @@ export async function executeDossierEzmeSync(
     let calculatedYaklasikMaliyet = 0
 
     if (options.overwriteMaterials && data.malzemeler !== undefined) {
-      // Temizle
-      txQueries.push({
-        sql: 'DELETE FROM DATA_TeminKalemTeklif WHERE temin_dosya_id = ?',
-        params: [finalDosyaId]
-      })
-      txQueries.push({
-        sql: 'DELETE FROM DATA_TeminKalem WHERE temin_dosya_id = ?',
-        params: [finalDosyaId]
-      })
+      if (!isNew) {
+        txQueries.push({
+          sql: 'DELETE FROM DATA_TeminKalemTeklif WHERE temin_dosya_id = ?',
+          params: [targetDosyaParam]
+        })
+        txQueries.push({
+          sql: 'DELETE FROM DATA_TeminKalem WHERE temin_dosya_id = ?',
+          params: [targetDosyaParam]
+        })
+      }
 
       if (data.malzemeler.length > 0) {
         for (let i = 0; i < data.malzemeler.length; i++) {
           const m = data.malzemeler[i]
           const siraNo = m.siraNo || i + 1
-          const miktar = Number(m.miktar) || 1
-          const kdvOrani = Number(m.kdvOrani) || 20
-          const birimFiyat = Number(m.birimFiyat) || 0
-          const toplamTutar = m.toplamTutar ? Number(m.toplamTutar) : miktar * birimFiyat
+          // Sıfır (0) değerlerin varsayılana dönüşmesini engelle (0 miktar ve %0 KDV korunur)
+          const miktar = m.miktar !== undefined && !isNaN(Number(m.miktar)) ? Number(m.miktar) : 1
+          const kdvOrani =
+            m.kdvOrani !== undefined && !isNaN(Number(m.kdvOrani)) ? Number(m.kdvOrani) : 20
+          const birimFiyat =
+            m.birimFiyat !== undefined && !isNaN(Number(m.birimFiyat)) ? Number(m.birimFiyat) : 0
+          const toplamTutar =
+            m.toplamTutar !== undefined && !isNaN(Number(m.toplamTutar))
+              ? Number(m.toplamTutar)
+              : miktar * birimFiyat
 
           calculatedYaklasikMaliyet += toplamTutar
 
@@ -305,8 +304,8 @@ export async function executeDossierEzmeSync(
               miktar, kdv_orani, tasinir_kodu, okas_kodu, tipi, poz_no
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             params: [
-              finalDosyaId,
-              finalDosyaId,
+              targetDosyaParam,
+              targetDosyaParam,
               siraNo,
               m.malzemeAdi,
               m.ozelligi || m.fiyatKaynagi || null,
@@ -325,7 +324,7 @@ export async function executeDossierEzmeSync(
         if (calculatedYaklasikMaliyet > 0) {
           txQueries.push({
             sql: 'UPDATE DATA_TeminDosyasi SET yaklasik_maliyet = ? WHERE id = ?',
-            params: [calculatedYaklasikMaliyet, finalDosyaId]
+            params: [calculatedYaklasikMaliyet, targetDosyaParam]
           })
         }
         updatedFields.push(`${materialsCount} Adet Malzeme / Hizmet Kalemi`)
@@ -337,14 +336,16 @@ export async function executeDossierEzmeSync(
     // 4. TEKLİFLER VE İSTEKLİ FİRMALARIN İŞLENMESİ
     let offersCount = 0
     if (options.overwriteOffers && data.teklifler !== undefined) {
-      txQueries.push({
-        sql: 'DELETE FROM DATA_TeminKalemTeklif WHERE temin_dosya_id = ?',
-        params: [finalDosyaId]
-      })
-      txQueries.push({
-        sql: 'DELETE FROM DATA_TeminFirma WHERE temin_dosya_id = ?',
-        params: [finalDosyaId]
-      })
+      if (!isNew) {
+        txQueries.push({
+          sql: 'DELETE FROM DATA_TeminKalemTeklif WHERE temin_dosya_id = ?',
+          params: [targetDosyaParam]
+        })
+        txQueries.push({
+          sql: 'DELETE FROM DATA_TeminFirma WHERE temin_dosya_id = ?',
+          params: [targetDosyaParam]
+        })
+      }
 
       if (data.teklifler.length > 0) {
         for (let i = 0; i < data.teklifler.length; i++) {
@@ -381,8 +382,8 @@ export async function executeDossierEzmeSync(
               ?, ?, ?, 1, ?, ?, ?, ?, ?, ?
             )`,
             params: [
-              finalDosyaId,
-              finalDosyaId,
+              targetDosyaParam,
+              targetDosyaParam,
               firmaAdi,
               firmaAdi,
               t.vergiNo || null,
@@ -404,11 +405,11 @@ export async function executeDossierEzmeSync(
               const itemSira = matchedItem?.siraNo || kIdx + 1
               const itemKalemAdi = matchedItem?.malzemeAdi || ''
 
-              // KDV oranını önce kalemden, yoksa tekliften al, yoksa %20 varsay
+              // KDV oranını önce kalemden, yoksa tekliften al, yoksa %20 varsay (0 KDV korunur)
               const rawKdvRate =
-                matchedItem?.kdvOrani !== undefined
+                matchedItem?.kdvOrani !== undefined && !isNaN(Number(matchedItem.kdvOrani))
                   ? Number(matchedItem.kdvOrani)
-                  : t.kdvOrani !== undefined
+                  : t.kdvOrani !== undefined && !isNaN(Number(t.kdvOrani))
                     ? Number(t.kdvOrani)
                     : 20
               const effectiveKdvRate = isNaN(rawKdvRate) ? 20 : rawKdvRate
@@ -429,13 +430,13 @@ export async function executeDossierEzmeSync(
                   ?, ?, 1
                 )`,
                 params: [
-                  finalDosyaId,
-                  finalDosyaId,
-                  finalDosyaId,
+                  targetDosyaParam,
+                  targetDosyaParam,
+                  targetDosyaParam,
                   itemSira,
-                  finalDosyaId,
+                  targetDosyaParam,
                   itemKalemAdi,
-                  finalDosyaId,
+                  targetDosyaParam,
                   firmaAdi,
                   kfVal,
                   kdvTutari
@@ -449,7 +450,7 @@ export async function executeDossierEzmeSync(
               sql: `UPDATE DATA_TeminDosyasi SET firma_id = (
                 SELECT id FROM DATA_TeminFirma WHERE temin_dosya_id = ? AND unvan = ? LIMIT 1
               ) WHERE id = ?`,
-              params: [finalDosyaId, firmaAdi, finalDosyaId]
+              params: [targetDosyaParam, firmaAdi, targetDosyaParam]
             })
           }
           offersCount++
@@ -463,10 +464,12 @@ export async function executeDossierEzmeSync(
     // 5. KOMİSYON ÜYELERİNİN İŞLENMESİ
     let commissionsCount = 0
     if (options.overwriteCommissions && data.komisyonlar !== undefined) {
-      txQueries.push({
-        sql: 'DELETE FROM DATA_TeminKomisyon WHERE temin_dosya_id = ?',
-        params: [finalDosyaId]
-      })
+      if (!isNew) {
+        txQueries.push({
+          sql: 'DELETE FROM DATA_TeminKomisyon WHERE temin_dosya_id = ?',
+          params: [targetDosyaParam]
+        })
+      }
 
       const allMembers: Array<{
         komisyonTuru: 'Yaklaşık Maliyet' | 'Muayene Kabul'
@@ -502,8 +505,8 @@ export async function executeDossierEzmeSync(
             ?, ?, ?, 'Asil', ?, 1, 'Asil', 'harici_aktarim'
           )`,
           params: [
-            finalDosyaId,
-            finalDosyaId,
+            targetDosyaParam,
+            targetDosyaParam,
             m.komisyonTuru === 'Yaklaşık Maliyet' ? 1 : 2,
             m.adiSoyadi.trim(),
             m.adiSoyadi.trim(),
@@ -530,11 +533,14 @@ export async function executeDossierEzmeSync(
           txResult?.error || 'Veritabanı tranzaksiyonu başarısız oldu (Değişiklikler geri alındı).'
         )
       }
+      if (isNew) {
+        finalDosyaId = Number(txResult.rootInsertRowid || txResult.lastInsertRowid || 0)
+      }
     }
 
     return {
       success: true,
-      dosyaId: finalDosyaId,
+      dosyaId: finalDosyaId ?? 0,
       isNew,
       updatedFields,
       materialsCount,
@@ -544,15 +550,4 @@ export async function executeDossierEzmeSync(
         ? `Dosya başarıyla sisteme aktarıldı (ID: ${finalDosyaId}).`
         : `Hedef dosya (ID: ${finalDosyaId}) gelen verilerle başarıyla güncellendi (ezildi).`
     }
-  } catch (err: unknown) {
-    // Yeni dosya oluşturulduysa ve sonraki transaction patladıysa dosyayı temizle (Rollback güvencesi)
-    if (isNew && finalDosyaId) {
-      try {
-        await ipc.invoke('db:run', 'DELETE FROM DATA_TeminDosyasi WHERE id = ?', [finalDosyaId])
-      } catch (cleanupErr) {
-        console.error('Yetim dosya temizleme hatası:', cleanupErr)
-      }
-    }
-    throw err
   }
-}

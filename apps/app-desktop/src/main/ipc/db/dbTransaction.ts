@@ -8,6 +8,7 @@ export interface TransactionQuery {
 export interface TransactionResult {
   success: boolean
   lastInsertRowid?: number | bigint
+  rootInsertRowid?: number | bigint
   changes?: number
   error?: string
   warning?: string
@@ -58,6 +59,7 @@ export function executeDbTransaction(
 ): {
   success: true
   lastInsertRowid: number | bigint
+  rootInsertRowid: number | bigint
   changes: number
   mutationError?: string
   warning?: string
@@ -73,6 +75,7 @@ export function executeDbTransaction(
   }
 
   let lastInsertRowid: number | bigint = 0
+  let rootInsertRowid: number | bigint = 0
   let totalChanges = 0
 
   // Mutation bilgilerini transaction süresince biriktir; asla COMMIT öncesi bildirme!
@@ -83,11 +86,18 @@ export function executeDbTransaction(
   }> = []
 
   const runAll = (stmts: TransactionQuery[]): void => {
-    for (const q of stmts) {
+    for (let i = 0; i < stmts.length; i++) {
+      const q = stmts[i]
       const stmt = db.prepare(q.sql)
-      const params = q.params || []
+      // Dinamik ID Yayılımı: $ROOT_ID veya $PARENT_ID belirteçlerini ilk INSERT'ün SQLite native rowid'si ile değiştir
+      const params = (q.params || []).map((p) =>
+        p === '$ROOT_ID' || p === '$PARENT_ID' ? rootInsertRowid : p
+      )
       const info = stmt.run(...params)
       lastInsertRowid = info.lastInsertRowid ?? lastInsertRowid
+      if (rootInsertRowid === 0 && info.lastInsertRowid) {
+        rootInsertRowid = info.lastInsertRowid
+      }
       const changesCount = Number(info.changes ?? 0)
       totalChanges += changesCount
       if (options?.onMutation && changesCount > 0) {
@@ -146,12 +156,14 @@ export function executeDbTransaction(
   const result: {
     success: true
     lastInsertRowid: number | bigint
+    rootInsertRowid: number | bigint
     changes: number
     mutationError?: string
     warning?: string
   } = {
     success: true,
     lastInsertRowid,
+    rootInsertRowid,
     changes: totalChanges
   }
 
@@ -183,6 +195,7 @@ export async function handleDbTransaction(
   let result: {
     success: true
     lastInsertRowid: number | bigint
+    rootInsertRowid: number | bigint
     changes: number
     mutationError?: string
     warning?: string

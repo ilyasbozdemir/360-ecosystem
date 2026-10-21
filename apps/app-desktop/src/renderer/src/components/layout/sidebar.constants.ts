@@ -395,6 +395,18 @@ export function getSidebarMenuGroups(
       items: [
         { name: 'Gösterge Paneli', path: APP_ROUTES.DASHBOARD, icon: Home },
         {
+          name: 'Doğrudan Temin Dosyaları',
+          path: APP_ROUTES.DOSYALAR,
+          icon: FileText,
+          badge: '22/d'
+        },
+        {
+          name: 'Harici Dosya Aktar (JSON)',
+          path: APP_ROUTES.HARICI_DOSYA_AKTAR,
+          icon: FileDown,
+          badge: 'YENİ'
+        },
+        {
           name: 'Modül Mağazası',
           path: APP_ROUTES.MODUL_MAGAZASI,
           icon: Store,

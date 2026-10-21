@@ -13,6 +13,7 @@ export function Sidebar(): React.JSX.Element {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [expandedItems, setExpandedItems] = useState<Set<string>>(
     new Set([
+      'Doğrudan Temin & Satınalma',
       '/malzemeler',
       'Malzeme & Kodlar',
       'Malzeme & Kodlar (2886)',
@@ -225,6 +226,9 @@ export function Sidebar(): React.JSX.Element {
                         </Link>
                       ) : (
                         <div
+                          onClick={() => {
+                            if (hasChildren) toggleExpanded(itemKey)
+                          }}
                           className={cn(
                             'flex-1 flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-200 border border-transparent cursor-pointer text-sidebar-text/80',
                             'hover:bg-sidebar-hover-bg hover:text-sidebar-hover-text',
