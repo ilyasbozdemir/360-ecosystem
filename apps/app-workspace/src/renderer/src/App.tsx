@@ -11,7 +11,7 @@ import { EcosystemBanner } from './components/EcosystemBanner.js'
 import { CategoryNav } from './components/CategoryNav.js'
 import { AppCard } from './components/AppCard.js'
 import { ManifestModal } from './components/ManifestModal.js'
-import { SearchX, CheckCircle } from 'lucide-react'
+import { SearchX, CheckCircle, AlertCircle } from 'lucide-react'
 
 export const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('')
@@ -19,7 +19,10 @@ export const App: React.FC = () => {
   const [selectedState, setSelectedState] = useState<AppInstallState | 'all'>('all')
   const [inspectedManifest, setInspectedManifest] = useState<AppManifest | null>(null)
   const [isDark, setIsDark] = useState(false)
-  const [launchNotification, setLaunchNotification] = useState<string | null>(null)
+  const [launchNotification, setLaunchNotification] = useState<{
+    message: string
+    isError: boolean
+  } | null>(null)
   const [realDetections, setRealDetections] = useState<
     Record<string, { installed: boolean; isDevSource?: boolean; path?: string; details?: string }>
   >({})
@@ -57,36 +60,62 @@ export const App: React.FC = () => {
     })
   }
 
+  // Real detection'lar ile dinamik olarak güncellenmiş efektif manifest listesi
+  const effectiveManifests = useMemo(() => {
+    return DEFAULT_ECOSYSTEM_MANIFESTS.map((manifest) => {
+      const real = realDetections[manifest.appId]
+      if (real) {
+        return {
+          ...manifest,
+          installState: real.installed ? ('installed' as AppInstallState) : manifest.installState
+        }
+      }
+      return manifest
+    })
+  }, [realDetections])
+
   // Filter apps
   const filteredApps = useMemo(() => {
-    return filterCatalog(DEFAULT_ECOSYSTEM_MANIFESTS, {
+    return filterCatalog(effectiveManifests, {
       category: selectedCategory,
       installState: selectedState,
       search: searchQuery
     })
-  }, [selectedCategory, selectedState, searchQuery])
+  }, [effectiveManifests, selectedCategory, selectedState, searchQuery])
 
   // Counts
-  const totalCount = DEFAULT_ECOSYSTEM_MANIFESTS.length
+  const totalCount = effectiveManifests.length
   const installedCount = useMemo(
-    () => DEFAULT_ECOSYSTEM_MANIFESTS.filter((a) => a.installState === 'installed').length,
-    []
+    () => effectiveManifests.filter((a) => a.installState === 'installed').length,
+    [effectiveManifests]
   )
   const plannedCount = useMemo(
-    () => DEFAULT_ECOSYSTEM_MANIFESTS.filter((a) => a.installState === 'planned').length,
-    []
+    () => effectiveManifests.filter((a) => a.installState === 'planned').length,
+    [effectiveManifests]
   )
 
   const handleLaunch = async (manifest: AppManifest) => {
     if (window.workspaceAPI?.launchApp) {
       try {
         const res = await window.workspaceAPI.launchApp(manifest.appId)
-        setLaunchNotification(res.message || `${manifest.name} başlatıldı.`)
-      } catch {
-        setLaunchNotification(`${manifest.name} başlatılamadı.`)
+        setLaunchNotification({
+          message:
+            res.message ||
+            (res.success ? `${manifest.name} başlatıldı.` : `${manifest.name} başlatılamadı.`),
+          isError: !res.success
+        })
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err)
+        setLaunchNotification({
+          message: `${manifest.name} başlatılamadı: ${msg}`,
+          isError: true
+        })
       }
     } else {
-      setLaunchNotification(`${manifest.name} başlatılıyor (${manifest.executableName})...`)
+      setLaunchNotification({
+        message: `${manifest.name} başlatılıyor (${manifest.executableName})...`,
+        isError: false
+      })
     }
     setTimeout(() => {
       setLaunchNotification(null)
@@ -118,15 +147,23 @@ export const App: React.FC = () => {
         {/* Launch Notification Toast */}
         {launchNotification && (
           <div
-            style={{
-              backgroundColor: 'var(--theme-badge-installed-bg)',
-              borderColor: 'var(--theme-badge-installed-border)',
-              color: 'var(--theme-badge-installed-text)'
-            }}
+            style={
+              launchNotification.isError
+                ? {
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    borderColor: 'rgba(239, 68, 68, 0.3)',
+                    color: '#ef4444'
+                  }
+                : {
+                    backgroundColor: 'var(--theme-badge-installed-bg)',
+                    borderColor: 'var(--theme-badge-installed-border)',
+                    color: 'var(--theme-badge-installed-text)'
+                  }
+            }
             className="mb-6 p-4 rounded-xl border flex items-center gap-2 text-sm font-semibold shadow-md animate-in slide-in-from-top-2 duration-200"
           >
-            <CheckCircle size={18} />
-            <span>{launchNotification}</span>
+            {launchNotification.isError ? <AlertCircle size={18} /> : <CheckCircle size={18} />}
+            <span>{launchNotification.message}</span>
           </div>
         )}
 

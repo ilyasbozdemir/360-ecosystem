@@ -89,6 +89,64 @@ function detectTemin360(): AppDetectionResult {
   }
 }
 
+function detectApp(appId: string): AppDetectionResult {
+  if (appId === 'dev.ilyasbozdemir.temin360') {
+    return detectTemin360()
+  }
+
+  if (appId === 'dev.ilyasbozdemir.workspace360') {
+    return {
+      installed: true,
+      isDevSource: is.dev,
+      path: process.execPath,
+      details: 'Çalışan Workspace 360 oturumu'
+    }
+  }
+
+  // Generic detection for other ecosystem apps
+  const repoRoot = getRepoRoot()
+  const localAppData = process.env.LOCALAPPDATA || ''
+  const programFiles = process.env.ProgramFiles || ''
+  const programFilesX86 = process.env['ProgramFiles(x86)'] || ''
+
+  const appSlug = appId.replace('dev.ilyasbozdemir.', '')
+  const exeName = `${appSlug.charAt(0).toUpperCase() + appSlug.slice(1)}.exe`
+
+  const candidatePaths = [
+    join(localAppData, 'Programs', appSlug, exeName),
+    join(localAppData, appSlug, exeName),
+    join(programFiles, appSlug, exeName),
+    join(programFilesX86, appSlug, exeName),
+    resolve(repoRoot, `apps/${appSlug}/dist-local/win-unpacked/${exeName}`)
+  ]
+
+  for (const p of candidatePaths) {
+    if (p && fs.existsSync(p)) {
+      return {
+        installed: true,
+        isDevSource: false,
+        path: p,
+        details: 'Kurulu sürüm tespit edildi'
+      }
+    }
+  }
+
+  const projectPkg = resolve(repoRoot, `apps/${appSlug}/package.json`)
+  if (fs.existsSync(projectPkg)) {
+    return {
+      installed: true,
+      isDevSource: true,
+      path: resolve(repoRoot, `apps/${appSlug}`),
+      details: 'Monorepo kaynak kodu'
+    }
+  }
+
+  return {
+    installed: false,
+    details: 'Uygulama henüz kurulu değil veya planlama aşamasında.'
+  }
+}
+
 async function launchTemin360(): Promise<{ success: boolean; message: string }> {
   const detection = detectTemin360()
   if (!detection.installed) {
@@ -98,38 +156,111 @@ async function launchTemin360(): Promise<{ success: boolean; message: string }> 
     }
   }
 
-  try {
-    if (!detection.isDevSource && detection.path && fs.existsSync(detection.path)) {
-      const child = spawn(detection.path, [], {
-        detached: true,
-        stdio: 'ignore'
-      })
-      child.unref()
-      return {
-        success: true,
-        message: `TEMİN 360 masaüstü uygulaması başlatıldı (${basename(detection.path)}).`
+  return new Promise((resolvePromise) => {
+    let resolved = false
+    const markResolved = (res: { success: boolean; message: string }) => {
+      if (!resolved) {
+        resolved = true
+        resolvePromise(res)
       }
     }
 
-    const repoRoot = getRepoRoot()
-    const pnpmCmd = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
-    const child = spawn(pnpmCmd, ['--filter', 'app-desktop', 'dev'], {
-      cwd: repoRoot,
-      shell: true,
-      detached: true,
-      stdio: 'ignore'
-    })
-    child.unref()
-    return {
-      success: true,
-      message: 'TEMİN 360 geliştirici modunda (pnpm dev) başlatılıyor...'
+    try {
+      if (!detection.isDevSource && detection.path && fs.existsSync(detection.path)) {
+        const child = spawn(detection.path, [], {
+          detached: true,
+          stdio: 'ignore'
+        })
+        child.on('error', (err) => {
+          markResolved({
+            success: false,
+            message: `Başlatma hatası: ${err.message}`
+          })
+        })
+        setTimeout(() => {
+          child.unref()
+          markResolved({
+            success: true,
+            message: `TEMİN 360 masaüstü uygulaması başlatıldı (${basename(detection.path!)}).`
+          })
+        }, 300)
+        return
+      }
+
+      const repoRoot = getRepoRoot()
+      const pnpmCmd = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
+      const child = spawn(pnpmCmd, ['--filter', 'app-desktop', 'dev'], {
+        cwd: repoRoot,
+        shell: true,
+        detached: true,
+        stdio: 'ignore'
+      })
+      child.on('error', (err) => {
+        markResolved({
+          success: false,
+          message: `Geliştirici modu başlatma hatası: ${err.message}`
+        })
+      })
+      setTimeout(() => {
+        child.unref()
+        markResolved({
+          success: true,
+          message: 'TEMİN 360 geliştirici modunda (pnpm dev) başlatılıyor...'
+        })
+      }, 400)
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : String(err)
+      markResolved({
+        success: false,
+        message: `Başlatma hatası: ${errorMsg}`
+      })
     }
-  } catch (err: unknown) {
-    const errorMsg = err instanceof Error ? err.message : String(err)
+  })
+}
+
+async function launchApp(appId: string): Promise<{ success: boolean; message: string }> {
+  if (appId === 'dev.ilyasbozdemir.temin360') {
+    return await launchTemin360()
+  }
+
+  const detection = detectApp(appId)
+  if (!detection.installed) {
     return {
       success: false,
-      message: `Başlatma hatası: ${errorMsg}`
+      message: `${appId} bulunamadı veya henüz yayınlanmadı.`
     }
+  }
+
+  if (detection.path && fs.existsSync(detection.path)) {
+    return new Promise((resolvePromise) => {
+      let resolved = false
+      try {
+        const child = spawn(detection.path!, [], { detached: true, stdio: 'ignore' })
+        child.on('error', (err) => {
+          if (!resolved) {
+            resolved = true
+            resolvePromise({ success: false, message: `Başlatma hatası: ${err.message}` })
+          }
+        })
+        setTimeout(() => {
+          if (!resolved) {
+            resolved = true
+            child.unref()
+            resolvePromise({ success: true, message: `${appId} başlatıldı.` })
+          }
+        }, 300)
+      } catch (err: unknown) {
+        resolvePromise({
+          success: false,
+          message: `Başlatma hatası: ${err instanceof Error ? err.message : String(err)}`
+        })
+      }
+    })
+  }
+
+  return {
+    success: false,
+    message: `${appId} için çalıştırılabilir dosya yolu tespit edilemedi.`
   }
 }
 
@@ -169,20 +300,11 @@ function createWindow(): void {
 
 function registerIpcHandlers(): void {
   ipcMain.handle('workspace:launch-app', async (_event, appId: string) => {
-    if (appId === 'dev.ilyasbozdemir.temin360') {
-      return await launchTemin360()
-    }
-    return {
-      success: false,
-      message: `${appId} için henüz çalıştırılabilir bir paket bulunmamaktadır.`
-    }
+    return await launchApp(appId)
   })
 
   ipcMain.handle('workspace:check-app', async (_event, appId: string) => {
-    if (appId === 'dev.ilyasbozdemir.temin360') {
-      return detectTemin360()
-    }
-    return { installed: false, details: 'Uygulama henüz yayınlanmadı.' }
+    return detectApp(appId)
   })
 
   ipcMain.handle('workspace:get-system-info', async () => {

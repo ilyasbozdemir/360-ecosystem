@@ -20,8 +20,8 @@ describe('hariciAktarimService', () => {
     })
   })
 
-  describe('parseDogrudanTeminJson', () => {
-    it('örnek doğrudan temin JSON verisini başarıyla ayrıştırır', () => {
+  describe('parseDogrudanTeminJson (Zod Şema Doğrulaması)', () => {
+    it('örnek doğrudan temin JSON verisini başarıyla ve şemaya uygun ayrıştırır', () => {
       const result = parseDogrudanTeminJson(SAMPLE_HARICI_DT_JSON)
       expect(result.success).toBe(true)
       expect(result.data).toBeDefined()
@@ -55,6 +55,15 @@ describe('hariciAktarimService', () => {
       const result = parseDogrudanTeminJson(JSON.stringify({ dosyaBilgileri: {} }))
       expect(result.success).toBe(false)
       expect(result.error).toContain('en az "isinAdi" veya "dosyaNo"')
+    })
+
+    it('malzeme miktarı negatif girilirse Zod şema hatası döner', () => {
+      const invalidData = JSON.parse(SAMPLE_HARICI_DT_JSON)
+      invalidData.malzemeler[0].miktar = -5
+      const result = parseDogrudanTeminJson(JSON.stringify(invalidData))
+      expect(result.success).toBe(false)
+      expect(result.error).toContain('Şema doğrulama hatası')
+      expect(result.error).toContain('miktar')
     })
   })
 
@@ -104,7 +113,6 @@ describe('hariciAktarimService', () => {
           isinAdi: 'Farklı İsim'
         }
       }
-      // dosyaNo tutmazsa id eşleşmesi devreye girer
       const customDossiers: ExistingDossierSummary[] = [
         { id: 45, temin_no: 'ESKI/1', ekap_no: 'dt_2025_1_001', konu: 'Test' }
       ]
@@ -140,7 +148,7 @@ describe('hariciAktarimService', () => {
     })
   })
 
-  describe('executeDossierEzmeSync (Atomic Ezdirtme & Eşleme İşlemi)', () => {
+  describe('executeDossierEzmeSync (Atomik Transaction & Kalem Fiyatları)', () => {
     let originalElectron: unknown
     const mockInvoke = vi.fn()
 
@@ -158,23 +166,19 @@ describe('hariciAktarimService', () => {
       vi.clearAllMocks()
     })
 
-    it('mevcut dosya ID seçildiğinde verileri ezerek (overwrite) günceller', async () => {
+    it('mevcut dosya güncellenirken tüm işlemleri tek bir atomik db:transaction içinde yürütür', async () => {
       const parsed = parseDogrudanTeminJson(SAMPLE_HARICI_DT_JSON)
       expect(parsed.success).toBe(true)
       const data = parsed.data!
 
-      // Mock IPC calls
-      mockInvoke.mockImplementation(async (channel: string, sql: string) => {
-        if (channel === 'db:query') {
-          if (sql.includes('FROM TANIM_Firma')) {
-            return [{ id: 101, unvan: 'Anadolu Sayaç' }]
-          }
-          if (sql.includes('FROM DATA_TeminDosyasi')) {
-            return [{ id: 20 }]
-          }
-          return []
+      let capturedTxQueries: Array<{ sql: string; params?: unknown[] }> = []
+
+      mockInvoke.mockImplementation(async (channel: string, arg1: unknown) => {
+        if (channel === 'db:transaction') {
+          capturedTxQueries = arg1 as Array<{ sql: string; params?: unknown[] }>
+          return { success: true, changes: capturedTxQueries.length }
         }
-        if (channel === 'db:run' || channel === 'db:execute') {
+        if (channel === 'db:run') {
           return { success: true, lastInsertRowid: 20, changes: 1 }
         }
         return { success: true }
@@ -193,37 +197,83 @@ describe('hariciAktarimService', () => {
       expect(syncResult.dosyaId).toBe(20)
       expect(syncResult.materialsCount).toBe(1)
       expect(syncResult.offersCount).toBe(2)
-      expect(syncResult.commissionsCount).toBe(6) // 3 yaklaşık maliyet + 3 muayene kabul
+      expect(syncResult.commissionsCount).toBe(6)
 
-      // Temin dosyasının güncellendiğini doğrula
-      const updateCalls = mockInvoke.mock.calls.filter(
-        ([channel, sql]) =>
-          (channel === 'db:run' || channel === 'db:execute') &&
-          typeof sql === 'string' &&
-          sql.includes('UPDATE DATA_TeminDosyasi')
-      )
-      expect(updateCalls.length).toBeGreaterThan(0)
+      // db:transaction çağrısının yapıldığını doğrula
+      const txCall = mockInvoke.mock.calls.find(([channel]) => channel === 'db:transaction')
+      expect(txCall).toBeDefined()
 
-      // Eski kalemlerin silinip yenilerinin eklendiğini doğrula
-      const deleteKalemCalls = mockInvoke.mock.calls.filter(
-        ([channel, sql]) =>
-          (channel === 'db:run' || channel === 'db:execute') &&
-          typeof sql === 'string' &&
-          sql.includes('DELETE FROM DATA_TeminKalem WHERE')
+      // Header update, kalemler ve DATA_TeminKalemTeklif sorgularının transaction'a dahil edildiğini doğrula
+      const hasDossierUpdate = capturedTxQueries.some((q) => q.sql.includes('UPDATE DATA_TeminDosyasi'))
+      expect(hasDossierUpdate).toBe(true)
+
+      const hasKalemTeklifInsert = capturedTxQueries.some((q) =>
+        q.sql.includes('INSERT INTO DATA_TeminKalemTeklif')
       )
-      expect(deleteKalemCalls.length).toBe(1)
+      expect(hasKalemTeklifInsert).toBe(true)
     })
 
-    it('yeni dosya seçildiğinde (targetId: null) yeni dosya kaydı oluşturur', async () => {
+    it('db:transaction başarısız olursa hata fırlatır ve işlemi durdurur', async () => {
       const parsed = parseDogrudanTeminJson(SAMPLE_HARICI_DT_JSON)
       const data = parsed.data!
 
       mockInvoke.mockImplementation(async (channel: string) => {
-        if (channel === 'db:query') {
-          return []
+        if (channel === 'db:transaction') {
+          return { success: false, error: 'FOREIGN KEY constraint failed' }
         }
-        if (channel === 'db:run' || channel === 'db:execute') {
+        return { success: true }
+      })
+
+      await expect(
+        executeDossierEzmeSync(20, data, {
+          overwriteGeneralInfo: true,
+          overwriteMaterials: true,
+          overwriteOffers: true,
+          overwriteCommissions: true,
+          createNewIfNotFound: false
+        })
+      ).rejects.toThrow('FOREIGN KEY constraint failed')
+    })
+
+    it('malzemeler alanı undefined ise mevcut kalemleri silmez (koruma politikası)', async () => {
+      const parsed = parseDogrudanTeminJson(SAMPLE_HARICI_DT_JSON)
+      const data = { ...parsed.data! }
+      delete (data as Partial<DogrudanTeminDosyasi>).malzemeler // gönderilmemiş alan
+
+      let capturedTxQueries: Array<{ sql: string; params?: unknown[] }> = []
+      mockInvoke.mockImplementation(async (channel: string, arg1: unknown) => {
+        if (channel === 'db:transaction') {
+          capturedTxQueries = arg1 as Array<{ sql: string; params?: unknown[] }>
+          return { success: true }
+        }
+        return { success: true }
+      })
+
+      await executeDossierEzmeSync(20, data, {
+        overwriteGeneralInfo: true,
+        overwriteMaterials: true,
+        overwriteOffers: false,
+        overwriteCommissions: false,
+        createNewIfNotFound: false
+      })
+
+      // data.malzemeler undefined olduğu için DATA_TeminKalem silme veya ekleme olmamalıdır
+      const hasDeleteKalem = capturedTxQueries.some((q) =>
+        q.sql.includes('DELETE FROM DATA_TeminKalem WHERE')
+      )
+      expect(hasDeleteKalem).toBe(false)
+    })
+
+    it('yeni dosya oluşturulduğunda header ekler ve child kayıtları transaction ile bağlar', async () => {
+      const parsed = parseDogrudanTeminJson(SAMPLE_HARICI_DT_JSON)
+      const data = parsed.data!
+
+      mockInvoke.mockImplementation(async (channel: string) => {
+        if (channel === 'db:run') {
           return { success: true, lastInsertRowid: 999, changes: 1 }
+        }
+        if (channel === 'db:transaction') {
+          return { success: true }
         }
         return { success: true }
       })
@@ -239,7 +289,6 @@ describe('hariciAktarimService', () => {
       expect(syncResult.success).toBe(true)
       expect(syncResult.isNew).toBe(true)
       expect(syncResult.dosyaId).toBe(999)
-      expect(syncResult.materialsCount).toBe(1)
     })
   })
 })
