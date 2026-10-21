@@ -1,6 +1,7 @@
 # ⚖️ TEMİN 360
 
-> **"Kamu Harcamaları, İhale, Doğrudan Temin ve Hakediş Süreçlerinde Akıllı Masaüstü Asistanı."**
+> **"Kamu Harcamaları, İhale, Doğrudan Temin ve Hakediş Süreçlerinde Akıllı Masaüstü Asistanı."**  
+> *Bu uygulama, [WorkSuite 360](docs/WORKSUITE.md) masaüstü ürün ailesinin kamu alımları, ihale ve hakediş yönetimi uzmanlık modülüdür. Merkezi başlatıcı ve uygulama kataloğu için [Workspace 360](docs/WORKSUITE.md#5-workspace-360%C4%B1n-rol%C3%BC) dokümantasyonunu inceleyebilirsiniz.*
 
 **TEMİN 360**, kamu idareleri (Belediyeler, Bakanlıklar, Üniversiteler ve Özel Bütçeli Kurumlar) için 4734 Sayılı Kamu İhale Kanunu, 4735 Sayılı Sözleşmeler Kanunu, 5018 Sayılı Kamu Malî Yönetimi Kanunu ve 2886 Sayılı Devlet İhale Kanunu süreçlerini uçtan uca dijitalleştiren **modern, çevrimdışı öncelikli ve açık kaynaklı** bir kurumsal yönetim platformudur.
 

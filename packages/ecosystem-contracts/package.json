@@ -1,0 +1,21 @@
+{
+  "name": "@worksuite-360/contracts",
+  "version": "1.0.0-rc",
+  "private": true,
+  "type": "module",
+  "description": "WorkSuite 360 - Uygulama manifestoları, katalog sözleşmeleri ve tip tanımları",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}
