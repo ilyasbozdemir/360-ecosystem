@@ -133,6 +133,7 @@ export function getTabLabel(fullPath: string): string {
   if (path.startsWith(APP_ROUTES.YARDIM)) return 'Yardım & Kılavuzlar'
   if (path.startsWith(APP_ROUTES.IMPORT)) return 'Toplu Veri İçe Aktarma'
   if (path.startsWith(APP_ROUTES.HIZLI_DOSYA_EKLE)) return 'Hızlı Dosya Ekle'
+  if (path.startsWith(APP_ROUTES.HARICI_DOSYA_AKTAR)) return 'Harici Dosya Entegrasyonu'
   if (path.startsWith(APP_ROUTES.CIKTI_MERKEZI_DASHBOARD)) return 'Çıktı & Üretim Merkezi'
   if (path.startsWith(APP_ROUTES.DT_SUREC_AKISI)) return 'Doğrudan Temin'
   if (path.startsWith(APP_ROUTES.EBYS)) return 'EBYS Resmî Yazı Şablonları'

@@ -31,6 +31,7 @@ export const APP_ROUTES = {
   CHANGELOG: '/changelog',
   YARDIM: '/yardim',
   IMPORT: '/import',
+  HARICI_DOSYA_AKTAR: '/harici-dosya-aktar',
   AYARLAR: '/ayarlar',
   TEMA: '/tema',
   BIRIMLER: '/birimler',

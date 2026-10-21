@@ -30,7 +30,8 @@ import {
   Boxes,
   Store,
   Sparkles,
-  FileSpreadsheet
+  FileSpreadsheet,
+  FileDown
 } from 'lucide-react'
 import { APP_ROUTES } from '../../constants/routeConstants'
 import { useModuleStore } from '../../store/moduleStore'
@@ -423,6 +424,12 @@ export function getSidebarMenuGroups(
                     icon: FileText,
                     badge: '22/d'
                   },
+                  {
+                    name: 'Harici Dosya Aktar (JSON)',
+                    path: APP_ROUTES.HARICI_DOSYA_AKTAR,
+                    icon: FileDown,
+                    badge: 'YENİ'
+                  },
                   ...(activeDosyaId
                     ? [
                         {
@@ -563,6 +570,12 @@ export function getSidebarMenuGroups(
                 name: 'Doğrudan Temin Dosyaları',
                 path: APP_ROUTES.DOSYALAR,
                 icon: FileText
+              },
+              {
+                name: 'Harici Dosya Aktar & Eşle',
+                path: APP_ROUTES.HARICI_DOSYA_AKTAR,
+                icon: FileDown,
+                badge: 'JSON'
               },
               {
                 name: activeDosyaId ? 'Tüm İhtiyaç Raporları (Havuz)' : 'İhtiyaç Raporları',

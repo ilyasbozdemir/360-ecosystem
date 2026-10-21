@@ -16,21 +16,21 @@ describe('Google Drive Backup Pruning Regex', () => {
   }
 
   it('compiles without SyntaxError on complex Turkish institution names with dotted i and hyphens', () => {
-    const projectRoot = 'güneyyurt belediyesi i̇hale - doğrudan temin'
+    const projectRoot = 'kamu idaresi i̇hale - doğrudan temin'
     expect(() => {
       matchBackupFile(projectRoot, 'test.temin')
     }).not.toThrow()
   })
 
   it('matches timestamped backup filenames correctly', () => {
-    const projectRoot = 'güneyyurt belediyesi i̇hale - doğrudan temin'
-    const fileName = 'güneyyurt belediyesi i̇hale - doğrudan temin_2026-10-19_21-50.temin'
+    const projectRoot = 'kamu idaresi i̇hale - doğrudan temin'
+    const fileName = 'kamu idaresi i̇hale - doğrudan temin_2026-10-19_21-50.temin'
     expect(matchBackupFile(projectRoot, fileName)).toBe(true)
   })
 
   it('matches versioned backup filenames correctly', () => {
-    const projectRoot = 'güneyyurt belediyesi i̇hale - doğrudan temin'
-    const fileName = 'güneyyurt belediyesi i̇hale - doğrudan temin_surum #2.temin'
+    const projectRoot = 'kamu idaresi i̇hale - doğrudan temin'
+    const fileName = 'kamu idaresi i̇hale - doğrudan temin_surum #2.temin'
     expect(matchBackupFile(projectRoot, fileName)).toBe(true)
   })
 
@@ -41,7 +41,7 @@ describe('Google Drive Backup Pruning Regex', () => {
   })
 
   it('rejects unrelated files', () => {
-    const projectRoot = 'güneyyurt belediyesi'
+    const projectRoot = 'kamu idaresi'
     const fileName = 'baska_bir_dosya_2026-10-19.temin'
     expect(matchBackupFile(projectRoot, fileName)).toBe(false)
   })
