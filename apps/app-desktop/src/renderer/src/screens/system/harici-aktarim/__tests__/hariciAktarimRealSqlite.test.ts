@@ -1,7 +1,10 @@
 // @vitest-environment node
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { DatabaseSync } from 'node:sqlite'
-import { handleDbTransaction } from '../../../../../../main/ipc/db/dbTransaction'
+import {
+  handleDbTransaction,
+  executeDbTransaction
+} from '../../../../../../main/ipc/db/dbTransaction'
 import { executeDossierEzmeSync, parseDogrudanTeminJson } from '../hariciAktarimService'
 import { SAMPLE_HARICI_DT_JSON } from '../sampleData'
 
@@ -402,5 +405,31 @@ describe('Gerçek SQLite Motoru: Harici Dosya Aktarım & Atomik Rollback Doğrul
     // 2. Kalem: Fiyat 200 * %20 = 40 TL KDV
     expect(teklifKalemleri[1].birim_fiyat).toBe(200)
     expect(teklifKalemleri[1].kdv_tutari).toBe(40)
+  })
+
+  it('transaction: düz "$ROOT_ID" metni veri olarak korunur, yalnızca { __txRef } nesnesi rowid ile çözülür', () => {
+    db.exec('CREATE TABLE T_Parent (id INTEGER PRIMARY KEY AUTOINCREMENT, ad TEXT)')
+    db.exec('CREATE TABLE T_Child (id INTEGER PRIMARY KEY AUTOINCREMENT, parent_id INTEGER, notu TEXT)')
+    db.exec("INSERT INTO T_Parent (ad) VALUES ('onceki')")
+
+    const res = executeDbTransaction(
+      db as any,
+      [
+        { sql: 'INSERT INTO T_Parent (ad) VALUES (?)', params: ['$ROOT_ID'] },
+        {
+          sql: 'INSERT INTO T_Child (parent_id, notu) VALUES (?, ?)',
+          params: [{ __txRef: 'ROOT_ID' }, '$PARENT_ID']
+        }
+      ],
+      { validateSql: false }
+    )
+
+    const parentId = Number(res.rootInsertRowid)
+    expect(parentId).toBe(2)
+    const parent = db.prepare('SELECT ad FROM T_Parent WHERE id = ?').get(parentId) as any
+    expect(parent.ad).toBe('$ROOT_ID')
+    const child = db.prepare('SELECT parent_id, notu FROM T_Child').get() as any
+    expect(child.parent_id).toBe(2)
+    expect(child.notu).toBe('$PARENT_ID')
   })
 })
