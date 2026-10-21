@@ -17,10 +17,11 @@ import {
   Info,
   ExternalLink
 } from 'lucide-react'
+import { RealAppStatus, canLaunch } from '../detection.js'
 
 interface AppCardProps {
   manifest: AppManifest
-  realStatus?: { installed: boolean; isDevSource?: boolean; path?: string; details?: string }
+  realStatus?: RealAppStatus
   onInspect: (manifest: AppManifest) => void
   onLaunch: (manifest: AppManifest) => void
 }
@@ -48,8 +49,10 @@ function getCategoryIcon(cat: AppCategory) {
 }
 
 export const AppCard: React.FC<AppCardProps> = ({ manifest, realStatus, onInspect, onLaunch }) => {
-  const isInstalled = realStatus ? realStatus.installed : manifest.installState === 'installed'
-  const isDevSource = realStatus?.isDevSource
+  const isInstalled = realStatus ? canLaunch(realStatus) : manifest.installState === 'installed'
+  const isDevSource = realStatus
+    ? !!realStatus.isDevSource || (!realStatus.installed && canLaunch(realStatus))
+    : false
 
   return (
     <div

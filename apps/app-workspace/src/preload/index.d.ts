@@ -10,6 +10,9 @@ export interface AppDetectionResult {
   isDevSource?: boolean
   path?: string
   details?: string
+  sourceAvailable?: boolean
+  launchable?: boolean
+  packageName?: string
 }
 
 export interface WorkspaceAPI {

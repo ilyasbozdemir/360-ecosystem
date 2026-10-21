@@ -12,6 +12,7 @@ import { CategoryNav } from './components/CategoryNav.js'
 import { AppCard } from './components/AppCard.js'
 import { ManifestModal } from './components/ManifestModal.js'
 import { SearchX, CheckCircle, AlertCircle } from 'lucide-react'
+import { RealAppStatus, canLaunch } from './detection.js'
 
 export const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('')
@@ -23,9 +24,7 @@ export const App: React.FC = () => {
     message: string
     isError: boolean
   } | null>(null)
-  const [realDetections, setRealDetections] = useState<
-    Record<string, { installed: boolean; isDevSource?: boolean; path?: string; details?: string }>
-  >({})
+  const [realDetections, setRealDetections] = useState<Record<string, RealAppStatus>>({})
 
   useEffect(() => {
     if (window.workspaceAPI?.checkAppInstalled) {
@@ -39,7 +38,7 @@ export const App: React.FC = () => {
           }
         })
       ).then((results) => {
-        const map: Record<string, { installed: boolean; isDevSource?: boolean; path?: string; details?: string }> = {}
+        const map: Record<string, RealAppStatus> = {}
         for (const [id, res] of results) {
           map[id] = res
         }
@@ -66,10 +65,10 @@ export const App: React.FC = () => {
       const real = realDetections[manifest.appId]
       if (real) {
         let state: AppInstallState = manifest.installState
-        if (real.installed) {
+        if (canLaunch(real)) {
           state = 'installed'
         } else if (manifest.installState === 'installed') {
-          // Statik manifestte 'installed' olsa dahi sistemde bulunamadıysa 'not_installed' olarak işaretle
+          // Statik manifestte 'installed' olsa dahi sistemde bulunamadıysa veya başlatılamazsa 'not_installed'
           state = 'not_installed'
         }
         return {

@@ -45,6 +45,7 @@ export default function HariciDosyaAktarScreen(): React.JSX.Element {
   })
 
   const [isProcessing, setIsProcessing] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
   const [syncResult, setSyncResult] = useState<SyncResult | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
@@ -101,15 +102,26 @@ export default function HariciDosyaAktarScreen(): React.JSX.Element {
     setSelectedTargetId(null)
   }
 
+  const targetDossier =
+    typeof effectiveTargetId === 'number'
+      ? existingDossiers.find((d) => d.id === effectiveTargetId) || null
+      : null
+
   const handleExecuteSync = async (): Promise<void> => {
     if (!parsedData) return
+    setShowConfirm(false)
     setIsProcessing(true)
     setErrorMsg(null)
     setSyncResult(null)
 
     try {
-      const targetId = effectiveTargetId === 'new' ? null : effectiveTargetId
-      const res = await executeDossierEzmeSync(targetId, parsedData, options)
+      const isNewTarget = effectiveTargetId === 'new'
+      const targetId = isNewTarget ? null : effectiveTargetId
+      // Yeni dosya seçildiyse oluşturma izni açıkça verilir; mevcut dosyada kapalı kalır.
+      const res = await executeDossierEzmeSync(targetId, parsedData, {
+        ...options,
+        createNewIfNotFound: isNewTarget
+      })
       setSyncResult(res)
       const refreshed = await fetchExistingDossiers()
       setExistingDossiers(refreshed)
@@ -578,10 +590,75 @@ export default function HariciDosyaAktarScreen(): React.JSX.Element {
                 </div>
               )}
 
+              {/* Son Onay Paneli */}
+              {showConfirm && (
+                <div className="p-4 rounded-xl border-2 border-amber-400 dark:border-amber-600 bg-amber-50 dark:bg-amber-950/30 text-xs text-amber-900 dark:text-amber-200 flex flex-col gap-2">
+                  <div className="flex items-center gap-2 font-bold text-sm">
+                    <AlertCircle size={16} />
+                    {effectiveTargetId === 'new' ? 'Yeni Kayıt Onayı' : 'Üzerine Yazma Onayı'}
+                  </div>
+                  {effectiveTargetId === 'new' ? (
+                    <div>
+                      Yeni doğrudan temin dosyası oluşturulacak:{' '}
+                      <strong>
+                        {parsedData.dosyaBilgileri.dosyaNo || '-'} — {parsedData.dosyaBilgileri.isinAdi}
+                      </strong>
+                    </div>
+                  ) : (
+                    <div>
+                      Hedef dosya:{' '}
+                      <strong>
+                        [ID: {effectiveTargetId}] {targetDossier?.temin_no || 'No Yok'} —{' '}
+                        {targetDossier?.konu || '-'}
+                      </strong>
+                      <div className="mt-0.5">
+                        Gelen JSON: {parsedData.dosyaBilgileri.dosyaNo || '-'} —{' '}
+                        {parsedData.dosyaBilgileri.isinAdi}
+                      </div>
+                    </div>
+                  )}
+                  <ul className="list-disc pl-5 space-y-0.5">
+                    {options.overwriteGeneralInfo && <li>Genel bilgiler ve kodlar güncellenecek</li>}
+                    {options.overwriteMaterials && (
+                      <li>
+                        Malzeme kalemleri ({parsedData.malzemeler?.length || 0})
+                        {effectiveTargetId !== 'new' && ' — mevcutlar silinip yeniden yazılacak'}
+                      </li>
+                    )}
+                    {options.overwriteOffers && (
+                      <li>
+                        Teklifler ({parsedData.teklifler?.length || 0})
+                        {effectiveTargetId !== 'new' && ' — mevcutlar silinip yeniden yazılacak'}
+                      </li>
+                    )}
+                    {options.overwriteCommissions && (
+                      <li>
+                        Komisyon heyetleri
+                        {effectiveTargetId !== 'new' && ' — mevcutlar silinip yeniden yazılacak'}
+                      </li>
+                    )}
+                  </ul>
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      onClick={handleExecuteSync}
+                      className="px-3.5 py-1.5 rounded-lg font-semibold bg-amber-600 hover:bg-amber-700 text-white"
+                    >
+                      Onayla ve Uygula
+                    </button>
+                    <button
+                      onClick={() => setShowConfirm(false)}
+                      className="px-3.5 py-1.5 rounded-lg font-semibold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200"
+                    >
+                      Vazgeç
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Ana İşlem Butonu */}
               <button
-                onClick={handleExecuteSync}
-                disabled={isProcessing}
+                onClick={() => setShowConfirm(true)}
+                disabled={isProcessing || showConfirm}
                 className="w-full py-3 rounded-xl font-bold text-sm bg-linear-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white shadow-md hover:shadow-lg disabled:opacity-50 transition-all flex items-center justify-center gap-2"
               >
                 {isProcessing ? (

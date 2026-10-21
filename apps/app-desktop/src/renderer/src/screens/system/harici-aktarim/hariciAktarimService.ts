@@ -159,7 +159,9 @@ export async function executeDossierEzmeSync(
 
   // Eşzamanlı çakışmaları önlemek için ID üretimini doğrudan SQLite'a bırakıyoruz.
   // Yeni dosya ise child tablolarda '$ROOT_ID' belirteci kullanılarak ilk INSERT'ün rowid'si bağlanır.
-  const targetDosyaParam: string | number = isNew ? '$ROOT_ID' : finalDosyaId!
+  const targetDosyaParam: number | { __txRef: 'ROOT_ID' } = isNew
+    ? { __txRef: 'ROOT_ID' }
+    : finalDosyaId!
 
   // Atomik Transaction Sorguları Listesi (Tüm ana ve alt kayıtlar TEK bir transaction ile çalışır)
   const txQueries: Array<{ sql: string; params?: unknown[] }> = []

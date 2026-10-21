@@ -89,13 +89,19 @@ export function executeDbTransaction(
     for (let i = 0; i < stmts.length; i++) {
       const q = stmts[i]
       const stmt = db.prepare(q.sql)
-      // Dinamik ID Yayılımı: $ROOT_ID veya $PARENT_ID belirteçlerini ilk INSERT'ün SQLite native rowid'si ile değiştir
+      // Dinamik ID Yayılımı: yalnızca açık referans nesnesi ({ __txRef: 'ROOT_ID' | 'PARENT_ID' })
+      // ilk INSERT'ün rowid'si ile değiştirilir. Sıradan metin değerleri asla dönüştürülmez.
       const params = (q.params || []).map((p) =>
-        p === '$ROOT_ID' || p === '$PARENT_ID' ? rootInsertRowid : p
+        p !== null &&
+        typeof p === 'object' &&
+        ((p as { __txRef?: unknown }).__txRef === 'ROOT_ID' ||
+          (p as { __txRef?: unknown }).__txRef === 'PARENT_ID')
+          ? rootInsertRowid
+          : p
       )
       const info = stmt.run(...params)
       lastInsertRowid = info.lastInsertRowid ?? lastInsertRowid
-      if (rootInsertRowid === 0 && info.lastInsertRowid) {
+      if (rootInsertRowid === 0 && info.lastInsertRowid && /^\s*INSERT\b/i.test(q.sql)) {
         rootInsertRowid = info.lastInsertRowid
       }
       const changesCount = Number(info.changes ?? 0)
