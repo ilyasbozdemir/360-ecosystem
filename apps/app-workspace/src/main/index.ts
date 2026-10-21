@@ -177,13 +177,21 @@ async function launchTemin360(): Promise<{ success: boolean; message: string }> 
             message: `Başlatma hatası: ${err.message}`
           })
         })
+        child.on('exit', (code) => {
+          if (code !== null && code !== 0) {
+            markResolved({
+              success: false,
+              message: `TEMİN 360 başlatılamadı ve kapandı (Çıkış kodu: ${code}).`
+            })
+          }
+        })
         setTimeout(() => {
           child.unref()
           markResolved({
             success: true,
             message: `TEMİN 360 masaüstü uygulaması başlatıldı (${basename(detection.path!)}).`
           })
-        }, 300)
+        }, 500)
         return
       }
 
@@ -201,13 +209,21 @@ async function launchTemin360(): Promise<{ success: boolean; message: string }> 
           message: `Geliştirici modu başlatma hatası: ${err.message}`
         })
       })
+      child.on('exit', (code) => {
+        if (code !== null && code !== 0) {
+          markResolved({
+            success: false,
+            message: `TEMİN 360 geliştirici süreci sonlandı (Çıkış kodu: ${code}).`
+          })
+        }
+      })
       setTimeout(() => {
         child.unref()
         markResolved({
           success: true,
           message: 'TEMİN 360 geliştirici modunda (pnpm dev) başlatılıyor...'
         })
-      }, 400)
+      }, 600)
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : String(err)
       markResolved({

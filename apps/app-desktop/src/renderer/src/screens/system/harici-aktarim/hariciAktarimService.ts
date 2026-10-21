@@ -157,73 +157,75 @@ export async function executeDossierEzmeSync(
   let finalDosyaId = targetId
   let isNew = false
 
-  // 1. Yeni Dosya Eklenecekse Header'ı oluştur
+  // 1. Yeni Dosya Eklenecekse Hedef ID'yi Önceden Belirle (Tek bir atomik transaction içinde eklemek için)
   if (finalDosyaId === null) {
-    const insertRes = await ipc.invoke(
-      'db:run',
-      `INSERT INTO DATA_TeminDosyasi (
-        temin_no, ekap_no, konu, isin_aciklamasi, dosya_acilis_tarihi, butce_yili, butce_tipi,
-        birim, sunulacak_makam, ihtiyac_yeri, ihale_sekli, ihale_tipi, tur,
-        teklif_sozlesme_turu, alt_yuklenici_olacak_mi, kismi_teklif_verilecek_mi,
-        fiyat_farki_dayanagi, yatirim_proje_no, avans_verilecek_mi, yaklasik_maliyet_hesaplamasi,
-        kdv, hesaplama_esasi, komisyon_takdiri, tibbi_cihaz_alimi_mi, son_teklif_verme_tarihi,
-        teslim_tarihi, fonksiyonel_kod, e_butce, finansman_kodu, notlar, durum_asama_id, is_deleted
-      ) VALUES (
-        ?, ?, ?, ?, ?, ?, ?,
-        ?, ?, ?, ?, ?, ?,
-        ?, ?, ?,
-        ?, ?, ?, ?,
-        ?, ?, ?, ?, ?,
-        ?, ?, ?, ?, ?, 1, 0
-      )`,
-      [
-        info.dosyaNo || info.dogrudanTeminNumarasi || 'YENİ-DT',
-        info.dogrudanTeminNumarasi || data.id || null,
-        info.isinAdi || 'Doğrudan Temin Alımı',
-        info.aciklama || null,
-        info.dosyaAcilisTarihi || new Date().toISOString().slice(0, 10),
-        butceYiliInt,
-        info.butce || 'Genel Bütçe',
-        info.ihalesiYapilacakBirim || null,
-        info.sunulacakMakam || null,
-        info.ihtiyacYeri || null,
-        info.madde || '22/d*',
-        'Doğrudan Temin',
-        turCode,
-        info.teklifSozlesmeTuru || 'Birim Fiyat',
-        altYukleniciInt,
-        kismiTeklifInt,
-        info.fiyatFarkiDayanagi || 'Fiyat Farkı Ödenmeyecek',
-        info.yatirimProjeNo || null,
-        avansInt,
-        info.yaklasikMaliyetDurumu || 'Burada Hesaplanacak',
-        info.kdv || 'Hariç',
-        info.hesaplamaEsasi || 'En düşük fiyat esasına göre',
-        info.hesaplamada || 'Sadece araştırma fiyatları dikkate alınacak',
-        tibbiCihazInt,
-        info.sonTeklifVermeTarihSaati || null,
-        info.tahminiBitisTarihi || null,
-        info.fonksiyonelKod || null,
-        info.kurumsalKod || null,
-        info.finansalKod || null,
-        `[Harici Entegrasyon ID: ${data.id || 'N/A'}] ${info.talepTarihSayisi ? 'Talep No: ' + info.talepTarihSayisi : ''}`
-      ]
+    const maxRow = await ipc.invoke(
+      'db:query',
+      'SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM DATA_TeminDosyasi'
     )
-
-    if (!insertRes.success) {
-      throw new Error(`Yeni dosya eklenirken hata: ${insertRes.error}`)
-    }
-    finalDosyaId = Number(insertRes.lastInsertRowid || insertRes.id)
+    finalDosyaId = Number(maxRow?.[0]?.next_id || 1)
     isNew = true
-    updatedFields.push('Yeni Dosya Kaydı Oluşturuldu')
   }
 
-  // Atomik Transaction Sorguları Listesi
+  // Atomik Transaction Sorguları Listesi (Tüm ana ve alt kayıtlar TEK bir transaction ile çalışır)
   const txQueries: Array<{ sql: string; params?: unknown[] }> = []
 
   try {
-    // 2. Mevcut Dosya Güncelleniyorsa Header Güncellemesini Transaction'a Ekle
-    if (!isNew && options.overwriteGeneralInfo) {
+    // 2. Yeni Dosya ise Header Kaydını Transaction'ın 1. Sorgusu Olarak Ekle
+    if (isNew) {
+      txQueries.push({
+        sql: `INSERT INTO DATA_TeminDosyasi (
+          id, temin_no, ekap_no, konu, isin_aciklamasi, dosya_acilis_tarihi, butce_yili, butce_tipi,
+          birim, sunulacak_makam, ihtiyac_yeri, ihale_sekli, ihale_tipi, tur,
+          teklif_sozlesme_turu, alt_yuklenici_olacak_mi, kismi_teklif_verilecek_mi,
+          fiyat_farki_dayanagi, yatirim_proje_no, avans_verilecek_mi, yaklasik_maliyet_hesaplamasi,
+          kdv, hesaplama_esasi, komisyon_takdiri, tibbi_cihaz_alimi_mi, son_teklif_verme_tarihi,
+          teslim_tarihi, fonksiyonel_kod, e_butce, finansman_kodu, notlar, durum_asama_id, is_deleted
+        ) VALUES (
+          ?, ?, ?, ?, ?, ?, ?, ?,
+          ?, ?, ?, ?, ?, ?,
+          ?, ?, ?,
+          ?, ?, ?, ?,
+          ?, ?, ?, ?, ?,
+          ?, ?, ?, ?, ?, 1, 0
+        )`,
+        params: [
+          finalDosyaId,
+          info.dosyaNo || info.dogrudanTeminNumarasi || 'YENİ-DT',
+          info.dogrudanTeminNumarasi || data.id || null,
+          info.isinAdi || 'Doğrudan Temin Alımı',
+          info.aciklama || null,
+          info.dosyaAcilisTarihi || new Date().toISOString().slice(0, 10),
+          butceYiliInt,
+          info.butce || 'Genel Bütçe',
+          info.ihalesiYapilacakBirim || null,
+          info.sunulacakMakam || null,
+          info.ihtiyacYeri || null,
+          info.madde || '22/d*',
+          'Doğrudan Temin',
+          turCode,
+          info.teklifSozlesmeTuru || 'Birim Fiyat',
+          altYukleniciInt,
+          kismiTeklifInt,
+          info.fiyatFarkiDayanagi || 'Fiyat Farkı Ödenmeyecek',
+          info.yatirimProjeNo || null,
+          avansInt,
+          info.yaklasikMaliyetDurumu || 'Burada Hesaplanacak',
+          info.kdv || 'Hariç',
+          info.hesaplamaEsasi || 'En düşük fiyat esasına göre',
+          info.hesaplamada || 'Sadece araştırma fiyatları dikkate alınacak',
+          tibbiCihazInt,
+          info.sonTeklifVermeTarihSaati || null,
+          info.tahminiBitisTarihi || null,
+          info.fonksiyonelKod || null,
+          info.kurumsalKod || null,
+          info.finansalKod || null,
+          `[Harici Entegrasyon ID: ${data.id || 'N/A'}] ${info.talepTarihSayisi ? 'Talep No: ' + info.talepTarihSayisi : ''}`
+        ]
+      })
+      updatedFields.push('Yeni Dosya Kaydı Oluşturuldu')
+    } else if (options.overwriteGeneralInfo) {
+      // 3. Mevcut Dosya Güncelleniyorsa Header Güncellemesini Transaction'a Ekle
       txQueries.push({
         sql: `UPDATE DATA_TeminDosyasi SET
           temin_no = ?, ekap_no = ?, konu = ?, isin_aciklamasi = ?, dosya_acilis_tarihi = ?,
@@ -398,14 +400,31 @@ export async function executeDossierEzmeSync(
           if (t.kalemFiyatlari && Array.isArray(t.kalemFiyatlari) && t.kalemFiyatlari.length > 0) {
             for (let kIdx = 0; kIdx < t.kalemFiyatlari.length; kIdx++) {
               const kfVal = Number(t.kalemFiyatlari[kIdx]) || 0
-              const itemSira = kIdx + 1
+              const matchedItem = data.malzemeler && data.malzemeler[kIdx]
+              const itemSira = matchedItem?.siraNo || kIdx + 1
+              const itemKalemAdi = matchedItem?.malzemeAdi || ''
+
+              // KDV oranını önce kalemden, yoksa tekliften al, yoksa %20 varsay
+              const rawKdvRate =
+                matchedItem?.kdvOrani !== undefined
+                  ? Number(matchedItem.kdvOrani)
+                  : t.kdvOrani !== undefined
+                    ? Number(t.kdvOrani)
+                    : 20
+              const effectiveKdvRate = isNaN(rawKdvRate) ? 20 : rawKdvRate
+              const kdvTutari = (kfVal * effectiveKdvRate) / 100
+
               txQueries.push({
                 sql: `INSERT INTO DATA_TeminKalemTeklif (
                   temin_dosya_id, dosya_id, temin_kalem_id, temin_firma_id,
                   birim_fiyat, kdv_tutari, teklif_verildi_mi
                 ) VALUES (
                   ?, ?,
-                  COALESCE((SELECT id FROM DATA_TeminKalem WHERE temin_dosya_id = ? AND sira_no = ? LIMIT 1), 0),
+                  COALESCE(
+                    (SELECT id FROM DATA_TeminKalem WHERE temin_dosya_id = ? AND sira_no = ? LIMIT 1),
+                    (SELECT id FROM DATA_TeminKalem WHERE temin_dosya_id = ? AND kalem_adi = ? LIMIT 1),
+                    0
+                  ),
                   COALESCE((SELECT id FROM DATA_TeminFirma WHERE temin_dosya_id = ? AND unvan = ? LIMIT 1), 0),
                   ?, ?, 1
                 )`,
@@ -415,9 +434,11 @@ export async function executeDossierEzmeSync(
                   finalDosyaId,
                   itemSira,
                   finalDosyaId,
+                  itemKalemAdi,
+                  finalDosyaId,
                   firmaAdi,
                   kfVal,
-                  kfVal * 0.2
+                  kdvTutari
                 ]
               })
             }

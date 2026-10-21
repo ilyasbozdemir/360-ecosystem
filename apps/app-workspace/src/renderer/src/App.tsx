@@ -65,9 +65,16 @@ export const App: React.FC = () => {
     return DEFAULT_ECOSYSTEM_MANIFESTS.map((manifest) => {
       const real = realDetections[manifest.appId]
       if (real) {
+        let state: AppInstallState = manifest.installState
+        if (real.installed) {
+          state = 'installed'
+        } else if (manifest.installState === 'installed') {
+          // Statik manifestte 'installed' olsa dahi sistemde bulunamadıysa 'not_installed' olarak işaretle
+          state = 'not_installed'
+        }
         return {
           ...manifest,
-          installState: real.installed ? ('installed' as AppInstallState) : manifest.installState
+          installState: state
         }
       }
       return manifest

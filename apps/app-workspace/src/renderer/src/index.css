@@ -1,3 +1,7 @@
+@import 'tailwindcss';
+
+@variant dark (&:where(.dark, .dark *));
+
 :root {
   /* Aligned with TEMIN 360 & WorkSuite 360 Design System (Light) */
   --theme-bg-100: #f8fafc;

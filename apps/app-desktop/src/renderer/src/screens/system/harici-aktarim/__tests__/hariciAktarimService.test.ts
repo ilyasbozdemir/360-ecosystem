@@ -269,6 +269,9 @@ describe('hariciAktarimService', () => {
       const data = parsed.data!
 
       mockInvoke.mockImplementation(async (channel: string) => {
+        if (channel === 'db:query') {
+          return [{ next_id: 999 }]
+        }
         if (channel === 'db:run') {
           return { success: true, lastInsertRowid: 999, changes: 1 }
         }

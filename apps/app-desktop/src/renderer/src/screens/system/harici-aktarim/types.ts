@@ -82,7 +82,7 @@ export interface TeklifKaydi {
   kdvOrani?: string | number
   gecerlilikGun?: string | number
   not?: string
-  kalemFiyatlari?: string[]
+  kalemFiyatlari?: Array<string | number>
 }
 
 export interface KazananFirma {

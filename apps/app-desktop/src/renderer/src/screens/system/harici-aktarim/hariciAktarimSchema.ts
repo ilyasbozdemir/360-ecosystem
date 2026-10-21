@@ -1,13 +1,21 @@
 import { z } from 'zod'
 
+const optionalDateString = z
+  .string()
+  .trim()
+  .refine((val) => !val || !isNaN(Date.parse(val)) || /^\d{4}-\d{2}-\d{2}/.test(val), {
+    message: 'Geçersiz tarih formatı (YYYY-MM-DD veya ISO-8601 formatı bekleniyor).'
+  })
+  .optional()
+
 export const DosyaBilgileriSchema = z
   .object({
     dosyaNo: z.string().trim().optional(),
-    dosyaAcilisTarihi: z.string().trim().optional(),
+    dosyaAcilisTarihi: optionalDateString,
     butceYili: z.string().trim().optional(),
     butce: z.enum(['Genel Bütçe', 'Döner Sermaye', 'Diğer']).optional(),
     dogrudanTeminNumarasi: z.string().trim().optional(),
-    ihaleTarihi: z.string().trim().optional(),
+    ihaleTarihi: optionalDateString,
     ihaleAsamasi: z.string().trim().optional(),
     isinAdi: z.string().trim().optional(),
     aciklama: z.string().trim().optional(),
@@ -35,16 +43,16 @@ export const DosyaBilgileriSchema = z
     hesaplamada: z.string().trim().optional(),
     tibbiCihaz: z.enum(['Hayır', 'Evet']).optional(),
     irtibatYetkilisi: z.string().trim().optional(),
-    sonTeklifVermeTarihSaati: z.string().trim().optional(),
-    tahminiBitisTarihi: z.string().trim().optional()
+    sonTeklifVermeTarihSaati: optionalDateString,
+    tahminiBitisTarihi: optionalDateString
   })
   .passthrough()
   .refine(
     (val) =>
       Boolean(
         (val.isinAdi && val.isinAdi.length > 0) ||
-          (val.dosyaNo && val.dosyaNo.length > 0) ||
-          (val.dogrudanTeminNumarasi && val.dogrudanTeminNumarasi.length > 0)
+        (val.dosyaNo && val.dosyaNo.length > 0) ||
+        (val.dogrudanTeminNumarasi && val.dogrudanTeminNumarasi.length > 0)
       ),
     { message: '"dosyaBilgileri" içerisinde en az "isinAdi" veya "dosyaNo" alanı bulunmalıdır.' }
   )
@@ -76,10 +84,10 @@ export const TeklifKaydiSchema = z
     iletisim: z.string().trim().optional(),
     yer: z.string().trim().optional(),
     yetkili: z.string().trim().optional(),
-    istekTarihi: z.string().trim().optional(),
+    istekTarihi: optionalDateString,
     istekSekli: z.string().trim().optional(),
     durum: z.string().trim().optional(),
-    teklifTarihi: z.string().trim().optional(),
+    teklifTarihi: optionalDateString,
     tutarKdvHaric: z.number().min(0).optional(),
     kdvOrani: z.string().or(z.number()).optional(),
     gecerlilikGun: z.string().trim().optional(),
@@ -104,11 +112,38 @@ export const KomisyonlarSchema = z
   })
   .passthrough()
 
+export const KabulTutanakMalzemeSchema = z
+  .object({
+    siraNo: z.number().int().positive().optional(),
+    malzemeAdi: z.string().trim().min(1, 'Kabul tutanağı malzeme adı boş olamaz.'),
+    ozelligi: z.string().trim().optional(),
+    birimi: z.string().trim().optional(),
+    miktari: z.string().or(z.number()).optional(),
+    teslimAlinan: z.string().or(z.number()).optional(),
+    kabulMiktari: z.string().or(z.number()).optional()
+  })
+  .passthrough()
+
+export const KabulTutanagiSchema = z
+  .object({
+    id: z.string().trim().optional(),
+    kabulTarihi: optionalDateString,
+    firma: z.string().trim().optional(),
+    sayi: z.string().trim().optional(),
+    teslimAlan: z.string().trim().optional(),
+    teslimYeri: z.string().trim().optional(),
+    faturaTarihi: optionalDateString,
+    faturaNo: z.string().trim().optional(),
+    not: z.string().trim().optional(),
+    malzemeler: z.array(KabulTutanakMalzemeSchema).optional()
+  })
+  .passthrough()
+
 export const DogrudanTeminSchema = z
   .object({
     id: z.string().trim().optional(),
     versiyon: z.string().trim().optional(),
-    aktarimTarihi: z.string().trim().optional(),
+    aktarimTarihi: optionalDateString,
     dosyaBilgileri: DosyaBilgileriSchema,
     malzemeler: z.array(MalzemeKalemiSchema).optional(),
     teklifler: z.array(TeklifKaydiSchema).optional(),
@@ -126,7 +161,7 @@ export const DogrudanTeminSchema = z
       )
       .optional(),
     komisyonlar: KomisyonlarSchema.optional(),
-    kabulTutanaklari: z.array(z.any()).optional(),
+    kabulTutanaklari: z.array(KabulTutanagiSchema).optional(),
     sablon: z.record(z.string(), z.any()).optional(),
     f: z.record(z.string(), z.string()).optional(),
     mat: z.array(z.array(z.string())).optional()

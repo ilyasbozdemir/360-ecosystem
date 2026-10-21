@@ -309,4 +309,98 @@ describe('Gerçek SQLite Motoru: Harici Dosya Aktarım & Atomik Rollback Doğrul
     expect(kalemler.length).toBe(1)
     expect(kalemler[0].kalem_adi).toBe('Mevcut Silinmeyecek Kalem')
   })
+
+  it('yeni dosya oluşturulurken alt tablolarda hata çıkarsa header dahil hiçbir kayıt veritabanında kalmaz (Tekil Atomik Rollback)', async () => {
+    const originalInvoke = (window as any).electron.ipcRenderer.invoke
+    ;(window as any).electron.ipcRenderer.invoke = async (channel: string, arg1: any, arg2: any) => {
+      if (channel === 'db:transaction') {
+        const queries = arg1 as Array<{ sql: string; params?: unknown[] }>
+        // Transaction içine hata alacak bozuk bir sorgu ekle
+        queries.push({ sql: 'INSERT INTO TabloBulunamadi_Hata (kolon) VALUES (?)', params: [999] })
+        return await handleDbTransaction(db as any, queries, { validateSql: false })
+      }
+      return originalInvoke(channel, arg1, arg2)
+    }
+
+    const initialDosyaCount = (db.prepare('SELECT COUNT(*) as count FROM DATA_TeminDosyasi').get() as any).count
+
+    const parsed = parseDogrudanTeminJson(SAMPLE_HARICI_DT_JSON)
+    const data = parsed.data!
+
+    // Yeni dosya oluşturma işlemi (targetId = null)
+    await expect(
+      executeDossierEzmeSync(null, data, {
+        overwriteGeneralInfo: true,
+        overwriteMaterials: true,
+        overwriteOffers: true,
+        overwriteCommissions: true,
+        createNewIfNotFound: true
+      })
+    ).rejects.toThrow()
+
+    // DOĞRULAMA: Rollback sayesinde DATA_TeminDosyasi tablosuna YENİ HİÇBİR KAYIT YAZILMAMIŞTIR!
+    const afterDosyaCount = (db.prepare('SELECT COUNT(*) as count FROM DATA_TeminDosyasi').get() as any).count
+    expect(afterDosyaCount).toBe(initialDosyaCount)
+  })
+
+  it('kalem bazlı tekliflerde farklı KDV oranları (%10, %20) dinamik ve doğru hesaplanarak yazılır', async () => {
+    const parsed = parseDogrudanTeminJson(SAMPLE_HARICI_DT_JSON)
+    const data = { ...parsed.data! }
+
+    // 1. Kalem: KDV %10, 2. Kalem: KDV %20
+    data.malzemeler = [
+      {
+        siraNo: 1,
+        malzemeAdi: 'Özel İlaç',
+        birimi: 'Kutu',
+        miktar: 10,
+        birimFiyat: 100,
+        kdvOrani: 10
+      },
+      {
+        siraNo: 2,
+        malzemeAdi: 'Standart Sarf',
+        birimi: 'Adet',
+        miktar: 5,
+        birimFiyat: 200,
+        kdvOrani: 20
+      }
+    ]
+
+    data.teklifler = [
+      {
+        siraNo: 1,
+        firma: 'Dinamik KDV Medikal Ltd.',
+        tutarKdvHaric: 2000,
+        kalemFiyatlari: [100, 200]
+      }
+    ]
+
+    const result = await executeDossierEzmeSync(null, data, {
+      overwriteGeneralInfo: true,
+      overwriteMaterials: true,
+      overwriteOffers: true,
+      overwriteCommissions: true,
+      createNewIfNotFound: true
+    })
+
+    expect(result.success).toBe(true)
+    const dosyaId = result.dosyaId
+
+    // DATA_TeminKalemTeklif tablosundaki birim fiyat ve KDV tutarlarını kontrol et
+    const teklifKalemleri = db
+      .prepare(
+        'SELECT birim_fiyat, kdv_tutari FROM DATA_TeminKalemTeklif WHERE temin_dosya_id = ? ORDER BY id ASC'
+      )
+      .all(dosyaId) as any[]
+
+    expect(teklifKalemleri.length).toBe(2)
+    // 1. Kalem: Fiyat 100 * %10 = 10 TL KDV
+    expect(teklifKalemleri[0].birim_fiyat).toBe(100)
+    expect(teklifKalemleri[0].kdv_tutari).toBe(10)
+
+    // 2. Kalem: Fiyat 200 * %20 = 40 TL KDV
+    expect(teklifKalemleri[1].birim_fiyat).toBe(200)
+    expect(teklifKalemleri[1].kdv_tutari).toBe(40)
+  })
 })
