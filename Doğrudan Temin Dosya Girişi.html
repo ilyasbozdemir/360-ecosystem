@@ -996,6 +996,151 @@
         margin: 0 !important
       }
     }
+
+    /* Notification Popover & Smart Insights Styling */
+    .notif-wrap {
+      position: relative;
+      display: inline-block;
+    }
+    .notif-popover {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      width: 380px;
+      max-width: 90vw;
+      background: var(--card);
+      border: 1px solid var(--br);
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      z-index: 120;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: popIn 0.18s ease-out;
+    }
+    @keyframes popIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .notif-header {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--br);
+      font-weight: 700;
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--ac2);
+      color: var(--tx);
+    }
+    .notif-list {
+      max-height: 380px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .notif-item {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--br);
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      font-size: 12px;
+      line-height: 1.4;
+      transition: background 0.12s;
+    }
+    .notif-item:hover {
+      background: var(--ac2);
+    }
+    .notif-item.unread {
+      border-left: 3px solid var(--ac);
+      background: color-mix(in srgb, var(--ac2) 35%, transparent);
+    }
+    .notif-icon {
+      font-size: 16px;
+      line-height: 1;
+      padding-top: 2px;
+    }
+    .notif-content {
+      flex: 1;
+      min-width: 0;
+    }
+    .notif-title {
+      font-weight: 650;
+      color: var(--tx);
+      margin-bottom: 2px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+    .notif-time {
+      font-size: 10px;
+      color: var(--mu);
+      font-family: monospace;
+    }
+    .notif-desc {
+      color: var(--mu);
+      font-size: 11.5px;
+    }
+
+    /* Smart Insights (Yorumlar) Cards in Summary */
+    .insights-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px;
+      margin-top: 10px;
+    }
+    .insight-card {
+      border-radius: 10px;
+      padding: 12px 14px;
+      border: 1px solid var(--br);
+      background: color-mix(in srgb, var(--ac2) 20%, var(--card));
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .insight-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    }
+    .insight-card.success {
+      border-color: #10b98166;
+      background: #10b98110;
+    }
+    .insight-card.warning {
+      border-color: #f59e0b66;
+      background: #f59e0b10;
+    }
+    .insight-card.info {
+      border-color: #3b82f666;
+      background: #3b82f610;
+    }
+    .insight-card.accent {
+      border-color: var(--ac);
+      background: var(--ac2);
+    }
+    .insight-title {
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--tx);
+    }
+    .insight-text {
+      font-size: 12px;
+      color: var(--tx);
+      line-height: 1.45;
+    }
+    .insight-action-btn {
+      margin-top: 4px;
+      align-self: flex-start;
+      font-size: 11px;
+      padding: 3px 8px;
+    }
   </style>
 </head>
 
@@ -1051,6 +1196,19 @@
         <span class="top-title" id="curTitle">Dosya</span>
         <span style="flex:1"></span>
         <button onclick="copyPageLink()" title="Bu sayfanın bağlantısını kopyala">🔗 Bağlantı</button>
+        <div class="notif-wrap">
+          <button id="notifBtn" onclick="toggleNotifPop(event)" title="Aktif Dosya Bildirimleri & Neler Olmuş?" style="display:flex;align-items:center;gap:4px">
+            <span>🔔</span>
+            <span id="notifBadge" class="badge" style="background:#ef4444;color:#fff;font-size:10px;padding:1px 5px">0</span>
+          </button>
+          <div id="notifPop" class="notif-popover hide">
+            <div class="notif-header">
+              <span>🔔 Aktif Dosya: Neler Olmuş?</span>
+              <button class="s" onclick="toggleNotifPop(event)" style="padding:1px 6px;font-size:11px">✕</button>
+            </div>
+            <div id="notifList" class="notif-list"></div>
+          </div>
+        </div>
         <button onclick="openIO()" class="p">Aktar / Yapıştır</button>
         <button onclick="exFileJSON()" title="Aktif dosyayı API/JSON formatında indir">Dosya JSON</button>
         <button onclick="exJSON()" title="Tüm veritabanı yedeğini JSON olarak indir">Tüm JSON</button>
@@ -2411,23 +2569,64 @@
     }
 
 
-    /* ================= DOSYA ÖZETİ (özet rapor ekranı) ================= */
-    function ozetHTML(f) {
-      syncFiyat(f); const fi = db.cur, g = k => f.f[k] || '', T = f.tek || [], today = new Date().toISOString().slice(0, 10);
+    /* ================= DOSYA ÖZETİ, NELER OLMUŞ & AKILLI YORUMLAR ================= */
+    function getDosyaInsightsAndTimeline(f) {
+      syncFiyat(f);
+      const g = k => f.f[k] || '', T = f.tek || [], today = new Date().toISOString().slice(0, 10);
       const gel = T.filter(tekGeldi), kaz = T.filter(t => t.durum === 'Kabul Edildi');
       const gelTu = gel.map(t => ({ t, tu: tekTutar(t, f) })).filter(x => x.tu > 0).sort((a, b) => a.tu - b.tu), min = gelTu[0];
       const win = f.win || [], con = f.con || [];
-      const tut = f.mat.reduce((a, m) => a + num(m[6]) * num(m[7]), 0), tutKdv = f.mat.reduce((a, m) => a + num(m[6]) * num(m[7]) * (1 + num(m[5]) / 100), 0);
-      const basis = kaz.length || win.length ? 'Kazanan firma fiyatlarıyla (kesinleşen)' : gel.length ? 'Gelen tekliflerin en düşük fiyatlarıyla (tahmini)' : 'Henüz teklif fiyatı yok';
-      const teslim = m => f.kab.reduce((a, k) => a + k.m.filter(r => trl(r[1]) === trl(m[2])).reduce((b, r) => b + num(r[6]), 0), 0);
+      const tut = f.mat.reduce((a, m) => a + num(m[6]) * num(m[7]), 0);
+      const tutKdv = f.mat.reduce((a, m) => a + num(m[6]) * num(m[7]) * (1 + num(m[5]) / 100), 0);
       const dt = v => /^\d{4}-\d{2}-\d{2}/.test(v || '') ? v.slice(0, 10) : '';
-      const go2 = t => `<button class="s" onclick="tab='${t}';draw()">Aç →</button>`;
-      const H = (t, b) => `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h2 style="margin:0 0 6px;border:none;padding:0">${t}</h2>${b || ''}</div>`;
-      const bd = (t, c) => `<span class="badge" style="background:${c || 'var(--ac2)'};${c ? 'color:#059669' : 'color:var(--ac)'}">${t}</span>`;
-      const kv = (l, v) => `<div><div class="mu" style="font-size:11.5px">${l}</div><div style="font-weight:600">${v}</div></div>`;
-      const wrap = (t, minw) => `<div class="sc"><table class="wide" style="min-width:${minw}px">${t}</table></div>`;
 
-      /* süreç aşamaları */
+      // 1. Olay Akışı (Timeline)
+      const ev = [];
+      const add = (d, ico, title, txt, type, tabTarget) => {
+        d = dt(d);
+        if (d) ev.push({ d, ico, title, txt, type: type || 'info', tabTarget, isFuture: d > today });
+      };
+
+      add(g('Dosya Açılış Tarihi'), '📂', 'Dosya Açılışı', `<b>${esc(g('Dosya No') || '—')}</b> numaralı doğrudan temin dosyası açıldı (${esc(g('İşin Adı / Tanımı'))})`, 'info', 'f');
+      add(g('İhale Tarihi'), '📅', 'İhale / Temin Tarihi', `İhale tarihi belirlendi${g('İhale Aşaması') ? ' — Aşama: ' + esc(g('İhale Aşaması')) : ''}`, 'info', 'f');
+      add(g('Son Teklif Verme Tarih/Saati'), '⏰', 'Son Teklif Tarihi', `Firmalar için son teklif verme süresi: ${fmt(g('Son Teklif Verme Tarih/Saati'))}`, 'warning', 'tek');
+
+      T.forEach(t => {
+        add(t.istekTarihi, '📤', 'Teklif İstemi', `<b>${esc(t.firma)}</b> firmasından teklif istendi${t.sekil ? ' (' + esc(t.sekil) + ')' : ''}`, 'info', 'tek');
+        const tu = tekTutar(t, f);
+        if (t.teklifTarihi) {
+          add(t.teklifTarihi, '📥', 'Teklif Alındı', `<b>${esc(t.firma)}</b> teklifini iletti: ${tu ? money(tu) : 'Tutar belirtilmedi'}${t.durum === 'Kabul Edildi' ? ' 🏆 (Kazanan)' : ''}`, 'success', 'tek');
+        }
+      });
+
+      win.forEach(w => {
+        add(today, '🏆', 'Kazanan Firma', `<b>${esc(w[1])}</b> kazanan istekli olarak belirlendi`, 'success', 'win');
+      });
+
+      f.kab.forEach(k => {
+        const n = k.m ? k.m.length : 0;
+        add(k.h['Kabul Tarihi'], '✅', 'Kabul Tutanağı', `<b>${esc(k.h['Firma'] || '—')}</b> için kabul tutanağı düzenlendi (${n} kalem malzeme)`, 'success', 'kab');
+        if (k.h['Fatura Tarihi']) {
+          add(k.h['Fatura Tarihi'], '🧾', 'Fatura Kesildi', `Fatura sisteme işlendi: ${esc(k.h['Fatura No'] || 'No Yok')} — ${esc(k.h['Firma'] || '')}`, 'success', 'kab');
+        }
+      });
+
+      (f.ek || []).forEach(e => {
+        add(e.tarih, '📎', 'Ek Belge', `${esc(e.ad)} sisteme yüklendi (${esc(e.kat || 'Genel')})`, 'info', 'ek');
+      });
+
+      add(g('Tahmini Bitiş Tarihi'), '🏁', 'Tahmini Bitiş', `İşin tahmini tamamlanma tarihi: ${fmt(g('Tahmini Bitiş Tarihi'))}`, 'info', 'f');
+
+      ev.sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : 0));
+
+      // 2. Akıllı Yorumlar & Durum Değerlendirmesi
+      const comments = [];
+      const totalMat = f.mat.length;
+      const totalMiktar = f.mat.reduce((a, m) => a + num(m[6]), 0);
+      const deliveredCount = f.kab.reduce((a, k) => a + (k.m ? k.m.reduce((b, r) => b + num(r[6]), 0) : 0), 0);
+      const delivPct = totalMiktar > 0 ? Math.min(100, Math.round((deliveredCount / totalMiktar) * 100)) : 0;
+
+      // Aşama / İlerleme
       const lastKab = f.kab.map(k => dt(k.h['Kabul Tarihi'])).filter(Boolean).sort().pop();
       const ST = [
         ['Dosya açıldı', !!(g('Dosya No') || g('İşin Adı / Tanımı')), dt(g('Dosya Açılış Tarihi')), g('Dosya No')],
@@ -2439,38 +2638,249 @@
         ['Kabul / teslim', f.kab.length > 0, lastKab || '', f.kab.length + ' tutanak'],
         ['Fatura', f.kab.some(k => k.h['Fatura No']), f.kab.map(k => dt(k.h['Fatura Tarihi'])).filter(Boolean).sort().pop() || '', f.kab.map(k => k.h['Fatura No']).filter(Boolean).join(', ').slice(0, 40)]
       ];
-      const done = ST.filter(x => x[1]).length, curI = ST.findIndex(x => !x[1]), pct = Math.round(done / ST.length * 100);
-      const stages = ST.map((x, i) => `<div style="flex:1;min-width:130px;padding:8px 10px;border-radius:8px;border:1px solid ${x[1] ? '#10b98166' : i === curI ? 'var(--ac)' : 'var(--br)'};background:${x[1] ? '#10b98114' : 'transparent'}"><div style="font-weight:700;font-size:12.5px">${x[1] ? '✅' : i === curI ? '▶' : '○'} ${x[0]}</div><div class="mu" style="font-size:11.5px">${x[2] ? fmt(x[2]) + ' · ' : ''}${esc(x[3] || (x[1] ? '' : 'bekliyor'))}</div></div>`).join('');
+      const done = ST.filter(x => x[1]).length, pct = Math.round((done / ST.length) * 100);
 
-      /* olay akışı */
-      const ev = []; const add = (d, ico, txt) => { d = dt(d); if (d) ev.push({ d, ico, txt }) };
-      add(g('Dosya Açılış Tarihi'), '📂', `Dosya açıldı — <b>${esc(g('Dosya No') || '—')}</b> · ${esc(g('İşin Adı / Tanımı'))}`);
-      add(g('İhale Tarihi'), '📅', 'İhale / doğrudan temin tarihi' + (g('İhale Aşaması') ? ' — ' + esc(g('İhale Aşaması')) : ''));
-      add(g('Son Teklif Verme Tarih/Saati'), '⏰', 'Son teklif verme tarihi');
-      T.forEach(t => { add(t.istekTarihi, '📤', `<b>${esc(t.firma)}</b> firmasından teklif istendi${t.sekil ? ' (' + esc(t.sekil) + ')' : ''}`); const tu = tekTutar(t, f); add(t.teklifTarihi, '📥', `<b>${esc(t.firma)}</b> teklif verdi${tu ? ' — ' + money(tu) : ''}${t.durum === 'Kabul Edildi' ? ' 🏆 kazanan' : ''}`) });
-      f.kab.forEach(k => { const n = k.m.length; add(k.h['Kabul Tarihi'], '✅', `Kabul tutanağı — <b>${esc(k.h['Firma'] || '—')}</b>${k.h['Sayı'] ? ' · Sayı: ' + esc(k.h['Sayı']) : ''}${k.h['Teslim Alan'] ? ' · Teslim alan: ' + esc(k.h['Teslim Alan']) : ''}${k.h['Teslim Yeri'] ? ' · ' + esc(k.h['Teslim Yeri']) : ''} · ${n} kalem`); add(k.h['Fatura Tarihi'], '🧾', `Fatura${k.h['Fatura No'] ? ' <b>' + esc(k.h['Fatura No']) + '</b>' : ''} — ${esc(k.h['Firma'] || '')}`) });
-      (f.ek || []).forEach(e => add(e.tarih, '📎', `Ek eklendi: ${esc(e.ad)} (${esc(e.kat || '')})`));
-      add(g('Tahmini Bitiş Tarihi'), '🏁', 'Tahmini bitiş tarihi');
-      ev.sort((a, b) => a.d < b.d ? -1 : a.d > b.d ? 1 : 0);
-      const timeline = ev.length ? ev.map(e => `<div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--br);${e.d > today ? 'opacity:.65' : ''}"><div style="min-width:88px;font-weight:600;font-size:12.5px">${fmt(e.d)}</div><div style="min-width:22px">${e.ico}</div><div style="flex:1">${e.txt}${e.d > today ? ' <span class="badge" style="background:var(--ac2);color:var(--ac)">planlı</span>' : ''}</div></div>`).join('') : '<p class="mu">Tarihli bir olay kaydı yok.</p>';
+      // Yorum 1: Süreç ve Aşama
+      comments.push({
+        title: '📌 Süreç ve İlerleme Durumu',
+        type: pct >= 80 ? 'success' : pct >= 40 ? 'info' : 'warning',
+        text: `Dosya süreci %${pct} oranında tamamlanmıştır (8 ana süreç adımından ${done}'si eksiksiz tamamlandı). Dosya açılış tarihi: ${fmt(g('Dosya Açılış Tarihi'))}. ${f.kab.length ? 'Şu anda kabul ve faturalandırma aşamasındadır.' : kaz.length ? 'Kazanan firma kesinleşmiş, sipariş veya kabul bekleniyor.' : gel.length ? 'Firma teklifleri toplandı; kazanan belirleme adımı bekleniyor.' : totalMat ? 'İhtiyaç listesi hazır; teklif toplama adımı devam ediyor.' : 'Henüz malzeme listesi tanımlanmamış.'}`,
+        tab: 'ozet',
+        btnText: 'Süreç Detayı'
+      });
+
+      // Yorum 2: Maliyet ve Teklif Analizi
+      if (tut > 0) {
+        let costText = `Kalem bazlı güncel alım tutarı KDV hariç <b>${money(tut)}</b>, KDV dahil <b>${money(tutKdv)}</b> olarak hesaplandı.`;
+        if (min) {
+          costText += ` En avantajlı teklif <b>${esc(min.t.firma)}</b> (${money(min.tu)}) tarafından sunuldu.`;
+          if (gelTu.length > 1) {
+            const max = gelTu[gelTu.length - 1];
+            const spread = ((max.tu / min.tu - 1) * 100).toFixed(1);
+            costText += ` En yüksek teklif ile en düşük teklif arasında %${spread} fiyat farkı/tasarruf marjı oluşmuştur.`;
+          }
+        }
+        comments.push({
+          title: '💰 Bütçe ve Maliyet Değerlendirmesi',
+          type: 'success',
+          text: costText,
+          tab: 'mat',
+          btnText: 'Malzeme & Fiyatlar'
+        });
+      } else {
+        comments.push({
+          title: '💰 Maliyet Değerlendirmesi',
+          type: 'warning',
+          text: 'Henüz malzeme kalemlerine teklif birim fiyatı girilmedi veya yaklaşık maliyet hesaplanmadı. "💬 Teklifler" sekmesinden firma tekliflerini girerek maliyet tablosunu oluşturabilirsiniz.',
+          tab: 'tek',
+          btnText: 'Teklif Girişi Yap'
+        });
+      }
+
+      // Yorum 3: İstekli ve Rekabet Değerlendirmesi
+      if (T.length === 0) {
+        comments.push({
+          title: '🏢 İstekli Firma Uyarısı',
+          type: 'warning',
+          text: 'Piyasa fiyat araştırması için henüz hiçbir firmaya teklif istemi açılmamış. Kamu İhale mevzuatı uyarınca yeterli piyasa araştırması için en az 3 firmadan teklif alınması tavsiye edilir.',
+          tab: 'tek',
+          btnText: 'Firma Ekle'
+        });
+      } else {
+        const kazananFirma = kaz.length ? kaz[0].firma : (win.length ? win[0][1] : null);
+        comments.push({
+          title: '🏢 Teklif ve Piyasa Rekabeti',
+          type: kazananFirma ? 'success' : gel.length >= 2 ? 'info' : 'warning',
+          text: `${T.length} firmadan teklif istendi, ${gel.length} tanesi teklif verdi.${kazananFirma ? ` Kazanan istekli: <b>${esc(kazananFirma)}</b> olarak sisteme bağlanmıştır.` : gel.length ? ' Kazanan firma henüz onaylanmadı. "🏆 Kazanan Yap" butonuyla en uygun teklifi seçebilirsiniz.' : ' Henüz firmalardan gelen teklif tutarı işlenmedi.'}`,
+          tab: 'tek',
+          btnText: 'Teklif Tablosu'
+        });
+      }
+
+      // Yorum 4: Muayene, Kabul ve Teslimat
+      if (f.kab.length > 0) {
+        const faturaVar = f.kab.some(k => k.h['Fatura No']);
+        comments.push({
+          title: '📦 Kabul Tutanağı ve Teslimat',
+          type: faturaVar ? 'success' : 'info',
+          text: `${f.kab.length} adet kabul tutanağı kayıtlı. Malzemelerin %${delivPct}'si (${deliveredCount} / ${totalMiktar}) teslim alındı.${faturaVar ? ' Fatura bilgileri sisteme işlenmiş olup ödeme sürecine hazırdır.' : ' Muayene tamamlandı, fatura numarası ve tarihi bekleniyor.'}`,
+          tab: 'kab',
+          btnText: 'Kabul Tutanakları'
+        });
+      }
+
+      // Yorum 5: Sıradaki Eylem / Tavsiye
+      let nextStep = 'Tüm temel adımlar tamamlandı. İhtiyaç halinde rapor veya çıktı alabilirsiniz.';
+      let nextTab = 'rapor';
+      let nextBtn = 'Rapor Al';
+      if (!totalMat) {
+        nextStep = 'Öncelikle işin gerektirdiği malzeme veya hizmet kalemlerini listeye ekleyin.';
+        nextTab = 'mat';
+        nextBtn = 'Malzeme Ekle';
+      } else if (!T.length) {
+        nextStep = 'Piyasa araştırması başlatmak için teklif mektubu verilecek firmaları kaydedin.';
+        nextTab = 'tek';
+        nextBtn = 'Firma / Teklif Ekle';
+      } else if (!gel.length) {
+        nextStep = 'Firmalardan gelen teklif tutarlarını Fiyat Giriş Tablosuna işleyin.';
+        nextTab = 'tek';
+        nextBtn = 'Fiyatları Gir';
+      } else if (!kaz.length && !win.length) {
+        nextStep = 'Gelen teklifler arasından en avantajlı teklifi sunan firmayı "Kazanan Yap" olarak onaylayın.';
+        nextTab = 'tek';
+        nextBtn = 'Kazananı Belirle';
+      } else if (!f.kab.length) {
+        nextStep = 'Malzemelerin fiziki teslimatı sonrası Muayene ve Kabul Tutanağı düzenleyin.';
+        nextTab = 'kab';
+        nextBtn = 'Kabul Tutanağı Ekle';
+      } else if (!f.kab.some(k => k.h['Fatura No'])) {
+        nextStep = 'Yükleniciden temin edilen fatura numarasını ve tarihini kabul tutanağına kaydedin.';
+        nextTab = 'kab';
+        nextBtn = 'Faturayı İşle';
+      }
+
+      comments.push({
+        title: '🎯 Sıradaki Tavsiye Edilen Adım',
+        type: 'accent',
+        text: nextStep,
+        tab: nextTab,
+        btnText: nextBtn
+      });
+
+      // 3. Bildirimler listesi (Notification Dropdown)
+      const notifications = [];
+      if (g('Son Teklif Verme Tarih/Saati')) {
+        const stDate = dt(g('Son Teklif Verme Tarih/Saati'));
+        if (stDate && stDate < today && gel.length === 0) {
+          notifications.push({
+            icon: '⚠️',
+            title: 'Son Teklif Tarihi Geçti',
+            desc: `Son teklif verme tarihi (${fmt(stDate)}) doldu ancak henüz teklif girişi yapılmadı.`,
+            time: fmt(stDate),
+            tab: 'tek',
+            unread: true
+          });
+        }
+      }
+
+      [...ev].reverse().slice(0, 12).forEach(e => {
+        notifications.push({
+          icon: e.ico,
+          title: e.title,
+          desc: e.txt.replace(/<[^>]+>/g, ''),
+          time: fmt(e.d),
+          tab: e.tabTarget || 'ozet',
+          unread: false
+        });
+      });
+
+      return { timeline: ev, comments, notifications, ST, pct, done, tut, tutKdv, basis: kaz.length || win.length ? 'Kazanan firma fiyatlarıyla (kesinleşen)' : gel.length ? 'Gelen tekliflerin en düşük fiyatlarıyla (tahmini)' : 'Henüz teklif fiyatı yok', min, gelTu };
+    }
+
+    function updateNotifBadge() {
+      const f = cur();
+      const badge = document.getElementById('notifBadge');
+      if (!badge || !f) return;
+      const data = getDosyaInsightsAndTimeline(f);
+      const count = data.notifications.length;
+      badge.textContent = count;
+      badge.style.display = count ? 'inline-block' : 'none';
+
+      const listEl = document.getElementById('notifList');
+      if (listEl) {
+        if (!data.notifications.length) {
+          listEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--mu);font-size:12px">Bu dosya için henüz bir işlem kaydı veya bildirim bulunmuyor.</div>';
+        } else {
+          listEl.innerHTML = data.notifications.map(n => `
+            <div class="notif-item ${n.unread ? 'unread' : ''}" onclick="tab='${n.tab || 'ozet'}';toggleNotifPop();draw()" style="cursor:pointer">
+              <span class="notif-icon">${n.icon}</span>
+              <div class="notif-content">
+                <div class="notif-title">
+                  <span>${esc(n.title)}</span>
+                  <span class="notif-time">${esc(n.time)}</span>
+                </div>
+                <div class="notif-desc">${esc(n.desc)}</div>
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+    }
+
+    function toggleNotifPop(e) {
+      if (e) e.stopPropagation();
+      const pop = document.getElementById('notifPop');
+      if (!pop) return;
+      const isClosed = pop.classList.contains('hide');
+      if (isClosed) {
+        updateNotifBadge();
+        pop.classList.remove('hide');
+      } else {
+        pop.classList.add('hide');
+      }
+    }
+
+    document.addEventListener('click', e => {
+      const pop = document.getElementById('notifPop');
+      const btn = document.getElementById('notifBtn');
+      if (pop && !pop.classList.contains('hide') && btn && !btn.contains(e.target) && !pop.contains(e.target)) {
+        pop.classList.add('hide');
+      }
+    });
+
+    function ozetHTML(f) {
+      const data = getDosyaInsightsAndTimeline(f);
+      const fi = db.cur, g = k => f.f[k] || '', T = f.tek || [], today = new Date().toISOString().slice(0, 10);
+      const win = f.win || [], con = f.con || [];
+      const go2 = t => `<button class="s" onclick="tab='${t}';draw()">Aç →</button>`;
+      const H = (t, b) => `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h2 style="margin:0 0 6px;border:none;padding:0">${t}</h2>${b || ''}</div>`;
+      const bd = (t, c) => `<span class="badge" style="background:${c || 'var(--ac2)'};${c ? 'color:#059669' : 'color:var(--ac)'}">${t}</span>`;
+      const kv = (l, v) => `<div><div class="mu" style="font-size:11.5px">${l}</div><div style="font-weight:600">${v}</div></div>`;
+      const wrap = (t, minw) => `<div class="sc"><table class="wide" style="min-width:${minw}px">${t}</table></div>`;
+
+      const stages = data.ST.map((x, i) => {
+        const curI = data.ST.findIndex(z => !z[1]);
+        return `<div style="flex:1;min-width:130px;padding:8px 10px;border-radius:8px;border:1px solid ${x[1] ? '#10b98166' : i === curI ? 'var(--ac)' : 'var(--br)'};background:${x[1] ? '#10b98114' : 'transparent'}"><div style="font-weight:700;font-size:12.5px">${x[1] ? '✅' : i === curI ? '▶' : '○'} ${x[0]}</div><div class="mu" style="font-size:11.5px">${x[2] ? fmt(x[2]) + ' · ' : ''}${esc(x[3] || (x[1] ? '' : 'bekliyor'))}</div></div>`;
+      }).join('');
+
+      /* Akıllı Yorum Kartları */
+      const commentsHtml = `<div class="insights-grid">${data.comments.map(c => `
+        <div class="insight-card ${c.type}">
+          <div class="insight-title">${esc(c.title)}</div>
+          <div class="insight-text">${c.text}</div>
+          ${c.tab ? `<button class="s insight-action-btn" onclick="tab='${c.tab}';draw()">${esc(c.btnText || 'İncele →')}</button>` : ''}
+        </div>
+      `).join('')}</div>`;
+
+      /* Olay akışı (Neler Olmuş?) */
+      const timelineHtml = data.timeline.length ? data.timeline.map(e => `
+        <div style="display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--br);align-items:center;${e.isFuture ? 'opacity:.65' : ''}">
+          <div style="min-width:88px;font-weight:600;font-size:12.5px">${fmt(e.d)}</div>
+          <div style="min-width:24px;font-size:15px">${e.ico}</div>
+          <div style="flex:1"><b>${esc(e.title)}:</b> ${e.txt}${e.isFuture ? ' <span class="badge" style="background:var(--ac2);color:var(--ac)">planlı</span>' : ''}</div>
+          ${e.tabTarget ? `<button class="s" onclick="tab='${e.tabTarget}';draw()">Git →</button>` : ''}
+        </div>
+      `).join('') : '<p class="mu">Tarihli bir olay kaydı yok.</p>';
 
       /* tablolar */
       const bilgi = [['Dosya No', g('Dosya No')], ['D.T. No', g('Doğrudan Temin Numarası')], ['Alım Türü', g('Alım Türü')], ['Madde', g('Madde')], ['İhale Aşaması', g('İhale Aşaması')], ['Bütçe', [g('Bütçe Yılı'), g('Bütçe')].filter(Boolean).join(' · ')], ['İhalesi Yapılacak Birim', g('İhalesi Yapılacak Birim')], ['İhtiyaç Yeri', g('İhtiyaç Yeri')], ['Sunulacak Makam', g('Sunulacak Makam')], ['İrtibat Yetkilisi', g('İrtibat Yetkilisi')], ['Teklif / Sözleşme Türü', g('Teklif ve Sözleşme Türü')], ['Yaklaşık Maliyet', g('Yaklaşık Maliyet')], ['KDV', g('KDV')], ['Son Teklif Verme', g('Son Teklif Verme Tarih/Saati')], ['Tahmini Bitiş', g('Tahmini Bitiş Tarihi')]].map(x => kv(x[0], fmt(x[1]))).join('');
-      const tekRows = T.map(t => ({ t, tu: tekTutar(t, f) })).sort((a, b) => (a.tu || 1e18) - (b.tu || 1e18)).map(x => { const t = x.t, w = t.durum === 'Kabul Edildi'; return `<tr class="${w ? 'best' : ''}"><td class="wr"><b>${esc(t.firma)}</b>${w ? ' 🏆' : min && min.t === t ? ' ' + bd('en düşük', '#10b98133') : ''}<div class="mu">${esc([t.firmaNo && 'No: ' + t.firmaNo, t.vergiNo && 'VKN: ' + t.vergiNo].filter(Boolean).join(' · '))}</div></td><td class="wr">${esc(iletisim(t))}<div class="mu">${esc(yer(t))}${t.yetkili ? ' · ' + esc(t.yetkili) : ''}</div></td><td>${fmt(t.istekTarihi)}<div class="mu">${esc(t.sekil || '')}</div></td><td>${durBadge(t.durum)}</td><td>${fmt(t.teklifTarihi)}</td><td style="text-align:right;font-weight:600">${x.tu ? money(x.tu) : '—'}</td><td style="text-align:right">${x.tu && min && min.tu ? (x.tu === min.tu ? '—' : '+%' + ((x.tu / min.tu - 1) * 100).toFixed(1).replace('.', ',')) : ''}</td><td>${esc(t.gecerlilik ? t.gecerlilik + ' gün' : '—')}</td><td class="wr">${esc(t.not || '')}</td></tr>` }).join('');
+      const tekRows = T.map(t => ({ t, tu: tekTutar(t, f) })).sort((a, b) => (a.tu || 1e18) - (b.tu || 1e18)).map(x => { const t = x.t, w = t.durum === 'Kabul Edildi'; return `<tr class="${w ? 'best' : ''}"><td class="wr"><b>${esc(t.firma)}</b>${w ? ' 🏆' : data.min && data.min.t === t ? ' ' + bd('en düşük', '#10b98133') : ''}<div class="mu">${esc([t.firmaNo && 'No: ' + t.firmaNo, t.vergiNo && 'VKN: ' + t.vergiNo].filter(Boolean).join(' · '))}</div></td><td class="wr">${esc(iletisim(t))}<div class="mu">${esc(yer(t))}${t.yetkili ? ' · ' + esc(t.yetkili) : ''}</div></td><td>${fmt(t.istekTarihi)}<div class="mu">${esc(t.sekil || '')}</div></td><td>${durBadge(t.durum)}</td><td>${fmt(t.teklifTarihi)}</td><td style="text-align:right;font-weight:600">${x.tu ? money(x.tu) : '—'}</td><td style="text-align:right">${x.tu && data.min && data.min.tu ? (x.tu === data.min.tu ? '—' : '+%' + ((x.tu / data.min.tu - 1) * 100).toFixed(1).replace('.', ',')) : ''}</td><td>${esc(t.gecerlilik ? t.gecerlilik + ' gün' : '—')}</td><td class="wr">${esc(t.not || '')}</td></tr>` }).join('');
       let tk = 0, tt = 0;
+      const teslim = m => f.kab.reduce((a, k) => a + (k.m ? k.m.filter(r => trl(r[1]) === trl(m[2])).reduce((b, r) => b + num(r[6]), 0) : 0), 0);
       const matRows = f.mat.map((m, i) => { const q = num(m[6]), p = num(m[7]), tm = teslim(m); tk += q * p; tt += q * p * (1 + num(m[5]) / 100); const pc = q ? Math.min(100, Math.round(tm / q * 100)) : 0; return `<tr><td class="n">${i + 1}</td><td>${esc(m[1])}</td><td class="wr"><b>${esc(m[2])}</b><div class="mu">${esc(m[3])}</div></td><td>${esc(m[4])}</td><td style="text-align:right">${esc(m[6])}</td><td style="text-align:right">${p ? money(p) : '—'}</td><td class="wr mu">${esc(m[8] || '')}</td><td style="text-align:right">${esc(m[5] ? '%' + m[5] : '')}</td><td style="text-align:right;font-weight:600">${p ? money(q * p) : '—'}</td><td style="text-align:right">${tm || (f.kab.length ? '0' : '—')}${q && f.kab.length ? ` <span class="mu">(%${pc})</span>` : ''}</td></tr>` }).join('');
       const winRows = win.map(w => { const c = con.find(x => trl(x[0]) === trl(w[1])), t = T.find(x => trl(x.firma) === trl(w[1])); return `<tr><td>${esc(w[0])}</td><td class="wr"><b>${esc(w[1])}</b></td><td class="wr">${esc(w[2])}<div class="mu">${esc(w[3])}</div></td><td style="text-align:right">${t && tekTutar(t, f) ? money(tekTutar(t, f)) : '—'}</td><td class="wr">${esc(c ? c[1] : '') || '<span class="mu">—</span>'}</td></tr>` }).join('');
-      const kabRows = f.kab.map((k, i) => `<tr><td>${fmt(k.h['Kabul Tarihi'])}</td><td class="wr"><b>${esc(k.h['Firma'])}</b></td><td>${esc(k.h['Sayı'])}</td><td>${esc(k.h['Teslim Alan'])}</td><td class="wr">${esc(k.h['Teslim Yeri'])}</td><td>${fmt(k.h['Fatura Tarihi'])}<div class="mu">${esc(k.h['Fatura No'] ? 'No: ' + k.h['Fatura No'] : '')}</div></td><td style="text-align:right">${k.m.length}</td><td class="wr">${esc(k.h['Not'])}</td><td><button class="s" onclick="db.cur=${fi};kabI=${i};tab='kab';draw()">Aç</button></td></tr>`).join('');
+      const kabRows = f.kab.map((k, i) => `<tr><td>${fmt(k.h['Kabul Tarihi'])}</td><td class="wr"><b>${esc(k.h['Firma'])}</b></td><td>${esc(k.h['Sayı'])}</td><td>${esc(k.h['Teslim Alan'])}</td><td class="wr">${esc(k.h['Teslim Yeri'])}</td><td>${fmt(k.h['Fatura Tarihi'])}<div class="mu">${esc(k.h['Fatura No'] ? 'No: ' + k.h['Fatura No'] : '')}</div></td><td style="text-align:right">${k.m ? k.m.length : 0}</td><td class="wr">${esc(k.h['Not'])}</td><td><button class="s" onclick="db.cur=${fi};kabI=${i};tab='kab';draw()">Aç</button></td></tr>`).join('');
       const kom = (arr, ttl) => `<div style="flex:1;min-width:280px"><b>${ttl}</b>${arr.length ? `<table style="margin-top:4px"><tr><th>Görevi</th><th>Adı Soyadı</th><th>Unvanı</th></tr>${arr.map(r => `<tr><td>${esc(r[1])}</td><td><b>${esc(r[2])}</b></td><td>${esc(r[3])}</td></tr>`).join('')}</table>` : '<p class="mu">Kayıt yok.</p>'}</div>`;
       const ekRows = (f.ek || []).map(e => `<tr><td class="wr">${esc(e.ad)}</td><td>${esc(e.kat || '')}</td><td>${fmt(e.tarih)}</td><td>${e.boyut ? fsize(e.boyut) : ''}</td><td class="wr">${esc(e.not || '')}</td></tr>`).join('');
 
       return `<div class="card"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start"><div><h2 style="margin:0;border:none;padding:0">📊 Dosya Özeti</h2><div style="font-size:15px;font-weight:700;margin-top:4px">${esc(g('Dosya No') || '—')} · ${esc(g('İşin Adı / Tanımı') || 'İş adı girilmemiş')}</div>${g('Açıklama') ? `<div class="mu" style="margin-top:2px">${esc(g('Açıklama'))}</div>` : ''}</div><div class="bar" style="margin:0"><button class="s" onclick="copyPageLink()">🔗 Bağlantı</button><button class="s" onclick="print()">🖨 Yazdır</button></div></div>
-        <div class="kpi" style="margin-top:10px">${bd('İlerleme: %' + pct)}${bd(f.mat.length + ' kalem')}${bd('Teklif istenen: ' + T.length)}${bd('Gelen: ' + gel.length)}${bd('Tutanak: ' + f.kab.length)}${bd('Ek: ' + (f.ek || []).length)}${tut ? bd('Tutar (KDV hariç): ' + money(tut), '#10b98133') : ''}${tutKdv ? bd('KDV dahil: ' + money(tutKdv), '#10b98133') : ''}</div>
-        <div style="height:8px;background:var(--br);border-radius:6px;overflow:hidden;margin:4px 0 10px"><div style="height:100%;width:${pct}%;background:var(--ac)"></div></div>
+        <div class="kpi" style="margin-top:10px">${bd('İlerleme: %' + data.pct)}${bd(f.mat.length + ' kalem')}${bd('Teklif istenen: ' + T.length)}${bd('Gelen: ' + data.gelTu.length)}${bd('Tutanak: ' + f.kab.length)}${bd('Ek: ' + (f.ek || []).length)}${data.tut ? bd('Tutar (KDV hariç): ' + money(data.tut), '#10b98133') : ''}${data.tutKdv ? bd('KDV dahil: ' + money(data.tutKdv), '#10b98133') : ''}</div>
+        <div style="height:8px;background:var(--br);border-radius:6px;overflow:hidden;margin:4px 0 10px"><div style="height:100%;width:${data.pct}%;background:var(--ac)"></div></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">${stages}</div>
-        <p class="mu" style="margin-top:8px">Fiyat esası: <b>${basis}</b>${min ? ` · En düşük teklif: <b>${esc(min.t.firma)}</b> (${money(min.tu)})` : ''}</p></div>
+        <p class="mu" style="margin-top:8px">Fiyat esası: <b>${data.basis}</b>${data.min ? ` · En düşük teklif: <b>${esc(data.min.t.firma)}</b> (${money(data.min.tu)})` : ''}</p></div>
+      ${H('💡 Akıllı Süreç Değerlendirmesi & Dosya Yorumları')}${commentsHtml}</div>
       ${H('📝 Dosya Bilgileri', go2('f'))}<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px 16px">${bilgi}</div></div>
-      ${H('🕒 Neler Olmuş? (olay akışı)')}${timeline}</div>
+      ${H('🕒 Neler Olmuş? (Aktif Dosya Olay Akışı)')}${timelineHtml}</div>
       ${H('💬 Firmalar ve Teklifler', go2('tek'))}${T.length ? wrap(`<tr><th>Firma</th><th>İletişim</th><th>İstek</th><th>Durum</th><th>Teklif Tarihi</th><th>Tutar (KDV hariç)</th><th>Fark</th><th>Geçerlilik</th><th>Not</th></tr>${tekRows}`, 1000) : '<p class="mu">Teklif istenen firma yok.</p>'}</div>
       ${H('📦 Malzemeler, Fiyatlar ve Teslimat', go2('mat'))}${f.mat.length ? wrap(`<tr><th>#</th><th>Kod</th><th>Malzeme</th><th>Birim</th><th>Miktar</th><th>Birim Fiyat</th><th>Fiyat Kaynağı</th><th>KDV</th><th>Tutar (KDV hariç)</th><th>Teslim Alınan</th></tr>${matRows}<tr style="font-weight:700"><td></td><td></td><td>TOPLAM</td><td></td><td></td><td></td><td></td><td></td><td style="text-align:right">${money(tk)}</td><td></td></tr><tr style="font-weight:700"><td></td><td></td><td>KDV DAHİL TOPLAM</td><td></td><td></td><td></td><td></td><td></td><td style="text-align:right">${money(tt)}</td><td></td></tr>`, 1000) : '<p class="mu">Malzeme eklenmemiş.</p>'}</div>
       ${H('🏢 Kazanan Firma ve Sözleşme', go2('win'))}${win.length ? wrap(`<tr><th>No</th><th>Firma</th><th>İletişim / Yer</th><th>Teklif Tutarı</th><th>Sözleşme</th></tr>${winRows}`, 760) : '<p class="mu">Kazanan firma belirlenmemiş.</p>'}</div>
