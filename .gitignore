@@ -27,3 +27,5 @@ islem*.md
 .plan.md
 
 YapimIhalesiBirimFiyatli.ods
+# TypeScript incremental build output
+*.tsbuildinfo

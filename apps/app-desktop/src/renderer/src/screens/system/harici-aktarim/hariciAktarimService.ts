@@ -173,14 +173,14 @@ export async function executeDossierEzmeSync(
           temin_no, ekap_no, konu, isin_aciklamasi, dosya_acilis_tarihi, butce_yili, butce_tipi,
           birim, sunulacak_makam, ihtiyac_yeri, ihale_sekli, ihale_tipi, tur,
           teklif_sozlesme_turu, alt_yuklenici_olacak_mi, kismi_teklif_verilecek_mi,
-          fiyat_farki_dayanagi, yatirim_proje_no, avans_verilecek_mi, yaklasik_maliyet_hesaplamasi,
+          yatirim_proje_no, avans_verilecek_mi, yaklasik_maliyet_hesaplamasi,
           kdv, hesaplama_esasi, komisyon_takdiri, tibbi_cihaz_alimi_mi, son_teklif_verme_tarihi,
           teslim_tarihi, fonksiyonel_kod, e_butce, finansman_kodu, notlar, durum_asama_id, is_deleted
         ) VALUES (
           ?, ?, ?, ?, ?, ?, ?,
           ?, ?, ?, ?, ?, ?,
           ?, ?, ?,
-          ?, ?, ?, ?,
+          ?, ?, ?,
           ?, ?, ?, ?, ?,
           ?, ?, ?, ?, ?, 1, 0
         )`,
@@ -201,7 +201,6 @@ export async function executeDossierEzmeSync(
           info.teklifSozlesmeTuru || 'Birim Fiyat',
           altYukleniciInt,
           kismiTeklifInt,
-          info.fiyatFarkiDayanagi || 'Fiyat Farkı Ödenmeyecek',
           info.yatirimProjeNo || null,
           avansInt,
           info.yaklasikMaliyetDurumu || 'Burada Hesaplanacak',
@@ -354,11 +353,13 @@ export async function executeDossierEzmeSync(
           const t = data.teklifler[i]
           const firmaAdi = t.firma.trim()
 
-          // TANIM_Firma tablosunda yoksa ekle (güvenli INSERT OR IGNORE)
+          // TANIM_Firma.unvan gerçek şemada UNIQUE değil; INSERT OR IGNORE her aktarımda mükerrer
+          // kayıt üretirdi. Bu yüzden yalnızca aynı unvan yoksa ekleniyor.
           txQueries.push({
-            sql: `INSERT OR IGNORE INTO TANIM_Firma (unvan, vergi_no, telefon, adres)
-                  VALUES (?, ?, ?, ?)`,
-            params: [firmaAdi, t.vergiNo || null, t.iletisim || null, t.yer || null]
+            sql: `INSERT INTO TANIM_Firma (unvan, vergi_no, telefon, adres)
+                  SELECT ?, ?, ?, ?
+                  WHERE NOT EXISTS (SELECT 1 FROM TANIM_Firma WHERE unvan = ?)`,
+            params: [firmaAdi, t.vergiNo || null, t.iletisim || null, t.yer || null, firmaAdi]
           })
 
           const isKazanan =
@@ -448,9 +449,11 @@ export async function executeDossierEzmeSync(
           }
 
           if (isKazanan === 1) {
+            // DATA_TeminDosyasi.firma_id uygulama genelinde TANIM_Firma.id ile JOIN'lenir
+            // (dashboard, belge çıktıları vb.); DATA_TeminFirma.id yazılmamalı.
             txQueries.push({
               sql: `UPDATE DATA_TeminDosyasi SET firma_id = (
-                SELECT id FROM DATA_TeminFirma WHERE temin_dosya_id = ? AND unvan = ? LIMIT 1
+                SELECT firma_id FROM DATA_TeminFirma WHERE temin_dosya_id = ? AND unvan = ? LIMIT 1
               ) WHERE id = ?`,
               params: [targetDosyaParam, firmaAdi, targetDosyaParam]
             })
@@ -492,9 +495,12 @@ export async function executeDossierEzmeSync(
       }
 
       for (const m of allMembers) {
+        // TANIM_Personel.ad_soyad UNIQUE değil; mükerrer personel oluşmaması için yalnızca yoksa ekle
         txQueries.push({
-          sql: `INSERT OR IGNORE INTO TANIM_Personel (ad_soyad, unvan, gorev) VALUES (?, ?, ?)`,
-          params: [m.adiSoyadi.trim(), m.unvani || null, m.gorevi || null]
+          sql: `INSERT INTO TANIM_Personel (ad_soyad, unvan, gorev)
+                SELECT ?, ?, ?
+                WHERE NOT EXISTS (SELECT 1 FROM TANIM_Personel WHERE ad_soyad = ?)`,
+          params: [m.adiSoyadi.trim(), m.unvani || null, m.gorevi || null, m.adiSoyadi.trim()]
         })
 
         txQueries.push({

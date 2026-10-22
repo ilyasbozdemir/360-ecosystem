@@ -13,14 +13,21 @@ function isValidCalendarDate(year: number, month: number, day: number): boolean 
  * Takvim tarihi gerçekten doğrulanır (örn. 2026-99-99 veya 2025-02-30 reddedilir).
  */
 export function isValidDateString(val: string): boolean {
-  const m = /^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2})(?::(\d{2})(?:\.\d{1,3})?)?(?:Z|[+-]\d{2}:\d{2})?)?$/.exec(
-    val
-  )
+  const m =
+    /^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2})(?::(\d{2})(?:\.\d{1,3})?)?(?:Z|([+-])(\d{2}):(\d{2}))?)?$/.exec(
+      val
+    )
   if (!m) return false
   if (!isValidCalendarDate(Number(m[1]), Number(m[2]), Number(m[3]))) return false
   if (m[4] !== undefined) {
     if (Number(m[4]) > 23 || Number(m[5]) > 59) return false
     if (m[6] !== undefined && Number(m[6]) > 59) return false
+  }
+  // Saat dilimi farkı: gerçek dünyada -12:00 … +14:00 aralığında, dakika 0–59
+  if (m[7] !== undefined) {
+    const tzH = Number(m[8])
+    const tzM = Number(m[9])
+    if (tzM > 59 || tzH > 14 || (tzH === 14 && tzM > 0)) return false
   }
   return true
 }
