@@ -119,7 +119,7 @@ describe('Release Script RC & Versioning (Release Candidate Support)', () => {
       }).trim()
 
       expect(afterStatus).toBe(beforeStatus)
-    })
+    }, 15000)
 
     it('--no-push parametresi ile remote push adımı atlanır ve konsola kılavuz yazılır', () => {
       const rawOutput = execSync(

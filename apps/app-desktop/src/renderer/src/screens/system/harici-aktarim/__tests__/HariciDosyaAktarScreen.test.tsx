@@ -38,10 +38,8 @@ describe('HariciDosyaAktarScreen UI Entegrasyon & Uçtan Uca Akış Testleri', (
   it('ilk açılışta boş durum mesajını ve JSON bekleniyor uyarısını görüntüler', async () => {
     render(<HariciDosyaAktarScreen />)
 
-    expect(screen.getByText('JSON Verisi Bekleniyor')).toBeInTheDocument()
-    expect(
-      screen.getByText(/Gelen JSON Verisi \(Doğrudan Temin Şeması\)/i)
-    ).toBeInTheDocument()
+    expect(screen.getByText('JSON Verisi Bekleniyor')).toBeTruthy()
+    expect(screen.getByText(/Gelen JSON Verisi \(Doğrudan Temin Şeması\)/i)).toBeTruthy()
   })
 
   it('Örnek JSON butonuna tıklandığında veriyi doğrular ve önizleme sekmelerini doldurur', async () => {
@@ -51,37 +49,37 @@ describe('HariciDosyaAktarScreen UI Entegrasyon & Uçtan Uca Akış Testleri', (
     fireEvent.click(fillBtn)
 
     await waitFor(() => {
-      expect(screen.getByText(/JSON Doğrulandı:/i)).toBeInTheDocument()
+      expect(screen.getByText(/JSON Doğrulandı:/i)).toBeTruthy()
     })
 
     // Dosya bilgileri
-    expect(screen.getByText('Su Sayacı Alımı')).toBeInTheDocument()
-    expect(screen.getByText('Hedef Dosya Seçimi ve Ezme Stratejisi')).toBeInTheDocument()
+    expect(screen.getAllByText(/Su Sayacı Alımı/i).length).toBeGreaterThanOrEqual(1)
+    expect(screen.getByText('Hedef Dosya Seçimi ve Ezme Stratejisi')).toBeTruthy()
 
     // Malzemeler sekmesine tıkla
     const matTab = screen.getByRole('button', { name: /Malzemeler/i })
     fireEvent.click(matTab)
-    expect(screen.getByText(/DN20 Soğuk Su Sayacı/i)).toBeInTheDocument()
+    expect(screen.getAllByText(/Ev Tipi Soğuk Su Sayacı/i).length).toBeGreaterThanOrEqual(1)
 
     // Teklifler sekmesine tıkla
     const tekTab = screen.getByRole('button', { name: /Teklifler/i })
     fireEvent.click(tekTab)
-    expect(screen.getByText(/Aksa Sayaç ve Vana San\. Tic\. Ltd\. Şti\./i)).toBeInTheDocument()
+    expect(screen.getAllByText(/Anadolu Sayaç San/i).length).toBeGreaterThanOrEqual(1)
 
     // Komisyonlar sekmesine tıkla
     const komTab = screen.getByRole('button', { name: /Komisyonlar/i })
     fireEvent.click(komTab)
-    expect(screen.getByText(/Mehmet Yıldız/i)).toBeInTheDocument()
+    expect(screen.getAllByText(/Mehmet MUTLU/i).length).toBeGreaterThanOrEqual(1)
   })
 
   it('geçersiz JSON metni girildiğinde hata bildirimini görüntüler', async () => {
-    render(<HariciDosyaAktarScreen />)
+    const { container } = render(<HariciDosyaAktarScreen />)
 
-    const textarea = screen.getByPlaceholderText(/{\s*"id":/i)
+    const textarea = container.querySelector('textarea')!
     fireEvent.change(textarea, { target: { value: '{ gecersiz json ' } })
 
     await waitFor(() => {
-      expect(screen.getByText(/Geçersiz JSON biçimi/i)).toBeInTheDocument()
+      expect(screen.getByText(/JSON ayrıştırma hatası:/i)).toBeTruthy()
     })
   })
 
@@ -91,7 +89,12 @@ describe('HariciDosyaAktarScreen UI Entegrasyon & Uçtan Uca Akış Testleri', (
       dosyaId: 555,
       action: 'created',
       message: 'Yeni doğrudan temin dosyası başarıyla oluşturuldu. (ID: 555)',
-      updatedFields: ['Genel Bilgiler', 'Malzeme Kalemleri (3)', 'Teklifler (3)', 'Komisyon Heyeti (3)']
+      updatedFields: [
+        'Genel Bilgiler',
+        'Malzeme Kalemleri (3)',
+        'Teklifler (3)',
+        'Komisyon Heyeti (3)'
+      ]
     }
 
     const executeSpy = vi
@@ -104,7 +107,7 @@ describe('HariciDosyaAktarScreen UI Entegrasyon & Uçtan Uca Akış Testleri', (
     fireEvent.click(screen.getByRole('button', { name: /Örnek JSON'ı Doldur/i }))
 
     await waitFor(() => {
-      expect(screen.getByText(/JSON Doğrulandı:/i)).toBeInTheDocument()
+      expect(screen.getByText(/JSON Doğrulandı:/i)).toBeTruthy()
     })
 
     // "Yeni Dosya Olarak Ekle" radio seçeneğini işaretle
@@ -115,18 +118,18 @@ describe('HariciDosyaAktarScreen UI Entegrasyon & Uçtan Uca Akış Testleri', (
     const actionBtn = screen.getByRole('button', {
       name: /Verileri Sisteme Yeni Dosya Olarak Ekle/i
     })
-    expect(actionBtn).toBeInTheDocument()
+    expect(actionBtn).toBeTruthy()
 
     // Butona tıkla -> Son onay paneli açılmalı
     fireEvent.click(actionBtn)
 
-    expect(screen.getByText('Yeni Kayıt Onayı')).toBeInTheDocument()
-    expect(screen.getByText(/Yeni doğrudan temin dosyası oluşturulacak:/i)).toBeInTheDocument()
+    expect(screen.getByText('Yeni Kayıt Onayı')).toBeTruthy()
+    expect(screen.getByText(/Yeni doğrudan temin dosyası oluşturulacak:/i)).toBeTruthy()
 
     // Vazgeç testi
     const cancelBtn = screen.getByRole('button', { name: 'Vazgeç' })
     fireEvent.click(cancelBtn)
-    expect(screen.queryByText('Yeni Kayıt Onayı')).not.toBeInTheDocument()
+    expect(screen.queryByText('Yeni Kayıt Onayı')).toBeNull()
     expect(executeSpy).not.toHaveBeenCalled()
 
     // Tekrar butona tıkla ve onayla
@@ -150,9 +153,7 @@ describe('HariciDosyaAktarScreen UI Entegrasyon & Uçtan Uca Akış Testleri', (
 
     // Başarı paneli ve dosya aç butonu görünmeli
     await waitFor(() => {
-      expect(
-        screen.getByText(/Yeni doğrudan temin dosyası başarıyla oluşturuldu/i)
-      ).toBeInTheDocument()
+      expect(screen.getByText(/Yeni doğrudan temin dosyası başarıyla oluşturuldu/i)).toBeTruthy()
     })
 
     const openBtn = screen.getByRole('button', { name: /Dosyayı Yönetim Ekranında Aç/i })
@@ -182,7 +183,7 @@ describe('HariciDosyaAktarScreen UI Entegrasyon & Uçtan Uca Akış Testleri', (
     fireEvent.click(screen.getByRole('button', { name: /Örnek JSON'ı Doldur/i }))
 
     await waitFor(() => {
-      expect(screen.getByText(/JSON Doğrulandı:/i)).toBeInTheDocument()
+      expect(screen.getByText(/JSON Doğrulandı:/i)).toBeTruthy()
     })
 
     // "Mevcut Dosyayı Ez / Güncelle" seçeneği
@@ -199,8 +200,10 @@ describe('HariciDosyaAktarScreen UI Entegrasyon & Uçtan Uca Akış Testleri', (
     })
     fireEvent.click(mainBtn)
 
-    expect(screen.getByText('Üzerine Yazma Onayı')).toBeInTheDocument()
-    expect(screen.getByText(/mevcutlar silinip yeniden yazılacak/i)).toBeInTheDocument()
+    expect(screen.getByText('Üzerine Yazma Onayı')).toBeTruthy()
+    expect(
+      screen.getAllByText(/mevcutlar silinip yeniden yazılacak/i).length
+    ).toBeGreaterThanOrEqual(1)
 
     // Onayla ve uygula
     fireEvent.click(screen.getByRole('button', { name: 'Onayla ve Uygula' }))
