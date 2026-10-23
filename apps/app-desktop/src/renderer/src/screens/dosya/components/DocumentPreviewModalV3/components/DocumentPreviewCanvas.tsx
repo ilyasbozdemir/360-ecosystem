@@ -148,13 +148,13 @@ export function DocumentPreviewCanvas({
         setFormData((prev) => {
           const updated = { ...prev, [key]: val }
           if (key === 'onayaSunulanTarih' || key === 'tarih') {
-            updated.tarih = val
-            updated.onayaSunulanTarih = val
-            updated.belgeTarihi = val
+            updated.tarih = val as string | undefined
+            updated.onayaSunulanTarih = val as string | undefined
+            updated.belgeTarihi = val as string | undefined
           }
           if (key === 'onayTarihi' || key === 'olurTarihi') {
-            updated.onayTarihi = val
-            updated.olurTarihi = val
+            updated.onayTarihi = val as string | undefined
+            updated.olurTarihi = val as string | undefined
           }
           return updated
         })
