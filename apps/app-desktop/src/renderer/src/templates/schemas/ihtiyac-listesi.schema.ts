@@ -13,7 +13,7 @@ export const IhtiyacKalemiSchema = z.object({
 export const IhtiyacListesiSchema = z.object({
   antetSatirlari: z.array(z.string()).optional(),
   evrakSayisi: z.string().optional(),
-  dosyaKonusu: z.string().optional(),
+  IhtiyacListesiSchema: z.string().optional(),
   maddeNo: z.string().optional(),
   tarih: z.string().optional(),
   sunulacakMakamAdi: z.string().optional(),

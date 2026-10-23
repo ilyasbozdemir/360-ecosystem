@@ -19,14 +19,16 @@ export function DateEditableField({
   defaultDate,
 }: DateEditableFieldProps) {
   const { isEditing, onFieldChange } = useTemplateEdit();
-  const displayVal = value || defaultDate || toTrDate(new Date().toISOString().split("T")[0]);
+  const displayVal = value || defaultDate ||
+    toTrDate(new Date().toISOString().split("T")[0]);
   const isoVal = toIsoDate(displayVal);
 
   if (!isEditing || !onFieldChange) {
     return <span>{displayVal}</span>;
   }
 
-  const tooltipText = FIELD_SOURCE_INFO[name] || "ℹ️ Tarih seçmek veya değiştirmek için takvime tıklayın.";
+  const tooltipText = FIELD_SOURCE_INFO[name] ||
+    "ℹ️ Tarih seçmek veya değiştirmek için takvime tıklayın.";
 
   return (
     <input
@@ -78,13 +80,17 @@ export const PersonelInlineSelect: React.FC<PersonelInlineSelectProps> = ({
   const matched = personelList.find(
     (p: any) =>
       p.ad_soyad &&
-      String(p.ad_soyad).trim().toLowerCase() === cleanVal.toLowerCase()
+      String(p.ad_soyad).trim().toLowerCase() === cleanVal.toLowerCase(),
   );
   const selectedValue = matched ? String(matched.id) : "";
 
   return (
     <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-      <EditableField name={nameField} value={cleanVal} placeholder={placeholder} />
+      <EditableField
+        name={nameField}
+        value={cleanVal}
+        placeholder={placeholder}
+      />
       {isEditing && personelList.length > 0 && (
         <select
           value={selectedValue}
@@ -145,15 +151,31 @@ export const BirimInlineSelect: React.FC<BirimInlineSelectProps> = ({
   const cleanVal = typeof value === "string" ? value.trim() : "";
   const matched = birimList.find(
     (b: any) =>
-      (b.sunum_makami && String(b.sunum_makami).trim().toLowerCase() === cleanVal.toLowerCase()) ||
-      (b.birim_adi && String(b.birim_adi).trim().toLowerCase() === cleanVal.toLowerCase()) ||
-      (b.ad && String(b.ad).trim().toLowerCase() === cleanVal.toLowerCase())
+      (b.sunum_makami &&
+        String(b.sunum_makami).trim().toLowerCase() ===
+          cleanVal.toLowerCase()) ||
+      (b.birim_adi &&
+        String(b.birim_adi).trim().toLowerCase() === cleanVal.toLowerCase()) ||
+      (b.ad && String(b.ad).trim().toLowerCase() === cleanVal.toLowerCase()),
   );
   const selectedValue = matched ? String(matched.id) : "";
 
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px", width: "100%" }}>
-      <EditableField name={nameField} value={cleanVal} placeholder={placeholder} style={style} />
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "6px",
+        width: "100%",
+      }}
+    >
+      <EditableField
+        name={nameField}
+        value={cleanVal}
+        placeholder={placeholder}
+        style={style}
+      />
       {isEditing && birimList.length > 0 && (
         <select
           value={selectedValue}
@@ -161,7 +183,8 @@ export const BirimInlineSelect: React.FC<BirimInlineSelectProps> = ({
             const selectedId = Number(e.target.value);
             const b = birimList.find((item: any) => item.id === selectedId);
             if (b && onFieldChange) {
-              const sunum = (b.sunum_makami || b.birim_adi || b.ad || "").trim().toUpperCase();
+              const sunum = (b.sunum_makami || b.birim_adi || b.ad || "").trim()
+                .toUpperCase();
               onFieldChange(nameField, sunum);
             }
           }}
@@ -249,20 +272,23 @@ export const PersonelCard: React.FC<PersonelCardProps> = ({
   placeholderUnvan,
   isFirmaSelect = false,
 }) => {
-  const { isEditing, onFieldChange, personelListesi, firmaListesi } = useTemplateEdit();
+  const { isEditing, onFieldChange, personelListesi, firmaListesi } =
+    useTemplateEdit();
   const personelList = personelListesi || [];
   const rawFirmaList = firmaListesi || [];
 
   const normalizedFirmaList = rawFirmaList.map((item: any) => {
     if (item && item.firm) {
-      const u = item.firm.unvan || item.firm.firma_adi || item.unvan || "İstekli Firma";
+      const u = item.firm.unvan || item.firm.firma_adi || item.unvan ||
+        "İstekli Firma";
       return {
         ...item.firm,
         id: item.firm.id || item.id,
         unvan: u,
         total: item.total,
         isWinner: item.isWinner,
-        label: item.label || item.firm.label || (item.total > 0 ? `${u} (${item.total} TL)` : u),
+        label: item.label || item.firm.label ||
+          (item.total > 0 ? `${u} (${item.total} TL)` : u),
       };
     }
     const u = item?.unvan || item?.firma_adi || item?.name || "";
@@ -280,32 +306,44 @@ export const PersonelCard: React.FC<PersonelCardProps> = ({
     !firmaList.some(
       (f: any) =>
         (f.unvan || f.label) &&
-        String(f.unvan || f.label).trim().toLowerCase() === String(adSoyad).trim().toLowerCase()
+        String(f.unvan || f.label).trim().toLowerCase() ===
+          String(adSoyad).trim().toLowerCase(),
     )
   ) {
-    firmaList.unshift({ id: `custom_${adSoyad}`, unvan: adSoyad, label: adSoyad });
+    firmaList.unshift({
+      id: `custom_${adSoyad}`,
+      unvan: adSoyad,
+      label: adSoyad,
+    });
   }
 
   const validFirmaList = firmaList.filter(
-    (f: any) => f && (f.unvan || f.label) && String(f.unvan || f.label).trim() !== ""
+    (f: any) =>
+      f && (f.unvan || f.label) && String(f.unvan || f.label).trim() !== "",
   );
 
   const matched = isFirmaSelect
     ? validFirmaList.find(
-        (f: any) =>
-          f.unvan &&
-          String(f.unvan).trim().toLowerCase() === String(adSoyad || "").trim().toLowerCase()
-      )
+      (f: any) =>
+        f.unvan &&
+        String(f.unvan).trim().toLowerCase() ===
+          String(adSoyad || "").trim().toLowerCase(),
+    )
     : personelList.find(
-        (p: any) =>
-          p.ad_soyad &&
-          String(p.ad_soyad).trim().toLowerCase() === String(adSoyad || "").trim().toLowerCase()
-      );
+      (p: any) =>
+        p.ad_soyad &&
+        String(p.ad_soyad).trim().toLowerCase() ===
+          String(adSoyad || "").trim().toLowerCase(),
+    );
 
   const selectedValue = matched ? String(matched.id || matched.unvan) : "";
 
   const namePlaceholder = placeholderName ||
-    (isFirmaSelect ? "Firma Adı / Kaşe" : (isEditing && personelList.length > 0 ? "Adı Soyadı" : "Adı Soyadı / Kaşe"));
+    (isFirmaSelect
+      ? "Firma Adı / Kaşe"
+      : (isEditing && personelList.length > 0
+        ? "Adı Soyadı"
+        : "Adı Soyadı / Kaşe"));
   const unvanPlaceholder = placeholderUnvan || "Unvanı";
 
   return (
@@ -339,12 +377,16 @@ export const PersonelCard: React.FC<PersonelCardProps> = ({
               onChange={(e) => {
                 const val = e.target.value;
                 if (isFirmaSelect) {
-                  const f = validFirmaList.find((item: any) => String(item.id || item.unvan) === val);
+                  const f = validFirmaList.find((item: any) =>
+                    String(item.id || item.unvan) === val
+                  );
                   if (f && onFieldChange) {
                     onFieldChange(nameField, f.unvan);
                     onFieldChange(
                       unvanField,
-                      f.yetkili_ad_soyad ? `Yetkili: ${f.yetkili_ad_soyad}` : "Yüklenici Firma / Yetkilisi"
+                      f.yetkili_ad_soyad
+                        ? `Yetkili: ${f.yetkili_ad_soyad}`
+                        : "Yüklenici Firma / Yetkilisi",
                     );
                   } else if (onFieldChange && val === "") {
                     onFieldChange(nameField, "");
@@ -352,7 +394,9 @@ export const PersonelCard: React.FC<PersonelCardProps> = ({
                   }
                 } else {
                   const selectedId = Number(val);
-                  const p = personelList.find((item: any) => item.id === selectedId);
+                  const p = personelList.find((item: any) =>
+                    item.id === selectedId
+                  );
                   if (p && onFieldChange) {
                     onFieldChange(nameField, p.ad_soyad);
                     onFieldChange(unvanField, p.unvan || "");
@@ -372,20 +416,26 @@ export const PersonelCard: React.FC<PersonelCardProps> = ({
                 cursor: "pointer",
                 margin: "0 auto",
               }}
-              title={isFirmaSelect ? "Kayıtlı/İstekli firmalardan seçim yapın" : "Kayıtlı personellerden seçim yapın"}
+              title={isFirmaSelect
+                ? "Kayıtlı/İstekli firmalardan seçim yapın"
+                : "Kayıtlı personellerden seçim yapın"}
             >
-              <option value="">{isFirmaSelect ? "🏢 Firma Seç... (Seçim Yok / Null)" : "👤 Personel Seç..."}</option>
+              <option value="">
+                {isFirmaSelect
+                  ? "🏢 Firma Seç... (Seçim Yok / Null)"
+                  : "👤 Personel Seç..."}
+              </option>
               {isFirmaSelect
                 ? validFirmaList.map((f: any, idx: number) => (
-                    <option key={f.id || idx} value={String(f.id || f.unvan)}>
-                      {f.label || f.unvan}
-                    </option>
-                  ))
+                  <option key={f.id || idx} value={String(f.id || f.unvan)}>
+                    {f.label || f.unvan}
+                  </option>
+                ))
                 : personelList.map((p: any) => (
-                    <option key={p.id} value={String(p.id)}>
-                      {p.ad_soyad} {p.unvan ? `(${p.unvan})` : ""}
-                    </option>
-                  ))}
+                  <option key={p.id} value={String(p.id)}>
+                    {p.ad_soyad} {p.unvan ? `(${p.unvan})` : ""}
+                  </option>
+                ))}
             </select>
           </div>
         )}
@@ -453,7 +503,8 @@ export const ApprovalSignature: React.FC<ApprovalSignatureProps> = ({
   const matched = personelList.find(
     (p: any) =>
       p.ad_soyad &&
-      String(p.ad_soyad).trim().toLowerCase() === String(adSoyad || "").trim().toLowerCase()
+      String(p.ad_soyad).trim().toLowerCase() ===
+        String(adSoyad || "").trim().toLowerCase(),
   );
   const selectedValue = matched ? String(matched.id) : "";
 
@@ -500,7 +551,9 @@ export const ApprovalSignature: React.FC<ApprovalSignatureProps> = ({
               value={selectedValue}
               onChange={(e) => {
                 const selectedId = Number(e.target.value);
-                const p = personelList.find((item: any) => item.id === selectedId);
+                const p = personelList.find((item: any) =>
+                  item.id === selectedId
+                );
                 if (p && onFieldChange) {
                   onFieldChange(nameField, p.ad_soyad);
                   onFieldChange(unvanField, p.unvan || "");
@@ -540,7 +593,9 @@ export const ApprovalSignature: React.FC<ApprovalSignatureProps> = ({
           <EditableField
             name={nameField}
             value={adSoyad || ""}
-            placeholder={isEditing && personelList.length > 0 ? "Adı Soyadı" : "Onaylayan Adı Soyadı"}
+            placeholder={isEditing && personelList.length > 0
+              ? "Adı Soyadı"
+              : "Onaylayan Adı Soyadı"}
           />
         </div>
 
@@ -576,7 +631,13 @@ export const CommissionList: React.FC<CommissionListProps> = ({
   if (!members || members.length === 0) return null;
 
   return (
-    <div style={{ marginTop: `${marginTop}px`, pageBreakInside: "avoid", breakInside: "avoid" }}>
+    <div
+      style={{
+        marginTop: `${marginTop}px`,
+        pageBreakInside: "avoid",
+        breakInside: "avoid",
+      }}
+    >
       <div
         style={{ fontWeight: "bold", fontSize: "12pt", marginBottom: "15px" }}
       >
@@ -654,10 +715,22 @@ export const MetadataBlock: React.FC<MetadataBlockProps> = ({
           <tbody>
             {evrakSayisi !== undefined && (
               <tr>
-                <td style={{ verticalAlign: "top", padding: "1px 0", width: "45px" }}>
+                <td
+                  style={{
+                    verticalAlign: "top",
+                    padding: "1px 0",
+                    width: "45px",
+                  }}
+                >
                   <strong>Sayı</strong>
                 </td>
-                <td style={{ verticalAlign: "top", padding: "1px 5px 1px 0", width: "10px" }}>
+                <td
+                  style={{
+                    verticalAlign: "top",
+                    padding: "1px 5px 1px 0",
+                    width: "10px",
+                  }}
+                >
                   <strong>:</strong>
                 </td>
                 <td style={{ verticalAlign: "top", padding: "1px 0" }}>
@@ -667,10 +740,22 @@ export const MetadataBlock: React.FC<MetadataBlockProps> = ({
             )}
             {dosyaKonusu !== undefined && (
               <tr>
-                <td style={{ verticalAlign: "top", padding: "1px 0", width: "45px" }}>
+                <td
+                  style={{
+                    verticalAlign: "top",
+                    padding: "1px 0",
+                    width: "45px",
+                  }}
+                >
                   <strong>Konu</strong>
                 </td>
-                <td style={{ verticalAlign: "top", padding: "1px 5px 1px 0", width: "10px" }}>
+                <td
+                  style={{
+                    verticalAlign: "top",
+                    padding: "1px 5px 1px 0",
+                    width: "10px",
+                  }}
+                >
                   <strong>:</strong>
                 </td>
                 <td
@@ -680,7 +765,11 @@ export const MetadataBlock: React.FC<MetadataBlockProps> = ({
                     textAlign: "justify",
                   }}
                 >
-                  <EditableField name="dosyaKonusu" value={cleanKonu} style={{ width: "100%" }} />
+                  <EditableField
+                    name="dosyaKonusu"
+                    value={cleanKonu}
+                    style={{ width: "100%" }}
+                  />
                 </td>
               </tr>
             )}
@@ -689,7 +778,16 @@ export const MetadataBlock: React.FC<MetadataBlockProps> = ({
       </div>
 
       {displayTarih !== undefined && (
-        <div style={{ fontSize: "11pt", textAlign: "right", whiteSpace: "nowrap", flexShrink: 0, paddingLeft: "16px", paddingTop: "1px" }}>
+        <div
+          style={{
+            fontSize: "11pt",
+            textAlign: "right",
+            whiteSpace: "nowrap",
+            flexShrink: 0,
+            paddingLeft: "16px",
+            paddingTop: "1px",
+          }}
+        >
           <strong>Tarih:</strong>{" "}
           <DateEditableField name="onayaSunulanTarih" value={displayTarih} />
         </div>

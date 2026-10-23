@@ -8,7 +8,7 @@ export const IhtiyacListesiSchema = z.object({
   standartFormKodu: z.string().optional(),
   standartFormAdi: z.string().optional(),
   evrakSayisi: z.any().optional(),
-  dosyaKonusu: z.any().optional(),
+  konu: z.any().optional(),
   maddeNo: z.any().optional(),
   tarih: z.any().optional(),
   onayaSunulanTarih: z.any().optional(),

@@ -40,6 +40,9 @@ export const DocumentTable = React.forwardRef<
     const borderColor = GLOBAL_THEME.colors.border;
     const headerBg = GLOBAL_THEME.colors.headerBg;
 
+    console.log("columns:", columns);
+    console.log("data:", data);
+
     return (
       <table
         ref={ref}

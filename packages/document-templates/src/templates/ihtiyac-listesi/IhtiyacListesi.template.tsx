@@ -1,4 +1,3 @@
-import React from "react";
 import { DocumentLayout } from "../../document/DocumentLayout";
 import { DocumentTable } from "../../document/DocumentTable";
 import {
@@ -93,7 +92,7 @@ export function IhtiyacListesi({
                   evrakSayisi={data.evrakSayisi}
                   tarih={data.tarih || (data as any).dosya_acilis_tarihi ||
                     data.dosyaAcilisTarihi || data.dosyaTarihi}
-                  dosyaKonusu={data.dosyaKonusu}
+                  dosyaKonusu={(data as any).konu}
                   showBorder={false}
                 />
 
