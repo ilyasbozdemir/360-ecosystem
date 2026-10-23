@@ -1,4 +1,4 @@
-﻿# 💼 WorkSuite 360 — Mimari, Masaüstü Uygulamaları ve Workspace 360
+# 💼 WorkSuite 360 — Mimari, Masaüstü Uygulamaları ve Workspace 360
 
 > **Ana Depo:** [github.com/ilyasbozdemir/workdesk-360](https://github.com/ilyasbozdemir/workdesk-360)  
 > **Temin & İhale Uygulaması:** [TEMİN 360](https://github.com/ilyasbozdemir/workdesk-360)
@@ -34,7 +34,7 @@ Bu araçların büyük kısmı ya birbirinden kopuk çalışmakta, ya hantal web
 | Uygulama | Durum | App ID | Görev ve Sorumluluk Alanı |
 | :--- | :---: | :--- | :--- |
 | **Workspace 360** | **Yüklü / Hazır (v0.1.0)** | `dev.ilyasbozdemir.workspace360` | Merkezi çalışma alanı, uygulama kataloğu, sürüm doğrulama ve başlatıcı. |
-| **TEMİN 360** | **Yüklü / Hazır (v1.0.0-rc.6)** | `dev.ilyasbozdemir.temin360` | Kamu alımları, doğrudan temin, ihale, hakediş icmalleri, keşif özetleri ve taşınır yönetimi. |
+| **TEMİN 360** | **Yüklü / Hazır (v1.0.0-rc.7)** | `dev.ilyasbozdemir.temin360` | Kamu alımları, doğrudan temin, ihale, hakediş icmalleri, keşif özetleri ve taşınır yönetimi. |
 | **Dosya 360** | **Planlandı (Aşama 2)** | `dev.ilyasbozdemir.dosya360` | **Birleşik Dosya Merkezi:** Hızlı Arama, Etiketler/Koleksiyonlar, Yinelenen Dosyalar, Temizlik/Karantina, İndeksleme ve Ayarlar. |
 | **Süreç 360** | Planlandı | `dev.ilyasbozdemir.surec360` | İş süreçleri, birimler ve taşeronlar arası görev dağılımı, zaman çizelgesi ve kanban onay akışları. |
 | **Harita 360** | Planlandı | `dev.ilyasbozdemir.harita360` | ITRF96/ED50/WGS84 koordinat dönüşümü, parsel haritalandırma, saha fotoğrafları ve taşınmaz envanteri. |

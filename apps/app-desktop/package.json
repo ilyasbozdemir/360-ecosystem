@@ -1,6 +1,6 @@
 {
   "name": "app-desktop",
-  "version": "1.0.0-rc.6",
+  "version": "1.0.0-rc.7",
   "engines": {
     "node": ">=22.5.0"
   },
