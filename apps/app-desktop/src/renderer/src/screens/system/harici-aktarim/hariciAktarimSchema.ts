@@ -27,7 +27,8 @@ export function isValidDateString(val: string): boolean {
   if (m[7] !== undefined) {
     const tzH = Number(m[8])
     const tzM = Number(m[9])
-    if (tzM > 59 || tzH > 14 || (tzH === 14 && tzM > 0)) return false
+    const maxH = m[7] === '-' ? 12 : 14
+    if (tzM > 59 || tzH > maxH || (tzH === maxH && tzM > 0)) return false
   }
   return true
 }
