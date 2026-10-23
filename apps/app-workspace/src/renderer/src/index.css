@@ -46,10 +46,10 @@
   --theme-badge-planned-border: rgba(59, 130, 246, 0.3);
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
 }
 
 body {

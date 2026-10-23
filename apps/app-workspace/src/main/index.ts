@@ -375,7 +375,7 @@ function createWindow(): void {
     title: 'Workspace 360 — WorkSuite 360 Merkezi Çalışma Alanı',
     icon: getIconPath(),
     webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
+      preload: join(__dirname, '../preload/index.mjs'),
       sandbox: false,
       contextIsolation: true,
       nodeIntegration: false
