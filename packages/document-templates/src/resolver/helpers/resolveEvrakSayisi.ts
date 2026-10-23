@@ -8,8 +8,8 @@ export function formatOfficialEvrakSayisi(options: {
   sayisi?: string | number | null;
   teminNo?: string | null;
 }): string {
-  const current = String(options.evrakSayisi || '').trim();
-  if (current.startsWith('E-') && !current.includes('/')) {
+  const current = String(options.evrakSayisi || '').replace(/^E-/i, '').trim();
+  if (current && !current.includes('/') && /^\d+-\d+\.\d+-\d+$/.test(current)) {
     return current;
   }
 
@@ -37,7 +37,7 @@ export function formatOfficialEvrakSayisi(options: {
   }
 
   const padded = String(seqNumber).padStart(4, '0');
-  return `E-${detsis}-${sdpKodu}-${padded}`;
+  return `${detsis}-${sdpKodu}-${padded}`;
 }
 
 /**
@@ -172,8 +172,8 @@ export async function resolveEvrakSayisi(
     }
 
     const paddedSayi = String(seqNumber).padStart(4, '0');
-    return `E-${detsisNo}-${sdpKodu}-${paddedSayi}`;
+    return `${detsisNo}-${sdpKodu}-${paddedSayi}`;
   } catch (err) {
-    return 'E-00000000-934.01-0001';
+    return '00000000-934.01-0001';
   }
 }

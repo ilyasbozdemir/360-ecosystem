@@ -4,10 +4,17 @@ import { numberToTurkishWords, readSystemTemplate } from './documentUtils'
 
 export function resolveAllCiktiData(
   db: any,
-  payload: { dosyaId?: number }
+  payload: {
+    dosyaId?: number
+    sablonId?: number
+    documentId?: string
+    templateId?: string
+  }
 ): { success: boolean; data?: any; error?: string } {
   try {
     const dosyaId = Number(payload?.dosyaId || 0)
+    const targetSablonId = payload?.sablonId
+    const targetDocId = payload?.documentId || payload?.templateId
 
     // 1. Master HTML & Master JSON
     const masterHtml =
@@ -21,18 +28,35 @@ export function resolveAllCiktiData(
       } catch {}
     }
 
-    // 2. Templates (Latest active templates)
-    const sablons = db
-      .prepare(
-        'SELECT * FROM TANIM_Sablon WHERE id IN (SELECT MAX(id) FROM TANIM_Sablon WHERE aktif_mi = 1 GROUP BY COALESCE(parent_id, id)) ORDER BY kategori ASC, ad ASC'
-      )
-      .all()
+    // 2. Templates (Açılan belge varsa sadece onu çek, yoksa aktif listeyi çek)
+    let sablons: any[] = []
+    if (targetSablonId) {
+      sablons = db.prepare('SELECT * FROM TANIM_Sablon WHERE id = ?').all(targetSablonId)
+    } else if (targetDocId) {
+      const cleanDoc = String(targetDocId).replace(/\.html$/i, '').trim().toLowerCase()
+      sablons = db
+        .prepare(
+          `SELECT * FROM TANIM_Sablon 
+           WHERE (kod = ? OR LOWER(dosya_adi) LIKE ? OR LOWER(route_path) LIKE ?) 
+             AND aktif_mi = 1 
+           ORDER BY id DESC LIMIT 1`
+        )
+        .all(targetDocId, `%${cleanDoc}%`, `%${cleanDoc}%`)
+    } else {
+      sablons = db
+        .prepare(
+          'SELECT * FROM TANIM_Sablon WHERE id IN (SELECT MAX(id) FROM TANIM_Sablon WHERE aktif_mi = 1 GROUP BY COALESCE(parent_id, id)) ORDER BY kategori ASC, ad ASC'
+        )
+        .all()
+    }
 
-    // 3. Placeholders
+    // 3. Placeholders (sadece ihtiyaç varsa)
     let placeholders: any[] = []
-    try {
-      placeholders = db.prepare('SELECT * FROM TANIM_Placeholder').all()
-    } catch {}
+    if (!targetSablonId && !targetDocId) {
+      try {
+        placeholders = db.prepare('SELECT * FROM TANIM_Placeholder').all()
+      } catch {}
+    }
 
     // 4. Personnel
     const personelListesi = db
@@ -228,9 +252,12 @@ export function resolveAllCiktiData(
         kalemAdi: item.kalem_adi || item.malzeme_adi || '',
         malzemeAdi: item.kalem_adi || item.malzeme_adi || '',
         aciklama: item.aciklama || '',
+        ozelligi: item.aciklama || item.ozellik || '',
         birim: item.birim || 'Adet',
+        birimi: item.birim || 'Adet',
         miktar: miktarNum,
         miktarFormatted: miktarNum.toLocaleString('tr-TR'),
+        kodu: item.tasinir_kodu || '',
         tasinirKodu: item.tasinir_kodu || '',
         kdvOrani: item.kdv_orani ?? 20,
         teklifler: itemBids,
@@ -444,11 +471,11 @@ export function resolveAllCiktiData(
     }
 
     const paddedSayi = String(seqNumber).padStart(4, '0')
-    const officialEvrakSayisi = `E-${detsisNo}-${sdpKodu}-${paddedSayi}`
+    const officialEvrakSayisi = `${detsisNo}-${sdpKodu}-${paddedSayi}`
 
-    const existingEvrak = String((activeDosya as any)?.evrak_sayisi || '').trim()
+    const existingEvrak = String((activeDosya as any)?.evrak_sayisi || '').replace(/^E-/i, '').trim()
     const resolvedEvrakSayisi =
-      existingEvrak && existingEvrak.startsWith('E-') && !existingEvrak.includes('/')
+      existingEvrak && !existingEvrak.includes('/')
         ? existingEvrak
         : officialEvrakSayisi
 
@@ -559,21 +586,25 @@ export function resolveAllCiktiData(
         }))
     }
 
-    // Pre-render HTML map using Mustache on server side for every active template
+    // Sadece hedeflenen tek bir sablonId varsa render et,
+    // tüm şablonları döngüde Mustache ile render edip gereksiz veri transferini ve CPU yükünü kaldır.
     const renderedHtmlMap: Record<number, string> = {}
-    sablons.forEach((sab: any) => {
-      try {
-        let body = sab.html_icerik || ''
-        if (!body && sab.dosya_adi) {
-          body = readSystemTemplate(sab.dosya_adi) || ''
-        }
-        if (body) {
-          const innerHtml = Mustache.render(body, dosyaContext)
-          const fullHtml = masterHtml ? masterHtml.replace('{{{content}}}', innerHtml) : innerHtml
-          renderedHtmlMap[sab.id] = fullHtml
-        }
-      } catch {}
-    })
+    if (payload?.sablonId) {
+      const targetSab = sablons.find((s: any) => s.id === payload.sablonId)
+      if (targetSab) {
+        try {
+          let body = targetSab.html_icerik || ''
+          if (!body && targetSab.dosya_adi) {
+            body = readSystemTemplate(targetSab.dosya_adi) || ''
+          }
+          if (body) {
+            const innerHtml = Mustache.render(body, dosyaContext)
+            const fullHtml = masterHtml ? masterHtml.replace('{{{content}}}', innerHtml) : innerHtml
+            renderedHtmlMap[targetSab.id] = fullHtml
+          }
+        } catch {}
+      }
+    }
 
     return {
       success: true,

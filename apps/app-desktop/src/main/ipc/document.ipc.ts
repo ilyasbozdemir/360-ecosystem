@@ -147,7 +147,15 @@ export function registerDocumentIpcHandlers(): void {
   handleDoc(
     'belge:get-all-cikti-data',
     'get-all-cikti-data',
-    async (_, payload: { dosyaId?: number }) => {
+    async (
+      _,
+      payload: {
+        dosyaId?: number
+        sablonId?: number
+        documentId?: string
+        templateId?: string
+      }
+    ) => {
       try {
         const db = workspaceManager.getDb()
         if (!db) return { success: false, error: 'Çalışma alanı veritabanı aktif değil' }

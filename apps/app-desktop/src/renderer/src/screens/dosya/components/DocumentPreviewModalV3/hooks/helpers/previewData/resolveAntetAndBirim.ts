@@ -79,12 +79,11 @@ export async function resolveAntetAndBirim(
   baseData.ihtiyacYeri =
     rawIhtiyac === '[]' || rawIhtiyac === '[""]' ? ctx.altKurumBulunma || 'İdaremizde' : rawIhtiyac
 
-  // Resolve official EBYS / E-DETSİS evrakSayisi if missing, slash-separated or invalid format
+  // Resolve official evrakSayisi if missing or slash-separated
   if (
     !baseData.evrakSayisi ||
     String(baseData.evrakSayisi).trim() === '' ||
-    String(baseData.evrakSayisi).includes('/') ||
-    !String(baseData.evrakSayisi).startsWith('E-')
+    String(baseData.evrakSayisi).includes('/')
   ) {
     const activeDosyaId = Number(dosyaObj.id || dosyaRecord?.id || 0)
     if (activeDosyaId) {
@@ -99,8 +98,13 @@ export async function resolveAntetAndBirim(
       }
     }
   }
+  if (baseData.evrakSayisi) {
+    baseData.evrakSayisi = String(baseData.evrakSayisi).replace(/^E-/i, '').trim()
+  }
   if (!baseData.evrakNo) {
     baseData.evrakNo = baseData.evrakSayisi
+  } else {
+    baseData.evrakNo = String(baseData.evrakNo).replace(/^E-/i, '').trim()
   }
 
   let matchedBirimName =

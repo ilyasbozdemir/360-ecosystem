@@ -106,7 +106,7 @@ export function useCiktiMerkeziData(activeDosyaId: number | null): UseCiktiMerke
   useEffect(() => {
     if (!activeDosyaId) return
 
-    loadData()
+    loadData(true)
 
     const unlisten = window.electron?.ipcRenderer?.on('db:invalidated', () => {
       loadData(true)

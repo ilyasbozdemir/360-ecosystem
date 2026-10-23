@@ -57,6 +57,7 @@ export * from "./constants/editable-fields";
 export * from "./constants/roles";
 export * from "./constants/roleVisibility";
 export * from "./constants/templateIds";
+export * from "./constants/tableColumns.constants";
 export * from "./services/templateRegistryService";
 export * from "./services/memberVisibilityResolver";
 export * from "./services/commissionResolver";

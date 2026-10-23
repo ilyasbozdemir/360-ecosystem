@@ -7,11 +7,11 @@ import {
 } from '../resolver/mappingResolver';
 
 describe('Document Templates - mappingResolver Modular Helpers', () => {
-  it('resolveEvrakSayisi produces a valid E-DETSIS formatted code with defaults', async () => {
+  it('resolveEvrakSayisi produces a valid DETSIS formatted code with defaults', async () => {
     const mockExecutor = async (_sql: string, _params: any[]) => [];
     const evrakSayisi = await resolveEvrakSayisi(1, mockExecutor);
-    expect(evrakSayisi).toMatch(/^E-\d{8}-934\.\d{2}-\d{4}$/);
-    expect(evrakSayisi).toBe('E-00000000-934.01-0001');
+    expect(evrakSayisi).toMatch(/^\d{8}-934\.\d{2}-\d{4}$/);
+    expect(evrakSayisi).toBe('00000000-934.01-0001');
   });
 
   it('resolveEvrakSayisi formats custom detsis code and service type', async () => {
@@ -26,7 +26,7 @@ describe('Document Templates - mappingResolver Modular Helpers', () => {
     };
 
     const evrakSayisi = await resolveEvrakSayisi(5, mockExecutor);
-    expect(evrakSayisi).toBe('E-12345678-934.02-0042');
+    expect(evrakSayisi).toBe('12345678-934.02-0042');
   });
 
   it('resolveAntetSatirlari returns parsed JSON lines when available', async () => {
@@ -61,13 +61,13 @@ describe('Document Templates - mappingResolver Modular Helpers', () => {
       detsisNo: '10234521',
       tur: 'mal'
     });
-    expect(res1).toBe('E-10234521-934.01-0001');
+    expect(res1).toBe('10234521-934.01-0001');
 
-    // When already official format
+    // When already official format with E- prefix, strips E-
     const res2 = formatOfficialEvrakSayisi({
       evrakSayisi: 'E-10234521-934.01-0005'
     });
-    expect(res2).toBe('E-10234521-934.01-0005');
+    expect(res2).toBe('10234521-934.01-0005');
 
     // When hizmet with padded sayisi
     const res3 = formatOfficialEvrakSayisi({
@@ -75,6 +75,6 @@ describe('Document Templates - mappingResolver Modular Helpers', () => {
       detsisNo: '87654321',
       tur: 'hizmet'
     });
-    expect(res3).toBe('E-87654321-934.02-0042');
+    expect(res3).toBe('87654321-934.02-0042');
   });
 });

@@ -534,11 +534,11 @@ export function resolveDocumentPayload(
     }
 
     const paddedSayi = String(seqNumber).padStart(4, '0')
-    const officialEvrakSayisi = `E-${detsisNo}-${sdpKodu}-${paddedSayi}`
+    const officialEvrakSayisi = `${detsisNo}-${sdpKodu}-${paddedSayi}`
 
-    const existingEvrak = String((dosya as any)?.evrak_sayisi || '').trim()
+    const existingEvrak = String((dosya as any)?.evrak_sayisi || '').replace(/^E-/i, '').trim()
     const resolvedEvrakSayisi =
-      existingEvrak && existingEvrak.startsWith('E-') && !existingEvrak.includes('/')
+      existingEvrak && !existingEvrak.includes('/')
         ? existingEvrak
         : officialEvrakSayisi
 

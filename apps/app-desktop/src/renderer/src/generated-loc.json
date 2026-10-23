@@ -1,32 +1,32 @@
 {
-  "totalFiles": 1557,
-  "totalLines": 270159,
-  "codeLines": 252169,
-  "nonBlankLines": 252169,
-  "blankLines": 17990,
+  "totalFiles": 1558,
+  "totalLines": 270538,
+  "codeLines": 252538,
+  "nonBlankLines": 252538,
+  "blankLines": 18000,
   "testFiles": 67,
   "testLines": 13709,
   "testNonBlankLines": 11934,
-  "prodFiles": 1490,
-  "prodLines": 256450,
-  "prodNonBlankLines": 240235,
-  "timestamp": "2026-10-23T16:56:18.139Z",
+  "prodFiles": 1491,
+  "prodLines": 256829,
+  "prodNonBlankLines": 240604,
+  "timestamp": "2026-10-23T18:12:08.142Z",
   "scope": "app+deps",
   "breakdown": [
     {
       "name": "app-desktop",
       "path": "apps/app-desktop",
       "files": 1253,
-      "totalLines": 240333,
-      "codeLines": 223951,
-      "nonBlankLines": 223951,
+      "totalLines": 240506,
+      "codeLines": 224124,
+      "nonBlankLines": 224124,
       "blankLines": 16382,
       "testFiles": 56,
       "testLines": 11713,
       "testNonBlankLines": 10205,
       "prodFiles": 1197,
-      "prodLines": 228620,
-      "prodNonBlankLines": 213746
+      "prodLines": 228793,
+      "prodNonBlankLines": 213919
     },
     {
       "name": "@dt/database",
@@ -46,17 +46,17 @@
     {
       "name": "@temin360/document-templates",
       "path": "packages/document-templates",
-      "files": 149,
-      "totalLines": 25105,
-      "codeLines": 23587,
-      "nonBlankLines": 23587,
-      "blankLines": 1518,
+      "files": 150,
+      "totalLines": 25311,
+      "codeLines": 23783,
+      "nonBlankLines": 23783,
+      "blankLines": 1528,
       "testFiles": 11,
       "testLines": 1996,
       "testNonBlankLines": 1729,
-      "prodFiles": 138,
-      "prodLines": 23109,
-      "prodNonBlankLines": 21858
+      "prodFiles": 139,
+      "prodLines": 23315,
+      "prodNonBlankLines": 22054
     }
   ]
 }

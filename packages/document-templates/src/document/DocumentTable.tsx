@@ -1,18 +1,20 @@
 import React from "react";
 import { GLOBAL_THEME } from "../theme.config";
-
 import { TableRowSplitDivider } from "./TableRowSplitDivider";
+import {
+  ColumnDef,
+  getTemplateTableColumns,
+  resolveRowCellValue,
+  TEMPLATE_TABLE_COLUMNS,
+} from "../constants/tableColumns.constants";
 
-interface ColumnDef<T> {
-  key: keyof T | string;
-  label: string;
-  width?: string;
-  align?: "left" | "center" | "right";
-  render?: (value: any, row: T, index: number) => React.ReactNode;
-}
+export type { ColumnDef };
+export { getTemplateTableColumns, resolveRowCellValue, TEMPLATE_TABLE_COLUMNS };
+export const DEFAULT_IHTIYAC_COLUMNS = TEMPLATE_TABLE_COLUMNS.default;
 
-interface DocumentTableProps<T> {
-  columns: ColumnDef<T>[];
+export interface DocumentTableProps<T = any> {
+  templateId?: string;
+  columns?: ColumnDef<T>[];
   data: T[];
   emptyMessage?: string;
   striped?: boolean;
@@ -27,6 +29,7 @@ export const DocumentTable = React.forwardRef<
 >(
   (
     {
+      templateId,
       columns,
       data,
       emptyMessage = "Veri bulunamadı",
@@ -39,9 +42,9 @@ export const DocumentTable = React.forwardRef<
   ) => {
     const borderColor = GLOBAL_THEME.colors.border;
     const headerBg = GLOBAL_THEME.colors.headerBg;
-
-    console.log("columns:", columns);
-    console.log("data:", data);
+    const activeColumns = columns && columns.length > 0
+      ? columns
+      : getTemplateTableColumns(templateId);
 
     return (
       <table
@@ -58,7 +61,7 @@ export const DocumentTable = React.forwardRef<
         {/* HEADER */}
         <thead>
           <tr style={{ pageBreakInside: "avoid" }}>
-            {columns.map((col) => (
+            {activeColumns.map((col) => (
               <th
                 key={String(col.key)}
                 style={{
@@ -83,7 +86,7 @@ export const DocumentTable = React.forwardRef<
             ? (
               <tr>
                 <td
-                  colSpan={columns.length}
+                  colSpan={activeColumns.length}
                   style={{
                     textAlign: "center",
                     padding: "20px",
@@ -108,13 +111,13 @@ export const DocumentTable = React.forwardRef<
                         pageBreakInside: "avoid",
                       }}
                     >
-                      {columns.map((col) => {
-                        const value = col.key !== "custom"
-                          ? (row as any)[col.key]
-                          : null;
+                      {activeColumns.map((col) => {
+                        const colKey = String(col.key);
+                        const value = resolveRowCellValue(row, colKey, rowNum);
+
                         const rendered = col.render
                           ? col.render(value, row, rowIdx)
-                          : value !== undefined && value !== null
+                          : value !== undefined && value !== null && String(value).trim() !== ""
                           ? String(value)
                           : "-";
 
@@ -136,7 +139,7 @@ export const DocumentTable = React.forwardRef<
                     {/* Satırdan Bölme Çizgisi */}
                     <TableRowSplitDivider
                       rowIndex={rowNum}
-                      colSpan={columns.length}
+                      colSpan={activeColumns.length}
                       currentSplitIndex={currentSplitIndex}
                     />
                   </React.Fragment>

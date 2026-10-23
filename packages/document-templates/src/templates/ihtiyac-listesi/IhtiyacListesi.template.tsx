@@ -1,5 +1,9 @@
 import { DocumentLayout } from "../../document/DocumentLayout";
-import { DocumentTable } from "../../document/DocumentTable";
+import {
+  ColumnDef,
+  DocumentTable,
+  getTemplateTableColumns,
+} from "../../document/DocumentTable";
 import {
   ApprovalSignature,
   EditableOlurPlaceholder,
@@ -20,6 +24,7 @@ import {
 
 interface IhtiyacListesiProps {
   data?: Partial<IhtiyacListesiType>;
+  columns?: ColumnDef[];
   pageSize?: "A4" | "A3";
   orientation?: "portrait" | "landscape";
   firstPageLimit?: number;
@@ -29,21 +34,16 @@ interface IhtiyacListesiProps {
 
 export function IhtiyacListesi({
   data = {},
+  columns,
   pageSize = "A4",
   orientation = "portrait",
   firstPageLimit,
   middlePageLimit,
   lastPageLimit,
 }: IhtiyacListesiProps) {
-  const columns: any[] = [
-    { key: "siraNo", label: "Sıra No", width: "8%", align: "center" },
-    { key: "kodu", label: "Kodu", width: "12%", align: "left" },
-    { key: "malzemeAdi", label: "Malzeme Adı", width: "25%", align: "left" },
-    { key: "ozelligi", label: "Özelliği", width: "20%", align: "left" },
-    { key: "birimi", label: "Birimi", width: "10%", align: "center" },
-    { key: "kdvOrani", label: "KDV  Oranı %", width: "10%", align: "center" },
-    { key: "miktar", label: "Miktar", width: "12%", align: "right" },
-  ];
+  const tableColumns = columns && columns.length > 0
+    ? columns
+    : getTemplateTableColumns("ihtiyac-listesi");
 
   const fLimit = firstPageLimit ?? (data as any).firstPageLimit;
   const mLimit = middlePageLimit ?? (data as any).middlePageLimit;
@@ -178,7 +178,7 @@ export function IhtiyacListesi({
             )}
 
             <DocumentTable
-              columns={columns}
+              columns={tableColumns}
               data={pageItems}
               emptyMessage="Kalem bulunamadı"
               striped={false}
