@@ -442,6 +442,8 @@ export function validateSqlQuery(sql: string, _params?: unknown[]): void {
   for (let idx = 0; idx < tokens.length; idx++) {
     const t = tokens[idx]
     if (t.type === 'KEYWORD' && (t.value === 'DELETE' || t.value === 'UPDATE')) {
+      // Foreign key referential action ("... ON DELETE SET NULL", "... ON UPDATE CASCADE") bir DML ifadesi değildir
+      if (tokens[idx - 1]?.type === 'KEYWORD' && tokens[idx - 1].value === 'ON') continue
       const stmtDepth = t.depth
       const action = t.value
 
@@ -498,6 +500,14 @@ export function extractTableAndAction(sql: string): {
   for (let idx = 0; idx < tokens.length; idx++) {
     const t = tokens[idx]
     if (t.type === 'KEYWORD') {
+      // FK referential action (ON DELETE / ON UPDATE) eylem olarak sayılmaz
+      if (
+        (t.value === 'DELETE' || t.value === 'UPDATE') &&
+        tokens[idx - 1]?.type === 'KEYWORD' &&
+        tokens[idx - 1].value === 'ON'
+      ) {
+        continue
+      }
       if (t.value === 'INSERT' && tokens[idx + 1]?.value === 'INTO') {
         action = 'insert'
         let targetIdx = idx + 2

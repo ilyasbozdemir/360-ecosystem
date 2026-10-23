@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { ProcurementMode } from '../../temin-selector/teminSelector.types'
+import { IS_DT_EDITION } from '../../../../../../shared/edition'
 
 export interface UseProcurementModeReturn {
   procurementMode: ProcurementMode
@@ -10,6 +11,7 @@ export interface UseProcurementModeReturn {
 
 export function useProcurementMode(): UseProcurementModeReturn {
   const [procurementMode, setProcurementMode] = useState<ProcurementMode>(() => {
+    if (IS_DT_EDITION) return 'dogrudan_temin'
     return (localStorage.getItem('temin_procurement_mode') as ProcurementMode) || 'dogrudan_temin'
   })
   const [switchFeedback, setSwitchFeedback] = useState<string | null>(null)

@@ -8,6 +8,7 @@ import { useShallow } from 'zustand/react/shallow'
 import { getInitials } from '@renderer/utils/formatters'
 import { MenuGroup, getSidebarMenuGroups } from './sidebar.constants'
 import { useModuleStore } from '../../store/moduleStore'
+import { IS_DT_EDITION } from '../../../../shared/edition'
 
 export function Sidebar(): React.JSX.Element {
   const [isCollapsed, setIsCollapsed] = useState(false)
@@ -45,6 +46,7 @@ export function Sidebar(): React.JSX.Element {
   const [procurementMode, setProcurementMode] = useState<
     'dogrudan_temin' | 'ihale' | 'devlet_ihale_2886'
   >(() => {
+    if (IS_DT_EDITION) return 'dogrudan_temin'
     return (
       (localStorage.getItem('temin_procurement_mode') as
         | 'dogrudan_temin'

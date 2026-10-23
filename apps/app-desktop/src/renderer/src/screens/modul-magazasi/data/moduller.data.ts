@@ -1,6 +1,7 @@
 import type { ModulPaketi } from '../modulMagazasi.types'
+import { IS_DT_EDITION, isModuleAllowedInEdition } from '../../../../../shared/edition'
 
-export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
+const TUM_MODUL_PAKETLERI: ModulPaketi[] = [
   // =========================================================================
   // 1. 4734 DOÄžRUDAN TEMÄ°N (Ã‡EKÄ°RDEK SÃœREÃ‡ & STANDART ÅžABLON KATALOÄžU)
   // =========================================================================
@@ -378,3 +379,12 @@ export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = [
     ]
   }
 ]
+
+/**
+ * Sürüme göre görünür katalog: Doðrudan Temin sürümünde yalnýzca 4734 m.22 paketi,
+ * tam sürümde tüm paketler.
+ */
+export const RESMI_MODUL_PAKETLERI: ModulPaketi[] = IS_DT_EDITION
+  ? TUM_MODUL_PAKETLERI.filter((m) => isModuleAllowedInEdition(m.id))
+  : TUM_MODUL_PAKETLERI
+

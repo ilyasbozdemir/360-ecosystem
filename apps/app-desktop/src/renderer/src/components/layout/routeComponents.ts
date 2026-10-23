@@ -1,5 +1,6 @@
 import React from 'react'
 import { lazyRoute } from '../../utils/lazyRoute'
+import { DT_EDITION_BLOCKED_ROUTES, IS_DT_EDITION } from '../../../../shared/edition'
 
 export const routeComponents: Record<string, () => React.ReactElement> = {
   '/': lazyRoute(() => import('../../screens/dashboard/index2.screen')),
@@ -109,4 +110,11 @@ export const routeComponents: Record<string, () => React.ReactElement> = {
   '/ihtiyac-raporlari': lazyRoute(
     () => import('../../screens/ihtiyac-raporlari/IhtiyacRaporlariScreen')
   )
+}
+
+// Doğrudan Temin (4734 m.22) sürümünde kapsam dışı ekranlar (2886, EBYS) kayıt edilmez
+if (IS_DT_EDITION) {
+  for (const route of DT_EDITION_BLOCKED_ROUTES) {
+    delete routeComponents[route]
+  }
 }

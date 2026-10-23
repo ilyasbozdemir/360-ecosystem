@@ -226,7 +226,9 @@ export function ActiveFileShortcuts(): React.JSX.Element {
       {/* Üst: Ana gezinme — sığmazsa yalnızca bu bölüm kayar */}
       <div
         data-testid="rail-scroll"
-        className="flex-1 min-h-0 w-full flex flex-col items-center gap-2.5 short:gap-1.5 px-2 overflow-y-auto overflow-x-hidden custom-scrollbar"
+        tabIndex={-1}
+        className="flex-1 min-h-28 short:min-h-20 w-full flex flex-col items-center gap-2.5 short:gap-1.5 px-2 py-1 overflow-y-auto overflow-x-hidden overscroll-contain scroll-smooth custom-scrollbar"
+        style={{ scrollbarWidth: 'thin' }}
       >
         {primaryItems.map(renderLink)}
       </div>

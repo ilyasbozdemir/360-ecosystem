@@ -57,6 +57,29 @@ describe('SQL Guard Security Suite (sqlGuard.ts)', () => {
       }).toThrow(/Unparameterized mass DELETE without WHERE clause/)
     })
 
+    it('CREATE TABLE içindeki ON DELETE / ON UPDATE foreign key kurallarını toplu DELETE saymaz', () => {
+      expect(() => {
+        validateSqlQuery(
+          `CREATE TABLE IF NOT EXISTS DATA_IhtiyacRaporu (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            temin_dosya_id INTEGER,
+            birim_id INTEGER,
+            FOREIGN KEY(temin_dosya_id) REFERENCES DATA_TeminDosyasi(id) ON DELETE SET NULL,
+            FOREIGN KEY(birim_id) REFERENCES TANIM_Birim(id) ON UPDATE CASCADE ON DELETE CASCADE
+          )`
+        )
+      }).not.toThrow()
+      expect(
+        extractTableAndAction(
+          'CREATE TABLE T (a INTEGER, FOREIGN KEY(a) REFERENCES X(id) ON DELETE SET NULL)'
+        ).action
+      ).toBe('other')
+      // Gerçek toplu DELETE hâlâ engellenir
+      expect(() => {
+        validateSqlQuery('DELETE FROM DATA_TeminDosyasi')
+      }).toThrow(/Unparameterized mass DELETE without WHERE clause/)
+    })
+
     it('WHERE koşulu olan DELETE FROM komutuna izin verir', () => {
       expect(() => {
         validateSqlQuery('DELETE FROM DATA_TeminDosyasi WHERE id = ?', [1])

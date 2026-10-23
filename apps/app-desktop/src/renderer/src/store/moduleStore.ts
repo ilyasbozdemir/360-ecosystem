@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { ModuleTrashItem } from '../screens/modul-magazasi/modulMagazasi.types'
 import { emitAppEvent } from '../utils/appEvents'
+import { IS_DT_EDITION, isModuleAllowedInEdition } from '../../../shared/edition'
 
 /**
  * Kullanıcının Modül & Belge Mağazası'ndan kurduğu paketleri ve
@@ -56,11 +57,13 @@ const DEFAULT_RETENTION_DAYS = 30
 export const useModuleStore = create<ModuleStoreState>()(
   persist(
     (set, get) => ({
-      installedIds: ['kik-dogrudan-temin-22d', 'modul-personel-izin'],
+      installedIds: IS_DT_EDITION
+        ? ['kik-dogrudan-temin-22d']
+        : ['kik-dogrudan-temin-22d', 'modul-personel-izin'],
       trashedModules: {},
       defaultRetentionDays: DEFAULT_RETENTION_DAYS,
 
-      isInstalled: (id: string) => get().installedIds.includes(id),
+      isInstalled: (id: string) => isModuleAllowedInEdition(id) && get().installedIds.includes(id),
 
       isTrashed: (id: string) => {
         const item = get().trashedModules[id]
@@ -81,6 +84,7 @@ export const useModuleStore = create<ModuleStoreState>()(
       },
 
       installModule: (id: string) => {
+        if (!isModuleAllowedInEdition(id)) return
         set((state) => {
           const nextTrashed = { ...state.trashedModules }
           delete nextTrashed[id]
