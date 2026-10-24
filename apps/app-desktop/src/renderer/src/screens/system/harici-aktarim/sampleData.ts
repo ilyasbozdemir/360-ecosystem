@@ -184,3 +184,121 @@ export const SAMPLE_DOGRUDA_TEMIN_JSON = JSON.stringify(
 )
 
 export const SAMPLE_HARICI_DT_JSON = SAMPLE_DOGRUDA_TEMIN_JSON
+
+export const OFFICIAL_DOGRUDA_TEMIN_SCHEMA = {
+  $schema: 'https://json-schema.org/draft/2020-12/schema',
+  $id: 'https://example.local/dogrudan-temin/dosya.schema.json',
+  title: 'Doğrudan Temin - Tek / Çoklu Dosya JSON Şeması',
+  description:
+    "Uygulamanın kabul ettiği tekil veya toplu Doğrudan Temin JSON şeması. Çekirdek anahtarlar: f, mat, tek, win, con, yak, muay, kab, kfirma, kfirmaBilgi, sablon, ek. dosyaBilgileri / malzemeler / teklifler / kazananFirmalar / komisyonlar / kabulTutanaklari ise okunabilir kopyalardır.",
+  anyOf: [
+    { type: 'object', required: ['f'] },
+    { type: 'object', required: ['dosyaBilgileri'] },
+    { type: 'object', required: ['files'] },
+    { type: 'array' }
+  ]
+}
+
+export function downloadSampleJsonTemplate(): void {
+  const sampleExport = {
+    $schema: 'https://example.local/dogrudan-temin/dosya.schema.json',
+    aciklama:
+      'Doğrudan Temin 360 - Tekil veya Toplu Dosya Şablonu. Bu şablonu kendi verilerinizle doldurup uygulamaya aktarabilirsiniz.',
+    files: [
+      {
+        id: 'dt_ornek_001',
+        f: {
+          'Dosya No': '2025/101',
+          'Dosya Açılış Tarihi': '2025-10-24',
+          'Bütçe Yılı': '2025',
+          'Bütçe': 'Genel Bütçe',
+          'Doğrudan Temin Numarası': '101',
+          'İhale Tarihi': '2025-10-24',
+          'İhale Aşaması': 'Teklif Toplama',
+          'İşin Adı / Tanımı': 'Örnek Mal Alımı',
+          'Açıklama': 'Belediyemiz veya Kurumumuz İhtiyacı İçin Malzeme Alımı',
+          'İhalesi Yapılacak Birim': 'Destek Hizmetleri Müdürlüğü',
+          'Sunulacak Makam': 'Başkanlık Makamına',
+          'İhtiyaç Yeri': 'Merkez Ambar',
+          'İhale Tipi': 'Doğrudan Temin',
+          'Alım Türü': 'Mal Alımı',
+          'Madde': '22/d*',
+          'Teklif ve Sözleşme Türü': 'Birim Fiyat',
+          'Alt yüklenici olacak mı': 'Hayır',
+          'Kısmi teklif verilecek mi': 'Hayır',
+          'Avans Verilecek mi': 'Hayır',
+          'Yaklaşık Maliyet': 'Burada Hesaplanacak',
+          'KDV': 'Hariç',
+          'Hesaplama Esası': 'En düşük fiyat esasına göre',
+          'Hesaplamada': 'Sadece araştırma fiyatları dikkate alınacak',
+          'Tıbbi Cihaz Alımı mı': 'Hayır',
+          'Son Teklif Verme Tarih/Saati': '2025-10-26T14:00',
+          'Tahmini Bitiş Tarihi': '2025-10-26'
+        },
+        mat: [
+          [
+            '1',
+            'MLZ-01',
+            'Örnek Malzeme 1',
+            'Özellik ve Teknik Detay',
+            'Adet',
+            '20',
+            '10',
+            '500.00',
+            'Piyasa Araştırması'
+          ],
+          [
+            '2',
+            'MLZ-02',
+            'Örnek Malzeme 2',
+            'Özellik ve Teknik Detay',
+            'Metre',
+            '20',
+            '50',
+            '120.00',
+            'Piyasa Araştırması'
+          ]
+        ],
+        tek: [
+          {
+            firma: 'A Firması Ltd. Şti.',
+            firmaNo: '1001',
+            vergiNo: '1234567890',
+            durum: 'Kabul Edildi',
+            tutar: '11000',
+            kalemler: ['500', '120']
+          },
+          {
+            firma: 'B Firması A.Ş.',
+            firmaNo: '1002',
+            vergiNo: '9876543210',
+            durum: 'Teklif Geldi',
+            tutar: '12500',
+            kalemler: ['550', '140']
+          }
+        ],
+        yak: [
+          ['1', 'Komisyon Başkanı', 'Ahmet YILMAZ', 'Müdür'],
+          ['2', 'Üye', 'Mehmet DEMİR', 'Mühendis'],
+          ['3', 'Üye', 'Ali KAYA', 'Teknisyen']
+        ],
+        muay: [
+          ['1', 'Başkan', 'Ahmet YILMAZ', 'Müdür'],
+          ['2', 'Üye', 'Can ERTÜRK', 'Memur'],
+          ['3', 'Üye', 'Hasan YILDIZ', 'Teknisyen']
+        ]
+      }
+    ]
+  }
+
+  const jsonStr = JSON.stringify(sampleExport, null, 2)
+  const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'dogrudan-temin-ornek-sablon.json'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}

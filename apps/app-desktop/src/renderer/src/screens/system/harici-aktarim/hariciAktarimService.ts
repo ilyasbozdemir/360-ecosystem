@@ -1,10 +1,16 @@
+import { validateDogrudanTeminPayload } from './hariciAktarimSchema'
 import {
   DogrudanTeminDosyasi,
+  DosyaBilgileri,
   ExistingDossierSummary,
+  KazananFirma,
+  KomisyonUyesi,
+  MalzemeKalemi,
+  ParsedJsonResult,
   SyncOptions,
-  SyncResult
+  SyncResult,
+  TeklifKaydi
 } from './types'
-import { validateDogrudanTeminPayload } from './hariciAktarimSchema'
 
 export function normalizeTur(alimTuru?: string): string {
   if (!alimTuru) return 'mal'
@@ -15,11 +21,243 @@ export function normalizeTur(alimTuru?: string): string {
   return 'mal'
 }
 
-export function parseDogrudanTeminJson(rawJson: string): {
-  success: boolean
-  data?: DogrudanTeminDosyasi
-  error?: string
-} {
+export function normalizeSingleDossier(raw: any, index = 0): DogrudanTeminDosyasi | null {
+  if (!raw || typeof raw !== 'object') return null
+
+  // 1. Raw 'f' (Dosya Alanları) -> dosyaBilgileri
+  const f = raw.f || {}
+  const db = raw.dosyaBilgileri || {}
+
+  const getVal = (...keys: string[]): string => {
+    for (const k of keys) {
+      if (f[k] !== undefined && f[k] !== null && String(f[k]).trim() !== '') {
+        return String(f[k]).trim()
+      }
+      if (db[k] !== undefined && db[k] !== null && String(db[k]).trim() !== '') {
+        return String(db[k]).trim()
+      }
+    }
+    return ''
+  }
+
+  const isinAdi =
+    getVal(
+      'İşin Adı / Tanımı',
+      'isinAdi',
+      'isin_adi',
+      'işin adı',
+      'İşin Adı',
+      'Açıklama',
+      'aciklama'
+    ) || undefined
+
+  const dosyaNo =
+    getVal('Dosya No', 'dosyaNo', 'dosya_no') ||
+    getVal('Doğrudan Temin Numarası', 'dogrudanTeminNumarasi') ||
+    (raw.id ? String(raw.id) : undefined)
+
+  const dosyaBilgileri: DosyaBilgileri = {
+    dosyaNo,
+    isinAdi,
+    dosyaAcilisTarihi:
+      getVal('Dosya Açılış Tarihi', 'dosyaAcilisTarihi', 'dosya_acilis_tarihi') || undefined,
+    butceYili: getVal('Bütçe Yılı', 'butceYili', 'butce_yili') || String(new Date().getFullYear()),
+    butce: getVal('Bütçe', 'butce') || 'Genel Bütçe',
+    dogrudanTeminNumarasi: getVal('Doğrudan Temin Numarası', 'dogrudanTeminNumarasi') || dosyaNo,
+    ihaleTarihi: getVal('İhale Tarihi', 'ihaleTarihi') || undefined,
+    ihaleAsamasi: getVal('İhale Aşaması', 'ihaleAsamasi') || 'Teklif Toplama',
+    aciklama: getVal('Açıklama', 'aciklama') || undefined,
+    ihalesiYapilacakBirim: getVal('İhalesi Yapılacak Birim', 'ihalesiYapilacakBirim') || undefined,
+    sunulacakMakam: getVal('Sunulacak Makam', 'sunulacakMakam') || undefined,
+    ihtiyacYeri: getVal('İhtiyaç Yeri', 'ihtiyacYeri') || undefined,
+    talepTarihSayisi: getVal('Talep Tarih/Sayısı', 'talepTarihSayisi') || undefined,
+    kurumsalKod: getVal('Kurumsal Kod', 'kurumsalKod') || undefined,
+    fonksiyonelKod: getVal('Fonksiyonel Kod', 'fonksiyonelKod') || undefined,
+    finansalKod: getVal('Finansal Kod', 'finansalKod') || undefined,
+    ihaleTipi: getVal('İhale Tipi', 'ihaleTipi') || 'Doğrudan Temin',
+    alimTuru: getVal('Alım Türü', 'alimTuru') || 'Mal Alımı',
+    madde: getVal('Madde', 'madde') || '22/d*',
+    teklifSozlesmeTuru: getVal('Teklif ve Sözleşme Türü', 'teklifSozlesmeTuru') || 'Birim Fiyat',
+    altYuklenici: getVal('Alt yüklenici olacak mı', 'altYuklenici') || 'Hayır',
+    kismiTeklif: getVal('Kısmi teklif verilecek mi', 'kismiTeklif') || 'Hayır',
+    fiyatFarkiDayanagi: getVal('Fiyat Farkı Dayanağı', 'fiyatFarkiDayanagi') || undefined,
+    yatirimProjeNo: getVal('Yatırım Proje Numarası', 'yatirimProjeNo') || undefined,
+    avans: getVal('Avans Verilecek mi', 'avans') || 'Hayır',
+    yaklasikMaliyetDurumu:
+      getVal('Yaklaşık Maliyet', 'yaklasikMaliyetDurumu') || 'Burada Hesaplanacak',
+    kdv: getVal('KDV', 'kdv') || 'Hariç',
+    hesaplamaEsasi: getVal('Hesaplama Esası', 'hesaplamaEsasi') || 'En düşük fiyat esasına göre',
+    hesaplamada:
+      getVal('Hesaplamada', 'hesaplamada') || 'Sadece araştırma fiyatları dikkate alınacak',
+    tibbiCihaz: getVal('Tıbbi Cihaz Alımı mı', 'tibbiCihaz') || 'Hayır',
+    irtibatYetkilisi: getVal('İrtibat Yetkilisi', 'irtibatYetkilisi') || undefined,
+    sonTeklifVermeTarihSaati:
+      getVal('Son Teklif Verme Tarih/Saati', 'sonTeklifVermeTarihSaati') || undefined,
+    tahminiBitisTarihi: getVal('Tahmini Bitiş Tarihi', 'tahminiBitisTarihi') || undefined
+  }
+
+  // 2. Malzemeler ('mat' veya 'malzemeler')
+  const malzemeler: MalzemeKalemi[] = []
+  if (Array.isArray(raw.mat) && raw.mat.length > 0) {
+    raw.mat.forEach((row: any, idx: number) => {
+      if (!Array.isArray(row)) return
+      const ad = String(row[2] || row[4] || row[3] || '').trim()
+      if (!ad) return
+      const miktarNum = parseFloat(String(row[6]).replace(',', '.')) || 1
+      const birimFiyatNum = parseFloat(String(row[7]).replace(',', '.')) || 0
+      malzemeler.push({
+        siraNo: parseInt(String(row[0]), 10) || idx + 1,
+        malzemeKodu: row[1] ? String(row[1]).trim() : undefined,
+        malzemeAdi: ad,
+        ozelligi: row[3] ? String(row[3]).trim() : undefined,
+        birimi: row[4] ? String(row[4]).trim() : 'Adet',
+        kdvOrani: row[5] !== undefined ? String(row[5]).trim() : '20',
+        miktar: miktarNum,
+        birimFiyat: birimFiyatNum,
+        toplamTutar: miktarNum * birimFiyatNum,
+        fiyatKaynagi: row[8] ? String(row[8]).trim() : undefined,
+        tasinirKodu: row[9] ? String(row[9]).trim() : undefined,
+        okasKodu: row[10] ? String(row[10]).trim() : undefined
+      })
+    })
+  } else if (Array.isArray(raw.malzemeler)) {
+    raw.malzemeler.forEach((m: any, idx: number) => {
+      if (!m || !m.malzemeAdi) return
+      malzemeler.push({
+        siraNo: m.siraNo || idx + 1,
+        malzemeKodu: m.malzemeKodu,
+        malzemeAdi: m.malzemeAdi,
+        ozelligi: m.ozelligi,
+        birimi: m.birimi || 'Adet',
+        kdvOrani: m.kdvOrani ?? '20',
+        miktar: parseFloat(m.miktar) || 1,
+        birimFiyat: parseFloat(m.birimFiyat) || 0,
+        toplamTutar:
+          parseFloat(m.toplamTutar) ||
+          (parseFloat(m.miktar) || 1) * (parseFloat(m.birimFiyat) || 0),
+        fiyatKaynagi: m.fiyatKaynagi,
+        tasinirKodu: m.tasinirKodu,
+        okasKodu: m.okasKodu
+      })
+    })
+  }
+
+  // 3. Teklifler ('tek' veya 'teklifler')
+  const teklifler: TeklifKaydi[] = []
+  const rawTeklifler = Array.isArray(raw.tek) && raw.tek.length > 0 ? raw.tek : raw.teklifler
+  if (Array.isArray(rawTeklifler)) {
+    rawTeklifler.forEach((t: any, idx: number) => {
+      if (!t || (!t.firma && !t.firmaUnvani)) return
+      const firmaAd = String(t.firma || t.firmaUnvani).trim()
+      let tutarNum = parseFloat(String(t.tutar || t.tutarKdvHaric || '').replace(',', '.')) || 0
+      if (!tutarNum && Array.isArray(t.kalemler)) {
+        tutarNum = t.kalemler.reduce(
+          (acc: number, v: any) => acc + (parseFloat(String(v).replace(',', '.')) || 0),
+          0
+        )
+      }
+      teklifler.push({
+        id: t.id ? String(t.id) : `tek_${idx + 1}`,
+        siraNo: t.siraNo || idx + 1,
+        firma: firmaAd,
+        firmaNo: t.firmaNo ? String(t.firmaNo) : undefined,
+        vergiNo: t.vergiNo ? String(t.vergiNo) : undefined,
+        iletisim: t.iletisim ? String(t.iletisim) : undefined,
+        yer: t.yer ? String(t.yer) : undefined,
+        yetkili: t.yetkili ? String(t.yetkili) : undefined,
+        istekTarihi: t.istekTarihi || undefined,
+        istekSekli: t.sekil || t.istekSekli || 'E-posta',
+        durum: t.durum || 'Teklif Geldi',
+        teklifTarihi: t.teklifTarihi || undefined,
+        tutarKdvHaric: tutarNum,
+        kdvOrani: t.kdv ?? '20',
+        gecerlilikGun: t.gecerlilik,
+        not: t.not,
+        kalemFiyatlari: Array.isArray(t.kalemler) ? t.kalemler : t.kalemFiyatlari
+      })
+    })
+  }
+
+  // 4. Komisyonlar ('yak', 'muay' veya 'komisyonlar')
+  const yaklasikMaliyet: KomisyonUyesi[] = []
+  const muayeneKabul: KomisyonUyesi[] = []
+
+  if (Array.isArray(raw.yak)) {
+    raw.yak.forEach((row: any, idx: number) => {
+      if (!Array.isArray(row)) return
+      const ad = String(row[2] || '').trim()
+      if (!ad || ad.toLowerCase() === 'seçiniz' || ad.toLowerCase() === 'seciniz') return
+      yaklasikMaliyet.push({
+        siraNo: parseInt(String(row[0]), 10) || idx + 1,
+        gorevi: row[1] ? String(row[1]).trim() : 'Üye',
+        adiSoyadi: ad,
+        unvani: row[3] ? String(row[3]).trim() : undefined
+      })
+    })
+  } else if (raw.komisyonlar?.yaklasikMaliyet) {
+    yaklasikMaliyet.push(...raw.komisyonlar.yaklasikMaliyet)
+  }
+
+  if (Array.isArray(raw.muay)) {
+    raw.muay.forEach((row: any, idx: number) => {
+      if (!Array.isArray(row)) return
+      const ad = String(row[2] || '').trim()
+      if (!ad || ad.toLowerCase() === 'seçiniz' || ad.toLowerCase() === 'seciniz') return
+      muayeneKabul.push({
+        siraNo: parseInt(String(row[0]), 10) || idx + 1,
+        gorevi: row[1] ? String(row[1]).trim() : 'Üye',
+        adiSoyadi: ad,
+        unvani: row[3] ? String(row[3]).trim() : undefined
+      })
+    })
+  } else if (raw.komisyonlar?.muayeneKabul) {
+    muayeneKabul.push(...raw.komisyonlar.muayeneKabul)
+  }
+
+  // 5. Kazanan firmalar ('win' veya 'kazananFirmalar')
+  const kazananFirmalar: KazananFirma[] = []
+  if (Array.isArray(raw.win)) {
+    raw.win.forEach((w: any) => {
+      if (!Array.isArray(w)) return
+      const unvan = String(w[1] || '').trim()
+      if (!unvan) return
+      kazananFirmalar.push({
+        firmaNo: w[0] ? String(w[0]) : undefined,
+        firmaUnvani: unvan,
+        iletisim: w[2] ? String(w[2]) : undefined,
+        semtSehir: w[3] ? String(w[3]) : undefined
+      })
+    })
+  } else if (Array.isArray(raw.kazananFirmalar)) {
+    kazananFirmalar.push(...raw.kazananFirmalar)
+  }
+
+  return {
+    id: raw.id ? String(raw.id) : dosyaNo ? `dt_${dosyaNo.replace(/[^a-zA-Z0-9_-]/g, '_')}` : `dt_${index + 1}`,
+    versiyon: raw.versiyon || '1.0',
+    aktarimTarihi: raw.aktarimTarihi || new Date().toISOString(),
+    dosyaBilgileri,
+    malzemeler,
+    teklifler,
+    komisyonlar: {
+      yaklasikMaliyet,
+      muayeneKabul
+    },
+    kazananFirmalar,
+    f: raw.f,
+    mat: raw.mat,
+    tek: raw.tek,
+    win: raw.win,
+    con: raw.con,
+    yak: raw.yak,
+    muay: raw.muay,
+    kab: raw.kab,
+    ek: raw.ek,
+    sablon: raw.sablon
+  }
+}
+
+export function parseDogrudanTeminJson(rawJson: string): ParsedJsonResult {
   try {
     if (!rawJson || !rawJson.trim()) {
       return { success: false, error: 'JSON içeriği boş olamaz.' }
@@ -27,24 +265,61 @@ export function parseDogrudanTeminJson(rawJson: string): {
     const parsed = JSON.parse(rawJson)
 
     if (!parsed || typeof parsed !== 'object') {
-      return { success: false, error: 'Geçersiz JSON formatı: Obje bekleniyor.' }
+      return { success: false, error: 'Geçersiz JSON formatı: Obje veya Dizi bekleniyor.' }
     }
 
-    if (!parsed.dosyaBilgileri) {
-      return { success: false, error: 'JSON içinde "dosyaBilgileri" anahtarı bulunamadı.' }
+    // Çoğul dosya tespiti: { files: [...] } veya [...]
+    let rawList: any[] = []
+    let isMulti = false
+
+    if (Array.isArray(parsed)) {
+      rawList = parsed
+      isMulti = true
+    } else if (Array.isArray(parsed.files)) {
+      rawList = parsed.files
+      isMulti = true
+    } else {
+      rawList = [parsed]
+      isMulti = false
     }
 
-    const validation = validateDogrudanTeminPayload(parsed)
-    if (!validation.success) {
+    if (rawList.length === 0) {
+      return { success: false, error: 'JSON içinde aktarılacak dosya kaydı bulunamadı.' }
+    }
+
+    const normalizedList: DogrudanTeminDosyasi[] = []
+    for (let i = 0; i < rawList.length; i++) {
+      const item = rawList[i]
+      if (!item.f && !item.dosyaBilgileri && !item.isinAdi && !item.mat && !item.dosyaNo) {
+        continue
+      }
+      const norm = normalizeSingleDossier(item, i)
+      if (norm) {
+        const validation = validateDogrudanTeminPayload(norm)
+        if (!validation.success) {
+          return {
+            success: false,
+            error: `Şema doğrulama hatası:\n• ${validation.errors?.join('\n• ')}`
+          }
+        }
+        normalizedList.push(norm)
+      }
+    }
+
+    if (normalizedList.length === 0) {
       return {
         success: false,
-        error: `Şema doğrulama hatası:\n• ${validation.errors?.join('\n• ')}`
+        error:
+          'JSON içinde geçerli doğrudan temin verisi ("f" veya "dosyaBilgileri" anahtarı) bulunamadı.'
       }
     }
 
     return {
       success: true,
-      data: validation.data as DogrudanTeminDosyasi
+      isMulti: normalizedList.length > 1 || isMulti,
+      totalCount: normalizedList.length,
+      files: normalizedList,
+      data: normalizedList[0]
     }
   } catch (err: unknown) {
     return {

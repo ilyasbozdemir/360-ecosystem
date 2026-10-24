@@ -3,14 +3,14 @@
  */
 
 export interface DosyaBilgileri {
-  dosyaNo: string
+  dosyaNo?: string
   dosyaAcilisTarihi?: string // YYYY-MM-DD
   butceYili?: string // Örn: "2025"
   butce?: 'Genel Bütçe' | 'Döner Sermaye' | 'Diğer' | string
   dogrudanTeminNumarasi?: string
   ihaleTarihi?: string
   ihaleAsamasi?: string
-  isinAdi: string
+  isinAdi?: string
   aciklama?: string
   ihalesiYapilacakBirim?: string
   sunulacakMakam?: string
@@ -149,6 +149,24 @@ export interface DogrudanTeminDosyasi {
   sablon?: SablonBilgileri
   f?: Record<string, string>
   mat?: string[][]
+  tek?: unknown[]
+  win?: unknown[]
+  con?: unknown[]
+  yak?: unknown[]
+  muay?: unknown[]
+  kab?: unknown[]
+  ek?: unknown[]
+  kfirma?: string[]
+  kfirmaBilgi?: Record<string, unknown>
+}
+
+export interface ParsedJsonResult {
+  success: boolean
+  error?: string
+  isMulti?: boolean
+  totalCount?: number
+  files?: DogrudanTeminDosyasi[]
+  data?: DogrudanTeminDosyasi
 }
 
 export interface ExistingDossierSummary {

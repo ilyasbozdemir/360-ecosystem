@@ -5,6 +5,7 @@ import {
   ArrowRight,
   Building2,
   CheckCircle2,
+  Download,
   FileCheck2,
   FileCode2,
   FolderOpen,
@@ -27,7 +28,7 @@ import {
   SyncOptions,
   SyncResult,
 } from "./types";
-import { SAMPLE_DOGRUDA_TEMIN_JSON } from "./sampleData";
+import { downloadSampleJsonTemplate, SAMPLE_DOGRUDA_TEMIN_JSON } from "./sampleData";
 import { APP_ROUTES } from "../../../constants/routeConstants";
 
 type ActiveTab = "genel" | "malzemeler" | "teklifler" | "komisyonlar";
@@ -37,6 +38,7 @@ export default function HariciDosyaAktarScreen(): React.JSX.Element {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [rawJson, setRawJson] = useState("");
+  const [activeFileIndex, setActiveFileIndex] = useState(0);
   const [existingDossiers, setExistingDossiers] = useState<
     ExistingDossierSummary[]
   >([]);
@@ -75,7 +77,10 @@ export default function HariciDosyaAktarScreen(): React.JSX.Element {
     return parseDogrudanTeminJson(rawJson);
   }, [rawJson]);
 
-  const parsedData: DogrudanTeminDosyasi | null = parseResult?.data || null;
+  const parsedData: DogrudanTeminDosyasi | null =
+    (parseResult?.files && parseResult.files[activeFileIndex]) ||
+    parseResult?.data ||
+    null;
 
   // Eşleşen dosyayı otomatik tespit et
   const autoMatch = useMemo(() => {
@@ -98,6 +103,7 @@ export default function HariciDosyaAktarScreen(): React.JSX.Element {
     reader.onload = (event): void => {
       const text = event.target?.result as string;
       setRawJson(text || "");
+      setActiveFileIndex(0);
       setSyncResult(null);
       setErrorMsg(null);
     };
@@ -106,6 +112,7 @@ export default function HariciDosyaAktarScreen(): React.JSX.Element {
 
   const handleFillSample = (): void => {
     setRawJson(SAMPLE_DOGRUDA_TEMIN_JSON);
+    setActiveFileIndex(0);
     setSyncResult(null);
     setErrorMsg(null);
     setSelectedTargetId(null);
@@ -168,6 +175,15 @@ export default function HariciDosyaAktarScreen(): React.JSX.Element {
 
         <div className="flex items-center gap-2">
           <button
+            onClick={downloadSampleJsonTemplate}
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 flex items-center gap-1.5 transition-all shadow-xs"
+            title="Standart Doğrudan Temin JSON Şablonunu İndir"
+          >
+            <Download size={14} />
+            Örnek JSON İndir
+          </button>
+
+          <button
             onClick={handleFillSample}
             className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 flex items-center gap-1.5 transition-all"
           >
@@ -202,7 +218,12 @@ export default function HariciDosyaAktarScreen(): React.JSX.Element {
             </label>
             {rawJson && (
               <button
-                onClick={() => setRawJson("")}
+                onClick={() => {
+                  setRawJson("");
+                  setActiveFileIndex(0);
+                  setSyncResult(null);
+                  setErrorMsg(null);
+                }}
                 className="text-xs text-rose-500 hover:underline"
               >
                 Temizle
@@ -214,17 +235,58 @@ export default function HariciDosyaAktarScreen(): React.JSX.Element {
             value={rawJson}
             onChange={(e) => {
               setRawJson(e.target.value);
+              setActiveFileIndex(0);
               setSyncResult(null);
               setErrorMsg(null);
             }}
-            placeholder='{\n  "id": "dt_2025_2_183260",\n  "dosyaBilgileri": {\n    "dosyaNo": "2025/2",\n    "isinAdi": "Su Sayacı Alımı"\n  }\n}'
+            placeholder='{\n  "files": [\n    {\n      "f": {\n        "Dosya No": "183259",\n        "İşin Adı / Tanımı": "Lisans Sözleşmesi"\n      }\n    }\n  ]\n}'
             className="w-full h-96 p-3.5 font-mono text-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-none shadow-xs"
           />
+
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+            💡 <strong>Tekil veya Toplu Dosya Desteği:</strong> Hem tek dosya formatı (<code>f</code>, <code>mat</code>, <code>tek</code> veya <code>dosyaBilgileri</code>), hem de toplu dosya formatı (<code>files: [...]</code> veya <code>[...]</code>) otomatik tanınır.
+          </p>
 
           {parseResult?.error && (
             <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/50 flex items-start gap-2.5 text-xs text-rose-700 dark:text-rose-400">
               <AlertCircle size={16} className="shrink-0 mt-0.5" />
               <span>{parseResult.error}</span>
+            </div>
+          )}
+
+          {/* Çoğul Dosya Seçici */}
+          {parseResult?.files && parseResult.files.length > 1 && (
+            <div className="p-3.5 rounded-xl bg-blue-50/90 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 flex flex-col gap-2.5 shadow-xs">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-bold text-blue-900 dark:text-blue-200 flex items-center gap-1.5">
+                  <Package size={16} className="text-blue-600 dark:text-blue-400 shrink-0" />
+                  Toplu JSON: {parseResult.files.length} Doğrudan Temin Dosyası Bulundu
+                </span>
+                <span className="text-[11px] text-blue-700 dark:text-blue-300 font-bold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/60 border border-blue-200 dark:border-blue-800">
+                  Dosya {activeFileIndex + 1} / {parseResult.files.length}
+                </span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                  İşlem Yapılacak Dosyayı Seçin:
+                </label>
+                <select
+                  value={activeFileIndex}
+                  onChange={(e) => {
+                    setActiveFileIndex(Number(e.target.value));
+                    setSelectedTargetId(null);
+                    setSyncResult(null);
+                    setErrorMsg(null);
+                  }}
+                  className="w-full text-xs font-semibold px-2.5 py-2 rounded-lg border border-blue-300 dark:border-blue-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs"
+                >
+                  {parseResult.files.map((file, idx) => (
+                    <option key={idx} value={idx}>
+                      #{idx + 1} — No: {file.dosyaBilgileri.dosyaNo || 'Yok'} | {file.dosyaBilgileri.isinAdi} ({file.dosyaBilgileri.butceYili || '-'})
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           )}
 
