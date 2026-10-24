@@ -339,6 +339,19 @@ export function registerDocumentIpcHandlers(): void {
             ).run(payload.dosyaId, ...otherKeys)
           }
 
+          // Atomik Senkronizasyon: Belgedeki sunulacak makam adını dosya genel kaydıyla senkronize et
+          try {
+            const parsed = typeof payload.data === 'string' ? JSON.parse(payload.data) : payload.data
+            const makam = (parsed as any)?.sunulacakMakamAdi || (parsed as any)?.sunulacakMakam
+            if (typeof makam === 'string' && makam.trim() !== '') {
+              db.prepare(
+                `UPDATE DATA_TeminDosyasi SET sunulacak_makam = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
+              ).run(makam.trim(), payload.dosyaId)
+            }
+          } catch (syncErr) {
+            console.warn('[belge:save-document] DATA_TeminDosyasi sync warning:', syncErr)
+          }
+
           const savedRow = db
             .prepare(
               `SELECT id, updated_at FROM DATA_DosyaSablonVeri WHERE temin_dosya_id = ? AND sablon_kodu = ?`
@@ -379,28 +392,46 @@ export function registerDocumentIpcHandlers(): void {
         const cleanKey = String(payload.templateKey)
           .replace(/\.html$/i, '')
           .trim()
+        const canonicalKey = resolveTemplateKey(cleanKey) || cleanKey
+        const hyphenKey = canonicalKey.replace(/_/g, '-')
+        const underscoreKey = canonicalKey.replace(/-/g, '_')
+        const candidateKeys = Array.from(
+          new Set([
+            cleanKey,
+            canonicalKey,
+            hyphenKey,
+            underscoreKey,
+            `${cleanKey}.html`,
+            `${canonicalKey}.html`,
+            `${hyphenKey}.html`,
+            `${underscoreKey}.html`
+          ])
+        )
 
         const resetTx = db.transaction(() => {
+          const placeholders = candidateKeys.map(() => '?').join(', ')
           const existing = db
             .prepare(
-              `SELECT id, veri_json FROM DATA_DosyaSablonVeri WHERE temin_dosya_id = ? AND sablon_kodu = ?`
+              `SELECT id, veri_json FROM DATA_DosyaSablonVeri 
+               WHERE temin_dosya_id = ? AND sablon_kodu IN (${placeholders})
+               ORDER BY updated_at DESC, id DESC LIMIT 1`
             )
-            .get(payload.dosyaId, cleanKey) as { id: number; veri_json: string } | undefined
+            .get(payload.dosyaId, ...candidateKeys) as { id: number; veri_json: string } | undefined
 
           if (existing?.veri_json) {
             try {
               db.prepare(
                 `INSERT INTO DATA_DosyaRevizyon (temin_dosya_id, modul_adi, surec_kodu, belge_kodu, versiyon, baslik, veri_json)
                  VALUES (?, 'BELGE_YONETIMI', 'USER_RESET', ?, 'v_reset', 'Varsayılana Dönüş Öncesi Kullanıcı Verisi', ?)`
-              ).run(payload.dosyaId, cleanKey, existing.veri_json)
-            } catch {
-              /* ignore archive error */
+              ).run(payload.dosyaId, canonicalKey, existing.veri_json)
+            } catch (revErr) {
+              console.warn('[belge:reset-document] DATA_DosyaRevizyon archive warning:', revErr)
             }
           }
 
           db.prepare(
-            `DELETE FROM DATA_DosyaSablonVeri WHERE temin_dosya_id = ? AND (sablon_kodu = ? OR sablon_kodu = ?)`
-          ).run(payload.dosyaId, cleanKey, `${cleanKey}.html`)
+            `DELETE FROM DATA_DosyaSablonVeri WHERE temin_dosya_id = ? AND sablon_kodu IN (${placeholders})`
+          ).run(payload.dosyaId, ...candidateKeys)
         })
 
         resetTx()

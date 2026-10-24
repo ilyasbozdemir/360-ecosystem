@@ -1,115 +1,545 @@
 /* eslint-disable */
 import Database from 'better-sqlite3'
-import { TANIM_Mevzuat } from './tables/TANIM_Mevzuat'
+
+// ============================================================================
+// 1. KURUM, TEŞKİLAT VE PERSONEL TANIMLARI
+// ============================================================================
+import { TANIM_Kurum } from './tables/TANIM_Kurum'
+import { TANIM_Birim } from './tables/TANIM_Birim'
 import { TANIM_Personel } from './tables/TANIM_Personel'
 import { TANIM_PersonelUnvanGecmisi } from './tables/TANIM_PersonelUnvanGecmisi'
 import { TANIM_Roller } from './tables/TANIM_Roller'
-import { TANIM_Birim } from './tables/TANIM_Birim'
-import { TANIM_Kurum } from './tables/TANIM_Kurum'
+
+// ============================================================================
+// 2. MEVZUAT, SÜREÇ AŞAMALARI VE LİMİTLER
+// ============================================================================
+import { TANIM_Mevzuat } from './tables/TANIM_Mevzuat'
 import { TANIM_Asama } from './tables/TANIM_Asama'
-import { DATA_TeminDosyasi } from './tables/DATA_TeminDosyasi'
+import { TANIM_AlimTuru } from './tables/TANIM_AlimTuru'
+import { TANIM_KikLimitDonemleri } from './tables/TANIM_KikLimitDonemleri'
+import { TANIM_SurecTaslak } from './tables/TANIM_SurecTaslak'
+
+// ============================================================================
+// 3. FİRMA VE TEDARİKÇİ YÖNETİMİ
+// ============================================================================
 import { TANIM_Firma } from './tables/TANIM_Firma'
 import { TANIM_FirmaIletisimNotu } from './tables/TANIM_FirmaIletisimNotu'
-import { TANIM_Ambar } from './tables/TANIM_Ambar'
-import { TANIM_AlimTuru } from './tables/TANIM_AlimTuru'
-import { TANIM_Sablon } from './tables/TANIM_Sablon'
-import { TANIM_Placeholder } from './tables/TANIM_Placeholder'
-import { TANIM_AlimTuru_Sablon } from './tables/TANIM_AlimTuru_Sablon'
-import { TANIM_SurecTaslak } from './tables/TANIM_SurecTaslak'
-import { SABLON_Placeholder } from './tables/SABLON_Placeholder'
+
+// ============================================================================
+// 4. MALZEME, POZ, TAŞINIR VE BÜTÇE KODLARI
+// ============================================================================
 import { TANIM_Kalem } from './tables/TANIM_Kalem'
 import { TANIM_Poz } from './tables/TANIM_Poz'
+import { TANIM_OlcuBirimi } from './tables/TANIM_OlcuBirimi'
+import { TANIM_BirimDonusum } from './tables/TANIM_BirimDonusum'
 import { TANIM_TasinirKod } from './tables/TANIM_TasinirKod'
 import { TANIM_OkasKod } from './tables/TANIM_OkasKod'
 import { TANIM_ButceKod } from './tables/TANIM_ButceKod'
 import { TANIM_ButceOdenek } from './tables/TANIM_ButceOdenek'
 import { TANIM_KodSozlugu } from './tables/TANIM_KodSozlugu'
-import { TANIM_OlcuBirimi } from './tables/TANIM_OlcuBirimi'
-import { TANIM_BirimDonusum } from './tables/TANIM_BirimDonusum'
+import { TANIM_Proje } from './tables/TANIM_Proje'
+
+// ============================================================================
+// 5. KOMİSYON VE HEYET TANIMLARI
+// ============================================================================
 import { TANIM_KomisyonGorevi } from './tables/TANIM_KomisyonGorevi'
 import { TANIM_Komisyon } from './tables/TANIM_Komisyon'
 import { TANIM_KomisyonUye } from './tables/TANIM_KomisyonUye'
 import { TANIM_Komisyon_Sablon } from './tables/TANIM_Komisyon_Sablon'
-import { TANIM_KikLimitDonemleri } from './tables/TANIM_KikLimitDonemleri'
+
+// ============================================================================
+// 6. AMBAR VE DEPO YÖNETİMİ TANIMLARI
+// ============================================================================
+import { TANIM_Ambar } from './tables/TANIM_Ambar'
+
+// ============================================================================
+// 7. ŞABLON VE YER TUTUCU (PLACEHOLDER) TANIMLARI
+// ============================================================================
+import { TANIM_Sablon } from './tables/TANIM_Sablon'
+import { TANIM_Placeholder } from './tables/TANIM_Placeholder'
+import { TANIM_AlimTuru_Sablon } from './tables/TANIM_AlimTuru_Sablon'
+import { SABLON_Placeholder } from './tables/SABLON_Placeholder'
+
+// ============================================================================
+// 8. TEMİN DOSYASI VE İHALE SÜREÇ VERİLERİ (DATA_)
+// ============================================================================
+import { DATA_TeminDosyasi } from './tables/DATA_TeminDosyasi'
 import { DATA_TeminKalem } from './tables/DATA_TeminKalem'
 import { DATA_TeminFirma } from './tables/DATA_TeminFirma'
 import { DATA_TeminKalemTeklif } from './tables/DATA_TeminKalemTeklif'
 import { DATA_TeminKomisyon } from './tables/DATA_TeminKomisyon'
 import { DATA_TeminBelge } from './tables/DATA_TeminBelge'
+import { DATA_DosyaSablonVeri } from './tables/DATA_DosyaSablonVeri'
+import { DATA_DosyaRevizyon } from './tables/DATA_DosyaRevizyon'
+import { DATA_IhtiyacRaporu } from './tables/DATA_IhtiyacRaporu'
+import { DATA_IhtiyacRaporuKalem } from './tables/DATA_IhtiyacRaporuKalem'
+
+// ============================================================================
+// 9. TAŞINIR (TİF) VE AMBAR STOK HAREKETLERİ (DATA_)
+// ============================================================================
 import { DATA_TIF } from './tables/DATA_TIF'
 import { DATA_TIF_Kalem } from './tables/DATA_TIF_Kalem'
 import { DATA_AmbarStok } from './tables/DATA_AmbarStok'
-import { TANIM_Proje } from './tables/TANIM_Proje'
 import { DATA_AmbarHareket } from './tables/DATA_AmbarHareket'
-import { DATA_DosyaSablonVeri } from './tables/DATA_DosyaSablonVeri'
-import { DATA_DosyaRevizyon } from './tables/DATA_DosyaRevizyon'
+
+// ============================================================================
+// 10. GÖREVLER, NOTLAR VE SERBEST KÜTÜPHANE VERİLERİ (DATA_)
+// ============================================================================
 import { DATA_NotVeGorev } from './tables/DATA_NotVeGorev'
-import { LOG_SystemLog } from './tables/LOG_SystemLog'
 import { DATA_KutuphaneGrup } from './tables/DATA_KutuphaneGrup'
 import { DATA_KutuphaneBelge } from './tables/DATA_KutuphaneBelge'
 import { DATA_KutuphaneBelgeSurum } from './tables/DATA_KutuphaneBelgeSurum'
 import { DATA_KutuphaneYerTutucu } from './tables/DATA_KutuphaneYerTutucu'
-import { DATA_IhtiyacRaporu } from './tables/DATA_IhtiyacRaporu'
-import { DATA_IhtiyacRaporuKalem } from './tables/DATA_IhtiyacRaporuKalem'
+
+// ============================================================================
+// 11. SİSTEM DENETİM VE GÜNLÜK KAYITLARI (LOG_)
+// ============================================================================
+import { LOG_SystemLog } from './tables/LOG_SystemLog'
+
 import { runMigrations, CURRENT_SCHEMA_VERSION } from './migrate'
 import { defineTable } from './BaseTable'
 
+/**
+ * Sistemde kayıtlı tüm veritabanı tablo tanımları listesi.
+ * Kurumsal tanımlar (`TANIM_*`), süreç verileri (`DATA_*`) ve denetim loglarını (`LOG_*`) kapsar.
+ * Her tanım SQLite DDL oluşturucu (`defineTable`) tarafından işlenir.
+ */
 const rawTables = [
+  // =========================================================================
+  // 1. KURUM, TEŞKİLAT VE PERSONEL TANIMLARI
+  // =========================================================================
+
+  /**
+   * **TANIM_Kurum**: İdari Kurum Kimlik Bilgileri
+   * - **İş İhtiyacı:** Resmi yazışma antetleri, vergi no/dairesi, harcama ve muhasebe birimi kodları ile kurum logosunu saklar.
+   * - **Kritik Sütunlar:** `id` (PK), `kurum_adi`, `vergi_no`, `harcama_birimi_kodu`, `muhasebe_birimi_kodu`, `antet_satir_1`, `antet_satir_2`, `aktif_mi`.
+   * - **İlişkiler:** Evrak üretiminde `settings.activeKurumId` üzerinden tekil aktif idare olarak referans alınır.
+   */
   TANIM_Kurum,
+
+  /**
+   * **TANIM_Mevzuat**: Kamu İhale Mevzuatı Parametreleri
+   * - **İş İhtiyacı:** 4734, 4735, 5018 ve 2886 sayılı kanunların maddeleri, açıklamaları ve geçerlilik kurallarını tutar.
+   * - **Kritik Sütunlar:** `id` (PK), `kanun_adi`, `madde_no`, `baslik`, `icerik`, `parametreler_json`, `aktif_mi`.
+   */
   TANIM_Mevzuat,
+
+  /**
+   * **TANIM_Birim**: Kurum Harcama ve Talep Birimleri
+   * - **İş İhtiyacı:** Müdürlükler, şube müdürlükleri ve alt servisleri tanımlar.
+   * - **Kritik Sütunlar:** `id` (PK), `ad`, `kod`, `muhasebe_birimi_kodu`, `harcama_birimi_kodu`, `aktif_mi`.
+   * - **İlişkiler:** `DATA_TeminDosyasi.birim_id` ve `DATA_IhtiyacRaporu.talep_eden_birim_id` buraya bağlanır.
+   */
   TANIM_Birim,
+
+  /**
+   * **TANIM_Personel**: Kurum Personel Sicil Havuzu
+   * - **İş İhtiyacı:** İhale yetkilisi, gerçekleştirme görevlisi, komisyon üyeleri ve muayene kabul raportörlerini tanımlar.
+   * - **Kritik Sütunlar:** `id` (PK), `ad_soyad`, `unvan`, `tc_kimlik`, `telefon`, `eposta`, `aktif_mi`.
+   * - **İlişkiler:** `TANIM_Roller`, `TANIM_KomisyonUye` ve `DATA_TeminKomisyon` tablolarının birincil personel kaynağıdır.
+   */
   TANIM_Personel,
+
+  /**
+   * **TANIM_PersonelUnvanGecmisi**: Personel Kadro ve Unvan Geçmişi
+   * - **İş İhtiyacı:** Personelin terfi veya unvan değişikliklerini tarihsel olarak izler; geçmiş tarihli belgelerde o tarihteki unvanın korunmasını sağlar.
+   * - **Kritik Sütunlar:** `id` (PK), `personel_id` (FK), `unvan`, `baslangic_tarihi`, `bitis_tarihi`, `aktif_mi`.
+   * - **İlişkiler:** `personel_id` -> `TANIM_Personel(id)` ON DELETE CASCADE.
+   */
   TANIM_PersonelUnvanGecmisi,
+
+  /**
+   * **TANIM_Roller**: Süreç ve İmza Rolleri Eşleştirme
+   * - **İş İhtiyacı:** İhale/temin süreçlerindeki standart rollerin (Harcama Yetkilisi, Gerçekleştirme Görevlisi, vb.) varsayılan personelle eşleştirilmesini sağlar.
+   * - **Kritik Sütunlar:** `id` (PK), `rol_kodu` (UNIQUE), `rol_adi`, `varsayilan_personel_id` (FK), `sira`.
+   * - **İlişkiler:** `varsayilan_personel_id` -> `TANIM_Personel(id)`.
+   */
   TANIM_Roller,
+
+  // =========================================================================
+  // 2. SÜREÇ AŞAMALARI, ALIM TÜRLERİ VE LİMİTLER
+  // =========================================================================
+
+  /**
+   * **TANIM_Asama**: İş Akışı Süreç Aşamaları (Status)
+   * - **İş İhtiyacı:** Bir dosyanın baştan sona ilerlediği standart aşamaları (Hazırlık, Piyasa Fiyat Araştırması, Onay, Sipariş/Sözleşme, Muayene/Ödeme) tanımlar.
+   * - **Kritik Sütunlar:** `id` (PK), `kod` (UNIQUE, örn: 'HAZIRLIK'), `ad`, `sira`, `zorunlu_mu`, `aktif_mi`.
+   * - **İlişkiler:** `DATA_TeminDosyasi.asama` ile eşleşir.
+   */
   TANIM_Asama,
+
+  /**
+   * **TANIM_Firma**: İstekli ve Tedarikçi Firma Havuzu
+   * - **İş İhtiyacı:** Teklif veren, ihalelere katılan ve sözleşme yapılan tedarikçi firmaların yasal ve iletişim kayıtlarını saklar.
+   * - **Kritik Sütunlar:** `id` (PK), `unvan`, `vergi_no` (indeksli), `vergi_dairesi`, `adres`, `telefon`, `eposta`, `iban`, `kara_listede_mi`.
+   * - **İlişkiler:** `DATA_TeminFirma.firma_id` üzerinden dosyalara bağlanır.
+   */
   TANIM_Firma,
+
+  /**
+   * **TANIM_FirmaIletisimNotu**: Firma Görüşme ve Teklif İletişim Notları
+   * - **İş İhtiyacı:** Tedarikçi firmalarla yapılan telefon, e-posta ve yüz yüze görüşmelerin tarihsel kaydını tutar.
+   * - **Kritik Sütunlar:** `id` (PK), `firma_id` (FK), `tarih`, `gorusulen_kisi`, `konu`, `notlar`, `hatirlatici_tarihi`.
+   * - **İlişkiler:** `firma_id` -> `TANIM_Firma(id)`.
+   */
   TANIM_FirmaIletisimNotu,
+
+  /**
+   * **TANIM_Ambar**: Kurum Depo ve Ambarları
+   * - **İş İhtiyacı:** Malzeme giriş-çıkışının yapıldığı ana ambar, demirbaş deposu ve kırtasiye ambarlarını tanımlar.
+   * - **Kritik Sütunlar:** `id` (PK), `kod` (UNIQUE), `ad`, `birim_id` (FK), `sorumlu_personel_id` (FK), `aktif_mi`.
+   * - **İlişkiler:** `DATA_TIF` ve `DATA_AmbarStok` tabloları bu depolara referans verir.
+   */
   TANIM_Ambar,
+
+  /**
+   * **TANIM_Proje**: Yatırım ve Alım Projeleri
+   * - **İş İhtiyacı:** Birden fazla doğrudan temin veya ihale dosyasını üst bir yatırım/faaliyet projesi altında toplar.
+   * - **Kritik Sütunlar:** `id` (PK), `proje_no`, `proje_adi`, `baslangic_yili`, `bitis_yili`, `toplam_butce`, `durum`.
+   * - **İlişkiler:** `DATA_TeminDosyasi.project_id` bu tabloya bağlanır.
+   */
   TANIM_Proje,
+
+  // =========================================================================
+  // 3. KOD HİYERARŞİLERİ, BÜTÇE VE POZ KATALOĞU
+  // =========================================================================
+
+  /**
+   * **TANIM_TasinirKod**: Taşınır Kod Listesi Hiyerarşisi
+   * - **İş İhtiyacı:** Taşınır Mal Yönetmeliği'ne uygun 150, 253, 255 gibi detay hesap kodlarını (Düzey 1-5) barındırır.
+   * - **Kritik Sütunlar:** `id` (PK), `tam_kod` (UNIQUE, indeksli), `ad`, `hesap_kodu` (indeksli), `duzey`, `aktif_mi`.
+   * - **İlişkiler:** TİF fişi üretiminde (`DATA_TIF_Kalem.tasinir_kod_id`) zorunlu sınıflandırmadır.
+   */
   TANIM_TasinirKod,
+
+  /**
+   * **TANIM_OkasKod**: Ortak Kamu Alımları Sözlüğü (OKAS / CPV) Kodları
+   * - **İş İhtiyacı:** EKAP ve kamu alımları mevzuatına uygun 8 haneli CPV/OKAS kod sınıflandırmasını tutar.
+   * - **Kritik Sütunlar:** `id` (PK), `kod` (UNIQUE, indeksli), `tanim`, `kategori`.
+   */
   TANIM_OkasKod,
+
+  /**
+   * **TANIM_ButceKod**: Analitik Bütçe Ekonomik Kodları (1-4 Düzey)
+   * - **İş İhtiyacı:** Harcama tertiplerini ve analitik bütçe sınıflandırmasını (örn: 03.2.1.01 Kırtasiye) yönetir.
+   * - **Kritik Sütunlar:** `id` (PK), `kod` (UNIQUE), `ad`, `duzey`, `ust_kod`.
+   * - **İş Kuralı:** İhale onay belgesi ve harcama talimatında bütçe tertibini doğrular.
+   */
   TANIM_ButceKod,
+
+  /**
+   * **TANIM_ButceOdenek**: Birim Yıllık Bütçe Ödenek ve %10 Limit Takibi
+   * - **İş İhtiyacı:** Harcama birimlerinin bütçe tertiplerine ayrılan ödeneklerini ve 4734 Md. 22/d doğrudan temin %10 parasal limit tüketimini izler.
+   * - **Kritik Sütunlar:** `id` (PK), `birim_id` (FK), `butce_yili`, `ekonomik_kod`, `tahsis_edilen_odenek`, `bloke_edilen`, `harcanan`.
+   */
   TANIM_ButceOdenek,
+
+  /**
+   * **TANIM_Kalem**: Ortak Malzeme ve Hizmet Kataloğu
+   * - **İş İhtiyacı:** Sıkça satın alınan standart malzemeleri, varsayılan ölçü birimi ve taşınır kodlarıyla önceden tanımlar.
+   * - **Kritik Sütunlar:** `id` (PK), `ad`, `varsayilan_olcu_birimi_id` (FK), `tasinir_kod_id` (FK), `kategori`, `kdv_orani`.
+   */
   TANIM_Kalem,
+
+  /**
+   * **TANIM_Poz**: Resmi Birim Fiyat ve Poz Kataloğu (ÇŞB / Rayiçler)
+   * - **İş İhtiyacı:** Çevre ve Şehircilik Bakanlığı ile diğer idarelerin yapım/hizmet analiz pozlarını ve yıllık fiyatlarını tutar.
+   * - **Kritik Sütunlar:** `id` (PK), `poz_no` (UNIQUE), `tanimi`, `birimi`, `birim_fiyat`, `yil`, `kurum`, `analiz_json`.
+   * - **İş Kuralı:** Yaklaşık maliyet cetveli ve hakediş icmallerinde doğrudan poz no üzerinden hesaplama yapar.
+   */
   TANIM_Poz,
+
+  /**
+   * **TANIM_OlcuBirimi**: Standart Ölçü Birimleri Havuzu
+   * - **İş İhtiyacı:** Malzeme ve hizmet kalemlerinde geçerli metrik/ticari ölçü birimlerini (Adet, Kg, Metre, Litre vb.) tanımlar.
+   * - **Kritik Sütunlar:** `id` (PK), `kod` (UNIQUE), `ad`, `sembol`, `kategori`, `ondalik_basamak`.
+   */
   TANIM_OlcuBirimi,
+
+  /**
+   * **TANIM_BirimDonusum**: Ölçü Birimleri Arası Dönüşüm Katsayıları
+   * - **İş İhtiyacı:** Ölçü birimleri arasındaki doğrusal katsayı ve formüllü dönüşümleri yönetir (örn: 1 Ton = 1000 Kg).
+   * - **Kritik Sütunlar:** `id` (PK), `kaynak_birim_id` (FK), `hedef_birim_id` (FK), `katsayi`, `formul`.
+   * - **İlişkiler:** `kaynak_birim_id`, `hedef_birim_id` -> `TANIM_OlcuBirimi(id)`.
+   */
   TANIM_BirimDonusum,
+
+  // =========================================================================
+  // 4. ALIM TÜRLERİ, ŞABLON VE DİNAMİK YER TUTUCULAR
+  // =========================================================================
+
+  /**
+   * **TANIM_AlimTuru**: Alım Türleri (Mal / Hizmet / Yapım / Danışmanlık)
+   * - **İş İhtiyacı:** 4734 sayılı Kanun kapsamındaki 4 ana ihale türünü ve varsayılan yasal kesinti oranlarını belirler.
+   * - **Kritik Sütunlar:** `id` (PK), `kod` (UNIQUE: 'mal', 'hizmet', 'yapim_isi', 'danismanlik'), `ad`, `kdv_orani_varsayilan`, `damga_vergisi_orani`.
+   * - **İlişkiler:** `DATA_TeminDosyasi.tur` alanı ile doğrudan eşleşir; kullanılacak belge setini sınırlar.
+   */
   TANIM_AlimTuru,
+
+  /**
+   * **TANIM_Sablon**: Resmi Evrak Şablonları Kataloğu
+   * - **İş İhtiyacı:** Onay Belgesi, Piyasa Araştırması Tutanağı, Sözleşme gibi resmi şablon dosyalarının metaverilerini saklar.
+   * - **Kritik Sütunlar:** `id` (PK), `kod` (UNIQUE, örn: 'onay_belgesi'), `ad`, `kategori`, `dosya_adi`, `versiyon`, `aktif_mi`.
+   */
   TANIM_Sablon,
+
+  /**
+   * **TANIM_Placeholder**: Sistem Genelindeki Dinamik Değişkenler Sözlüğü
+   * - **İş İhtiyacı:** Şablonlara gömülen `{{KURUM_ADI}}`, `{{YAKLASIK_MALIYET}}` gibi yer tutucuların veri kaynağını açıklar.
+   * - **Kritik Sütunlar:** `id` (PK), `anahtar` (UNIQUE), `ad`, `veri_tipi`, `varsayilan_deger`, `kaynak_tablo`, `kaynak_kolon`.
+   */
   TANIM_Placeholder,
+
+  /**
+   * **TANIM_AlimTuru_Sablon**: Alım Türü - Belge Şablonu Eşleştirme Matrisi
+   * - **İş İhtiyacı:** Hangi alım türünde (örn: Yapım İşi) hangi belgelerin (örn: Keşif Özeti, Yer Teslim Tutanağı) üretileceğini tanımlar.
+   * - **Kritik Sütunlar:** `id` (PK), `alim_turu_id` (FK), `sablon_id` (FK), `zorunlu_mu`, `sira`.
+   * - **İlişkiler:** `alim_turu_id` -> `TANIM_AlimTuru(id)`, `sablon_id` -> `TANIM_Sablon(id)`.
+   */
   TANIM_AlimTuru_Sablon,
+
+  /**
+   * **TANIM_SurecTaslak**: Özel İşlem Akışı ve Hızlı Şablon Taslakları
+   * - **İş İhtiyacı:** Kurumun sık kullandığı özel alım akışlarını ve atlanacak evrak kurallarını saklar.
+   * - **Kritik Sütunlar:** `id` (PK), `kod` (UNIQUE), `ad`, `alim_turu`, `adimlar_json`, `atlanacak_evraklar_json`.
+   */
   TANIM_SurecTaslak,
+
+  /**
+   * **SABLON_Placeholder**: Şablon ile Yer Tutucu İlişki Tablosu
+   * - **İş İhtiyacı:** Hangi evrak şablonunun hangi değişkenleri içerdiğini eşleştirir.
+   * - **Kritik Sütunlar:** `id` (PK), `sablon_id` (FK), `placeholder_id` (FK).
+   * - **İlişkiler:** `sablon_id` -> `TANIM_Sablon(id)`, `placeholder_id` -> `TANIM_Placeholder(id)`.
+   */
   SABLON_Placeholder,
+
+  /**
+   * **TANIM_KodSozlugu**: Mali ve Kurumsal Genel Kod Sözlüğü
+   * - **İş İhtiyacı:** Fonksiyonel kodlar, muhasebe birimi listesi ve finansman tipleri gibi taksonomik değerleri tutar.
+   * - **Kritik Sütunlar:** `id` (PK), `grup_kodu`, `kod`, `ad`, `deger_json`, `sira`.
+   */
   TANIM_KodSozlugu,
+
+  // =========================================================================
+  // 5. KOMİSYON VE HEYET ŞABLONLARI
+  // =========================================================================
+
+  /**
+   * **TANIM_KomisyonGorevi**: Komisyon Üye Görev Unvanları
+   * - **İş İhtiyacı:** Heyetlerdeki resmi görevleri tanımlar (Komisyon Başkanı, Asıl Üye, Yedek Üye, Raportör).
+   * - **Kritik Sütunlar:** `id` (PK), `kod` (UNIQUE), `ad`, `sira`.
+   */
   TANIM_KomisyonGorevi,
+
+  /**
+   * **TANIM_Komisyon**: Standart Kurumsal Komisyon Tanımları
+   * - **İş İhtiyacı:** Muayene ve Kabul Komisyonu, Piyasa Fiyat Araştırma Görevlileri gibi tekrar kullanılabilir kurulları tanımlar.
+   * - **Kritik Sütunlar:** `id` (PK), `ad`, `komisyon_turu`, `aciklama`, `aktif_mi`.
+   */
   TANIM_Komisyon,
+
+  /**
+   * **TANIM_KomisyonUye**: Komisyon Üyeleri ve Görev Dağılımı
+   * - **İş İhtiyacı:** Standart komisyonlara atanan personeli ve rollerini eşleştirir.
+   * - **Kritik Sütunlar:** `id` (PK), `komisyon_id` (FK), `personel_id` (FK), `gorev_id` (FK), `asil_mi`, `sira`.
+   * - **İlişkiler:** `komisyon_id` -> `TANIM_Komisyon(id)`, `personel_id` -> `TANIM_Personel(id)`, `gorev_id` -> `TANIM_KomisyonGorevi(id)`.
+   */
   TANIM_KomisyonUye,
+
+  /**
+   * **TANIM_Komisyon_Sablon**: Komisyon - Şablon Bağlantı Matrisi
+   * - **İş İhtiyacı:** Komisyonların hangi evrak şablonlarına (Piyasa Araştırma Tutanağı, Muayene Kabul Tutanağı) otomatik dahil edileceğini belirler.
+   * - **Kritik Sütunlar:** `id` (PK), `komisyon_id` (FK), `sablon_kodu`.
+   */
   TANIM_Komisyon_Sablon,
+
+  /**
+   * **TANIM_KikLimitDonemleri**: KİK Madde 22/d Doğrudan Temin Parasal Limitleri
+   * - **İş İhtiyacı:** Yıllık KİK tebliğlerine göre Büyükşehir ve diğer idareler için belirlenen doğrudan temin üst sınırlarını saklar.
+   * - **Kritik Sütunlar:** `id` (PK), `yil`, `donem_adi`, `baslangic_tarihi`, `bitis_tarihi`, `limit_buyuksehir`, `limit_diger`, `limit_22a`.
+   */
   TANIM_KikLimitDonemleri,
+
+  // =========================================================================
+  // 6. TEMİN VE İHALE DOSYALARI ÇEKİRDEK VERİLERİ (DATA_)
+  // =========================================================================
+
+  /**
+   * **DATA_TeminDosyasi**: Kamu Alımı ve İhale Dosyası Ana Kayıt Tablosu
+   * - **İş İhtiyacı:** Doğrudan temin ve ihale süreçlerinin kalbidir. Dosya numarası, konusu, alım türü, sunulacak makam, aşaması ve maliyetini tutar.
+   * - **Kritik Sütunlar:** `id` (PK), `temin_no`, `dosya_acilis_tarihi`, `butce_yili`, `konu`, `birim_id`, `sunulacak_makam`, `tur`, `ihale_tipi`, `ihale_sekli`, `yaklasik_maliyet`, `asama`, `tamamlandi_mi`, `tags`.
+   * - **İlişkiler:** Kalemler, firmalar, teklifler, evraklar ve TİF fişleri bu kayda bağlanır. `.temin` dosya yapısı bu tabloyu merkez alır.
+   */
   DATA_TeminDosyasi,
+
+  /**
+   * **DATA_TeminKalem**: Dosya İhtiyaç Kalemleri (Mal / Hizmet / Yapım)
+   * - **İş İhtiyacı:** Satın alma dosyasına ait ihtiyaç kalemlerini, miktar, birim ve yaklaşık maliyet tutarlarını saklar.
+   * - **Kritik Sütunlar:** `id` (PK), `temin_dosya_id` (FK), `sira_no`, `malzeme_adi`, `miktar`, `birim`, `yaklasik_maliyet_birim_fiyat`, `yaklasik_maliyet_toplam`, `tasinir_kod`.
+   * - **İlişkiler:** `temin_dosya_id` -> `DATA_TeminDosyasi(id)` ON DELETE CASCADE.
+   */
   DATA_TeminKalem,
+
+  /**
+   * **DATA_TeminFirma**: Dosyaya Davet Edilen / Teklif Veren İstekliler
+   * - **İş İhtiyacı:** Bir dosya için piyasa fiyat araştırmasına davet edilen veya teklif veren firmaları eşleştirir.
+   * - **Kritik Sütunlar:** `id` (PK), `temin_dosya_id` (FK), `firma_id` (FK), `teklif_verdi_mi`, `kazandi_mi`, `toplam_teklif_tutari`.
+   * - **İlişkiler:** `temin_dosya_id` -> `DATA_TeminDosyasi(id)`, `firma_id` -> `TANIM_Firma(id)`.
+   */
   DATA_TeminFirma,
+
+  /**
+   * **DATA_TeminKalemTeklif**: Firmaların Kalem Bazlı Teklif Fiyat Matrisi
+   * - **İş İhtiyacı:** İstekli firmaların her bir kalem için sunduğu birim fiyat ve toplam tutar tekliflerini tutar.
+   * - **Kritik Sütunlar:** `id` (PK), `temin_kalem_id` (FK), `temin_firma_id` (FK), `birim_fiyat`, `toplam_tutar`, `para_birimi`.
+   * - **İlişkiler:** `temin_kalem_id` -> `DATA_TeminKalem(id)`, `temin_firma_id` -> `DATA_TeminFirma(id)`. Piyasa Fiyat Araştırması Tutanağı ve en avantajlı teklif bu tablodan hesaplanır.
+   */
   DATA_TeminKalemTeklif,
+
+  /**
+   * **DATA_TeminKomisyon**: Dosyaya Özel Görevlendirilen Komisyon Üyeleri
+   * - **İş İhtiyacı:** İlgili doğrudan temin veya ihale dosyasına atanmış onay belgesi/piyasa araştırma/muayene kabul heyet üyelerini tutar.
+   * - **Kritik Sütunlar:** `id` (PK), `temin_dosya_id` (FK), `personel_id` (FK), `gorev`, `komisyon_turu`, `sira`.
+   * - **İlişkiler:** `temin_dosya_id` -> `DATA_TeminDosyasi(id)`, `personel_id` -> `TANIM_Personel(id)`.
+   */
   DATA_TeminKomisyon,
+
+  /**
+   * **DATA_TeminBelge**: Dosya Kapsamında Üretilen ve Yüklenen Belgeler
+   * - **İş İhtiyacı:** Dosyada otomatik üretilen resmi evrakların loglarını ve dışarıdan eklenen taranmış PDF belgelerini saklar.
+   * - **Kritik Sütunlar:** `id` (PK), `temin_dosya_id` (FK), `sablon_kodu`, `belge_adi`, `dosya_yolu`, `mime_type`, `olusturma_tarihi`.
+   * - **İlişkiler:** `temin_dosya_id` -> `DATA_TeminDosyasi(id)`.
+   */
   DATA_TeminBelge,
+
+  // =========================================================================
+  // 7. TAŞINIR MAL YÖNETİMİ (TİF) VE AMBAR STOK HAREKETLERİ
+  // =========================================================================
+
+  /**
+   * **DATA_TIF**: Taşınır İşlem Fişleri (TİF) Ana Kayıtları
+   * - **İş İhtiyacı:** Muayene kabulü yapılan malların kurumsal ambarlara giriş veya birimlere çıkış fişlerini (Taşınır Mal Yönetmeliği) tutar.
+   * - **Kritik Sütunlar:** `id` (PK), `temin_dosya_id` (FK), `ambar_id` (FK), `tif_no`, `tif_turu` ('giris', 'cikis'), `fis_tarihi`, `toplam_tutar`.
+   * - **İlişkiler:** `temin_dosya_id` -> `DATA_TeminDosyasi(id)`, `ambar_id` -> `TANIM_Ambar(id)`.
+   */
   DATA_TIF,
+
+  /**
+   * **DATA_TIF_Kalem**: Taşınır İşlem Fişi Kalem Detayları
+   * - **İş İhtiyacı:** TİF fişindeki her bir malzeme satırını, taşınır kodunu, miktarını ve birim fiyatını tutar.
+   * - **Kritik Sütunlar:** `id` (PK), `tif_id` (FK), `sira_no`, `malzeme_adi`, `tasinir_kod_id` (FK), `miktar`, `birim_fiyat`, `toplam_tutar`.
+   * - **İlişkiler:** `tif_id` -> `DATA_TIF(id)` ON DELETE CASCADE.
+   */
   DATA_TIF_Kalem,
+
+  /**
+   * **DATA_AmbarStok**: Depo Anlık Stok Bakiyesi
+   * - **İş İhtiyacı:** Depolardaki malzemelerin anlık mevcut miktarını, rezerve miktarını ve ortalama birim maliyetini izler.
+   * - **Kritik Sütunlar:** `id` (PK), `ambar_id` (FK), `kalem_id` (FK), `mevcut_miktar`, `rezerve_miktar`, `ortalama_birim_fiyat`.
+   * - **Bütünlük Kuralı:** `UNIQUE(ambar_id, kalem_id)` kısıtı ile her ambarda bir malzeme için tek stok kaydı bulunur.
+   */
   DATA_AmbarStok,
+
+  /**
+   * **DATA_AmbarHareket**: Ambar Giriş / Çıkış Stok Hareket Günlüğü
+   * - **İş İhtiyacı:** Malzeme giriş, çıkış, zimmet verme, devir veya hurdaya ayırma işlemlerinin tarihsel denetim izini oluşturur.
+   * - **Kritik Sütunlar:** `id` (PK), `ambar_id` (FK), `kalem_id` (FK), `hareket_turu` ('giris', 'cikis', 'zimmet', 'devir'), `miktar`, `belge_ref`, `tarih`.
+   */
   DATA_AmbarHareket,
+
+  // =========================================================================
+  // 8. BELGE SNAPSHOT VERİLERİ VE REVİZYON ARŞİVİ
+  // =========================================================================
+
+  /**
+   * **DATA_DosyaSablonVeri**: Belge ve Şablon Snapshot Verileri
+   * - **İş İhtiyacı:** Kullanıcının belge önizleme stüdyosunda yaptığı özel değişiklikleri dosya ve şablon bazında JSON olarak kalıcı saklar.
+   * - **Kritik Sütunlar:** `id` (PK), `temin_dosya_id` (FK), `sablon_kodu`, `veri_json`, `sablon_versiyon`, `updated_at`.
+   * - **Bütünlük Kuralı:** `UNIQUE(temin_dosya_id, sablon_kodu)`. Her dosya ve her şablon birbirinden izole kayıt altında tutulur; İhtiyaç Listesi ile Lüzum Müzekkeresi birbirinin verisini ezmez.
+   */
   DATA_DosyaSablonVeri,
+
+  /**
+   * **DATA_DosyaRevizyon**: Belge Sıfırlama ve Revizyon Arşivi
+   * - **İş İhtiyacı:** Kullanıcı belgeyi varsayılana sıfırladığında (`belge:reset-document`) önceki veriyi kaybetmemek için JSON yedeğini arşivler.
+   * - **Kritik Sütunlar:** `id` (PK), `temin_dosya_id` (FK), `modul_adi`, `surec_kodu`, `belge_kodu`, `versiyon`, `baslik`, `veri_json`, `created_at`.
+   */
   DATA_DosyaRevizyon,
+
+  // =========================================================================
+  // 9. GÖREVLER, NOTLAR VE SERBEST KÜTÜPHANE MODÜLÜ
+  // =========================================================================
+
+  /**
+   * **DATA_NotVeGorev**: Dosya ve Süreç Görev / Not Listesi
+   * - **İş İhtiyacı:** Dosyaya bağlı veya bağımsız yapılacaklar (To-Do), hatırlatıcılar ve operasyonel notları yönetir.
+   * - **Kritik Sütunlar:** `id` (PK), `dosya_id` (FK, opsiyonel), `baslik`, `icerik`, `oncelik`, `tamamlandi_mi`, `sabitlendi_mi`, `hatirlatici_tarihi`.
+   */
   DATA_NotVeGorev,
+
+  /**
+   * **DATA_KutuphaneGrup**: Özel Şablon ve Belge Klasör Ağacı
+   * - **İş İhtiyacı:** "Belgelerim" modülünde kullanıcıların resmi şablonlarını hiyerarşik klasörler altında gruplamasını sağlar.
+   * - **Kritik Sütunlar:** `id` (PK), `parent_id` (FK, öz-referans), `ad`, `renk`, `ikon`, `sira`.
+   */
   DATA_KutuphaneGrup,
+
+  /**
+   * **DATA_KutuphaneBelge**: Özel Belge ve Şablon Kartları
+   * - **İş İhtiyacı:** Kullanıcı tarafından üretilen serbest resmi yazıların üst bilgilerini ve etiketlerini saklar.
+   * - **Kritik Sütunlar:** `id` (PK), `grup_id` (FK), `ad`, `etiketler` (JSON array), `aktif_surum_id` (FK), `favori_mi`, `arsiv_mi`.
+   */
   DATA_KutuphaneBelge,
+
+  /**
+   * **DATA_KutuphaneBelgeSurum**: Değişmez Belge Sürümleri ve HTML İçerik
+   * - **İş İhtiyacı:** Kullanıcı belgelerinin her bir kayıt/revizyon sürümündeki HTML içeriğini ve koşullu mantık JSON'ını tutar.
+   * - **Kritik Sütunlar:** `id` (PK), `belge_id` (FK), `surum_no`, `etiket`, `icerik_html`, `kosullar_json`.
+   * - **İlişkiler:** `belge_id` -> `DATA_KutuphaneBelge(id)` ON DELETE CASCADE.
+   */
   DATA_KutuphaneBelgeSurum,
+
+  /**
+   * **DATA_KutuphaneYerTutucu**: Kullanıcı Belgeleri Dinamik Değişkenleri
+   * - **İş İhtiyacı:** Genel, grup veya belge düzeyinde dinamik değişken tanımlarını (`genel`, `grup`, `belge`) barındırır.
+   * - **Kritik Sütunlar:** `id` (PK), `kapsam`, `kapsam_id`, `anahtar`, `etiket`, `tip`, `varsayilan`.
+   */
   DATA_KutuphaneYerTutucu,
+
+  // =========================================================================
+  // 10. BAĞIMSIZ İHTİYAÇ RAPORLARI VE LÜZUM MÜZEKKERESİ
+  // =========================================================================
+
+  /**
+   * **DATA_IhtiyacRaporu**: Bağımsız İhtiyaç Raporu ve Talep Havuzu
+   * - **İş İhtiyacı:** Birimlerden gelen satın alma öncesi ihtiyaç raporlarını, talep gerekçelerini ve onay durumlarını saklar.
+   * - **Kritik Sütunlar:** `id` (PK), `rapor_no`, `talep_eden_birim_id` (FK), `konu`, `gerekce`, `durum`, `dosya_id` (FK, temin dosyasına dönüştürüldüğünde bağlanır).
+   */
   DATA_IhtiyacRaporu,
+
+  /**
+   * **DATA_IhtiyacRaporuKalem**: İhtiyaç Raporu Talep Kalemleri
+   * - **İş İhtiyacı:** İhtiyaç raporuna bağlı malzeme/hizmet kalemlerini, tahmini tutarları ve miktarları tutar.
+   * - **Kritik Sütunlar:** `id` (PK), `ihtiyac_raporu_id` (FK), `sira_no`, `malzeme_adi`, `miktar`, `birim`, `tahmini_tutar`.
+   * - **İlişkiler:** `ihtiyac_raporu_id` -> `DATA_IhtiyacRaporu(id)` ON DELETE CASCADE.
+   */
   DATA_IhtiyacRaporuKalem,
+
+  // =========================================================================
+  // 11. SİSTEM GÜNLÜK VE DENETİM İZİ (AUDIT LOG)
+  // =========================================================================
+
+  /**
+   * **LOG_SystemLog**: Sistem İşlem Günlüğü ve Denetim İzi (Audit Log)
+   * - **İş İhtiyacı:** Veri tabanı güncellemeleri, hata logları, dışa aktarım ve kritik kullanıcı eylemlerini izlenebilirlik için saklar.
+   * - **Kritik Sütunlar:** `id` (PK), `seviye` ('INFO', 'WARN', 'ERROR'), `modul`, `islem`, `mesaj`, `detay_json`, `created_at`.
+   */
   LOG_SystemLog
 ]
 
 /**
  * Uygulamanın veritabanı şema ve tablo tanımları kataloğu.
+ * SQLite tablolarının DDL tanımlarını, kolon tiplerini ve başlangıç seed verilerini taşır.
  */
 export const schema = {
   database: 'DOGRUDAN_TEMIN_DB',
@@ -118,21 +548,34 @@ export const schema = {
 }
 
 /**
- * SQLite veritabanını oluşturur, varsayılan tabloları, ayarları, indeksleri ve ilk seed verilerini yükler.
+ * SQLite veritabanını oluşturur; varsayılan tabloları, ayarları, indeksleri ve ilk seed verilerini yükler.
+ *
+ * İşlem Sırası:
+ * 1. Dahili sistem tablolarını (`settings`, `schema_migrations`, `LOG_YedekGecmisi`) oluşturur.
+ * 2. Kurum adı, veritabanı sürümü, aktif kurum ID, vergi oranları ve şablon tema JSON'ını `settings` tablosuna yazar.
+ * 3. `schema.tables` kataloğundaki tüm tabloları (`CREATE TABLE IF NOT EXISTS`) ve `initialData` satırlarını işler.
+ * 4. Performans indekslerini (`idx_tasinirkod_tam_kod`, `idx_okaskod_kod` vb.) oluşturur.
+ * 5. Geliştirme ortamında test personellerini (`TANIM_Personel` ve `TANIM_Roller`) seed eder.
+ *
  * @param db - better-sqlite3 veritabanı bağlantı nesnesi.
  * @param institutionName - Kurum adı (varsayılan ayarlara kaydedilir).
  * @param currentAppVersion - Uygulama sürüm numarası.
  */
 export function initializeDatabase(db: Database.Database, institutionName: string, currentAppVersion: string = '1.0.0'): void {
   db.exec(`
+    -- Uygulama genel ayarlarını (key-value) saklar
     CREATE TABLE IF NOT EXISTS settings (
       key   TEXT PRIMARY KEY,
       value TEXT
     );
+
+    -- Veritabanına uygulanan şema versiyonlarını takip eder
     CREATE TABLE IF NOT EXISTS schema_migrations (
       version INTEGER PRIMARY KEY,
       applied_at TEXT NOT NULL
     );
+
+    -- Yerel ve Google Drive veritabanı yedekleme arşiv kayıtları
     CREATE TABLE IF NOT EXISTS LOG_YedekGecmisi (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       hedef TEXT NOT NULL,
@@ -199,14 +642,14 @@ export function initializeDatabase(db: Database.Database, institutionName: strin
     }
   })
 
-  // Indexes must be created after tables are created
+  // İndeksler tablolar oluşturulduktan sonra tanımlanmalıdır
   db.exec(`
     CREATE INDEX IF NOT EXISTS idx_tasinirkod_tam_kod ON TANIM_TasinirKod(tam_kod);
     CREATE INDEX IF NOT EXISTS idx_tasinirkod_hesap ON TANIM_TasinirKod(hesap_kodu);
     CREATE INDEX IF NOT EXISTS idx_okaskod_kod ON TANIM_OkasKod(kod);
   `)
 
-  // Seed default test data in dev environment
+  // Geliştirme ortamı için başlangıç test personelleri (Seed)
   try {
     const persCountRes = db.prepare('SELECT COUNT(*) as cnt FROM TANIM_Personel').get() as {
       cnt: number
@@ -263,6 +706,7 @@ export { manifests } from './schema-manifest/index'
 export { defineTable } from './BaseTable'
 export { auditColumns, auditColumnsNoRef } from './audit'
 export * from './migrate'
+
 
 
 

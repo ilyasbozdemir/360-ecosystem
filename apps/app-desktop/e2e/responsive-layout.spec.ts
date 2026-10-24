@@ -123,10 +123,12 @@ async function collectLayoutReport(page: Page): Promise<LayoutReport> {
       }
 
       // Tüm ana öğelere kaydırarak erişilebilmeli
+      const prevBehavior = scrollArea.style.scrollBehavior
+      scrollArea.style.scrollBehavior = 'auto'
       const items = Array.from(scrollArea.querySelectorAll('a'))
       railShortcutCount = items.length + footerItems.length
       items.forEach((el) => {
-        el.scrollIntoView({ block: 'nearest' })
+        el.scrollIntoView({ behavior: 'instant', block: 'nearest' } as ScrollIntoViewOptions)
         const r = el.getBoundingClientRect()
         const sr = scrollArea.getBoundingClientRect()
         if (r.top < sr.top - TOL || r.bottom > sr.bottom + TOL || !inViewport(r)) {
@@ -135,6 +137,7 @@ async function collectLayoutReport(page: Page): Promise<LayoutReport> {
       })
       // Üst öğeleri birbirinin üstüne binmemeli
       scrollArea.scrollTop = 0
+      scrollArea.style.scrollBehavior = prevBehavior
       for (let i = 1; i < items.length; i++) {
         if (overlap(items[i - 1].getBoundingClientRect(), items[i].getBoundingClientRect())) {
           violations.push(`ana menü öğeleri üst üste biniyor: ${label(items[i])}`)
