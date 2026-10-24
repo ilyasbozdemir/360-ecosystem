@@ -1,6 +1,8 @@
 import { TemplateResolver, resolveTemplateKey } from '@temin360/document-templates'
 import { getDefaultMappingForProcess } from '../constants/mappings'
 import { resolveTemplateConfig } from '../screens/dosya/components/DocumentPreviewModalV3/templateResolver'
+import { TemplateRegistry } from '../screens/dosya/components/DocumentPreviewModalV3/document-engine/registry/TemplateRegistry'
+import { InstitutionalHeaderProvider } from '../screens/dosya/components/DocumentPreviewModalV3/document-engine/providers/InstitutionalHeaderProvider'
 
 export interface PreloadedDocumentData {
   payloadData: any
@@ -112,34 +114,40 @@ class DocumentPreloadService {
           }
         }
 
-        let payloadData: any = {}
+        const payloadData: any = {}
         let resolvedData: any = {}
-
+        let savedSnapshot: any = null
         if (window.electron?.ipcRenderer) {
           try {
-            const payloadRes = await window.electron.ipcRenderer.invoke(
-              'belge:get-document-payload',
-              {
-                dosyaId,
-                documentId: resolvedId
-              }
-            )
-            if (payloadRes?.success && payloadRes.data) {
-              payloadData = payloadRes.data
+            const getRes = await window.electron.ipcRenderer.invoke('belge:get-document', {
+              dosyaId,
+              templateKey: resolvedId
+            })
+            if (getRes?.success && getRes.exists && getRes.record?.data) {
+              savedSnapshot = getRes.record.data
             }
           } catch (err) {
-            console.warn('[DocumentPreloadService] belge:get-document-payload error:', err)
+            console.warn('[DocumentPreloadService] belge:get-document error:', err)
           }
         }
 
-        if (payloadData?.savedSnapshot && typeof payloadData.savedSnapshot === 'object') {
-          resolvedData = { ...payloadData.savedSnapshot }
-        } else if (!payloadData || Object.keys(payloadData).length === 0) {
-          const mapping = getDefaultMappingForProcess(resolvedId)
-          const resolver = new TemplateResolver(queryExecutor)
-          resolvedData = await resolver.resolve(mapping, dosyaId || 0)
-        } else if (payloadData?.resolvedContext) {
-          resolvedData = { ...payloadData.resolvedContext }
+        if (savedSnapshot && typeof savedSnapshot === 'object') {
+          resolvedData = { ...savedSnapshot }
+        } else {
+          try {
+            const definition = TemplateRegistry.get(resolvedId)
+            const headerData = await InstitutionalHeaderProvider.resolve(dosyaId, queryExecutor)
+            resolvedData = await definition.resolver.resolve({
+              dosyaId,
+              templateKey: resolvedId,
+              headerData,
+              queryExecutor
+            })
+          } catch {
+            const mapping = getDefaultMappingForProcess(resolvedId)
+            const resolver = new TemplateResolver(queryExecutor)
+            resolvedData = await resolver.resolve(mapping, dosyaId || 0)
+          }
         }
 
         const entry: PreloadedDocumentData = {

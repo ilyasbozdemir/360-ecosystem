@@ -5,9 +5,13 @@ import {
   DocumentResolveResult
 } from './types'
 import { TEMPLATE_OPTIONS, TemplateOptionItem } from '../templateResolver'
-import { loadDocumentPreviewData } from '../hooks/helpers'
-import { useSettingsStore } from '../../../../../store/settingsStore'
+import { DocumentEngine } from './DocumentEngine'
 
+/**
+ * Dosya Belge Çözücüsü (dosyaResolver)
+ * - Belge çözümleme sorumluluğunu doğrudan TemplateRegistry ve DocumentEngine'e devreder.
+ * - Monolitik get-document-payload mekanizmasına bağımlılığı ortadan kaldırır.
+ */
 export const dosyaResolver: DocumentResolver = {
   async templates(_source: DocumentSource): Promise<TemplateOptionItem[]> {
     void _source
@@ -25,47 +29,25 @@ export const dosyaResolver: DocumentResolver = {
       )
     }
 
-    const {
-      showLogoLeft,
-      showLogoRight,
-      logoLeft,
-      logoRight,
-      institutionLogo,
-      subInstitutionType,
-      customSubInstitutionLabel,
-      customSubInstitutionKurumumuz,
-      customSubInstitutionKurumu,
-      customSubInstitutionKurumlari
-    } = useSettingsStore.getState()
-
-    const result = await loadDocumentPreviewData({
-      activeDosyaId: source.dosyaId,
-      resolvedId: templateId,
-      selectedDocId: templateId,
-      propInvitedFirms: context?.invitedFirms as unknown[],
-      showLogoLeft,
-      showLogoRight,
-      logoLeft,
-      logoRight,
-      institutionLogo,
-      subInstitutionType,
-      customSubInstitutionLabel,
-      customSubInstitutionKurumumuz,
-      customSubInstitutionKurumu,
-      customSubInstitutionKurumlari
+    const docRecord = await DocumentEngine.loadOrCreateDocument({
+      dosyaId: source.dosyaId,
+      templateKey: templateId,
+      context
     })
 
+    const dataObj = (docRecord.data || {}) as Record<string, unknown>
+
     return {
-      resolvedData: result.finalData,
-      formData: result.finalData,
-      personelListesi: result.personelListesi,
-      birimListesi: result.birimListesi,
-      firmaListesi: result.firmaListesi,
-      dosyaRecord: result.dosyaRecord,
-      activeLogoLeft: result.activeLogoLeft,
-      activeLogoRight: result.activeLogoRight,
-      activeOrientation: result.activeOrientation,
-      initialSnapshotJson: result.initialSnapshotJson
+      resolvedData: dataObj,
+      formData: dataObj,
+      personelListesi: docRecord.personelListesi,
+      birimListesi: docRecord.birimListesi,
+      firmaListesi: docRecord.firmaListesi,
+      dosyaRecord: docRecord.dosyaRecord,
+      activeLogoLeft: docRecord.headerData?.solLogo ? true : false,
+      activeLogoRight: docRecord.headerData?.sagLogo ? true : false,
+      activeOrientation: 'portrait',
+      initialSnapshotJson: JSON.stringify(dataObj)
     }
   }
 }

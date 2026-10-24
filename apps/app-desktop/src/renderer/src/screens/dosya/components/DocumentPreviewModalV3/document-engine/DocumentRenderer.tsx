@@ -1,11 +1,9 @@
 import React from 'react'
 import {
-  DocumentPage,
   TemplateData,
-  TemplateEditProvider,
   TemplateKey
 } from '@temin360/document-templates'
-import { TemplateErrorBoundary } from '../TemplateErrorBoundary'
+import { TemplateRegistry, InvalidTemplateKeyError } from './registry/TemplateRegistry'
 
 export interface DocumentRendererProps<K extends TemplateKey = TemplateKey> {
   /**
@@ -69,120 +67,36 @@ export interface DocumentRendererProps<K extends TemplateKey = TemplateKey> {
 }
 
 /**
- * Uygulama içi merkezi belge çizim bileşeni.
- * - Saf sayfa çizimi için paketteki `<DocumentPage />` bileşenini kullanır.
- * - 'paper' modunda kullanıcı arayüzü stillerini (koyu tema, gri arka plan, gölge, ölçeklendirme) sağlar.
- * - 'bare' modunda yazdırma ve PDF çıktıları için saf DOM üretir.
+ * Belge Çizim Yönlendiricisi (DocumentRenderer)
+ * - Verilen templateKey üzerinden TemplateRegistry'deki ilgili belge tanımını bulur.
+ * - İlgili şablonun kendine ait renderer bileşenini çalıştırır.
+ * - Bilinmeyen şablon kimlikleri için sessizce başka belgeye yönlendirmez; açık hata fırlatır.
  */
 export function DocumentRenderer<K extends TemplateKey = TemplateKey>(
   props: DocumentRendererProps<K>
 ): React.JSX.Element {
-  const {
-    templateKey,
-    data,
-    orientation = 'portrait',
-    chrome = 'paper',
-    scale = 1,
-    isEditing = false,
-    onFieldChange,
-    personelListesi = [],
-    firmaListesi = [],
-    birimListesi = [],
-    firstPageLimit,
-    className = '',
-    style = {},
-    containerRef
-  } = props
-  const isLandscape = orientation === 'landscape'
+  const { templateKey } = props
 
-  const resolvedFirstPageLimit =
-    firstPageLimit ??
-    (data && typeof data === 'object' && 'firstPageLimit' in data
-      ? (data as { firstPageLimit?: number }).firstPageLimit
-      : undefined)
-
-  // Saf sayfa içeriği
-  const pageContent = (
-    <TemplateErrorBoundary
-      fallback={
-        <div className="p-8 text-center text-red-500 font-semibold bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 rounded-xl m-4">
-          ⚠️ Belge şablonu çizilirken bir hata oluştu. Lütfen şablon verilerini kontrol ediniz.
-        </div>
-      }
-    >
-      <TemplateEditProvider
-        isEditing={isEditing}
-        onFieldChange={onFieldChange || (() => {})}
-        personelListesi={personelListesi}
-        firmaListesi={firmaListesi}
-        birimListesi={birimListesi}
-        firstPageLimit={resolvedFirstPageLimit}
-      >
-        <DocumentPage<K> templateKey={templateKey} data={data} orientation={orientation} />
-      </TemplateEditProvider>
-    </TemplateErrorBoundary>
-  )
-
-  // Bare mod: Yalnızca saf sayfa (yazdırma / PDF)
-  if (chrome === 'bare') {
-    return (
-      <div
-        ref={containerRef}
-        className={`document-renderer-bare inline-block ${className}`.trim()}
-        style={style}
-      >
-        {pageContent}
-      </div>
-    )
+  if (!TemplateRegistry.has(templateKey)) {
+    throw new InvalidTemplateKeyError(templateKey)
   }
 
-  // Paper mod: Ekran arayüzü, gri zemin, gölge ve isteğe bağlı ölçeklendirme
-  if (scale !== 1) {
-    const baseWidth = isLandscape ? 1131 : 800
-    const baseHeight = isLandscape ? 800 : 1131
+  const definition = TemplateRegistry.get(templateKey)
+  const SpecificRenderer = definition.renderer
 
-    return (
-      <div
-        ref={containerRef}
-        className={`flex-1 bg-slate-200/50 dark:bg-slate-950 flex justify-center items-start overflow-x-hidden overflow-y-auto shadow-inner h-full py-8 custom-scrollbar min-h-0 min-w-0 ${className}`.trim()}
-        style={style}
-      >
-        <div
-          style={{
-            width: `${baseWidth * scale}px`,
-            minHeight: `${baseHeight * scale}px`,
-            position: 'relative',
-            flexShrink: 0
-          }}
-        >
-          <div
-            className="bg-white shadow-2xl transition-transform duration-200 ease-out origin-top"
-            style={{
-              transform: `scale(${scale})`,
-              transformOrigin: 'top center',
-              width: `${baseWidth}px`,
-              minHeight: `${baseHeight}px`,
-              position: 'absolute',
-              top: 0,
-              left: '50%',
-              translate: '-50% 0'
-            }}
-          >
-            {pageContent}
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  // scale === 1 kağıt modu
-  return (
-    <div
-      ref={containerRef}
-      className={`w-full flex justify-center items-start overflow-auto bg-slate-200/50 dark:bg-slate-950 p-4 sm:p-8 custom-scrollbar ${className}`.trim()}
-      style={style}
-    >
-      <div className="bg-white shadow-2xl rounded-sm overflow-hidden shrink-0">{pageContent}</div>
-    </div>
-  )
+  return React.createElement(SpecificRenderer, {
+    data: props.data as any,
+    orientation: props.orientation,
+    chrome: props.chrome,
+    scale: props.scale,
+    isEditing: props.isEditing,
+    onFieldChange: props.onFieldChange,
+    personelListesi: props.personelListesi,
+    firmaListesi: props.firmaListesi,
+    birimListesi: props.birimListesi,
+    firstPageLimit: props.firstPageLimit,
+    className: props.className,
+    style: props.style,
+    containerRef: props.containerRef
+  })
 }

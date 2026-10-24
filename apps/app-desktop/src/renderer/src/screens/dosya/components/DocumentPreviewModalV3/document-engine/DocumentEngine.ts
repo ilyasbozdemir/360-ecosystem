@@ -6,14 +6,13 @@ import {
   DocumentValidationService,
   ValidationReport
 } from '@temin360/document-templates'
-import { DocumentRenderer } from './DocumentRenderer'
-import { dosyaResolver } from './dosyaResolver'
-import { resolveTemplateConfig } from '../templateResolver'
+import { TemplateRegistry, InvalidTemplateKeyError } from './registry/TemplateRegistry'
+import { InstitutionalHeaderProvider } from './providers/InstitutionalHeaderProvider'
+import { InstitutionalHeaderData, DocumentDefinition } from './registry/types'
 import { documentPreloadService } from '../../../../../services/documentPreloadService'
 import { usePrintQueueStore } from '../../../../../store/printQueueStore'
-import { useSettingsStore } from '../../../../../store/settingsStore'
 import { buildExportFileName } from '../../../../../utils/exportFileName'
-import { DocumentResolveContext, DocumentResolveResult } from './types'
+import { DocumentResolveContext } from './types'
 
 export interface DocumentRecord<T = Record<string, unknown>> {
   id?: number
@@ -24,6 +23,7 @@ export interface DocumentRecord<T = Record<string, unknown>> {
   createdAt?: string
   updatedAt?: string
   isExisting: boolean
+  headerData?: InstitutionalHeaderData
   personelListesi?: unknown[]
   firmaListesi?: unknown[]
   birimListesi?: unknown[]
@@ -81,10 +81,10 @@ export interface ExportPdfParams {
 
 /**
  * Merkezi Belge Yönetim ve Çıktı Motoru (Central Document Engine)
- * - dosyaId + templateKey üzerinden dosya bazlı belge yaşam döngüsünü yönetir.
- * - Mevcut belge varsa yükler, yoksa kaynak veriden default DTO oluşturup kaydeder.
- * - Kullanıcı özelleştirmelerini kaynak veri değişimlerinde korur.
- * - Önizleme ve PDF çıktısının birebir aynı belge modelini kullanmasını garanti eder.
+ * - Verilen templateKey üzerinden TemplateRegistry'deki doğru belge tanımını bulur.
+ * - Yalnızca ilgili belgenin resolver ve renderer'ını koordine eder.
+ * - Mega bir monolitik çözümleyiciye dönüşmez; belgeye özel SQL sorguları ve kurallar belge resolver'ında izoledir.
+ * - Bilinmeyen template anahtarlarında açık InvalidTemplateKeyError fırlatır.
  */
 export class DocumentEngine {
   private static get ipc() {
@@ -95,16 +95,65 @@ export class DocumentEngine {
   }
 
   /**
-   * Şablon anahtarını kanonik biçime çözümler
+   * Veritabanı sorgu yürütücüsü (IPC üzerinden)
+   */
+  static queryExecutor = async (sql: string, params: any[]): Promise<any[]> => {
+    if (!window.electron?.ipcRenderer) return []
+    try {
+      const res = await window.electron.ipcRenderer.invoke('db:query', sql, params)
+      return res && res.success ? res.data : []
+    } catch {
+      return []
+    }
+  }
+
+  /**
+   * Şablon anahtarını kanonik biçime çözümler.
+   * Bilinmeyen anahtarlar açık hata fırlatır.
    */
   static resolveKey(templateKey: string): string {
-    const resolved = resolveTemplateKey(templateKey)
-    return (
-      resolved ||
-      String(templateKey)
-        .replace(/\.html$/i, '')
-        .trim()
-    )
+    if (!templateKey || typeof templateKey !== 'string') {
+      throw new InvalidTemplateKeyError(String(templateKey))
+    }
+    const cleanKey = templateKey.replace(/\.html$/i, '').trim()
+    const resolved = resolveTemplateKey(cleanKey)
+    const canonicalKey = resolved || cleanKey
+
+    if (!TemplateRegistry.has(canonicalKey)) {
+      throw new InvalidTemplateKeyError(templateKey)
+    }
+
+    return canonicalKey
+  }
+
+  /**
+   * Belgeye ait verileri TemplateRegistry ve ilişkili özel resolver ile çözümler.
+   * Monolitik mega-fonksiyon çağırmaz; yalnızca belgenin ihtiyaç duyduğu sorguları yürütür.
+   */
+  static async resolveDocumentData<T = Record<string, unknown>>(params: {
+    dosyaId: number
+    templateKey: string
+    invitedFirms?: unknown[]
+  }): Promise<{ data: T; headerData: InstitutionalHeaderData; definition: DocumentDefinition<T> }> {
+    const { dosyaId, templateKey, invitedFirms } = params
+    const canonicalKey = this.resolveKey(templateKey)
+
+    const definition = TemplateRegistry.get<T>(canonicalKey)
+    const headerData = await InstitutionalHeaderProvider.resolve(dosyaId, this.queryExecutor)
+
+    const resolvedData = await definition.resolver.resolve({
+      dosyaId,
+      templateKey: canonicalKey,
+      headerData,
+      queryExecutor: this.queryExecutor,
+      invitedFirms
+    })
+
+    return {
+      data: resolvedData,
+      headerData,
+      definition
+    }
   }
 
   /**
@@ -116,7 +165,7 @@ export class DocumentEngine {
     const { dosyaId, templateKey, context, forceDefault = false } = params
     const canonicalKey = this.resolveKey(templateKey)
 
-    // 1. Önce veritabanında bu dosyaya özel kaydedilmiş belge var mı kontrol et
+    // 1. Önce veritabanında bu dosyaya özel kaydedilmiş snapshot var mı kontrol et
     if (!forceDefault && this.ipc) {
       try {
         const getRes = await this.ipc.invoke('belge:get-document', {
@@ -125,13 +174,7 @@ export class DocumentEngine {
         })
 
         if (getRes?.success && getRes.exists && getRes.record) {
-          // Kayıtlı belge bulundu: periferik listeleri de resolver üzerinden tamamla
-          const resolvedPeripheral = await dosyaResolver.resolve(
-            { kind: 'dosya', dosyaId, documentId: canonicalKey },
-            canonicalKey,
-            context
-          )
-
+          const headerData = await InstitutionalHeaderProvider.resolve(dosyaId, this.queryExecutor)
           const valReport = DocumentValidationService.validate(
             canonicalKey,
             getRes.record.data as Record<string, unknown>
@@ -146,10 +189,7 @@ export class DocumentEngine {
             createdAt: getRes.record.createdAt,
             updatedAt: getRes.record.updatedAt,
             isExisting: true,
-            personelListesi: resolvedPeripheral.personelListesi,
-            firmaListesi: resolvedPeripheral.firmaListesi,
-            birimListesi: resolvedPeripheral.birimListesi,
-            dosyaRecord: resolvedPeripheral.dosyaRecord,
+            headerData,
             validationReport: valReport
           }
         }
@@ -158,14 +198,13 @@ export class DocumentEngine {
       }
     }
 
-    // 2. Kayıt yoksa: Kaynak verilerden varsayılan belge verisini oluştur
-    const resolvedResult: DocumentResolveResult = await dosyaResolver.resolve(
-      { kind: 'dosya', dosyaId, documentId: canonicalKey },
-      canonicalKey,
-      context
-    )
+    // 2. Kayıt yoksa: Belgeye özel resolver ile varsayılan veriyi oluştur
+    const { data: defaultData, headerData } = await this.resolveDocumentData<T>({
+      dosyaId,
+      templateKey: canonicalKey,
+      invitedFirms: context?.invitedFirms as unknown[]
+    })
 
-    const defaultData = (resolvedResult.formData || resolvedResult.resolvedData || {}) as T
     const valReport = DocumentValidationService.validate(
       canonicalKey,
       defaultData as Record<string, unknown>
@@ -200,10 +239,7 @@ export class DocumentEngine {
       sablonVersiyon: 1,
       updatedAt,
       isExisting: false,
-      personelListesi: resolvedResult.personelListesi,
-      firmaListesi: resolvedResult.firmaListesi,
-      birimListesi: resolvedResult.birimListesi,
-      dosyaRecord: resolvedResult.dosyaRecord,
+      headerData,
       validationReport: valReport
     }
   }
@@ -300,7 +336,7 @@ export class DocumentEngine {
 
   /**
    * Önizleme ve PDF çıktısı için ortak saf HTML derleyicisi.
-   * Birebir DocumentRenderer (chrome: 'bare') kullanır.
+   * İlgili şablonun TemplateRegistry'deki kendine ait renderer bileşenini (chrome: 'bare') kullanır.
    */
   static compileHtml(params: CompileHtmlParams): string {
     const {
@@ -314,32 +350,23 @@ export class DocumentEngine {
       activeTemplateConf
     } = params
 
-    const resolved = resolveTemplateKey(templateKey)
-    if (!resolved) {
-      throw new Error(`Geçersiz şablon kimliği: "${templateKey}".`)
-    }
-
-    const { config } = resolveTemplateConfig(resolved)
-    const storeSettings = useSettingsStore.getState()
-    const activeSolLogo =
-      data.solLogo || storeSettings.logoLeft || storeSettings.institutionLogo || null
-    const activeSagLogo = data.sagLogo || storeSettings.logoRight || null
+    const canonicalKey = this.resolveKey(templateKey)
+    const definition = TemplateRegistry.get(canonicalKey)
+    const RendererComponent = definition.renderer
 
     const mergedData = {
       ...data,
       personelListesi,
       firmaListesi,
+      birimListesi,
       tarih: data.tarih || data.onayaSunulanTarih || '',
       onayTarihi: data.onayTarihi || data.dosyaTarihi || '',
-      solLogo: activeSolLogo,
-      sagLogo: activeSagLogo,
       olurYazisi: data.olurYazisi !== false,
       orientation
     }
 
     const bodyHtml = renderToString(
-      React.createElement(DocumentRenderer, {
-        templateKey: resolved as TemplateKey,
+      React.createElement(RendererComponent, {
         data: mergedData,
         orientation,
         chrome: 'bare',
@@ -356,7 +383,7 @@ export class DocumentEngine {
       <html>
         <head>
           <meta charset="utf-8">
-          <title>${activeTemplateConf?.name || config?.name || 'Belge Önizleme'}</title>
+          <title>${activeTemplateConf?.name || definition.title || 'Belge Önizleme'}</title>
           <script src="https://cdn.tailwindcss.com"></script>
           <style>
             @page {
@@ -412,22 +439,24 @@ export class DocumentEngine {
       firstPageLimit
     } = params
 
-    const { config } = resolveTemplateConfig(templateKey)
+    const canonicalKey = this.resolveKey(templateKey)
+    const definition = TemplateRegistry.get(canonicalKey)
+
     const htmlContent = this.compileHtml({
-      templateKey,
+      templateKey: canonicalKey,
       data,
       orientation,
       personelListesi,
       firmaListesi,
       firstPageLimit,
-      activeTemplateConf: config
+      activeTemplateConf: { name: definition.name }
     })
 
     const defaultFilename = buildExportFileName({
       dosya: (dosyaRecord as Record<string, unknown> | null | undefined) ?? null,
       butceYili: (data as any)?.butceYili || (dosyaRecord as any)?.butce_yili,
       teminNo: (data as any)?.teminNo || (dosyaRecord as any)?.temin_no,
-      belgeAdi: config?.name || templateKey,
+      belgeAdi: definition.name || canonicalKey,
       extension: 'pdf'
     })
 
