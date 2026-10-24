@@ -9,8 +9,9 @@
  */
 export type AppEdition = 'full' | 'dogrudan-temin'
 
-const rawEdition = (import.meta as unknown as { env?: Record<string, string | undefined> }).env
-  ?.VITE_APP_EDITION
+const rawEdition =
+  (typeof process !== 'undefined' && process.env?.VITE_APP_EDITION) ||
+  (import.meta as unknown as { env?: Record<string, string | undefined> }).env?.VITE_APP_EDITION
 
 export const APP_EDITION: AppEdition = rawEdition === 'dogrudan-temin' ? 'dogrudan-temin' : 'full'
 
