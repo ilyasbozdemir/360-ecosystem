@@ -124,4 +124,67 @@ describe('sunulacakMakamAdi persistence and reload tests', () => {
 
     expect(htmlOutput).toContain('DESTEK HİZMETLERİ DAİRE BAŞKANLIĞINA')
   })
+
+  it('5. resolveSnapshotOverlay preserves sunulacakMakamAdi for ihtiyac-listesi template', async () => {
+    const savedSnapshotJson = JSON.stringify({
+      sunulacakMakamAdi: 'GENEL SEKRETERLİK MAKAMINA',
+      ihtiyacKalemleri: [{ siraNo: 1, malzemeAdi: 'A4 Kağıt', miktar: 10, birimi: 'Kutu' }]
+    })
+
+    const queryExecutor = vi.fn().mockImplementation((sql: string) => {
+      if (sql.includes('DATA_DosyaSablonVeri')) {
+        return Promise.resolve([{ veri_json: savedSnapshotJson }])
+      }
+      return Promise.resolve([])
+    })
+
+    useGlobalDocumentPreviewStore.setState({
+      tabs: [
+        {
+          tabId: 'tab-ihtiyac',
+          documentId: 'ihtiyac-listesi',
+          documentTitle: 'İhtiyaç Listesi',
+          initialData: {
+            sunulacakMakamAdi: 'ESKİ SİLİNECEK MAKAMLIK'
+          }
+        }
+      ],
+      activeTabId: 'tab-ihtiyac'
+    })
+
+    const result = await resolveSnapshotOverlay(
+      { sunulacakMakamAdi: 'ESKİ BASE MAKAMLIK' },
+      {},
+      { id: 200 },
+      200,
+      'ihtiyac-listesi',
+      'ihtiyac-listesi',
+      true,
+      true,
+      null,
+      null,
+      [],
+      [],
+      [],
+      queryExecutor
+    )
+
+    expect(result.finalData.sunulacakMakamAdi).toBe('GENEL SEKRETERLİK MAKAMINA')
+    expect(result.finalData.sunulacakMakam).toBe('GENEL SEKRETERLİK MAKAMINA')
+  })
+
+  it('6. DocumentEngine.compileHtml renders sunulacakMakamAdi for ihtiyac_listesi', () => {
+    const htmlOutput = DocumentEngine.compileHtml({
+      templateKey: 'ihtiyac_listesi',
+      data: {
+        dosyaKonusu: 'Kırtasiye İhtiyaç Listesi',
+        sunulacakMakamAdi: 'İLÇE MİLLİ EĞİTİM MÜDÜRLÜĞÜ MAKAMINA',
+        tarih: '24.10.2026',
+        ihtiyacKalemleri: [{ siraNo: 1, malzemeAdi: 'Kalem', miktar: 5, birimi: 'Paket' }]
+      },
+      orientation: 'portrait'
+    })
+
+    expect(htmlOutput).toContain('İLÇE MİLLİ EĞİTİM MÜDÜRLÜĞÜ MAKAMINA')
+  })
 })

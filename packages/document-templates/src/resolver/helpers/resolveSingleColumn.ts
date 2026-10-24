@@ -107,24 +107,40 @@ export async function resolveSingleColumn(
     const res = await queryExecutor(query, params);
     let rawValue = res?.[0]?.res_val;
 
-    // Dynamic fallback for sunulacakMakamAdi from TANIM_Kurum
+    // Dynamic fallback for sunulacakMakamAdi: First check DATA_TeminDosyasi, then TANIM_Kurum
     if (sablonDegiskeni === 'sunulacakMakamAdi') {
-      try {
-        const kRes = await queryExecutor('SELECT kurum_adi, ust_kurum_adi, makam_adi FROM TANIM_Kurum LIMIT 1', []);
-        if (kRes?.[0]) {
-          const kRow = kRes[0];
-          if (kRow.makam_adi && kRow.makam_adi.trim()) {
-            rawValue = kRow.makam_adi.trim();
-          } else if (kRow.kurum_adi && kRow.kurum_adi.trim()) {
-            const kName = kRow.kurum_adi.trim();
-            rawValue = kName.toUpperCase().endsWith('BAŞKANLIĞI')
-              ? `${kName.toUpperCase()}NA`
-              : `${kName.toUpperCase()} BAŞKANLIĞINA`;
-          } else if (kRow.ust_kurum_adi && kRow.ust_kurum_adi.trim()) {
-            rawValue = `${kRow.ust_kurum_adi.trim().toUpperCase()} BAŞKANLIĞINA`;
+      if (!rawValue || String(rawValue).trim() === '') {
+        try {
+          if (activeDosyaId) {
+            const dRes = await queryExecutor(
+              'SELECT sunulacak_makam FROM DATA_TeminDosyasi WHERE id = ? LIMIT 1',
+              [activeDosyaId]
+            );
+            if (dRes?.[0]?.sunulacak_makam && String(dRes[0].sunulacak_makam).trim()) {
+              rawValue = String(dRes[0].sunulacak_makam).trim();
+            }
           }
-        }
-      } catch (e) {}
+          if (!rawValue || String(rawValue).trim() === '') {
+            const kRes = await queryExecutor(
+              'SELECT kurum_adi, ust_kurum_adi, makam_adi FROM TANIM_Kurum LIMIT 1',
+              []
+            );
+            if (kRes?.[0]) {
+              const kRow = kRes[0];
+              if (kRow.makam_adi && kRow.makam_adi.trim()) {
+                rawValue = kRow.makam_adi.trim();
+              } else if (kRow.kurum_adi && kRow.kurum_adi.trim()) {
+                const kName = kRow.kurum_adi.trim();
+                rawValue = kName.toUpperCase().endsWith('BAŞKANLIĞI')
+                  ? `${kName.toUpperCase()}NA`
+                  : `${kName.toUpperCase()} BAŞKANLIĞINA`;
+              } else if (kRow.ust_kurum_adi && kRow.ust_kurum_adi.trim()) {
+                rawValue = `${kRow.ust_kurum_adi.trim().toUpperCase()} BAŞKANLIĞINA`;
+              }
+            }
+          }
+        } catch (e) {}
+      }
     }
 
     // Smart normalization for alimTuru

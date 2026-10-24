@@ -25,8 +25,8 @@ export const LuzumMuzekkeresiMapping: ProcessMapping = {
       'E-DETSİS-SDP-NO standart formatına uygun resmi evrak sayısı (örn: E-10234521-934.01-0001)'
   },
   sunulacakMakamAdi: {
-    tablo: 'TANIM_Kurum',
-    sutun: 'makam_adi',
+    tablo: 'DATA_TeminDosyasi',
+    sutun: 'sunulacak_makam',
     aciklama: 'Sunulacak makam adı'
   },
   ihtiyacKalemleri: {

@@ -29,8 +29,8 @@ export const IhtiyacListesiMapping: ProcessMapping = {
   },
 
   sunulacakMakamAdi: {
-    tablo: 'TANIM_Kurum',
-    sutun: 'makam_adi',
+    tablo: 'DATA_TeminDosyasi',
+    sutun: 'sunulacak_makam',
     aciklama: 'Sunulacak makam adı'
   },
 
