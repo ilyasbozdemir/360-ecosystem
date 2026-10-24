@@ -166,8 +166,11 @@ export async function saveDocumentToDb({
     null
   const activeSagLogo = formData.sagLogo || logoRight || storeSettings.logoRight || null
 
+  const explicitMakam = formData.sunulacakMakamAdi || formData.sunulacakMakam || null
+
   const dataToSave = {
     ...formData,
+    ...(explicitMakam ? { sunulacakMakamAdi: explicitMakam, sunulacakMakam: explicitMakam } : {}),
     solLogo: localShowLogoLeft ? activeSolLogo : null,
     sagLogo: localShowLogoRight ? activeSagLogo : null,
     showLogoLeft: localShowLogoLeft,
@@ -183,6 +186,19 @@ export async function saveDocumentToDb({
     templateKey: resolvedId,
     data: dataToSave
   })
+
+  // Dosya genelinde de sunulacak makamı senkronize et
+  if (activeDosyaId && explicitMakam && window.electron?.ipcRenderer) {
+    try {
+      await window.electron.ipcRenderer.invoke(
+        'db:query',
+        'UPDATE DATA_TeminDosyasi SET sunulacak_makam = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+        [explicitMakam, activeDosyaId]
+      )
+    } catch (e) {
+      console.warn('[saveDocumentToDb] Dosya sunulacak_makam güncelleme hatası:', e)
+    }
+  }
 
   return jsonStr
 }

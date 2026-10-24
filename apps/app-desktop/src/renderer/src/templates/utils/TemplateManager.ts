@@ -1,11 +1,9 @@
-import { ZodSchema } from 'zod'
-
 export interface TemplateConfig {
   id: string
   name: string
   category: string
   version: string
-  schema: ZodSchema
+  schema: any
   htmlPath: string
   metadata: {
     pageSize: 'A4' | 'A3'

@@ -60,12 +60,21 @@ export async function resolveSnapshotOverlay(
     }
   }
 
-  // Overlay Saved Snapshot JSON on top of defaults
+  // First apply initialData overrides on top of baseData as starting defaults
   const finalData: Record<string, any> = { ...baseData }
+  if (activeTab?.initialData && typeof activeTab.initialData === 'object') {
+    for (const [k, v] of Object.entries(activeTab.initialData)) {
+      if (v !== undefined && v !== null) {
+        finalData[k] = v
+      }
+    }
+  }
+
   let activeLogoLeft = showLogoLeft
   let activeLogoRight = showLogoRight
   let activeOrientation: 'portrait' | 'landscape' = 'portrait'
 
+  // DB Snapshot Data represents user-saved state and takes highest precedence
   if (snapshotData && typeof snapshotData === 'object') {
     try {
       for (const [key, val] of Object.entries(snapshotData)) {
@@ -105,6 +114,11 @@ export async function resolveSnapshotOverlay(
           finalData[key] = val
         }
       }
+      const explicitMakam = snapshotData.sunulacakMakamAdi || snapshotData.sunulacakMakam
+      if (explicitMakam) {
+        finalData.sunulacakMakamAdi = explicitMakam
+        finalData.sunulacakMakam = explicitMakam
+      }
       const explicitTarih =
         snapshotData.tarih || snapshotData.onayaSunulanTarih || snapshotData.belgeTarihi
       if (explicitTarih) {
@@ -134,9 +148,12 @@ export async function resolveSnapshotOverlay(
     }
   }
 
-  // Explicit initial data overrides
-  if (activeTab?.initialData && typeof activeTab.initialData === 'object') {
-    Object.assign(finalData, activeTab.initialData)
+  // Ensure sunulacakMakamAdi and sunulacakMakam are in sync
+  if (!finalData.sunulacakMakamAdi && (finalData.sunulacakMakam || baseData.sunulacakMakamAdi)) {
+    finalData.sunulacakMakamAdi = finalData.sunulacakMakam || baseData.sunulacakMakamAdi
+  }
+  if (!finalData.sunulacakMakam && finalData.sunulacakMakamAdi) {
+    finalData.sunulacakMakam = finalData.sunulacakMakamAdi
   }
 
   // Always sync live dossier delivery days if not overridden

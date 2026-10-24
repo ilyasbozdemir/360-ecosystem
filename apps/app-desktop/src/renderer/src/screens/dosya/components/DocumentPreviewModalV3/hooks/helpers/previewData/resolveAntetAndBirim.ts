@@ -79,6 +79,19 @@ export async function resolveAntetAndBirim(
   baseData.ihtiyacYeri =
     rawIhtiyac === '[]' || rawIhtiyac === '[""]' ? ctx.altKurumBulunma || 'İdaremizde' : rawIhtiyac
 
+  const rawMakam =
+    dosyaObj.sunulacak_makam ||
+    baseData.sunulacakMakamAdi ||
+    baseData.sunulacakMakam ||
+    ctx.sunulacakMakamAdi ||
+    ctx.sunulacakMakam ||
+    ctx.sunumMakami ||
+    ''
+  if (rawMakam) {
+    baseData.sunulacakMakamAdi = rawMakam
+    baseData.sunulacakMakam = rawMakam
+  }
+
   // Resolve official evrakSayisi if missing or slash-separated
   if (
     !baseData.evrakSayisi ||

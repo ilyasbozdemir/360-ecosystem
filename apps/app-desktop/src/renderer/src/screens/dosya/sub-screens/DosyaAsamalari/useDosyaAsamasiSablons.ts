@@ -165,12 +165,22 @@ export function useDosyaAsamasiSablons() {
   const sablonAd = searchParams?.sablonAd
 
   // Snapshot'ı DB'den yükleyen yardımcı fonksiyon (otomatik kaydetmez, sadece varsa yükler)
-  const loadOrCreateSnapshot = async (sablonId: number, baseCtx: any) => {
+  const loadOrCreateSnapshot = async (sablonOrId: any, baseCtx: any) => {
     try {
+      const sId = typeof sablonOrId === 'object' ? sablonOrId.id : sablonOrId
+      const sCode =
+        typeof sablonOrId === 'object'
+          ? (sablonOrId.dosya_adi || sablonOrId.route_path || '').replace(/\.html$/, '')
+          : ''
       const snapshotRes = await (window as any).electron.ipcRenderer.invoke(
         'db:query',
-        'SELECT veri_json FROM DATA_DosyaSablonVeri WHERE temin_dosya_id = ? AND sablon_id = ?',
-        [activeDosyaId, sablonId]
+        `SELECT veri_json FROM DATA_DosyaSablonVeri 
+         WHERE temin_dosya_id = ? AND (
+           sablon_id = ? 
+           OR (? != '' AND (sablon_kodu = ? OR sablon_kodu = ? || '.html'))
+         )
+         ORDER BY updated_at DESC, id DESC LIMIT 1`,
+        [activeDosyaId, sId, sCode, sCode, sCode]
       )
       if (snapshotRes.success && snapshotRes.data.length > 0) {
         // Önceden kaydedilmiş bir snapshot varsa (örn. manuel olarak kaydedilmişse veya eski sistemde kalmışsa)
@@ -199,7 +209,7 @@ export function useDosyaAsamasiSablons() {
       if (sablon) {
         const processPath = sablon.route_path || sablon.dosya_adi || ''
         const baseCtx = contextsByPath[processPath] || dosyaContext
-        const mergedCtx = await loadOrCreateSnapshot(sablon.id, baseCtx)
+        const mergedCtx = await loadOrCreateSnapshot(sablon, baseCtx)
         setPreviewData({
           title: sablon.ad,
           templateHtml: sablon.icerik,
@@ -243,7 +253,7 @@ export function useDosyaAsamasiSablons() {
     const currentCtx = contextsByPath[processPath] || dosyaContext
     const snapshotCtx = overrideCtx
       ? overrideCtx
-      : await loadOrCreateSnapshot(sablon.id, currentCtx)
+      : await loadOrCreateSnapshot(sablon, currentCtx)
 
     setPreviewData({
       sablonId: sablon.id,

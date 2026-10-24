@@ -574,13 +574,21 @@ export function resolveDocumentPayload(
       birimAnteti: birimAntet,
       antetEkSatir:
         (dosya as any)?.antet_ek_satir || (dosya as any)?.birim_antet_ek_satir || birimAntet,
+      sunulacakMakamAdi:
+        (dosya as any)?.sunulacak_makam ||
+        (kurum as any)?.makam_adi ||
+        (birimListesi as any[]).find((b: any) => b.id === (dosya as any)?.birim_id)?.sunum_makami ||
+        (birimListesi as any[]).find((b: any) => b.id === (dosya as any)?.birim_id)?.birim_adi ||
+        'STRATEJİ GELİŞTİRME DAİRE BAŞKANLIĞINA',
       sunulacakMakam:
         (dosya as any)?.sunulacak_makam ||
+        (kurum as any)?.makam_adi ||
         (birimListesi as any[]).find((b: any) => b.id === (dosya as any)?.birim_id)?.sunum_makami ||
         (birimListesi as any[]).find((b: any) => b.id === (dosya as any)?.birim_id)?.birim_adi ||
         'STRATEJİ GELİŞTİRME DAİRE BAŞKANLIĞINA',
       sunulacak_makam:
         (dosya as any)?.sunulacak_makam ||
+        (kurum as any)?.makam_adi ||
         (birimListesi as any[]).find((b: any) => b.id === (dosya as any)?.birim_id)?.sunum_makami ||
         (birimListesi as any[]).find((b: any) => b.id === (dosya as any)?.birim_id)?.birim_adi ||
         'STRATEJİ GELİŞTİRME DAİRE BAŞKANLIĞINA',
