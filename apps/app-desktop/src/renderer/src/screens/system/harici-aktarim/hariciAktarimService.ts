@@ -58,6 +58,8 @@ export function findMatchingDossier(
   dossiers: ExistingDossierSummary[],
   data: DogrudanTeminDosyasi
 ): ExistingDossierSummary | null {
+  if (!Array.isArray(dossiers) || !data?.dosyaBilgileri) return null
+
   const dosyaNo = data.dosyaBilgileri.dosyaNo?.trim()
   const dtNo = data.dosyaBilgileri.dogrudanTeminNumarasi?.trim()
   const hariciId = data.id?.trim()
@@ -94,7 +96,7 @@ export async function fetchExistingDossiers(): Promise<ExistingDossierSummary[]>
     if (!window.electron?.ipcRenderer) {
       return []
     }
-    const rows = await window.electron.ipcRenderer.invoke(
+    const res = await window.electron.ipcRenderer.invoke(
       'db:query',
       `SELECT id, temin_no, ekap_no, konu, butce_yili, durum_asama_id, yaklasik_maliyet, created_at
        FROM DATA_TeminDosyasi
@@ -102,7 +104,11 @@ export async function fetchExistingDossiers(): Promise<ExistingDossierSummary[]>
        ORDER BY id DESC
        LIMIT 200`
     )
-    return (rows || []) as ExistingDossierSummary[]
+    if (Array.isArray(res)) return res as ExistingDossierSummary[]
+    if (res && Array.isArray((res as { data?: unknown }).data)) {
+      return (res as { data: ExistingDossierSummary[] }).data
+    }
+    return []
   } catch (err) {
     console.error('Dosyalar listelenirken hata:', err)
     return []
@@ -115,7 +121,7 @@ export async function searchDossiers(query: string): Promise<ExistingDossierSumm
       return []
     }
     const pattern = `%${query.trim()}%`
-    const rows = await window.electron.ipcRenderer.invoke(
+    const res = await window.electron.ipcRenderer.invoke(
       'db:query',
       `SELECT id, temin_no, ekap_no, konu, butce_yili, durum_asama_id, yaklasik_maliyet, created_at
        FROM DATA_TeminDosyasi
@@ -124,7 +130,11 @@ export async function searchDossiers(query: string): Promise<ExistingDossierSumm
        LIMIT 50`,
       [pattern, pattern, pattern]
     )
-    return (rows || []) as ExistingDossierSummary[]
+    if (Array.isArray(res)) return res as ExistingDossierSummary[]
+    if (res && Array.isArray((res as { data?: unknown }).data)) {
+      return (res as { data: ExistingDossierSummary[] }).data
+    }
+    return []
   } catch (err) {
     console.error('Arama hatası:', err)
     return []

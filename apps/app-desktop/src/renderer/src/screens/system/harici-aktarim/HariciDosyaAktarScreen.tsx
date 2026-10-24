@@ -33,7 +33,6 @@ import { APP_ROUTES } from "../../../constants/routeConstants";
 type ActiveTab = "genel" | "malzemeler" | "teklifler" | "komisyonlar";
 
 export default function HariciDosyaAktarScreen(): React.JSX.Element {
-  console.log("[HariciDosyaAktarScreen] Render başladı");
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -63,7 +62,7 @@ export default function HariciDosyaAktarScreen(): React.JSX.Element {
   useEffect(() => {
     let isMounted = true;
     fetchExistingDossiers().then((list) => {
-      if (isMounted) setExistingDossiers(list);
+      if (isMounted) setExistingDossiers(Array.isArray(list) ? list : []);
     });
     return () => {
       isMounted = false;
@@ -80,7 +79,7 @@ export default function HariciDosyaAktarScreen(): React.JSX.Element {
 
   // Eşleşen dosyayı otomatik tespit et
   const autoMatch = useMemo(() => {
-    if (!parsedData || existingDossiers.length === 0) return null;
+    if (!parsedData || !Array.isArray(existingDossiers) || existingDossiers.length === 0) return null;
     return findMatchingDossier(existingDossiers, parsedData);
   }, [parsedData, existingDossiers]);
 
@@ -112,7 +111,7 @@ export default function HariciDosyaAktarScreen(): React.JSX.Element {
     setSelectedTargetId(null);
   };
 
-  const targetDossier = typeof effectiveTargetId === "number"
+  const targetDossier = typeof effectiveTargetId === "number" && Array.isArray(existingDossiers)
     ? existingDossiers.find((d) => d.id === effectiveTargetId) || null
     : null;
 
@@ -133,7 +132,7 @@ export default function HariciDosyaAktarScreen(): React.JSX.Element {
       });
       setSyncResult(res);
       const refreshed = await fetchExistingDossiers();
-      setExistingDossiers(refreshed);
+      setExistingDossiers(Array.isArray(refreshed) ? refreshed : []);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       setErrorMsg(msg);
