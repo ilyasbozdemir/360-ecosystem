@@ -62,6 +62,11 @@ export function getSistemTanimlariMenu(
               to: APP_ROUTES.MEVZUAT,
               search: { tab: 'yi-ufe' } as Record<string, string>
             })
+        },
+        { divider: true },
+        {
+          label: '📥 Harici Dosya Aktar & Eşle (JSON)',
+          onClick: (): Promise<void> => navigate({ to: APP_ROUTES.HARICI_DOSYA_AKTAR })
         }
       ]
     }

@@ -45,6 +45,10 @@ export function getHeaderMenus(opts: HeaderNavigationOptions): HeaderMenu[] {
           onClick: (): Promise<void> => navigate({ to: APP_ROUTES.YENI_DOSYA })
         },
         {
+          label: '📥 Harici Dosya Aktar & Eşle (JSON)',
+          onClick: (): Promise<void> => navigate({ to: APP_ROUTES.HARICI_DOSYA_AKTAR })
+        },
+        {
           label: 'Çalışma Dosyası Detayları (.temin)',
           onClick: (): Promise<void> => navigate({ to: APP_ROUTES.DOSYA_DETAY })
         },

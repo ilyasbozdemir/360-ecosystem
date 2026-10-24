@@ -41,6 +41,9 @@ export const routeComponents: Record<string, () => React.ReactElement> = {
   '/changelog': lazyRoute(() => import('../../screens/system/ChangelogScreen')),
   '/import': lazyRoute(() => import('../../screens/system/ImportScreen')),
   '/hizli-dosya-ekle': lazyRoute(() => import('../../screens/system/HizliDosyaEkle.screen')),
+  '/harici-dosya-aktar': lazyRoute(
+    () => import('../../screens/system/harici-aktarim/HariciDosyaAktarScreen')
+  ),
   '/ayarlar': lazyRoute(() => import('../../screens/ayarlar/index.screen')),
   '/tema': lazyRoute(() => import('../../screens/ayarlar/TemaScreen')),
   '/birimler': lazyRoute(() => import('../../screens/birimler/index.screen')),
